@@ -19,7 +19,7 @@ namespace FlatSharp;
 /// <summary>
 /// Defines various confiration settings for serializing and deserializing buffers.
 /// </summary>
-public class FlatBufferSerializerOptions
+public record class FlatBufferSerializerOptions
 {
     /// <summary>
     /// Initializes a new instance of FlatBufferSerializerOptions with the given set of flags.
@@ -48,7 +48,7 @@ public class FlatBufferSerializerOptions
     /// <summary>
     /// The deserialization mode.
     /// </summary>
-    public FlatBufferDeserializationOption DeserializationOption { get; }
+    public FlatBufferDeserializationOption DeserializationOption { get; internal init; }
 
     public bool Progressive =>
         this.DeserializationOption == FlatBufferDeserializationOption.Progressive;

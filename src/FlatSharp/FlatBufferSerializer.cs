@@ -202,7 +202,7 @@ public sealed class FlatBufferSerializer
             {
                 if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                 {
-                    serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>();
+                    serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>().WithSettings(new SerializerSettings { DeserializationMode = this.Options.DeserializationOption });
                     this.serializerCache[typeof(TRoot)] = serializer;
                 }
             }

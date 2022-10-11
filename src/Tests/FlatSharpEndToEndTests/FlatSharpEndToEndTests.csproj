@@ -12,6 +12,7 @@
     <Nullable>annotations</Nullable>
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net6.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
   </PropertyGroup>
   
   <ItemGroup>
@@ -33,27 +34,13 @@
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Remove="Grpc\Grpc.fbs.generated.cs" />
-    <Compile Include="Grpc\Grpc.fbs.generated.cs" />
-    <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
-    <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
-    <Compile Remove="Documentation\Documentation.fbs.generated.cs" />
-    <Compile Include="Documentation\Documentation.fbs.generated.cs" />
-    <Compile Remove="Unions\Unions.fbs.generated.cs" />
-    <Compile Include="Unions\Unions.fbs.generated.cs" />
+    <FlatSharpSchema Include="Grpc\Grpc.fbs" />
+    <FlatSharpSchema Include="Unions\Unions.fbs" />
+    <FlatSharpSchema Include="ValueStructs\ValueStructs.fbs" />
+    <FlatSharpSchema Include="Documentation\Documentation.fbs" />
   </ItemGroup>
 
-  <Target Name="FBS" BeforeTargets="CoreCompile">
-    <PropertyGroup>
-      <FlatSharpCompilerDll>..\..\FlatSharp.Compiler\bin\$(Configuration)\$(TargetFramework)\FlatSharp.Compiler.dll</FlatSharpCompilerDll>
-    </PropertyGroup>
-    <ItemGroup>
-      <InputFile Include="Grpc\Grpc.fbs" />
-      <InputFile Include="ValueStructs\ValueStructs.fbs" />
-      <InputFile Include="Documentation\Documentation.fbs" />
-      <InputFile Include="Unions\Unions.fbs" />
-    </ItemGroup>
-    <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
-  </Target>
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>

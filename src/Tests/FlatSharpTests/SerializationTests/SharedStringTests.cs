@@ -137,6 +137,52 @@ public class SharedStringTests
     }
 
     [Fact]
+    public void Test_ISerializerSharedStringSettings()
+    {
+        var t = new SharedStringsVector
+        {
+            StringVector = new List<string> { "string", "string", "string" },
+        };
+
+        byte[] destination = new byte[1024];
+
+        int maxBytes = FlatBufferSerializer.Default.GetMaxSize(t);
+        var serializer = FlatBufferSerializer.Default.Compile<SharedStringsVector>();
+
+        int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
+
+        Assert.True(bytesWritten <= maxBytes);
+
+        byte[] expectedBytes = new byte[]
+        {
+            4, 0, 0, 0,         // offset to table start
+            248, 255, 255, 255, // soffset to vtable.
+            12, 0, 0, 0,        // uoffset to vector
+            6, 0, 8, 0,         // vtable length, table length
+            4, 0, 0, 0,         // offset within table to item 0 + alignment
+            3, 0, 0, 0,         // vector length
+            12, 0, 0, 0,        // uffset to first item
+            8, 0, 0, 0,         // uoffset to second item
+            4, 0, 0, 0,         // uoffset to third item
+            6, 0, 0, 0,         // string length
+            (byte)'s', (byte)'t', (byte)'r', (byte)'i',
+            (byte)'n', (byte)'g', 0 // null terminator.
+        };
+
+        Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+
+        // Set SharedStringWriter to null. Shared strings remain turned on.
+        serializer = serializer.WithSettings(new SerializerSettings { SharedStringWriterFactory = null });
+        bytesWritten = serializer.Write(default(SpanWriter), destination, t);
+        Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+
+        // Set SharedStringWriter to return null. Shared strings turn off.
+        serializer = serializer.WithSettings(new SerializerSettings { SharedStringWriterFactory = () => null });
+        int bytesWrittenBig = serializer.Write(default(SpanWriter), destination, t);
+        Assert.True(bytesWrittenBig > bytesWritten);
+    }
+
+    [Fact]
     public void Test_TableSharedStrings()
     {
         var t = new SharedStringsTable

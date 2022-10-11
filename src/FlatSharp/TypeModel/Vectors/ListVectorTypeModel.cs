@@ -99,7 +99,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        ValidateWriteThrough(
+        bool isEverWriteThrough = ValidateWriteThrough(
             writeThroughSupported: !this.isReadOnly,
             this,
             context.AllFieldContexts,
@@ -117,25 +117,41 @@ public class ListVectorTypeModel : BaseVectorTypeModel
                 {context.RemainingDepthVariableName},
                 {context.TableFieldContextVariableName})";
 
-        return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, context)) { ClassDefinition = vectorClassDef };
+        return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, context, isEverWriteThrough)) { ClassDefinition = vectorClassDef };
     }
 
     internal static string CreateParseBody(
         ITypeModel itemTypeModel,
         string createFlatBufferVector,
-        ParserCodeGenContext context)
+        ParserCodeGenContext context,
+        bool isEverWriteThrough = false)
     {
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
-        if (context.Options.GreedyDeserialize)
+        if (context.Options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable && isEverWriteThrough)
         {
-            string body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
-            if (!context.Options.GenerateMutableObjects)
+            string body = $@"
+                var result = ({createFlatBufferVector}).FlatBufferVectorToList();
+                if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.WriteThrough)})
+                {{
+                    // WriteThrough vectors are not mutable in greedy mode.
+                    return result.AsReadOnly();
+                }}
+
+                return result;
+            ";
+
+            return body;
+        }
+        else if (context.Options.GreedyDeserialize)
+        {
+            string readOnly = ".AsReadOnly()";
+            if (context.Options.GenerateMutableObjects)
             {
-                body += ".AsReadOnly()";
+                readOnly = string.Empty;
             }
 
-            return $"return {body};";
+            return $"return ({createFlatBufferVector}).FlatBufferVectorToList(){readOnly};";
         }
         else if (context.Options.Lazy)
         {

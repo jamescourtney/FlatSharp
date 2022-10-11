@@ -79,20 +79,6 @@ public class MetadataTests
         Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
     }
 
-    [Fact]
-    public void PrecompiledSerializer()
-    {
-        var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "string", "");
-        Assert.Equal(FlatBufferDeserializationOption.GreedyMutable, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
-    }
-
-    [Fact]
-    public void PrecompiledSerializerQuoted()
-    {
-        var (prop, type, attribute) = this.CompileAndGetProperty($"{MetadataKeys.SerializerKind}:\"Lazy\"", "string", "");
-        Assert.Equal(FlatBufferDeserializationOption.Lazy, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
-    }
-
     private (PropertyInfo, Type, FlatBufferItemAttribute) CompileAndGetProperty(string typeMetadata, string fieldType, string fieldMetadata)
     {
         if (!string.IsNullOrEmpty(typeMetadata))

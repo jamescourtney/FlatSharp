@@ -24,6 +24,9 @@ public class SerializerSettings
     /// <summary>
     /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
     /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
+    /// 
+    /// A value of <c>null</c> indicates that the default serializer settings should remain unchanged. If this
+    /// delegate is set to return <c>null</c>, then shared strings will be disabled.
     /// </summary>
     public Func<ISharedStringWriter>? SharedStringWriterFactory
     {
@@ -48,6 +51,15 @@ public class SerializerSettings
     /// stack overflow errors and otherwise guard against malicious inputs.
     /// </summary>
     public short? ObjectDepthLimit
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// When set, specifies a deserialization mode to use with the .Deserialize method.
+    /// </summary>
+    public FlatBufferDeserializationOption? DeserializationMode
     {
         get;
         set;

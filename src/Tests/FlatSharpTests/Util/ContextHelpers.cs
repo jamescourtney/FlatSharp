@@ -30,11 +30,10 @@ public static class ContextHelpers
             "c",
             false,
             "d",
-            new ReturnsRandomDictionary(),
-            new ReturnsRandomDictionary(),
+            new DefaultMethodNameResolver(),
             options ?? new FlatBufferSerializerOptions(),
             TypeModelContainer.CreateDefault(),
-            new Dictionary<ITypeModel, List<TableFieldContext>>());
+            new Dictionary<ITypeModel, HashSet<TableFieldContext>>());
     }
 
     public static SerializationCodeGenContext CreateSerializeContext(FlatBufferSerializerOptions? options = null)
@@ -47,41 +46,9 @@ public static class ContextHelpers
             "e",
             "f",
             false,
-            new ReturnsRandomDictionary(),
+            new DefaultMethodNameResolver(),
             TypeModelContainer.CreateDefault(),
             options ?? new FlatBufferSerializerOptions(),
-            new Dictionary<ITypeModel, List<TableFieldContext>>());
-    }
-
-    private class ReturnsRandomDictionary : IReadOnlyDictionary<Type, string>
-    {
-        public string this[Type key] => Guid.NewGuid().ToString();
-
-        public IEnumerable<Type> Keys => new Type[0];
-
-        public IEnumerable<string> Values => new string[0];
-
-        public int Count => 0;
-
-        public bool ContainsKey(Type key)
-        {
-            return true;
-        }
-
-        public IEnumerator<KeyValuePair<Type, string>> GetEnumerator()
-        {
-            yield break;
-        }
-
-        public bool TryGetValue(Type key, out string value)
-        {
-            value = this[key];
-            return false;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            yield break;
-        }
+            new Dictionary<ITypeModel, HashSet<TableFieldContext>>());
     }
 }

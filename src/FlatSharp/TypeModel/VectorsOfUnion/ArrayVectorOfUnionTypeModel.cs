@@ -30,11 +30,6 @@ public class ArrayVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        if (!context.Options.GreedyDeserialize)
-        {
-            throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
-        }
-
         var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
             this.ItemTypeModel,
             context);

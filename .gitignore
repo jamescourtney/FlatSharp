@@ -15,3 +15,5 @@
 **/coverage.net5.0.xml
 /src/Tests/Coverage/coverage.xml
 /src/Tests/FlatSharpEndToEndTests/FlatSharpEndToEndTests.xml
+/src/Tests/FlatSharpEndToEndTests/FlatSharp.generated.cs
+/src/Benchmarks/ExperimentalBenchmark/FlatSharp.generated.cs

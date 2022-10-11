@@ -31,8 +31,10 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
     private readonly bool enableMemoryCopySerialization;
     private readonly string? fileIdentifier;
     private readonly short remainingDepthLimit;
+    private readonly FlatBufferDeserializationOption option;
 
     public GeneratedSerializerWrapper(
+        FlatBufferDeserializationOption option,
         IGeneratedSerializer<T>? innerSerializer,
         Assembly? generatedAssembly,
         Func<string?> generatedCSharp,
@@ -47,6 +49,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         this.fileIdentifier = tableAttribute?.FileIdentifier;
         this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
         this.remainingDepthLimit = 1000; // sane default.
+        this.option = option;
     }
 
     private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
@@ -57,13 +60,22 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         this.innerSerializer = template.innerSerializer;
         this.fileIdentifier = template.fileIdentifier;
         this.remainingDepthLimit = template.remainingDepthLimit;
-
+        this.option = template.option;
+        this.sharedStringWriter = template.sharedStringWriter;
         this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
 
         Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
         if (writerFactory is not null)
         {
-            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+            ISharedStringWriter writer = writerFactory();
+            if (writer is not null)
+            {
+                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+            }
+            else
+            {
+                this.sharedStringWriter = null;
+            }
         }
 
         if (settings.ObjectDepthLimit is not null)
@@ -75,6 +87,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
             this.remainingDepthLimit = settings.ObjectDepthLimit.Value;
         }
+
+        if (settings.DeserializationMode is not null)
+        {
+            this.option = settings.DeserializationMode.Value;
+        }
     }
 
     Type ISerializer.RootType => typeof(T);
@@ -85,7 +102,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     public byte[]? AssemblyBytes { get; }
 
-    public FlatBufferDeserializationOption DeserializationOption => this.innerSerializer.DeserializationOption;
+    public FlatBufferDeserializationOption DeserializationOption => this.option;
 
     public int GetMaxSize(T item)
     {
@@ -132,8 +149,25 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
             throw new ArgumentException("Buffer is too small to be valid!");
         }
 
-        // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
-        return buffer.InvokeParse(this.innerSerializer, new GeneratedSerializerParseArguments(0, this.remainingDepthLimit));
+        var parseArgs = new GeneratedSerializerParseArguments(0, this.remainingDepthLimit);
+        var inner = this.innerSerializer;
+
+        switch (this.option)
+        {
+            case FlatBufferDeserializationOption.Lazy:
+                return buffer.InvokeLazyParse(inner, in parseArgs);
+
+            case FlatBufferDeserializationOption.Greedy:
+                return buffer.InvokeGreedyParse(inner, in parseArgs);
+
+            case FlatBufferDeserializationOption.GreedyMutable:
+                return buffer.InvokeGreedyMutableParse(inner, in parseArgs);
+
+            case FlatBufferDeserializationOption.Progressive:
+                return buffer.InvokeProgressiveParse(inner, in parseArgs);
+        }
+
+        throw new InvalidOperationException("Unexpected deserialization mode: " + this.option);
     }
 
     object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);

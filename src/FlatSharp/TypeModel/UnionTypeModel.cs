@@ -47,6 +47,11 @@ public class UnionTypeModel : RuntimeTypeModel
         }.ToImmutableArray();
 
     /// <summary>
+    /// Unions can be invariant on the parse path, depending on their children.
+    /// </summary>
+    public override bool IsParsingInvariant => this.Children.All(x => x.IsParsingInvariant);
+
+    /// <summary>
     /// Unions are not fixed because they contain tables.
     /// </summary>
     public override bool IsFixedSize => false;

@@ -242,30 +242,28 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
         return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
     }
 
-    internal static void ValidateWriteThrough(
+    /// <summary>
+    /// Validates that write through is valid.
+    /// </summary>
+    /// <returns>True if the given model is ever used in a write through context.</returns>
+    internal static bool ValidateWriteThrough(
         bool writeThroughSupported,
         ITypeModel model,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> contexts,
         FlatBufferSerializerOptions options)
     {
         if (!contexts.TryGetValue(model, out var fieldsForModel))
         {
-            return;
+            return false;
         }
 
         var firstWriteThrough = fieldsForModel.Where(x => x.WriteThrough).FirstOrDefault();
 
-        if (firstWriteThrough is not null)
+        if (firstWriteThrough is not null && !writeThroughSupported)
         {
-            if (options.GreedyDeserialize)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
-            }
-
-            if (!writeThroughSupported)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
-            }
+            throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
         }
+
+        return firstWriteThrough is not null;
     }
 }

@@ -38,11 +38,6 @@ public readonly struct GeneratedSerializerParseArguments
 public interface IGeneratedSerializer<T>
 {
     /// <summary>
-    /// Gets the option used to create this generated serializer.
-    /// </summary>
-    FlatBufferDeserializationOption DeserializationOption { get; }
-
-    /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
     /// <param name="writer">The span writer.</param>
@@ -65,7 +60,28 @@ public interface IGeneratedSerializer<T>
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
     /// </summary>
-    T Parse<TInputBuffer>(
+    T ParseLazy<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T ParseProgressive<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T ParseGreedy<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T ParseGreedyMutable<TInputBuffer>(
         TInputBuffer buffer,
         in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
 }

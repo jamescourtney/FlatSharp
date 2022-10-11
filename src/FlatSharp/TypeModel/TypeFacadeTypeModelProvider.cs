@@ -81,9 +81,11 @@ internal class TypeFacadeTypeModelProvider<TConverter, TUnderlying, TType> : ITy
 
         public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
 
-        public bool SerializeMethodRequiresContext => underlyingModel.SerializeMethodRequiresContext;
+        public bool SerializeMethodRequiresContext => this.underlyingModel.SerializeMethodRequiresContext;
 
-        public TableFieldContextRequirements TableFieldContextRequirements => underlyingModel.TableFieldContextRequirements;
+        public TableFieldContextRequirements TableFieldContextRequirements => this.underlyingModel.TableFieldContextRequirements;
+
+        public bool IsParsingInvariant => this.underlyingModel.IsParsingInvariant;
 
         public void AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
