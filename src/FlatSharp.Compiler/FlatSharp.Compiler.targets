@@ -137,7 +137,8 @@
 
         <Exec
             Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
-            CustomErrorRegularExpression=".*" />
+            CustomErrorRegularExpression=".*" 
+            Condition=" '@(FlatSharpSchema)' != '' "/>
 
         <ItemGroup>
             <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
