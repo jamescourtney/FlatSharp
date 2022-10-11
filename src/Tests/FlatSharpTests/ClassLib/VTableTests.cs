@@ -23,10 +23,22 @@ public class VTableTests
     public delegate void CreateCallback<TVTable>(ArrayInputBuffer buffer, int offset, out TVTable vt);
 
     [Fact]
-    public void Test_VTable4() => this.RunTests<VTable4>(3, VTable4.Create);
+    public void Test_VTable4_Auto() => this.RunTests<VTable4>(3, VTable4.Create);
 
     [Fact]
-    public void Test_VTable8() => this.RunTests<VTable8>(7, VTable8.Create);
+    public void Test_VTable4_LE() => this.RunTests<VTable4>(3, VTable4.CreateLittleEndian);
+
+    [Fact]
+    public void Test_VTable4_BE() => this.RunTests<VTable4>(3, VTable4.CreateBigEndian);
+
+    [Fact]
+    public void Test_VTable8_Auto() => this.RunTests<VTable8>(7, VTable8.Create);
+
+    [Fact]
+    public void Test_VTable8_LE() => this.RunTests<VTable8>(7, VTable8.CreateLittleEndian);
+
+    [Fact]
+    public void Test_VTable8_BE() => this.RunTests<VTable8>(7, VTable8.CreateBigEndian);
 
     [Fact]
     public void Test_VTableGeneric() => this.RunTests<VTableGeneric>(255, VTableGeneric.Create);
