@@ -25,7 +25,7 @@ namespace FlatSharp;
 /// being thrown. ReadOnlyMemoryInputBuffer guarantees that the objects returned will
 /// not modify in the input buffer (unless unsafe operations / MemoryMarshal) are used.
 /// </summary>
-public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
+public struct ReadOnlyMemoryInputBuffer : IInputBuffer
 {
     private const string ErrorMessage = "ReadOnlyMemory inputs may not deserialize writable memory.";
 

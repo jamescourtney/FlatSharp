@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of <see cref="IInputBuffer"/> for array segments.
 /// </summary>
-public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
+public struct ArraySegmentInputBuffer : IInputBuffer
 {
     private readonly ArraySegmentPointer pointer;
 

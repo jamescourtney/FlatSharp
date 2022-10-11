@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of InputBuffer for writable memory segments.
 /// </summary>
-public struct MemoryInputBuffer : IInputBuffer, IInputBuffer2
+public struct MemoryInputBuffer : IInputBuffer
 {
     private readonly MemoryPointer pointer;
 

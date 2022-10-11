@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of <see cref="IInputBuffer"/> for managed arrays.
 /// </summary>
-public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
+public struct ArrayInputBuffer : IInputBuffer
 {
     private readonly byte[] memory;
 
