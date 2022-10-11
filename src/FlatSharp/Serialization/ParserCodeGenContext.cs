@@ -31,18 +31,16 @@ public record ParserCodeGenContext
         string inputBufferTypeName,
         bool isOffsetByRef,
         string tableFieldContextVariableName,
-        IReadOnlyDictionary<Type, string> methodNameMap,
-        IReadOnlyDictionary<Type, string> serializeMethodNameMap,
+        IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.InputBufferVariableName = inputBufferVariableName;
         this.OffsetVariableName = offsetVariableName;
         this.InputBufferTypeName = inputBufferTypeName;
         this.RemainingDepthVariableName = remainingDepthVariableName;
-        this.MethodNameMap = methodNameMap;
-        this.SerializeMethodNameMap = serializeMethodNameMap;
+        this.MethodNameResolver = methodNameResolver;
         this.IsOffsetByRef = isOffsetByRef;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
@@ -81,19 +79,14 @@ public record ParserCodeGenContext
     public string TableFieldContextVariableName { get; init; }
 
     /// <summary>
-    /// A mapping of type to serialize method name for that type.
+    /// Resolves method names.
     /// </summary>
-    public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
-
-    /// <summary>
-    /// A mapping of type to serialize method name for that type.
-    /// </summary>
-    public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; }
+    public IMethodNameResolver MethodNameResolver { get; init; }
 
     /// <summary>
     /// Serialization options.
     /// </summary>
-    public FlatBufferSerializerOptions Options { get; }
+    public FlatBufferSerializerOptions Options { get; init; }
 
     /// <summary>
     /// The type model container.
@@ -103,7 +96,7 @@ public record ParserCodeGenContext
     /// <summary>
     /// All contexts for the entire object graph.
     /// </summary>
-    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+    public IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> AllFieldContexts { get; }
 
     /// <summary>
     /// Gets a parse invocation for the given type.
@@ -111,7 +104,9 @@ public record ParserCodeGenContext
     public string GetParseInvocation(Type type)
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
-        StringBuilder sb = new($"{this.MethodNameMap[type]}({this.InputBufferVariableName}, ");
+
+        var parts = this.MethodNameResolver.ResolveParse(this.Options.DeserializationOption, typeModel);
+        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.InputBufferVariableName}, ");
 
         if (this.IsOffsetByRef)
         {
@@ -143,7 +138,7 @@ public record ParserCodeGenContext
             offsetVariableName,
             this.TableFieldContextVariableName,
             this.IsOffsetByRef,
-            this.SerializeMethodNameMap,
+            this.MethodNameResolver,
             this.TypeModelContainer,
             this.Options,
             this.AllFieldContexts);

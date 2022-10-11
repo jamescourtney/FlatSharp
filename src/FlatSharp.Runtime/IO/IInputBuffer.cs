@@ -97,7 +97,25 @@ public interface IInputBuffer
     /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
     /// generic parameters.
     /// </summary>
-    TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+    TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
 }
 
 /// <summary>

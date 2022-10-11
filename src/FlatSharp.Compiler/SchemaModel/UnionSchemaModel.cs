@@ -28,6 +28,7 @@ public class UnionSchemaModel : BaseSchemaModel
     {
         FlatSharpInternal.Assert(union.UnderlyingType.BaseType == BaseType.UType, "Expecting utype");
 
+        this.DeclaringFile = union.DeclarationFile;
         this.union = union;
     }
 
@@ -43,9 +44,9 @@ public class UnionSchemaModel : BaseSchemaModel
         return true;
     }
 
-    public override string DeclaringFile => this.union.DeclarationFile;
-
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Union;
+
+    public override string DeclaringFile { get; }
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {

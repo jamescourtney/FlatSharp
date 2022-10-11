@@ -32,17 +32,17 @@ public record SerializationCodeGenContext
         string offsetVariableName,
         string tableFieldContextVariableName,
         bool isOffsetByRef,
-        IReadOnlyDictionary<Type, string> methodNameMap,
+        IMethodNameResolver methodNameResolver,
         TypeModelContainer typeModelContainer,
         FlatBufferSerializerOptions options,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.SerializationContextVariableName = serializationContextVariableName;
         this.SpanWriterVariableName = spanWriterVariableName;
         this.SpanVariableName = spanVariableName;
         this.ValueVariableName = valueVariableName;
         this.OffsetVariableName = offsetVariableName;
-        this.MethodNameMap = methodNameMap;
+        this.MethodNameResolver = methodNameResolver;
         this.TypeModelContainer = typeModelContainer;
         this.IsOffsetByRef = isOffsetByRef;
         this.Options = options;
@@ -88,7 +88,7 @@ public record SerializationCodeGenContext
     /// <summary>
     /// A mapping of type to serialize method name for that type.
     /// </summary>
-    public IReadOnlyDictionary<Type, string> MethodNameMap { get; private init; }
+    public IMethodNameResolver MethodNameResolver { get; private init; }
 
     /// <summary>
     /// Resolves Type -> TypeModel.
@@ -103,7 +103,7 @@ public record SerializationCodeGenContext
     /// <summary>
     /// All contexts for the entire object graph.
     /// </summary>
-    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+    public IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> AllFieldContexts { get; }
 
     /// <summary>
     /// Gets a serialization invocation for the given type.
@@ -118,7 +118,9 @@ public record SerializationCodeGenContext
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.Append($"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
+
+        var methodParts = this.MethodNameResolver.ResolveSerialize(typeModel);
+        sb.Append($"{methodParts.@namespace}.{methodParts.className}.{methodParts.methodName}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
 
         if (typeModel.SerializeMethodRequiresContext)
         {

@@ -34,8 +34,8 @@ public class EnumSchemaModel : BaseSchemaModel
 
         this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
         this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value);
-        this.DeclaringFile = @enum.DeclarationFile;
         this.documentation = @enum.Documentation;
+        this.DeclaringFile = @enum.DeclarationFile;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferEnum @enum, [NotNullWhen(true)] out EnumSchemaModel? model)

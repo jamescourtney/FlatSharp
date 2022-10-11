@@ -43,6 +43,11 @@ public class NullableTypeModel : RuntimeTypeModel
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
 
     /// <summary>
+    /// The nullable is invariant if it's underlying model is.
+    /// </summary>
+    public override bool IsParsingInvariant => this.underlyingTypeModel.IsParsingInvariant;
+
+    /// <summary>
     /// Scalars are fixed size.
     /// </summary>
     public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;

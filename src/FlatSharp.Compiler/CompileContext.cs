@@ -39,16 +39,6 @@ public record CompileContext
     public string InputHash { get; init; } = string.Empty;
 
     /// <summary>
-    /// The Root schema.
-    /// </summary>
-    public Schema.Schema Root { get; init; } = new();
-
-    /// <summary>
-    /// The root FBS file in the compilation.
-    /// </summary>
-    public string RootFile { get; init; } = string.Empty;
-
-    /// <summary>
     /// The fully qualified name of a static method to deep-clone an item.
     /// </summary>
     public string? FullyQualifiedCloneMethodName { get; set; }

@@ -124,6 +124,11 @@ public interface ITypeModel
     bool ValidateDefaultValue(object defaultValue);
 
     /// <summary>
+    /// Indicates if the parsing logic is invariant with respect to the deserialization mode.
+    /// </summary>
+    bool IsParsingInvariant { get; }
+
+    /// <summary>
     /// Gets the table field contexts for this type model. Probably only useful for tables.
     /// </summary>
     List<(ITypeModel, TableFieldContext)> GetFieldContexts();

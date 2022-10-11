@@ -6,6 +6,7 @@
         <TargetFrameworks>net6.0</TargetFrameworks>
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net6.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,15 +22,10 @@
         <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
         <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
     </ItemGroup>
+    
     <ItemGroup>
-        <Compile Remove="Benchmark.fbs.generated.cs" />
-        <Compile Include="Benchmark.fbs.generated.cs" />
+        <FlatSharpSchema Include="Benchmark.fbs" />
     </ItemGroup>
 
-    <Target Name="FBS" BeforeTargets="CoreCompile">
-        <PropertyGroup>
-            <FlatSharpCompilerDll>..\..\FlatSharp.Compiler\bin\$(Configuration)\$(TargetFramework)\FlatSharp.Compiler.dll</FlatSharpCompilerDll>
-        </PropertyGroup>
-        <Exec Command="dotnet $(FlatSharpCompilerDll) -i Benchmark.fbs -o . --nullable-warnings true" />
-    </Target>
+    <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>

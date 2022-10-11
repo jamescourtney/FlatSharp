@@ -22,7 +22,13 @@ public partial class DoubleTypeModel
     {
         if (defaultValue is double d)
         {
-            return $"{d:G17}d";
+            return d switch
+            {
+                double.NegativeInfinity => "double.NegativeInfinity",
+                double.PositiveInfinity => "double.PositiveInfinity",
+                double.NaN => "double.NaN",
+                _ => $"{d:G17}d",
+            };
         }
 
         return base.FormatDefaultValueAsLiteral(defaultValue);
@@ -35,7 +41,13 @@ public partial class FloatTypeModel
     {
         if (defaultValue is float f)
         {
-            return $"{f:G17}f";
+            return f switch
+            {
+                float.NegativeInfinity => "float.NegativeInfinity",
+                float.PositiveInfinity => "float.PositiveInfinity",
+                float.NaN => "float.NaN",
+                _ => $"{f:G17}f",
+            };
         }
 
         return base.FormatDefaultValueAsLiteral(defaultValue);

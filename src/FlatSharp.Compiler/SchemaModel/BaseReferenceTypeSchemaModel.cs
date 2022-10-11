@@ -31,8 +31,8 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject table) : base(schema, table.Name, new FlatSharpAttributes(table.Attributes))
     {
-        this.DeclaringFile = table.DeclarationFile;
         this.properties = new Dictionary<int, PropertyFieldModel>();
+        this.DeclaringFile = table.DeclarationFile;
         this.structVectors = new();
         this.table = table;
 

@@ -119,6 +119,8 @@ public abstract class RuntimeTypeModel : ITypeModel
     /// </summary>
     public abstract IEnumerable<ITypeModel> Children { get; }
 
+    public virtual bool IsParsingInvariant => false;
+
     /// <summary>
     /// Validates a default value.
     /// </summary>

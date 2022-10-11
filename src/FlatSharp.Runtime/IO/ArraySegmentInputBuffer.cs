@@ -149,10 +149,23 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
     {
         return this.pointer.segment;
     }
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
-    {
-        return serializer.Parse(this, arguments);
-    }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseLazy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseProgressive(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedyMutable(this, in arguments);
 
     // Array Segment is a relatively heavy struct. It contains an array pointer, an int offset, and and int length.
     // Copying this by value for each method call is actually slower than having a little private pointer to a single item.

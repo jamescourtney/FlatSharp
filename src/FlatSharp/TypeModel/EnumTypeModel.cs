@@ -52,6 +52,8 @@ public class EnumTypeModel : RuntimeTypeModel
         }
     }
 
+    public override bool IsParsingInvariant => true;
+
     public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
 
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;

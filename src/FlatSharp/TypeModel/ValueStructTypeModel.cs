@@ -48,6 +48,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
         new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.inlineSize, this.maxAlignment) }.ToImmutableArray();
 
     /// <summary>
+    /// Like scalars, value structs are not sensitive to deserialization mode.
+    /// </summary>
+    public override bool IsParsingInvariant => true;
+
+    /// <summary>
     /// Structs are composed of scalars.
     /// </summary>
     public override bool IsFixedSize => true;
@@ -107,8 +112,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
         for (int i = 0; i < this.members.Count; ++i)
         {
             var member = this.members[i];
+
+            var parts = context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, member.model);
+
             propertyStatements.Add($@"
-                item.{member.accessor} = {context.MethodNameMap[member.model.ClrType]}<{context.InputBufferTypeName}>(
+                item.{member.accessor} = {parts.@namespace}.{parts.className}.{parts.methodName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {member.offset},
                     {context.RemainingDepthVariableName});");

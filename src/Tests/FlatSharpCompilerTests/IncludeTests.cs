@@ -41,12 +41,12 @@ public class IncludeTests
             ("A.fbs", schemaA),
         };
 
-        var assemblies = FlatSharpCompiler.CompileAndLoadAssemblies(schemas, new());
+        var assemblies = FlatSharpCompiler.CompileAndLoadAssembly(schemas, new());
 
         UsingAssemblies(assemblies, () =>
         {
-            Type aType = assemblies[1].GetType("Foobar.A");
-            Type bType = assemblies[0].GetType("Foobar.B");
+            Type aType = assemblies.GetType("Foobar.A");
+            Type bType = assemblies.GetType("Foobar.B");
 
             PropertyInfo tableB = aType.GetProperty("TableB");
 
@@ -58,6 +58,29 @@ public class IncludeTests
             compiled.Write(data, Activator.CreateInstance(aType));
             compiled.Parse(data);
         });
+    }
+
+    [Fact]
+    public void IncludeTest_DuplicateTypes()
+    {
+        var schemaA = $@"
+            namespace Foobar;
+            table A {{ Value : int; }}
+        ";
+
+        var schemaB = $@"
+            namespace Foobar;
+            table A {{ Value : int; }}
+        ";
+
+        var schemas = new[]
+        {
+            (@"Foo\B.fbs", schemaB),
+            (@"A.fbs", schemaA),
+        };
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schemas, new()));
+        Assert.Contains(ex.Errors, s => s.StartsWith("Duplicate type declared in two different FBS files: Foobar.A"));
     }
 
     [Fact]
@@ -100,14 +123,14 @@ public class IncludeTests
             (@"A.fbs", schemaA),
         };
 
-        var assemblies = FlatSharpCompiler.CompileAndLoadAssemblies(schemas, new() { IncludesDirectory = "Bar;Baz" });
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schemas, new() { IncludesDirectory = "Bar;Baz" });
 
-        UsingAssemblies(assemblies, () =>
+        UsingAssemblies(asm, () =>
         {
-            Type aType = assemblies[3].GetType("Foobar.A");
-            Type bType = assemblies[2].GetType("Foobar.B");
-            Type cType = assemblies[1].GetType("Foobar.C");
-            Type dType = assemblies[0].GetType("Foobar.D");
+            Type aType = asm.GetType("Foobar.A");
+            Type bType = asm.GetType("Foobar.B");
+            Type cType = asm.GetType("Foobar.C");
+            Type dType = asm.GetType("Foobar.D");
 
             PropertyInfo tableB = aType.GetProperty("TableB");
             PropertyInfo tableC = bType.GetProperty("TableC");
@@ -125,10 +148,9 @@ public class IncludeTests
         });
     }
 
-    private void UsingAssemblies(IEnumerable<Assembly> assemblies, Action action)
+    private void UsingAssemblies(Assembly asm, Action action)
     {
-        ResolveEventHandler handler = (s, e) =>
-            assemblies.FirstOrDefault(asm => asm.GetName().Name == new AssemblyName(e.Name).Name);
+        ResolveEventHandler handler = (s, e) => asm.GetName().Name == e.Name ? asm : null;
 
         try
         {

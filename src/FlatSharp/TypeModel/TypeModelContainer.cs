@@ -221,6 +221,11 @@ public sealed class TypeModelContainer
         }
     }
 
+    internal IEnumerable<ITypeModel> GetEnumerator()
+    {
+        return this.cache.Values;
+    }
+
     /// <summary>
     /// Processes the queue of pending validations, retrying until progress is no longer being made.
     /// This approach can accomodate most circular dependencies, where items depend upon each other.
