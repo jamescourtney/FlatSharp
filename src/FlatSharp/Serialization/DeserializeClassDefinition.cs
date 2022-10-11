@@ -306,26 +306,30 @@ internal class DeserializeClassDefinition
     {
         List<string> setterLines = new List<string>();
 
-        bool writeThrough = this.options.SupportsWriteThrough && itemModel.IsWriteThrough;
-
-        if (this.options.GenerateMutableObjects || writeThrough)
+        if (this.options.SupportsWriteThrough && itemModel.IsWriteThrough)
         {
             if (!options.Lazy)
             {
-                // If we aren't lazy, we need a backing field.
+                FlatSharpInternal.Assert(options.DeserializationOption == FlatBufferDeserializationOption.Progressive, "Expecting progressive");
                 setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
-
-                if (!options.GreedyDeserialize)
-                {
-                    // If we aren't lazy and aren't greedy, we also need an IsPresent mask.
-                    setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
-                }
+                setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
             }
 
-            // Finally, if we are writethrough enabled, we need to do that too.
-            if (writeThrough)
+            setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableAccessor});");
+        }
+        else if (this.options.GenerateMutableObjects)
+        {
+            // For greedy mutable objects, we emit a special writethrough variant of NotMutableException to clearly express
+            // that writethrough-enable properties become read-only when used with GreedyMutable serializers.
+            FlatSharpInternal.Assert(options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable, "Expecting greedy mutable");
+
+            if (itemModel.IsWriteThrough)
             {
-                setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableAccessor});");
+                setterLines.Add($"throw new NotMutableException(\"WriteThrough fields are implemented as readonly when using '{FlatBufferDeserializationOption.GreedyMutable}' serializers.\");");
+            }
+            else
+            {
+                setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
             }
         }
         else
