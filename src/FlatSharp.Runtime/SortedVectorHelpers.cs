@@ -355,7 +355,7 @@ public static class SortedVectorHelpers
             // Length of the string.
             int stringLength = (int)buffer.ReadUInt(offset);
 
-            return buffer.GetReadOnlyByteMemory(offset + sizeof(int), stringLength);
+            return buffer.GetReadOnlyMemory().Slice(offset + sizeof(int), stringLength);
         }
 
         public int Count => this.vector.Count;

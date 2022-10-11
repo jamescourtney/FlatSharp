@@ -132,18 +132,6 @@ public class InputBufferTests
     }
 
     [Fact]
-    public void BufferWithoutIInputBuffer2Implementation()
-    {
-        this.InputBufferTest(new FakeInputBuffer(Input));
-        this.StringInputBufferTest(new FakeInputBuffer(StringInput));
-        this.TestDeserializeBoth(b => new FakeInputBuffer(b));
-        this.TestReadByteArray(false, b => new FakeInputBuffer(b));
-        this.TableSerializationTest(
-            default(SpanWriter),
-            (s, b) => s.Parse<PrimitiveTypesTable>(b));
-    }
-
-    [Fact]
     public void ArraySegmentInputBuffer()
     {
         this.InputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(Input)));
@@ -328,31 +316,21 @@ public class InputBufferTests
         byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, };
 
         Assert.True(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
-        Assert.True(inputBuffer.AsReadOnlySpan().SequenceEqual(buffer));
-
-        if (inputBuffer is IInputBuffer2 b2)
-        {
-            Assert.Equal(isReadOnly, b2.IsReadOnly);
-            Assert.True(b2.GetReadOnlyMemory().Span.SequenceEqual(buffer));
-
-            if (isReadOnly)
-            {
-                Assert.Throws<InvalidOperationException>(() => b2.GetMemory());
-            }
-            else
-            {
-                Assert.True(b2.GetMemory().Span.SequenceEqual(buffer));
-            }
-        }
+        Assert.Equal(isReadOnly, inputBuffer.IsReadOnly);
+        
+        Assert.True(inputBuffer.GetReadOnlySpan().SequenceEqual(buffer));
+        Assert.True(inputBuffer.GetReadOnlyMemory().Span.SequenceEqual(buffer));
 
         if (isReadOnly)
         {
-            Assert.Throws<InvalidOperationException>(() => inputBuffer.AsSpan());
+            Assert.Throws<InvalidOperationException>(() => inputBuffer.GetSpan());
+            Assert.Throws<InvalidOperationException>(() => inputBuffer.GetMemory());
         }
         else
         {
+            Assert.True(inputBuffer.GetMemory().Span.SequenceEqual(buffer));
+            Assert.True(inputBuffer.GetSpan().SequenceEqual(buffer));
             Assert.True(inputBuffer.ReadByteMemoryBlock(0).Span.SequenceEqual(expected));
-            Assert.True(inputBuffer.AsSpan().SequenceEqual(buffer));
         }
     }
 
@@ -438,103 +416,5 @@ public class InputBufferTests
         public virtual Memory<byte> Memory { get; set; }
 
         ReadOnlyMemory<byte> IMemoryTable.Memory { get => this.Memory; set => this.Memory = MemoryMarshal.AsMemory(value); }
-    }
-
-    // Does not implement IInputBuffer2. Ensures that nothing breaks.
-    public struct FakeInputBuffer : IInputBuffer
-    {
-        private ArrayInputBuffer innerBuffer;
-
-        public FakeInputBuffer(byte[] data)
-        {
-            this.innerBuffer = new ArrayInputBuffer(data);
-        }
-
-        public int Length => ((IInputBuffer)innerBuffer).Length;
-
-        public Memory<byte> GetByteMemory(int start, int length)
-        {
-            return ((IInputBuffer)this.innerBuffer).GetByteMemory(start, length);
-        }
-
-        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-        {
-            return ((IInputBuffer)this.innerBuffer).GetReadOnlyByteMemory(start, length);
-        }
-
-        public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        {
-            return ((IInputBuffer)this.innerBuffer).InvokeGreedyMutableParse<TItem>(serializer, arguments);
-        }
-
-        public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        {
-            return ((IInputBuffer)this.innerBuffer).InvokeGreedyParse<TItem>(serializer, arguments);
-        }
-
-        public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        {
-            return ((IInputBuffer)this.innerBuffer).InvokeLazyParse<TItem>(serializer, arguments);
-        }
-
-        public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        {
-            return ((IInputBuffer)this.innerBuffer).InvokeProgressiveParse<TItem>(serializer, arguments);
-        }
-
-        public byte ReadByte(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadByte(offset);
-        }
-
-        public double ReadDouble(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadDouble(offset);
-        }
-
-        public float ReadFloat(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadFloat(offset);
-        }
-
-        public int ReadInt(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadInt(offset);
-        }
-
-        public long ReadLong(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadLong(offset);
-        }
-
-        public sbyte ReadSByte(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadSByte(offset);
-        }
-
-        public short ReadShort(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadShort(offset);
-        }
-
-        public string ReadString(int offset, int byteLength, Encoding encoding)
-        {
-            return ((IInputBuffer)innerBuffer).ReadString(offset, byteLength, encoding);
-        }
-
-        public uint ReadUInt(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadUInt(offset);
-        }
-
-        public ulong ReadULong(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadULong(offset);
-        }
-
-        public ushort ReadUShort(int offset)
-        {
-            return ((IInputBuffer)innerBuffer).ReadUShort(offset);
-        }
     }
 }

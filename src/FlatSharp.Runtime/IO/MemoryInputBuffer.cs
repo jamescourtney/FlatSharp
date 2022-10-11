@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of InputBuffer for writable memory segments.
 /// </summary>
-public struct MemoryInputBuffer : IInputBuffer, IInputBuffer2
+public struct MemoryInputBuffer : IInputBuffer
 {
     private readonly MemoryPointer pointer;
 
@@ -110,18 +110,6 @@ public struct MemoryInputBuffer : IInputBuffer, IInputBuffer2
     public string ReadString(int offset, int byteLength, Encoding encoding)
     {
         return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<byte> GetByteMemory(int start, int length)
-    {
-        return this.pointer.memory.Slice(start, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-    {
-        return this.GetByteMemory(start, length);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

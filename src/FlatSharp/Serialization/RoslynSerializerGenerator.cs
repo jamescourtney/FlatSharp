@@ -457,28 +457,24 @@ $@"
                     this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
 
                     this.ParseLazy<IInputBuffer>(default!, default);
-                    this.ParseLazy<IInputBuffer2>(default!, default);
                     this.ParseLazy<MemoryInputBuffer>(default!, default);
                     this.ParseLazy<ReadOnlyMemoryInputBuffer>(default!, default);
                     this.ParseLazy<ArrayInputBuffer>(default!, default);
                     this.ParseLazy<ArraySegmentInputBuffer>(default!, default);
 
                     this.ParseProgressive<IInputBuffer>(default!, default);
-                    this.ParseProgressive<IInputBuffer2>(default!, default);
                     this.ParseProgressive<MemoryInputBuffer>(default!, default);
                     this.ParseProgressive<ReadOnlyMemoryInputBuffer>(default!, default);
                     this.ParseProgressive<ArrayInputBuffer>(default!, default);
                     this.ParseProgressive<ArraySegmentInputBuffer>(default!, default);
 
                     this.ParseGreedy<IInputBuffer>(default!, default);
-                    this.ParseGreedy<IInputBuffer2>(default!, default);
                     this.ParseGreedy<MemoryInputBuffer>(default!, default);
                     this.ParseGreedy<ReadOnlyMemoryInputBuffer>(default!, default);
                     this.ParseGreedy<ArrayInputBuffer>(default!, default);
                     this.ParseGreedy<ArraySegmentInputBuffer>(default!, default);
 
                     this.ParseGreedyMutable<IInputBuffer>(default!, default);
-                    this.ParseGreedyMutable<IInputBuffer2>(default!, default);
                     this.ParseGreedyMutable<MemoryInputBuffer>(default!, default);
                     this.ParseGreedyMutable<ReadOnlyMemoryInputBuffer>(default!, default);
                     this.ParseGreedyMutable<ArrayInputBuffer>(default!, default);
