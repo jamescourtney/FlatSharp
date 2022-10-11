@@ -19,7 +19,7 @@ namespace FlatSharpEndToEndTests.Unions;
 public class UnionsTestCases
 {
     [Fact]
-    public void Union_Accept_Works()
+    public void Custom_Union_Accept_Works()
     {
         var c = this.Setup();
 
@@ -31,104 +31,24 @@ public class UnionsTestCases
         Assert.Equal(typeof(D), c.Value[3].Accept<UnionVisitor, Type>(visitor));
     }
 
-    [Fact]
-    public void Union_Switch_Func_Works()
-    {
-        static Type? CallSwitch(MyUnion union)
-        {
-            return union.Switch(
-                caseDefault: () => null,
-                caseA: a => typeof(A),
-                caseB: b => typeof(B),
-                caseC: c => typeof(C),
-                caseD: d => typeof(D));
-        }
-
-        var c = this.Setup();
-
-        Assert.Equal(typeof(A), CallSwitch(c.Value[0]));
-        Assert.Equal(typeof(B), CallSwitch(c.Value[1]));
-        Assert.Equal(typeof(C), CallSwitch(c.Value[2]));
-        Assert.Equal(typeof(D), CallSwitch(c.Value[3]));
-    }
 
     [Fact]
-    public void Union_Switch_Func_WithState_Works()
+    public void Builtin_Union_Accept_Works()
     {
-        static Type? CallSwitch(MyUnion union)
+        FlatBufferUnion<A, B, C, D>[] unions = new[]
         {
-            string? state = null;
-            Type? type = union.Switch(
-                "foobar",
-                caseDefault: (s) => { state = s; return (Type)null; },
-                caseA: (s, a) => { state = s; return typeof(A); },
-                caseB: (s, b) => { state = s; return typeof(B); },
-                caseC: (s, c) => { state = s; return typeof(C); },
-                caseD: (s, d) => { state = s; return typeof(D); });
+            new FlatBufferUnion<A, B, C, D>(new A()),
+            new FlatBufferUnion<A, B, C, D>(new B()),
+            new FlatBufferUnion<A, B, C, D>(new C()),
+            new FlatBufferUnion<A, B, C, D>(new D()),
+        };
 
-            Assert.Equal("foobar", state);
-            return type;
-        }
+        UnionVisitor visitor = new();
 
-        var c = this.Setup();
-
-        Assert.Equal(typeof(A), CallSwitch(c.Value[0]));
-        Assert.Equal(typeof(B), CallSwitch(c.Value[1]));
-        Assert.Equal(typeof(C), CallSwitch(c.Value[2]));
-        Assert.Equal(typeof(D), CallSwitch(c.Value[3]));
-    }
-
-    [Fact]
-    public void Union_Switch_Action_Works()
-    {
-        static Type? CallSwitch(MyUnion union)
-        {
-            Type? value = null;
-
-            union.Switch(
-                caseDefault: () => { },
-                caseA: a => { value = typeof(A); },
-                caseB: b => { value = typeof(B); },
-                caseC: c => { value = typeof(C); },
-                caseD: d => { value = typeof(D); });
-
-            return value;
-        }
-
-        var c = this.Setup();
-
-        Assert.Equal(typeof(A), CallSwitch(c.Value[0]));
-        Assert.Equal(typeof(B), CallSwitch(c.Value[1]));
-        Assert.Equal(typeof(C), CallSwitch(c.Value[2]));
-        Assert.Equal(typeof(D), CallSwitch(c.Value[3]));
-    }
-
-    [Fact]
-    public void Union_Switch_Action_WithState_Works()
-    {
-        static Type? CallSwitch(MyUnion union)
-        {
-            string? state = null;
-            Type? type = null;
-
-            union.Switch(
-                "foobar",
-                caseDefault: (s) => { state = s; },
-                caseA: (s, a) => { state = s; type = typeof(A); },
-                caseB: (s, b) => { state = s; type = typeof(B); },
-                caseC: (s, c) => { state = s; type = typeof(C); },
-                caseD: (s, d) => { state = s; type = typeof(D); });
-
-            Assert.Equal("foobar", state);
-            return type;
-        }
-
-        var c = this.Setup();
-
-        Assert.Equal(typeof(A), CallSwitch(c.Value[0]));
-        Assert.Equal(typeof(B), CallSwitch(c.Value[1]));
-        Assert.Equal(typeof(C), CallSwitch(c.Value[2]));
-        Assert.Equal(typeof(D), CallSwitch(c.Value[3]));
+        Assert.Equal(typeof(A), unions[0].Accept<UnionVisitor, Type>(visitor));
+        Assert.Equal(typeof(B), unions[1].Accept<UnionVisitor, Type>(visitor));
+        Assert.Equal(typeof(C), unions[2].Accept<UnionVisitor, Type>(visitor));
+        Assert.Equal(typeof(D), unions[3].Accept<UnionVisitor, Type>(visitor));
     }
 
     private Container Setup()

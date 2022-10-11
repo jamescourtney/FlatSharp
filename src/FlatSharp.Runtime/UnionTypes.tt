@@ -22,7 +22,8 @@
 <#@ output extension=".cs" #>
 
 <#
-    int numGenerics = 50;
+    int numGenerics = 10;
+    int numGenericInterfaces = 50;
 #>
 
 namespace FlatSharp;
@@ -33,7 +34,7 @@ public interface IFlatBufferUnion
 }
 
 <#
-    for (int i = 1; i <= numGenerics; ++i)
+    for (int i = 1; i <= numGenericInterfaces; ++i)
     {
 #>
 
@@ -45,6 +46,21 @@ public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerab
 #>
     
     TReturn Visit(T<#= j #> item);
+
+<#
+        }
+#>
+}
+
+
+public interface IFlatBufferUnion<<#= string.Join(", ", Enumerable.Range(1, i).Select(x => $"T{x}")) #>> : IFlatBufferUnion
+{
+<#
+        for (int j = 1; j <= i; ++j)
+        {
+#>
+    
+            T<#= j #> Item<#= j #>  { get; }
 
 <#
         }
@@ -62,21 +78,10 @@ public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerab
         var range = Enumerable.Range(1, i + 1);
         var genericList = string.Join(", ", range.Select(x => "T" + x));
 #>
-        public interface IFlatBufferUnion<<#= genericList #>> : IFlatBufferUnion
-        <# foreach (var genericType in range) { #>
-            where T<#= genericType #> : notnull
-        <# } #>
-        {
-        <# foreach (var genericType in range) { #>
-            T<#= genericType #> Item<#= genericType #> { get; }
-        <# } #>
-
-            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>;
-        }
 
         [ExcludeFromCodeCoverage]
-        public struct FlatBufferUnion<<#= genericList #>> : IFlatBufferUnion<<#= genericList #>>
+        public struct FlatBufferUnion<<#= genericList #>> 
+            : IFlatBufferUnion<<#= genericList #>>
 
         <# foreach (var genericType in range) { #>
             where T<#= genericType #> : notnull
@@ -149,81 +154,6 @@ public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerab
                 <# } #>
                     default:
                         throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
-                }
-            }
-
-            public void Switch(
-                System.Action defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Action<T{x}> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        case<#= genericType #>((T<#= genericType #>)this.value);
-                        break;
-                    }
-                <# } #>
-                    default:
-                        defaultCase();
-                        break;
-                }
-            }
-
-            public void Switch<TState>(
-                TState state,
-                System.Action<TState> defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Action<TState, T{x}> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        case<#= genericType #>(state, (T<#= genericType #>)this.value);
-                        break;
-                    }
-                <# } #>
-                    default:
-                        defaultCase(state);
-                        break;
-                }
-            }
-
-                
-            public TResult Switch<TResult>(
-                System.Func<TResult> defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, TResult> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        return case<#= genericType #>((T<#= genericType #>)this.value);
-                    }
-                <# } #>
-                    default:
-                        return defaultCase();
-                }
-            }
-
-            public TResult Switch<TState, TResult>(
-                TState state,
-                System.Func<TState, TResult> defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Func<TState, T{x}, TResult> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        return case<#= genericType #>(state, (T<#= genericType #>)this.value);
-                    }
-                <# } #>
-                    default:
-                        return defaultCase(state);
                 }
             }
 

@@ -176,12 +176,7 @@ public class UnionSchemaModel : BaseSchemaModel
                 }
             }
 
-            // Switch methods.
             this.WriteAcceptMethod(writer, innerTypes);
-            this.WriteSwitchMethod(writer, true, true, innerTypes);
-            this.WriteSwitchMethod(writer, true, false, innerTypes);
-            this.WriteSwitchMethod(writer, false, true, innerTypes);
-            this.WriteSwitchMethod(writer, false, false, innerTypes);
         }
     }
 
@@ -210,116 +205,6 @@ public class UnionSchemaModel : BaseSchemaModel
                 }
 
                 writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
-            }
-        }
-    }
-
-    private void WriteSwitchMethod(
-        CodeWriter writer,
-        bool hasReturn,
-        bool hasState,
-        List<(string resolvedType, EnumVal value)> components)
-    {
-        const string GenericReturnType = "TReturn";
-        const string VoidReturnType = "void";
-        const string GenericStateType = "TState";
-
-        string genericArgsWithEnds;
-        Func<string, string> itemDelegateType;
-        string defaultDelegateType;
-        string returnType;
-
-        if (hasReturn && hasState)
-        {
-            genericArgsWithEnds = $"<{GenericStateType}, {GenericReturnType}>";
-            itemDelegateType = x => $"Func<{GenericStateType}, {x}, {GenericReturnType}>";
-            defaultDelegateType = $"Func<{GenericStateType}, {GenericReturnType}>";
-            returnType = GenericReturnType;
-        }
-        else if (hasReturn)
-        {
-            genericArgsWithEnds = $"<{GenericReturnType}>";
-            itemDelegateType = x => $"Func<{x}, {GenericReturnType}>";
-            defaultDelegateType = $"Func<{GenericReturnType}>";
-            returnType = GenericReturnType;
-        }
-        else if (hasState)
-        {
-            genericArgsWithEnds = $"<{GenericStateType}>";
-            itemDelegateType = x => $"Action<{GenericStateType}, {x}>";
-            defaultDelegateType = $"Action<{GenericStateType}>";
-            returnType = VoidReturnType;
-        }
-        else
-        {
-            genericArgsWithEnds = string.Empty;
-            itemDelegateType = x => $"Action<{x}>";
-            defaultDelegateType = $"Action";
-            returnType = VoidReturnType;
-        }
-
-        List<string> args = new List<string>();
-
-        writer.AppendLine($"public {returnType} Switch{genericArgsWithEnds}(");
-        using (writer.IncreaseIndent())
-        {
-            if (hasState)
-            {
-                writer.AppendLine("TState state, ");
-            }
-
-            writer.AppendLine($"{defaultDelegateType} caseDefault");
-            foreach (var item in components)
-            {
-                string argName = $"case{item.value.Key}";
-                args.Add(argName);
-
-                writer.AppendLine($", {itemDelegateType(item.resolvedType)} {argName}");
-            }
-        }
-
-        string stateParam = hasState ? "state, " : string.Empty;
-
-        writer.AppendLine(")");
-        using (writer.WithBlock())
-        {
-            writer.AppendLine("switch (this.Discriminator)");
-            using (writer.WithBlock())
-            {
-                foreach (var item in components)
-                {
-                    if (hasReturn)
-                    {
-                        writer.AppendLine($"case {item.value.Value}: return case{item.value.Key}({stateParam}this.Item{item.value.Value});");
-                    }
-                    else
-                    {
-                        writer.AppendLine($"case {item.value.Value}: case{item.value.Key}({stateParam}this.Item{item.value.Value}); break;");
-                    }
-                }
-
-                if (hasReturn)
-                {
-                    if (hasState)
-                    {
-                        writer.AppendLine($"default: return caseDefault(state);");
-                    }
-                    else
-                    {
-                        writer.AppendLine($"default: return caseDefault();");
-                    }
-                }
-                else
-                {
-                    if (hasState)
-                    {
-                        writer.AppendLine($"default: caseDefault(state); break;");
-                    }
-                    else
-                    {
-                        writer.AppendLine($"default: caseDefault(); break;");
-                    }
-                }
             }
         }
     }
