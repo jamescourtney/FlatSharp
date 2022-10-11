@@ -113,18 +113,6 @@ public struct MemoryInputBuffer : IInputBuffer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<byte> GetByteMemory(int start, int length)
-    {
-        return this.pointer.memory.Slice(start, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-    {
-        return this.GetByteMemory(start, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan()
     {
         return this.pointer.memory.Span;

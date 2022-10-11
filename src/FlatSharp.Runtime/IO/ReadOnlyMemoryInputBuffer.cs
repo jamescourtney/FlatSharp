@@ -118,17 +118,6 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
         return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
     }
 
-    public Memory<byte> GetByteMemory(int start, int length)
-    {
-        throw new InvalidOperationException(ErrorMessage);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-    {
-        return this.pointer.memory.Slice(start, length);
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan()
     {
