@@ -69,7 +69,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
             writer.AppendLine();
 
-            writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
+            writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => (ISerializer)(({nameof(IFlatBufferSerializable)}<{this.FullName}>)this).Serializer;");
             writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
         }
     }
@@ -95,6 +95,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
             if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
             {
                 writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");
+                writer.AppendLine($", {nameof(IFlatBufferSerializable)}");
             }
         }
     }

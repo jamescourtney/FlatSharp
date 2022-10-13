@@ -29,14 +29,14 @@ public class ListVectorOfUnionTests
     private readonly FlatBufferSerializer progressiveSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Progressive);
 
     [Theory]
-    [InlineData(FlatBufferDeserializationOption.Lazy, 1023, typeof(FlatBufferVectorOfUnion<FlatBufferUnion<string>, ArrayInputBuffer>))]
-    [InlineData(FlatBufferDeserializationOption.Progressive, 1023, typeof(FlatBufferProgressiveVector<FlatBufferUnion<string>, ArrayInputBuffer>))]
-    [InlineData(FlatBufferDeserializationOption.Greedy, 1023, typeof(ReadOnlyCollection<FlatBufferUnion<string>>))]
-    [InlineData(FlatBufferDeserializationOption.GreedyMutable, 1023, typeof(List<FlatBufferUnion<string>>))]
+    [InlineData(FlatBufferDeserializationOption.Lazy, 1023, "FlatBufferVectorBase")]
+    [InlineData(FlatBufferDeserializationOption.Progressive, 1023, "FlatBufferVectorBase")]
+    [InlineData(FlatBufferDeserializationOption.Greedy, 1023, "ReadOnlyCollection")]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable, 1023, "List")]
     public void Table_PreallocationLimit_Null(
         FlatBufferDeserializationOption option,
         int size,
-        Type expectedType)
+        string expectedType)
     {
         this.RunTest<Table>(option, size, expectedType);
     }
@@ -44,7 +44,7 @@ public class ListVectorOfUnionTests
     private void RunTest<T>(
         FlatBufferDeserializationOption option,
         int size,
-        Type expectedType) where T : class, ITable, new()
+        string expectedType) where T : class, ITable, new()
     {
         var serializer = this.GetSerializer(option);
         List<FlatBufferUnion<string>> items = new List<FlatBufferUnion<string>>();
@@ -58,7 +58,7 @@ public class ListVectorOfUnionTests
 
         T result = serializer.Parse<T>(buffer);
 
-        Assert.IsAssignableFrom(expectedType, result.Items);
+        Assert.Contains(expectedType, result.Items.GetType().FullName);
         var parsedItems = result.Items;
         for (int i = 0; i < size; ++i)
         {

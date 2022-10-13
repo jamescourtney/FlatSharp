@@ -94,7 +94,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         }
     }
 
-    Type ISerializer.RootType => typeof(T);
+    public Type RootType => typeof(T);
 
     public string? CSharp => this.lazyCSharp.Value;
 

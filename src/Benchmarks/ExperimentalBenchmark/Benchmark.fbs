@@ -8,7 +8,7 @@ attribute "fs_sortedVector";
 
 namespace BenchmarkCore;
 
-table Table {
+table Table (fs_serializer) {
     Items : [ VecTable ] (fs_sortedVector);
 }
 

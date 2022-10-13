@@ -21,8 +21,6 @@ namespace FlatSharp.TypeModel;
 /// </summary>
 public class ListVectorTypeModel : BaseVectorTypeModel
 {
-    public const int DefaultPreallocationLimit = 1024;
-
     private bool isReadOnly;
 
     internal ListVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
@@ -105,24 +103,30 @@ public class ListVectorTypeModel : BaseVectorTypeModel
             context.AllFieldContexts,
             context.Options);
 
-        (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+        (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateVectorItemAccessor(
             this.ItemTypeModel,
-            context);
+            this.PaddedMemberInlineSize,
+            context,
+            isEverWriteThrough);
+
+        string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
 
         string createFlatBufferVector =
-            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
-                {context.InputBufferVariableName}, 
-                {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                {this.PaddedMemberInlineSize},
-                {context.RemainingDepthVariableName},
-                {context.TableFieldContextVariableName})";
+            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}> (
+                    {context.InputBufferVariableName}, 
+                    new {accessorClassName}(
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
+                        {context.InputBufferVariableName}),
+                    {context.RemainingDepthVariableName},
+                    {context.TableFieldContextVariableName})";
 
-        return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, context, isEverWriteThrough)) { ClassDefinition = vectorClassDef };
+        return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, accessorClassName, context, isEverWriteThrough)) { ClassDefinition = vectorClassDef };
     }
 
     internal static string CreateParseBody(
         ITypeModel itemTypeModel,
         string createFlatBufferVector,
+        string itemAccessorTypeName,
         ParserCodeGenContext context,
         bool isEverWriteThrough = false)
     {
@@ -160,7 +164,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>({createFlatBufferVector});";
+            return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>({createFlatBufferVector});";
         }
     }
 }

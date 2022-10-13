@@ -730,6 +730,7 @@ $@"
         return new CodeGeneratedMethod(body)
         {
             ClassDefinition = classDef.ToString(),
+            IsMethodInline = true,
         };
     }
 

@@ -174,7 +174,7 @@ public class TableSerializationTests
         Assert.Throws<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
         Assert.Throws<NotMutableException>(() => table.StructVector.Add(null));
 
-        Assert.IsAssignableFrom<FlatBufferVector<SimpleStruct, ArrayInputBuffer>>(table.StructVector);
+        Assert.Contains("FlatBufferVectorBase", table.StructVector.GetType().FullName);
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public class TableSerializationTests
         Assert.Throws<NotMutableException>(() => table.Struct.Long = 0);
         Assert.Throws<NotMutableException>(() => table.Struct = new());
 
-        Assert.Equal(typeof(FlatBufferProgressiveVector<SimpleStruct, ArrayInputBuffer>), table.StructVector.GetType());
+        Assert.Contains("FlatBufferProgressiveVector", table.StructVector.GetType().FullName);
     }
 
     [Fact]
