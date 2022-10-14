@@ -1,0 +1,41 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_nonVirtual";
+attribute "fs_valueStruct";
+attribute "fs_unsafeStructVector";
+attribute "fs_nonVirtual";
+attribute "fs_sortedVector";
+attribute "fs_writeThrough";
+
+namespace Microbench;
+
+// Tests reading and writing a string.
+table StringTable (fs_serializer:"Lazy") {
+    SingleString : string;
+    Vector : [string];
+}
+
+table PrimitivesTable (fs_serializer:"Lazy") {
+    Bool : bool;
+    Byte : ubyte;
+    SByte : byte;
+    Short : short;
+    UShort : ushort;
+    Int : int;
+    UInt : uint;
+    Long : long;
+    ULong : ulong;
+    Double : double;
+    Float : float;
+}
+
+struct RefStruct (fs_writeThrough) { Value : int; }
+struct ValueStruct (fs_valueStruct) { Value : int; }
+
+table StructsTable (fs_serializer:"Lazy")
+{
+    SingleRef : RefStruct;
+    SingleValue : ValueStruct (fs_writeThrough, required);
+    VecRef : [RefStruct];
+    VecValue : [ValueStruct] (fs_writeThrough);
+}

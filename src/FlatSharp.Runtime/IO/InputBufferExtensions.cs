@@ -35,6 +35,7 @@ public static class InputBufferExtensions
     /// <summary>
     /// Reads a string at the given offset.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
     {
         checked
@@ -48,6 +49,7 @@ public static class InputBufferExtensions
     /// <summary>
     /// Reads a string from the given uoffset.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
     {
         checked
@@ -60,6 +62,7 @@ public static class InputBufferExtensions
     /// <summary>
     /// Reads the given uoffset.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
     {
         uint uoffset = buffer.ReadUInt(offset);
