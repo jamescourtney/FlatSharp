@@ -34,7 +34,7 @@ public class DeserializationOptionsTests
     {
         var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Lazy, Strings);
 
-        Assert.Contains("FlatBufferBaseVector", table.Vector.GetType().FullName);
+        Assert.Contains("FlatBufferVectorBase", table.Vector.GetType().FullName);
         Assert.False(object.ReferenceEquals(table.Vector, table.Vector));
 
         var vector = table.Vector;
