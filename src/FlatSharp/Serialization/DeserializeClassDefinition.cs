@@ -284,6 +284,7 @@ internal class DeserializeClassDefinition
 
                 {string.Join("\r\n", this.instanceFieldDefinitions.Values)}
 
+                [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
                 public static {this.ClassName}<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset, short remainingDepth)
                 {{
                     {this.GetGetOrCreateMethodBody()}
@@ -375,6 +376,7 @@ internal class DeserializeClassDefinition
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
+            [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
             private {this.ClassName}(TInputBuffer buffer, int offset, short remainingDepth) : base({baseCtorParams}) 
             {{ 
                 {string.Join("\r\n", this.initializeStatements)}

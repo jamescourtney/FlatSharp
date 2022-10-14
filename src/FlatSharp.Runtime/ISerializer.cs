@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,9 @@
 namespace FlatSharp;
 
 /// <summary>
-/// An object that can read and write a FlatBuffer table from a buffer. The type
-/// of table this ISerializer supports is indicated by the <see cref="RootType"/> property.
-/// The use of other types may cause undefined behavior.
+/// Attributes about a generated serializer.
 /// </summary>
-public interface ISerializer
+public interface ISerializerAttributes
 {
     /// <summary>
     /// The type of object that this serializer can read and write.
@@ -50,7 +48,15 @@ public interface ISerializer
     /// Gets the type of deserializer in use. This can be used to distinguish between Greedy and Lazy modes.
     /// </summary>
     FlatBufferDeserializationOption DeserializationOption { get; }
+}
 
+/// <summary>
+/// An object that can read and write a FlatBuffer table from a buffer. The type
+/// of table this ISerializer supports is indicated by the <see cref="RootType"/> property.
+/// The use of other types may cause undefined behavior.
+/// </summary>
+public interface ISerializer : ISerializerAttributes
+{
     /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
@@ -74,7 +80,7 @@ public interface ISerializer
 /// <summary>
 /// An object that can read and write <typeparamref name="T"/> from a buffer.
 /// </summary>
-public interface ISerializer<T> : ISerializer
+public interface ISerializer<T> : ISerializerAttributes
     where T : class
 {
     /// <summary>
@@ -94,7 +100,7 @@ public interface ISerializer<T> : ISerializer
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/>.
     /// </summary>
-    new T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+    T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
 
     /// <summary>
     /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.

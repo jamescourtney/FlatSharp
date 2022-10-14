@@ -30,11 +30,11 @@ public interface IFlatBufferSerializable
 /// <summary>
 /// An object that can supply an <see cref="ISerializer{T}"/> instance that can serialize and parse it.
 /// </summary>
-public interface IFlatBufferSerializable<T> : IFlatBufferSerializable
+public interface IFlatBufferSerializable<T>
     where T : class
 {
     /// <summary>
     /// Gets a <see cref="ISerializer{T}"/> instance that can serialize this object.
     /// </summary>
-    new ISerializer<T> Serializer { get; }
+    ISerializer<T> Serializer { get; }
 }

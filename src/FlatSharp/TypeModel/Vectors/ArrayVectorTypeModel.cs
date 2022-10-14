@@ -60,7 +60,7 @@ public class ArrayVectorTypeModel : BaseVectorTypeModel
         string body;
         FlatSharpInternal.Assert(this.ItemTypeModel is not null, "Flatsharp internal error: ItemTypeModel null");
 
-        ValidateWriteThrough(
+        bool isEverWriteThrough = ValidateWriteThrough(
             writeThroughSupported: false,
             this,
             context.AllFieldContexts,
@@ -77,17 +77,22 @@ public class ArrayVectorTypeModel : BaseVectorTypeModel
         }
         else
         {
-            (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                this.ItemTypeModel,
-                context);
-
             FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
+            (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateVectorItemAccessor(
+                this.ItemTypeModel,
+                this.PaddedMemberInlineSize,
+                context,
+                isEverWriteThrough);
+
+            string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
+
             string createFlatBufferVector =
-            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
+                $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}> (
                     {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize},
+                    new {accessorClassName}(
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
+                        {context.InputBufferVariableName}),
                     {context.RemainingDepthVariableName},
                     {context.TableFieldContextVariableName})";
 

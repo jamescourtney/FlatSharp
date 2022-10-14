@@ -20,9 +20,10 @@ namespace FlatSharp.Internal;
 /// A vector implementation that is filled on demand. Optimized
 /// for data locality, random access, and reasonably low memory overhead.
 /// </summary>
-public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
+public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> : IList<T>, IReadOnlyList<T>
     where T : notnull
     where TInputBuffer : IInputBuffer
+    where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
 {
     // The chunk size here matches the number of bits in the presenceMask array below.
     private const uint ChunkSize = 32;
@@ -31,10 +32,10 @@ public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyL
     // This approach allows fast access while not broadly over allocating.
     // Using "mini arrays" also ensures good sequential access performance.
     private readonly T?[]?[] items;
-    private readonly FlatBufferVectorBase<T, TInputBuffer> innerVector;
+    private readonly FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector;
 
     public FlatBufferProgressiveVector(
-        FlatBufferVectorBase<T, TInputBuffer> innerVector)
+        FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector)
     {
         this.Count = innerVector.Count;
         this.innerVector = innerVector;
@@ -88,14 +89,6 @@ public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyL
     public int Count { get; }
 
     public bool IsReadOnly => true;
-
-    IInputBuffer IFlatBufferDeserializedVector.InputBuffer => ((IFlatBufferDeserializedVector)this.innerVector).InputBuffer;
-
-    int IFlatBufferDeserializedVector.ItemSize => ((IFlatBufferDeserializedVector)this.innerVector).ItemSize;
-
-    int IFlatBufferDeserializedVector.OffsetOf(int index) => ((IFlatBufferDeserializedVector)this.innerVector).OffsetOf(index);
-
-    object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
 
     public void Add(T item)
     {

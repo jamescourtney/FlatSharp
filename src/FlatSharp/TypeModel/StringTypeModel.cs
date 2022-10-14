@@ -100,7 +100,10 @@ public class StringTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});");
+        return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});")
+        {
+            IsMethodInline = true
+        };
     }
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)

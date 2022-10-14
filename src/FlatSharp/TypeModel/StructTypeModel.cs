@@ -126,6 +126,7 @@ public class StructTypeModel : RuntimeTypeModel
         return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName}, {context.RemainingDepthVariableName});")
         {
             ClassDefinition = classDef.ToString(),
+            IsMethodInline = true,
         };
     }
 

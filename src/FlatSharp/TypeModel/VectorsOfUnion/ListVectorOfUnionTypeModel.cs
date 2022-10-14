@@ -30,21 +30,26 @@ public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
+        var (classDef, className) = FlatBufferVectorHelpers.CreateVectorOfUnionItemAccessor(
             this.ItemTypeModel,
             context);
 
+        string itemAccessorTypeName = $"{className}<{context.InputBufferTypeName}>";
+
         string createFlatBufferVector =
-            $@"new {className}<{context.InputBufferTypeName}>(
-                {context.InputBufferVariableName}, 
-                {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
-                {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
-                {context.RemainingDepthVariableName},
-                {context.TableFieldContextVariableName})";
+            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}> (
+                    {context.InputBufferVariableName}, 
+                    new {itemAccessorTypeName}(
+                        {context.InputBufferVariableName},
+                        {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
+                        {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1)),
+                    {context.RemainingDepthVariableName},
+                    {context.TableFieldContextVariableName})";
 
         return new CodeGeneratedMethod(ListVectorTypeModel.CreateParseBody(
             this.ItemTypeModel,
             createFlatBufferVector,
+            itemAccessorTypeName,
             context))
         { 
             ClassDefinition = classDef
