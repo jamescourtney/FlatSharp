@@ -50,6 +50,7 @@ namespace Microbench
 
             summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
             summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(SortedVectorBenchmarks), config));
 
             foreach (var item in summaries)
             {

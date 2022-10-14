@@ -17,12 +17,14 @@
 namespace Microbench
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using FlatSharp;
 
     public static class Constants
     {
         public const int VectorLength = 30;
+        private static readonly Random Random = new Random();
 
         public static class StringTables
         {
@@ -59,40 +61,51 @@ namespace Microbench
             public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, 30).Select(x => new ValueStruct { Value = x }).ToList() };
         }
 
+        public static class SortedVectorTables
+        {
+            public static readonly List<StringKey> AllStringKeys = Enumerable.Range(1, VectorLength).Select(x => new StringKey { Key = Guid.NewGuid().ToString() }).ToList();
+
+            public static readonly List<IntKey> AllIntKeys = Enumerable.Range(1, VectorLength).Select(x => new IntKey { Key = Random.Next() }).ToList();
+
+            public static readonly SortedTable SortedStrings = new SortedTable
+            {
+                Strings = new IndexedVector<string, StringKey>(
+                    AllStringKeys,
+                    false)
+            };
+
+            public static readonly SortedTable SortedInts = new SortedTable
+            {
+                Ints = new IndexedVector<int, IntKey>(
+                    AllIntKeys,
+                    false)
+            };
+
+            public static readonly byte[] Buffer_StringKey = AllocateAndSerialize(SortedStrings);
+            public static readonly byte[] Buffer_IntKey = AllocateAndSerialize(SortedInts);
+        }
+
         public static class Buffers
         {
-            public static byte[] Stringtable_Empty;
-            public static byte[] StringTable_WithString;
-            public static byte[] StringTable_WithVector;
+            public static readonly byte[] Stringtable_Empty = AllocateAndSerialize(StringTables.Empty);
+            public static readonly byte[] StringTable_WithString = AllocateAndSerialize(StringTables.WithString);
+            public static readonly byte[] StringTable_WithVector = AllocateAndSerialize(StringTables.WithVector);
 
-            public static byte[] PrimitivesTable_Empty;
-            public static byte[] PrimitivesTable_Full;
+            public static readonly byte[] PrimitivesTable_Empty = AllocateAndSerialize(PrimitiveTables.Empty);
+            public static readonly byte[] PrimitivesTable_Full = AllocateAndSerialize(PrimitiveTables.Full);
 
-            public static byte[] StructTable_SingleRef;
-            public static byte[] StructTable_SingleValue;
-            public static byte[] StructTable_VecRef;
-            public static byte[] StructTable_VecValue;
+            public static readonly byte[] StructTable_SingleRef = AllocateAndSerialize(StructTables.SingleRef);
+            public static readonly byte[] StructTable_SingleValue = AllocateAndSerialize(StructTables.SingleValue);
+            public static readonly byte[] StructTable_VecRef = AllocateAndSerialize(StructTables.VectorRef);
+            public static readonly byte[] StructTable_VecValue = AllocateAndSerialize(StructTables.VectorValue);
+        }
 
-            static Buffers()
-            {
-                AllocateAndSerialize(StringTables.Empty, out Stringtable_Empty);
-                AllocateAndSerialize(StringTables.WithString, out StringTable_WithString);
-                AllocateAndSerialize(StringTables.WithVector, out StringTable_WithVector);
+        private static byte[] AllocateAndSerialize<T>(T value) where T : class, IFlatBufferSerializable<T>, new()
+        {
+            byte[] buffer = new byte[value.Serializer.GetMaxSize(value)];
+            int length = value.Serializer.Write(buffer, value);
 
-                AllocateAndSerialize(PrimitiveTables.Empty, out PrimitivesTable_Empty);
-                AllocateAndSerialize(PrimitiveTables.Full, out PrimitivesTable_Full);
-
-                AllocateAndSerialize(StructTables.SingleRef, out StructTable_SingleRef);
-                AllocateAndSerialize(StructTables.SingleValue, out StructTable_SingleValue);
-                AllocateAndSerialize(StructTables.VectorRef, out StructTable_VecRef);
-                AllocateAndSerialize(StructTables.VectorValue, out StructTable_VecValue);
-            }
-
-            private static void AllocateAndSerialize<T>(T value, out byte[] buffer) where T : class, IFlatBufferSerializable<T>, new()
-            {
-                buffer = new byte[value.Serializer.GetMaxSize(value)];
-                int length = value.Serializer.Write(buffer, value);
-            }
+            return buffer;
         }
     }
 }

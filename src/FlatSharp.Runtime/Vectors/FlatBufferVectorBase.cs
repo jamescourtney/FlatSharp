@@ -19,7 +19,8 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> : IList<T>, IReadOnlyList<T>
+public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
+    : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
     where TInputBuffer : IInputBuffer
     where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
 {
@@ -61,6 +62,12 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> : IList
     public int Count => this.itemAccessor.Count;
 
     public bool IsReadOnly => true;
+
+    IInputBuffer IFlatBufferDeserializedVector.InputBuffer => this.memory;
+
+    int IFlatBufferDeserializedVector.ItemSize => this.itemAccessor.ItemSize;
+
+    int IFlatBufferDeserializedVector.Count => this.Count;
 
     public bool Contains(T? item)
     {
@@ -218,4 +225,8 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> : IList
     {
         return this.GetEnumerator();
     }
+
+    int IFlatBufferDeserializedVector.OffsetOf(int index) => this.itemAccessor.OffsetOf(index);
+
+    object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
 }

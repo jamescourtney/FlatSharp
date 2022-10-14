@@ -73,6 +73,8 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
         this.offset = checked(offset + sizeof(uint));
     }}
 
+    public int ItemSize => {inlineSize};
+
     public int Count => this.count;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,6 +89,9 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
     {{
         {writeThroughBody}
     }}
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int OffsetOf(int index) => this.offset + ({inlineSize} * index);
 }}";
         return (body, className);
     }
@@ -137,6 +142,8 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
 
     public int Count {{ get; }}
 
+    public int ItemSize => throw new NotImplementedException();
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
     {{
@@ -149,6 +156,8 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
     {{
         throw new NotMutableException();
     }}
+
+    public int OffsetOf(int index) => throw new NotImplementedException();
 }}
 ";
 

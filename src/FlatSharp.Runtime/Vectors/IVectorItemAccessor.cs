@@ -24,7 +24,11 @@ public interface IVectorItemAccessor<TItem, TInputBuffer>
 {
     int Count { get; }
 
+    int ItemSize { get; }
+
     void ParseItem(int index, TInputBuffer buffer, short remainingDepth, TableFieldContext context, out TItem item);
 
     void WriteThrough(int index, TItem value, TInputBuffer inputBuffer, TableFieldContext context);
+
+    int OffsetOf(int index);
 }

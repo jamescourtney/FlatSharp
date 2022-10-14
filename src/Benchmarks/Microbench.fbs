@@ -6,6 +6,7 @@ attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
 attribute "fs_writeThrough";
+attribute "fs_vector";
 
 namespace Microbench;
 
@@ -38,4 +39,13 @@ table StructsTable (fs_serializer:"Lazy")
     SingleValue : ValueStruct (fs_writeThrough, required);
     VecRef : [RefStruct];
     VecValue : [ValueStruct] (fs_writeThrough);
+}
+
+table StringKey { Key : string (key); }
+table IntKey { Key : int (key); }
+
+table SortedTable (fs_serializer:"Lazy")
+{
+    Strings : [StringKey] (fs_vector:"IIndexedVector");
+    Ints : [IntKey] (fs_vector:"IIndexedVector");
 }
