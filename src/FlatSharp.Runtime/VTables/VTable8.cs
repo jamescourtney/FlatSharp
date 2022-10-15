@@ -48,8 +48,21 @@ public struct VTable8 : IVTable
     [FieldOffset(14)]
     private ushort offset14;
 
+    [FieldOffset(0)]
+    private uint offset0ui;
+
+    [FieldOffset(8)]
+    private uint offset8ui;
+
+    [FieldOffset(0)]
+    private ulong offset0ul;
+
+    [FieldOffset(8)]
+    private ulong offset8ul;
+
     public int MaxSupportedIndex => 7;
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
@@ -135,12 +148,55 @@ public struct VTable8 : IVTable
     }
 
     /// <summary>
-    /// An optimized load method for LE architectures.
+    /// An optimized load mmethod for LE architectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
-        VTableHelpers.Parse(inputBuffer, offset, out item);
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
+        item = new VTable8();
+        switch (fieldCount)
+        {
+            case 0:
+                break;
+
+            case 1:
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
+
+            case 2:
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
+                return;
+
+            case 3:
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
+
+            case 4:
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                return;
+
+            case 5:
+                item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
+                goto case 4;
+
+            case 6:
+                item.offset8ui = ScalarSpanReader.ReadUInt(fieldData.Slice(8, 4));
+                goto case 4;
+
+            case 7:
+                item.offset12 = ScalarSpanReader.ReadUShort(fieldData.Slice(12, 2));
+                goto case 6;
+
+            default:
+                item.offset8ul = ScalarSpanReader.ReadULong(fieldData.Slice(8, 8));
+                goto case 4;
+        }
     }
 }

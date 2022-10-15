@@ -46,6 +46,13 @@ namespace Microbench
             var config = DefaultConfig.Instance
                  .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
                  .AddDiagnoser(MemoryDiagnoser.Default)
+                 .AddDiagnoser(new DisassemblyDiagnoser(new DisassemblyDiagnoserConfig(
+                     maxDepth: 8,
+                     printSource: true,
+                     exportGithubMarkdown: true,
+                     exportHtml: true,
+                     exportCombinedDisassemblyReport: true)))
+                 //.AddHardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)
                  .AddJob(job);
 
             summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));

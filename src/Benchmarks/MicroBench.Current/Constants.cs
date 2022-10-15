@@ -18,6 +18,7 @@ namespace Microbench
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using FlatSharp;
 
@@ -25,6 +26,11 @@ namespace Microbench
     {
         public const int VectorLength = 30;
         private static readonly Random Random = new Random();
+
+        static Constants()
+        {
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+        }
 
         public static class StringTables
         {

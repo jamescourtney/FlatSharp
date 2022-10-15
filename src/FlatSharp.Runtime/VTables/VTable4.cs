@@ -36,8 +36,15 @@ public struct VTable4 : IVTable
     [FieldOffset(6)]
     private ushort offset6;
 
+    [FieldOffset(0)]
+    private ulong offset0ul;
+
+    [FieldOffset(0)]
+    private uint offset0ui;
+
     public int MaxSupportedIndex => 3;
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
@@ -82,7 +89,7 @@ public struct VTable4 : IVTable
         switch (fieldCount)
         {
             case 0:
-                return;
+                break;
 
             case 1:
                 item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
@@ -96,7 +103,7 @@ public struct VTable4 : IVTable
                 item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
                 goto case 2;
 
-            default:
+            default:    
                 item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
                 goto case 3;
         }
@@ -109,6 +116,33 @@ public struct VTable4 : IVTable
     internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
-        VTableHelpers.Parse(inputBuffer, offset, out item);
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
+        item = new VTable4();
+        switch (fieldCount)
+        {
+            case 0:
+                return;
+
+            case 1:
+                 item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
+
+            case 2:
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
+                return;
+
+            case 3:
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
+
+            default:
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                return;
+        }
     }
 }
