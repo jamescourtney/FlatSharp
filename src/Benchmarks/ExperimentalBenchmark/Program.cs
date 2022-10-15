@@ -21,88 +21,14 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using FlatSharp;
+using FlatSharp.Internal;
 using System;
 using System.Collections.Generic;
 
 namespace BenchmarkCore
 {
     public class Benchmark
-    { 
-        [Params(
-            FlatBufferDeserializationOption.Lazy,
-            FlatBufferDeserializationOption.GreedyMutable
-        )]
-        public FlatBufferDeserializationOption Option { get; set; }
-
-        [Params(10000)]
-        public int Length { get; set; }
-
-        [Params(1)]
-        public int TravCount { get; set; }
-
-        private FlatBufferSerializer serializer;
-
-        private Table tableToWrite;
-
-        private byte[] tableToRead;
-
-        private List<string> keys;
-
-        private string EmptyGuid = Guid.Empty.ToString();
-
-        [GlobalSetup]
-        public void Setup()
-        {
-            this.serializer = new FlatBufferSerializer(this.Option);
-
-            this.tableToWrite = new()
-            {
-                Items = new List<VecTable>()
-            };
-
-            this.keys = new();
-
-            for (int i = 0; i < this.Length; ++i)
-            {
-                string key = Guid.NewGuid().ToString();
-
-                this.keys.Add(key);
-                this.tableToWrite.Items.Add(new VecTable
-                {
-                    Key = key,
-                });
-            }
-
-            int bytesNeeded = this.serializer.GetMaxSize(this.tableToWrite);
-            this.tableToRead = new byte[bytesNeeded];
-            this.serializer.Serialize(this.tableToWrite, this.tableToRead);
-        }
-
-        [Benchmark]
-        public void Serialize()
-        {
-            this.serializer.Serialize(this.tableToWrite, this.tableToRead);
-        }
-
-        [Benchmark]
-        public int ParseAndTraverse()
-        {
-            var t = this.serializer.Parse<Table>(this.tableToRead);
-            var items = t.Items;
-            var keys = this.keys;
-
-            int found = 0;
-            foreach (var key in keys)
-            {
-                var findResult = items.BinarySearchByFlatBufferKey(key);
-                if (findResult != null)
-                {
-                    found++;
-                }
-            }
-
-            return found;
-        }
+    {
     }
 
     public class Program

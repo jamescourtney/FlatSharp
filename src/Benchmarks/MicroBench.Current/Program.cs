@@ -37,9 +37,9 @@ namespace Microbench
 
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(5)
+                .WithLaunchCount(1)
                 .WithWarmupCount(2)
-                .WithIterationCount(3)
+                .WithIterationCount(6)
                 .WithRuntime(CoreRuntime.Core60);
                 //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
 
@@ -48,9 +48,10 @@ namespace Microbench
                  .AddDiagnoser(MemoryDiagnoser.Default)
                  .AddJob(job);
 
-            summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(SortedVectorBenchmarks), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SortedVectorBenchmarks), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(VTableBenchmarks), config));
 
             foreach (var item in summaries)
             {

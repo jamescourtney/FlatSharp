@@ -36,12 +36,6 @@ public struct VTable4 : IVTable
     [FieldOffset(6)]
     private ushort offset6;
 
-    [FieldOffset(0)]
-    private ulong offset0ul;
-
-    [FieldOffset(0)]
-    private uint offset0ui;
-
     public int MaxSupportedIndex => 3;
 
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
@@ -75,7 +69,7 @@ public struct VTable4 : IVTable
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(
@@ -88,40 +82,23 @@ public struct VTable4 : IVTable
         switch (fieldCount)
         {
             case 0:
-                break;
+                return;
 
             case 1:
-                {
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                }
-                break;
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
 
             case 2:
-                {
-                    fieldData = fieldData.Slice(0, 4);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                }
-                break;
+                item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
+                goto case 1;
 
             case 3:
-                {
-                    fieldData = fieldData.Slice(0, 6);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                }
-                break;
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
 
             default:
-                {
-                    fieldData = fieldData.Slice(0, 8);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                }
-                break;
+                item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
+                goto case 3;
         }
     }
 
@@ -132,43 +109,6 @@ public struct VTable4 : IVTable
     internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
-        inputBuffer.InitializeVTable(
-            offset,
-            out _,
-            out nuint fieldCount,
-            out ReadOnlySpan<byte> fieldData);
-
-        item = new VTable4();
-        switch (fieldCount)
-        {
-            case 0:
-                break;
-
-            case 1:
-                {
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                }
-                break;
-
-            case 2:
-                {
-                    item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                }
-                break;
-
-            case 3:
-                {
-                    fieldData = fieldData.Slice(0, 6);
-                    item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                }
-                break;
-
-            default:
-                {
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                }
-                break;
-        }
+        VTableHelpers.Parse(inputBuffer, offset, out item);
     }
 }

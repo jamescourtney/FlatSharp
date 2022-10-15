@@ -48,18 +48,6 @@ public struct VTable8 : IVTable
     [FieldOffset(14)]
     private ushort offset14;
 
-    [FieldOffset(0)]
-    private uint offset0ui;
-
-    [FieldOffset(8)]
-    private uint offset8ui;
-
-    [FieldOffset(0)]
-    private ulong offset0ul;
-
-    [FieldOffset(8)]
-    private ulong offset8ul;
-
     public int MaxSupportedIndex => 7;
 
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
@@ -97,7 +85,7 @@ public struct VTable8 : IVTable
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
+    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(
@@ -110,170 +98,49 @@ public struct VTable8 : IVTable
         switch (fieldCount)
         {
             case 0:
-                break;
+                return;
 
             case 1:
-                {
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                }
-                break;
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
 
             case 2:
-                {
-                    fieldData = fieldData.Slice(0, 4);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                }
-                break;
+                item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
+                goto case 1;
 
             case 3:
-                {
-                    fieldData = fieldData.Slice(0, 6);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                }
-                break;
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
 
             case 4:
-                {
-                    fieldData = fieldData.Slice(0, 8);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                }
-                break;
+                item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
+                goto case 3;
 
             case 5:
-                {
-                    fieldData = fieldData.Slice(0, 10);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                    item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
-                }
-                break;
+                item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
+                goto case 4;
 
             case 6:
-                {
-                    fieldData = fieldData.Slice(0, 12);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                    item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
-                    item.offset10 = ScalarSpanReader.ReadUShort(fieldData.Slice(10, 2));
-                }
-                break;
+                item.offset10 = ScalarSpanReader.ReadUShort(fieldData.Slice(10, 2));
+                goto case 5;
 
             case 7:
-                {
-                    fieldData = fieldData.Slice(0, 14);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                    item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
-                    item.offset10 = ScalarSpanReader.ReadUShort(fieldData.Slice(10, 2));
-                    item.offset12 = ScalarSpanReader.ReadUShort(fieldData.Slice(12, 2));
-                }
-                break;
+                item.offset12 = ScalarSpanReader.ReadUShort(fieldData.Slice(12, 2));
+                goto case 6;
 
             default:
-                {
-                    fieldData = fieldData.Slice(0, 16);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                    item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
-                    item.offset10 = ScalarSpanReader.ReadUShort(fieldData.Slice(10, 2));
-                    item.offset12 = ScalarSpanReader.ReadUShort(fieldData.Slice(12, 2));
-                    item.offset14 = ScalarSpanReader.ReadUShort(fieldData.Slice(14, 2));
-                }
-                break;
+                item.offset14 = ScalarSpanReader.ReadUShort(fieldData.Slice(14, 2));
+                goto case 7;
         }
     }
 
     /// <summary>
-    /// An optimized load mmethod for LE architectures.
+    /// An optimized load method for LE architectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
+    public static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
-        inputBuffer.InitializeVTable(
-            offset,
-            out _,
-            out nuint fieldCount,
-            out ReadOnlySpan<byte> fieldData);
-
-        item = new VTable8();
-        switch (fieldCount)
-        {
-            case 0:
-                break;
-
-            case 1:
-                {
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                }
-                break;
-
-            case 2:
-                {
-                    item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                }
-                break;
-
-            case 3:
-                {
-                    fieldData = fieldData.Slice(0, 6);
-                    item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                }
-                break;
-
-            case 4:
-                {
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                }
-                break;
-
-            case 5:
-                {
-                    fieldData = fieldData.Slice(0, 10);
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                    item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
-                }
-                break;
-
-            case 6:
-                {
-                    fieldData = fieldData.Slice(0, 12);
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                    item.offset8ui = ScalarSpanReader.ReadUInt(fieldData.Slice(8, 4));
-                }
-                break;
-
-            case 7:
-                {
-                    fieldData = fieldData.Slice(0, 14);
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                    item.offset8ui = ScalarSpanReader.ReadUInt(fieldData.Slice(8, 4));
-                    item.offset12 = ScalarSpanReader.ReadUShort(fieldData.Slice(12, 2));
-                }
-                break;
-
-            default:
-                {
-                    fieldData = fieldData.Slice(0, 16);
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                    item.offset8ul = ScalarSpanReader.ReadULong(fieldData.Slice(8, 8));
-                }
-                break;
-        }
+        VTableHelpers.Parse(inputBuffer, offset, out item);
     }
 }

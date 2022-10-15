@@ -7,6 +7,7 @@
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
         <Nullable>enable</Nullable>
+        <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE</DefineConstants>
         <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net6.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     </PropertyGroup>
 
