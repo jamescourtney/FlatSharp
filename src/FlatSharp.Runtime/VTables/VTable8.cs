@@ -62,7 +62,7 @@ public struct VTable8 : IVTable
 
     public int MaxSupportedIndex => 7;
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
@@ -97,7 +97,7 @@ public struct VTable8 : IVTable
     /// <summary>
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
@@ -150,7 +150,7 @@ public struct VTable8 : IVTable
     /// <summary>
     /// An optimized load mmethod for LE architectures.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {

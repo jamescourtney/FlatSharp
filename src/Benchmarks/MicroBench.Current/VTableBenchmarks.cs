@@ -28,7 +28,7 @@ namespace Microbench
     public class VTableBenchmarks
     {
 #if PUBLIC_IVTABLE
-        const int MaxField = 20;
+        const int MaxField = 10;
 
         private static Random random = new();
 
