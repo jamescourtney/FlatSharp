@@ -44,6 +44,7 @@ public struct VTable4 : IVTable
 
     public int MaxSupportedIndex => 3;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
@@ -74,8 +75,8 @@ public struct VTable4 : IVTable
     /// <summary>
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(
@@ -91,44 +92,27 @@ public struct VTable4 : IVTable
                 break;
 
             case 1:
-                {
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                }
-                break;
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
 
             case 2:
-                {
-                    fieldData = fieldData.Slice(0, 4);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                }
-                break;
+                item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
+                goto case 1;
 
             case 3:
-                {
-                    fieldData = fieldData.Slice(0, 6);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                }
-                break;
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
 
-            default:
-                {
-                    fieldData = fieldData.Slice(0, 8);
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData.Slice(0, 2));
-                    item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                    item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
-                }
-                break;
+            default:    
+                item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
+                goto case 3;
         }
     }
 
     /// <summary>
     /// An optimized load mmethod for LE architectures.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
@@ -142,33 +126,23 @@ public struct VTable4 : IVTable
         switch (fieldCount)
         {
             case 0:
-                break;
+                return;
 
             case 1:
-                {
-                    item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                }
-                break;
+                 item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
 
             case 2:
-                {
-                    item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                }
-                break;
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
+                return;
 
             case 3:
-                {
-                    fieldData = fieldData.Slice(0, 6);
-                    item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                    item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                }
-                break;
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
 
             default:
-                {
-                    item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                }
-                break;
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                return;
         }
     }
 }
