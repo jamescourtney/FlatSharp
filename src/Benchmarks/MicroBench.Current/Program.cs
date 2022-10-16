@@ -48,12 +48,12 @@ namespace Microbench
                  .AddDiagnoser(MemoryDiagnoser.Default)
                  .AddDiagnoser(new DisassemblyDiagnoser(new DisassemblyDiagnoserConfig(
                      maxDepth: 8,
-                     printSource: true,
+                     printSource: false,
                      exportGithubMarkdown: true,
                      exportHtml: true,
                      exportCombinedDisassemblyReport: true)))
                  //.AddHardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)
-                 .AddJob(job);
+                 .AddJob(job.DontEnforcePowerPlan());
 
             summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
             summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));

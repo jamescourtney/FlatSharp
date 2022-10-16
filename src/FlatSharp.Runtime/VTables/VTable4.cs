@@ -36,12 +36,6 @@ public struct VTable4 : IVTable
     [FieldOffset(6)]
     private ushort offset6;
 
-    [FieldOffset(0)]
-    private ulong offset0ul;
-
-    [FieldOffset(0)]
-    private uint offset0ui;
-
     public int MaxSupportedIndex => 3;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -116,33 +110,26 @@ public struct VTable4 : IVTable
     internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
+#if NETSTANDARD2_0
+        CreateBigEndian(inputBuffer, offset, out item);
+#else
+
         inputBuffer.InitializeVTable(
             offset,
             out _,
             out nuint fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
-        item = new VTable4();
-        switch (fieldCount)
+        if (fieldData.Length >= Unsafe.SizeOf<VTable4>())
         {
-            case 0:
-                return;
-
-            case 1:
-                 item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-                return;
-
-            case 2:
-                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                return;
-
-            case 3:
-                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-                goto case 2;
-
-            default:
-                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-                return;
+            item = MemoryMarshal.Read<VTable4>(fieldData);
         }
+        else
+        {
+            item = default;
+            Span<byte> target = MemoryMarshal.CreateSpan<byte>(ref Unsafe.As<VTable4, byte>(ref item), Unsafe.SizeOf<VTable4>());
+            fieldData.CopyTo(target);
+        }
+#endif
     }
 }

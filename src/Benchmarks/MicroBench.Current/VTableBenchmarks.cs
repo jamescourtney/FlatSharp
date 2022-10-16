@@ -20,7 +20,6 @@ namespace Microbench
     using System;
     using FlatSharp;
     using System.Linq;
-    using System.Collections.Generic;
     using System.Buffers.Binary;
     using FlatSharp.Internal;
     using System.Runtime.CompilerServices;
@@ -28,20 +27,26 @@ namespace Microbench
     public class VTableBenchmarks
     {
 #if PUBLIC_IVTABLE
-        const int MaxField = 10;
+        [Params(0, 2, 4, 6, 8)]
+        public int MinFields { get; set; }
+
+        [Params(2, 4, 6)]
+        public int MaxLength { get; set; }
 
         private static Random random = new();
 
-        private static byte[][] RandomVTables = Enumerable.Range(1, 1024).Select(x => CreateRandomVTable(MaxField)).ToArray();
+        private static byte[][] RandomVTables = null!;
 
-        private static byte[] CreateRandomVTable(int numFields)
+        private static byte[] CreateRandomVTable(int minFields, int maxLength)
         {
-            byte[] vtable = new byte[4 + 4 + (2 * numFields)];
+            int maxFields = maxLength + minFields;
+
+            byte[] vtable = new byte[4 + 4 + (2 * maxFields)];
             Span<byte> span = vtable;
 
             BinaryPrimitives.WriteInt32LittleEndian(span, -4); // offset to vtable.
 
-            int maxField = random.Next(-1, numFields);
+            int maxField = random.Next(minFields - 1, maxFields);
 
             for (int i = 0; i <= maxField; ++i)
             {
@@ -55,6 +60,12 @@ namespace Microbench
             ushort length = (ushort)(6 + (2 * maxField));
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(4), length); // vtable length
             return span.Slice(0, 4 + length).ToArray();
+        }
+
+        [GlobalSetup]
+        public void Setup()
+        { 
+            RandomVTables = Enumerable.Range(1, 1024).Select(x => CreateRandomVTable(this.MinFields, this.MaxLength)).ToArray();
         }
 
         private int i;
