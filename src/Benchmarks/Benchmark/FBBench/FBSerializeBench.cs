@@ -20,7 +20,6 @@ namespace Benchmark.FBBench
 
     public class FBSerializeBench : FBBenchCore
     {
-#if RUN_COMPARISON_BENCHMARKS
         [Benchmark]
         public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 
@@ -47,7 +46,6 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
-#endif
 
         [Benchmark]
         public override void FlatSharp_GetMaxSize() => base.FlatSharp_GetMaxSize();
@@ -58,13 +56,11 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void FlatSharp_Serialize_NonVirtual() => base.FlatSharp_Serialize_NonVirtual();
 
-#if FLATSHARP_5_7_1_OR_GREATER
         [Benchmark]
         public override void FlatSharp_Serialize_ValueStructs() => base.FlatSharp_Serialize_ValueStructs();
 
         [Benchmark]
         public override void FlatSharp_Serialize_ValueStructs_NonVirtual() => base.FlatSharp_Serialize_ValueStructs_NonVirtual();
-#endif
 
         [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();

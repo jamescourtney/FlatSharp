@@ -720,27 +720,69 @@ namespace Benchmark.FBBench
                 var list = foobar.List;
                 int count = list.Count;
 
-                for (int i = 0; i < count; ++i)
+                if (list is IFlatBufferVector<FooBar> vector)
                 {
-                    var item = list[i];
-                    sum += item.Name.Length;
-                    sum += item.PostFix;
-                    sum += (int)item.Rating;
+                    VisitorStruct visitor = new VisitorStruct(list.Count);
+                    vector.Accept(visitor, 0);
+                    sum += visitor.sum;
+                }
+                else
+                {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var item = list[i];
+                        sum += item.Name.Length;
+                        sum += item.PostFix;
+                        sum += (int)item.Rating;
 
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
+                        var bar = item.Sibling;
+                        sum += (int)bar.Ratio;
+                        sum += bar.Size;
+                        sum += bar.Time;
 
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
+                        var parent = bar.Parent;
+                        sum += parent.Count;
+                        sum += (int)parent.Id;
+                        sum += (int)parent.Length;
+                        sum += parent.Prefix;
+                    }
                 }
             }
 
             return sum;
+        }
+
+        public struct VisitorStruct : IFlatBufferVectorVisitor<FooBar>
+        {
+            public VisitorStruct(int count)
+            {
+                this.count = count;
+                this.sum = 0;
+            }
+
+            public readonly int count;
+
+            public int sum;
+
+            public bool Visit(FooBar item, ref int nextIndex)
+            {
+                sum += item.Name.Length;
+                sum += item.PostFix;
+                sum += (int)item.Rating;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+                sum += bar.Size;
+                sum += bar.Time;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+                sum += (int)parent.Id;
+                sum += (int)parent.Length;
+                sum += parent.Prefix;
+
+                return nextIndex < this.count;
+            }
         }
 
         public int TraverseFooBarContainer(FooBarListContainer_ValueType foobar)
@@ -757,27 +799,69 @@ namespace Benchmark.FBBench
                 var list = foobar.List;
                 int count = list.Count;
 
-                for (int i = 0; i < count; ++i)
+                if (list is IFlatBufferVector<FooBar_ValueType> listVector)
                 {
-                    var item = list[i];
-                    sum += item.Name.Length;
-                    sum += item.PostFix;
-                    sum += (int)item.Rating;
+                    var visitor = new VisitorStruct_ValueType(list.Count);
+                    listVector.Accept(visitor, 0);
+                    sum += visitor.sum;
+                }
+                else
+                {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var item = list[i];
+                        sum += item.Name.Length;
+                        sum += item.PostFix;
+                        sum += (int)item.Rating;
 
-                    var bar = item.Sibling.Value;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
+                        var bar = item.Sibling.Value;
+                        sum += (int)bar.Ratio;
+                        sum += bar.Size;
+                        sum += bar.Time;
 
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
+                        var parent = bar.Parent;
+                        sum += parent.Count;
+                        sum += (int)parent.Id;
+                        sum += (int)parent.Length;
+                        sum += parent.Prefix;
+                    }
                 }
             }
 
             return sum;
+        }
+
+        public struct VisitorStruct_ValueType : IFlatBufferVectorVisitor<FooBar_ValueType>
+        {
+            public VisitorStruct_ValueType(int count)
+            {
+                this.count = count;
+                this.sum = 0;
+            }
+
+            public readonly int count;
+
+            public int sum;
+
+            public bool Visit(FooBar_ValueType item, ref int nextIndex)
+            {
+                sum += item.Name.Length;
+                sum += item.PostFix;
+                sum += (int)item.Rating;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Value.Ratio;
+                sum += bar.Value.Size;
+                sum += bar.Value.Time;
+
+                var parent = bar.Value.Parent;
+                sum += parent.Count;
+                sum += (int)parent.Id;
+                sum += (int)parent.Length;
+                sum += parent.Prefix;
+
+                return nextIndex < this.count;
+            }
         }
 
         private int TraverseFooBarContainerPartial(FooBarListContainer_ValueType foobar)

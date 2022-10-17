@@ -20,7 +20,11 @@ namespace FlatSharp.Internal;
 /// A vector implementation that is filled on demand. Optimized
 /// for data locality, random access, and reasonably low memory overhead.
 /// </summary>
-public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> : IList<T>, IReadOnlyList<T>
+public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> 
+    : IList<T>
+    , IReadOnlyList<T>
+    , IFlatBufferVector<T>
+
     where T : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
@@ -161,6 +165,21 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     public void RemoveAt(int index)
     {
         throw new NotMutableException("FlatBufferVector does not support removing.");
+    }
+
+    public void Accept<TVisitor>(TVisitor visitor, int startIndex)
+        where TVisitor : struct, IFlatBufferVectorVisitor<T>
+    {
+        bool @continue = true;
+        int nextIndex = startIndex;
+
+        while (@continue)
+        {
+            T item = this[nextIndex];
+            nextIndex++;
+
+            @continue = visitor.Visit(item, ref nextIndex);
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator()

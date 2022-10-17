@@ -132,30 +132,36 @@ public class ListVectorTypeModel : BaseVectorTypeModel
     {
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
+        var greedyListTypeName = typeof(FlatBufferGreedyVector<>).MakeGenericType(itemTypeModel.ClrType).GetGlobalCompilableTypeName();
+        var greedyMutableListTypeName = typeof(FlatBufferGreedyMutableVector<>).MakeGenericType(itemTypeModel.ClrType).GetGlobalCompilableTypeName();
+
         if (context.Options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable && isEverWriteThrough)
         {
             string body = $@"
-                var result = ({createFlatBufferVector}).FlatBufferVectorToList();
+                var innerList = ({createFlatBufferVector}).FlatBufferVectorToList();
                 if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.WriteThrough)})
                 {{
                     // WriteThrough vectors are not mutable in greedy mode.
-                    return result.AsReadOnly();
+                    return new {greedyListTypeName}(innerList);
                 }}
-
-                return result;
+                else
+                {{
+                    return new {greedyMutableListTypeName}(innerList);
+                }}
             ";
 
             return body;
         }
         else if (context.Options.GreedyDeserialize)
         {
-            string readOnly = ".AsReadOnly()";
             if (context.Options.GenerateMutableObjects)
             {
-                readOnly = string.Empty;
+                return $"return new {greedyMutableListTypeName}(({createFlatBufferVector}).FlatBufferVectorToList());";
             }
-
-            return $"return ({createFlatBufferVector}).FlatBufferVectorToList(){readOnly};";
+            else
+            {
+                return $"return new {greedyListTypeName}(({createFlatBufferVector}).FlatBufferVectorToList());";
+            }
         }
         else if (context.Options.Lazy)
         {

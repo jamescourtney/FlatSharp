@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2021 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,12 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
-    : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
+public struct FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
+    : IList<T>
+    , IReadOnlyList<T>
+    , IFlatBufferDeserializedVector
+    , IFlatBufferVector<T>
+
     where TInputBuffer : IInputBuffer
     where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
 {
@@ -185,6 +189,22 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
         return list;
     }
+
+    public void Accept<TVisitor>(TVisitor visitor, int startIndex)
+        where TVisitor : struct, IFlatBufferVectorVisitor<T>
+    {
+        bool @continue = true;
+        int nextIndex = startIndex;
+
+        while (@continue)
+        {
+            T item = this[nextIndex];
+            nextIndex++;
+
+            @continue = visitor.Visit(item, ref this, ref nextIndex);
+        }
+    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CheckIndex(int index)

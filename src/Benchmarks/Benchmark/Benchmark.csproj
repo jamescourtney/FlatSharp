@@ -6,7 +6,6 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
-    <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;FLATSHARP_6_0_0_OR_GREATER;FLATSHARP_5_7_1_OR_GREATER;RUN_COMPARISON_BENCHMARKS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

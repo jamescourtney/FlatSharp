@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#if FLATSHARP_6_0_0_OR_GREATER
-
 namespace Benchmark.FBBench
 {
     using BenchmarkDotNet.Attributes;
@@ -204,5 +202,3 @@ namespace Benchmark.FBBench
         }
     }
 }
-
-#endif
