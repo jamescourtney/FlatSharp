@@ -23,7 +23,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
     where TValue : class
     where TKey : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
+    where TVectorItemAccessor : struct, IVectorItemAccessor<TValue, TInputBuffer>
 {
     private readonly Dictionary<TKey, TValue?> backingDictionary;
     private readonly FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor> backingVector;

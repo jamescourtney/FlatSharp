@@ -23,11 +23,10 @@ namespace FlatSharp.Internal;
 public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> 
     : IList<T>
     , IReadOnlyList<T>
-    , IFlatBufferVector<T>
 
     where T : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+    where TVectorItemAccessor : struct, IVectorItemAccessor<T, TInputBuffer>
 {
     // The chunk size here matches the number of bits in the presenceMask array below.
     private const uint ChunkSize = 32;
@@ -165,21 +164,6 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     public void RemoveAt(int index)
     {
         throw new NotMutableException("FlatBufferVector does not support removing.");
-    }
-
-    public void Accept<TVisitor>(TVisitor visitor, int startIndex)
-        where TVisitor : struct, IFlatBufferVectorVisitor<T>
-    {
-        bool @continue = true;
-        int nextIndex = startIndex;
-
-        while (@continue)
-        {
-            T item = this[nextIndex];
-            nextIndex++;
-
-            @continue = visitor.Visit(item, ref nextIndex);
-        }
     }
 
     IEnumerator IEnumerable.GetEnumerator()

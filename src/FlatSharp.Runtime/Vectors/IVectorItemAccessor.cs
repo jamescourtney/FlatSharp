@@ -31,4 +31,7 @@ public interface IVectorItemAccessor<TItem, TInputBuffer>
     void WriteThrough(int index, TItem value, TInputBuffer inputBuffer, TableFieldContext context);
 
     int OffsetOf(int index);
+
+    TReturn InvokeEnumerator<TEnumerator, TReturn>(TEnumerator enumerator)
+        where TEnumerator : IFlatBufferVectorEnumerator<TItem, TReturn>;
 }

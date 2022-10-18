@@ -16,16 +16,22 @@
 
 namespace FlatSharp;
 
+public struct ValueWrapper<T>
+{
+    public ValueWrapper(T item)
+    {
+        this.Value = item;
+    }
+
+    public T Value { get; }
+}
+
 /// <summary>
 /// Traverses a vector.
 /// </summary>
-public interface IFlatBufferVectorVisitor<T>
+public interface IFlatBufferVectorEnumerator<T, TReturn>
 {
-    /// <summary>
-    /// Visits the given item.
-    /// </summary>
-    /// <param name="item">The item.</param>
-    /// <returns>True to continue enumeration; false to terminate.</returns>
-    bool Visit<TFlatBufferVector>(ref T item, ref TFlatBufferVector vector, ref int nextIndex)
-        where TFlatBufferVector : IFlatBufferVector<T>;
+    TReturn Enumerate<TItem, TVector>(TVector vector)
+        where TVector : IEnumerableFlatBufferVector<ValueWrapper<TItem>>
+        where TItem : T;
 }

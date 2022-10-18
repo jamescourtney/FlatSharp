@@ -21,11 +21,13 @@ namespace FlatSharp;
 /// </summary>
 public interface IFlatBufferVector<T>
 {
+    public TReturn Enumerate<TEnumerator, TReturn>(TEnumerator visitor)
+         where TEnumerator : IFlatBufferVectorEnumerator<T, TReturn>;
+}
+
+public interface IEnumerableFlatBufferVector<T>
+{
     public int Count { get; }
 
-    /// <summary>
-    /// Accepts a visitor to quickly enumerate a vector.
-    /// </summary>
-    void Accept<TVisitor>(TVisitor visitor, int startIndex)
-        where TVisitor : struct, IFlatBufferVectorVisitor<T>;
+    public T this[int index] { get; set; }
 }

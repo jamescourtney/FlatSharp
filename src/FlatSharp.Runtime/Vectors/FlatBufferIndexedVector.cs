@@ -24,7 +24,7 @@ public sealed class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorI
     where TValue : class
     where TKey : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
+    where TVectorItemAccessor : struct, IVectorItemAccessor<TValue, TInputBuffer>
 {
     private readonly FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector;
 

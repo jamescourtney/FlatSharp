@@ -19,14 +19,14 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public struct FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
+public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
     : IList<T>
     , IReadOnlyList<T>
     , IFlatBufferDeserializedVector
     , IFlatBufferVector<T>
 
     where TInputBuffer : IInputBuffer
-    where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+    where TItemAccessor : struct, IVectorItemAccessor<T, TInputBuffer>
 {
     private readonly TInputBuffer memory;
     private readonly TableFieldContext fieldContext;
@@ -190,22 +190,6 @@ public struct FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         return list;
     }
 
-    public void Accept<TVisitor>(TVisitor visitor, int startIndex)
-        where TVisitor : struct, IFlatBufferVectorVisitor<T>
-    {
-        bool @continue = true;
-        int nextIndex = startIndex;
-
-        while (@continue)
-        {
-            T item = this[nextIndex];
-            nextIndex++;
-
-            @continue = visitor.Visit(item, ref this, ref nextIndex);
-        }
-    }
-
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CheckIndex(int index)
     {
@@ -249,4 +233,30 @@ public struct FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     int IFlatBufferDeserializedVector.OffsetOf(int index) => this.itemAccessor.OffsetOf(index);
 
     object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
+
+
+
+    public TReturn Enumerate<TEnumerator, TReturn>(TEnumerator visitor) where TEnumerator : IFlatBufferVectorEnumerator<T, TReturn>
+    {
+        var wrapper = new Wrapper(this);
+        return visitor.Enumerate<Wrapper, TItemAccessor>(wrapper);
+    }
+
+    private struct Wrapper : IEnumerableFlatBufferVector<ValueWrapper<T, TItemAccessor>>
+    {
+        private readonly FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> inner;
+
+        public Wrapper(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> inner)
+        {
+            this.inner = inner;
+        }
+
+        public ValueWrapper<T, TItemAccessor> this[int index] 
+        {
+            get => new ValueWrapper<T, TItemAccessor>(this.inner[index]);
+            set => this.inner[index] = value.Value;
+        }
+
+        public int Count => this.inner.Count;
+    }
 }

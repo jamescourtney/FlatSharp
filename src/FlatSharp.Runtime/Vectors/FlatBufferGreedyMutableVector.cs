@@ -23,7 +23,6 @@ namespace FlatSharp.Internal;
 public sealed class FlatBufferGreedyMutableVector<T> 
     : IList<T>
     , IReadOnlyList<T>
-    , IFlatBufferVector<T>
 {
     private readonly List<T> innerList;
 
@@ -41,21 +40,6 @@ public sealed class FlatBufferGreedyMutableVector<T>
     public int Count => this.innerList.Count;
 
     public bool IsReadOnly => false;
-
-    public void Accept<TVisitor>(TVisitor visitor, int startIndex) 
-        where TVisitor : struct, IFlatBufferVectorVisitor<T>
-    {
-        bool @continue = true;
-        int nextIndex = startIndex;
-
-        while (@continue)
-        {
-            T item = this.innerList[nextIndex];
-            nextIndex++;
-
-            @continue = visitor.Visit(item, ref nextIndex);
-        }
-    }
 
     public void Add(T item)
     {

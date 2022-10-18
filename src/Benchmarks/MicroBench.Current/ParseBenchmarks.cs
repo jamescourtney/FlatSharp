@@ -25,6 +25,7 @@ namespace Microbench
 
     public class ParseBenchmarks
     {
+        /*
         [Benchmark]
         public int Parse_StringTable_SingleString()
         {
@@ -99,23 +100,6 @@ namespace Microbench
         }
 
         [Benchmark]
-        public int Parse_StructTable_VecRef()
-        {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
-            int sum = 0;
-
-            var vecRef = st.VecRef!;
-            int count = vecRef.Count;
-
-            for (int i = 0; i < count; ++i)
-            {
-                sum += vecRef[i].Value;
-            }
-
-            return sum;
-        }
-
-        [Benchmark]
         public void Parse_StructTable_VecRef_WriteThrough()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
@@ -128,6 +112,23 @@ namespace Microbench
                 vecRef[i].Value++;
             }
         }
+
+        [Benchmark]
+        public void Parse_StructTable_VecValue_WriteThrough()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+
+            var vecValue = st.VecValue!;
+            int count = vecValue.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = vecValue[i];
+                item.Value++;
+                vecValue[i] = item;
+            }
+        }
+        */
 
         [Benchmark]
         public int Parse_StructTable_VecValue()
@@ -147,20 +148,79 @@ namespace Microbench
         }
 
         [Benchmark]
-        public void Parse_StructTable_VecValue_WriteThrough()
+        public int Parse_StructTable_VecValue_FastEnum()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+            var vecValue = (IFlatBufferVector<ValueStruct>)st.VecValue!;
 
-            var vecValue = st.VecValue!;
-            int count = vecValue.Count;
+            return vecValue.Enumerate<VecValueFastEnumerator, int>(new VecValueFastEnumerator());
+        }
+
+        [Benchmark]
+        public int Parse_StructTable_VecRef()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+            int sum = 0;
+
+            var vecRef = st.VecRef!;
+            int count = vecRef.Count;
 
             for (int i = 0; i < count; ++i)
             {
-                var item = vecValue[i];
-                item.Value++;
-                vecValue[i] = item;
+                sum += vecRef[i].Value;
+            }
+
+            return sum;
+        }
+
+
+        [Benchmark]
+        public int Parse_StructTable_VecRef_FastEnum()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+            var vecValue = (IFlatBufferVector<RefStruct>)st.VecRef!;
+
+            return vecValue.Enumerate<VecRefFastEnumerator, int>(new VecRefFastEnumerator());
+        }
+
+
+        private struct VecRefFastEnumerator : IFlatBufferVectorEnumerator<RefStruct, int>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Enumerate<TVector, TTemp>(TVector vector)
+                where TVector : IEnumerableFlatBufferVector<ValueWrapper<RefStruct, TTemp>>
+                where TTemp : struct
+            {
+                int sum = 0;
+                int count = vector.Count;
+                for (int i = 0; i < count; ++i)
+                {
+                    sum += vector[i].Value.Value;
+                }
+
+                return sum;
             }
         }
+
+
+        private struct VecValueFastEnumerator : IFlatBufferVectorEnumerator<ValueStruct, int>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Enumerate<TVector, TTemp>(TVector vector)
+                where TVector : IEnumerableFlatBufferVector<ValueWrapper<ValueStruct, TTemp>>
+                where TTemp : struct
+            {
+                int sum = 0;
+                int count = vector.Count;
+                for (int i = 0; i < count; ++i)
+                {
+                    sum += vector[i].Value.Value;
+                }
+
+                return sum;
+            }
+        }
+
 
         private static int ParseAndTraverse(PrimitivesTable table)
         {
