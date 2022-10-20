@@ -86,9 +86,10 @@ public class ArrayVectorTypeModel : BaseVectorTypeModel
                 isEverWriteThrough);
 
             string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
+            string actualTypeName = this.ItemTypeModel.GetDeserializedTypeName(context.InputBufferTypeName, context.Options.DeserializationOption, context.MethodNameResolver);
 
             string createFlatBufferVector =
-                $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}> (
+                $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}, {actualTypeName}> (
                     {context.InputBufferVariableName}, 
                     new {accessorClassName}(
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),

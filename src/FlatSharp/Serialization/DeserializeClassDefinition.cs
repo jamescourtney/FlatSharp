@@ -120,7 +120,7 @@ internal class DeserializeClassDefinition
             }
             else
             {
-
+                // TODO?
             }
         }
     }
@@ -272,7 +272,7 @@ internal class DeserializeClassDefinition
 
         return
         $@"
-            private sealed class {this.ClassName}<TInputBuffer> 
+            internal sealed class {this.ClassName}<TInputBuffer> 
                 : {typeModel.GetGlobalCompilableTypeName()}
                 , {interfaceGlobalName}
                 where TInputBuffer : IInputBuffer

@@ -706,7 +706,7 @@ $@"
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        string className = this.GetTableReaderClassName(context);
+        string className = this.GetDeserializedBaseTypeName(context.Options.DeserializationOption);
 
         // We have to implement two items: The table class and the overall "read" method.
         // Let's start with the read method.
@@ -822,9 +822,18 @@ $@"
         return tableMember != null;
     }
 
+    public override string GetDeserializedTypeName(string inputBufferTypeName, FlatBufferDeserializationOption option, IMethodNameResolver resolver)
+    {
+        (string ns, string @class, _) = resolver.ResolveSerialize(this);
+        return $"{ns}.{@class}.tableReader_{this.GuidBase}_{option}<{inputBufferTypeName}>";
+    }
+
+    private string GetDeserializedBaseTypeName(FlatBufferDeserializationOption option)
+    {
+        return $"tableReader_{this.GuidBase}_{option}";
+    }
+
     private int GetVTableLength(int index) => 4 + (2 * (index + 1));
 
     private int GetVTablePosition(int index) => 4 + (2 * index);
-
-    private string GetTableReaderClassName(ParserCodeGenContext context) => $"tableReader_{this.GuidBase}_{context.Options.DeserializationOption}";
 }

@@ -63,8 +63,8 @@ namespace Microbench
         {
             public static StructsTable SingleRef = new StructsTable { SingleRef = new RefStruct { Value = 1 } };
             public static StructsTable SingleValue = new StructsTable { SingleValue = new ValueStruct { Value = 1 } };
-            public static StructsTable VectorRef = new StructsTable { VecRef = Enumerable.Range(1, 30).Select(x => new RefStruct { Value = x }).ToList() };
-            public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, 30).Select(x => new ValueStruct { Value = x }).ToList() };
+            public static StructsTable VectorRef = new StructsTable { VecRef = Enumerable.Range(1, 300).Select(x => new RefStruct { Value = x }).ToList() };
+            public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, 300).Select(x => new ValueStruct { Value = x }).ToList() };
         }
 
         public static class SortedVectorTables

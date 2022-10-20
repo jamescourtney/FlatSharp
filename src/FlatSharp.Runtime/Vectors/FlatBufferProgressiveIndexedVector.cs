@@ -19,19 +19,20 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation that loads data progressively.
 /// </summary>
-public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> : IIndexedVector<TKey, TValue>
+public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor, TActualType> : IIndexedVector<TKey, TValue>
     where TValue : class
     where TKey : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
+    where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer, TActualType>
+    where TActualType : TValue
 {
     private readonly Dictionary<TKey, TValue?> backingDictionary;
-    private readonly FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor> backingVector;
+    private readonly FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor, TActualType> backingVector;
 
-    public FlatBufferProgressiveIndexedVector(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> items)
+    public FlatBufferProgressiveIndexedVector(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor, TActualType> items)
     {
         this.backingDictionary = new Dictionary<TKey, TValue?>();
-        this.backingVector = new FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor>(items);
+        this.backingVector = new FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor, TActualType>(items);
     }
 
     /// <summary>

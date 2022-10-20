@@ -19,10 +19,15 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
-    : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
+public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor, TActualType>
+    : IList<T>
+    , IReadOnlyList<T>
+    , IFlatBufferDeserializedVector
+    , IFlatBufferVector<T>
+
     where TInputBuffer : IInputBuffer
-    where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+    where TItemAccessor : IVectorItemAccessor<T, TInputBuffer, TActualType>
+    where TActualType : T
 {
     private readonly TInputBuffer memory;
     private readonly TableFieldContext fieldContext;
@@ -49,7 +54,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         get
         {
             this.CheckIndex(index);
-            this.itemAccessor.ParseItem(index, this.memory, this.remainingDepth, this.fieldContext, out T item);
+            this.itemAccessor.ParseItem(index, this.memory, this.remainingDepth, this.fieldContext, out TActualType item);
             return item;
         }
         set
@@ -88,7 +93,8 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
         for (int i = 0; i < count; ++i)
         {
-            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out array[arrayIndex + i]);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out TActualType item);
+            array[arrayIndex + i] = item;
         }
     }
 
@@ -110,7 +116,8 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
         for (int i = 0; i < count; ++i)
         {
-            this.itemAccessor.ParseItem(i + startIndex, buffer, remainingDepth, context, out array[i]);
+            this.itemAccessor.ParseItem(i + startIndex, buffer, remainingDepth, context, out TActualType item);
+            array[i] = item;
         }
     }
 
@@ -123,7 +130,8 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
         for (int i = 0; i < array.Length; ++i)
         {
-            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out array[i]);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out TActualType item);
+            array[i] = item;
         }
 
         return array;
@@ -138,7 +146,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
         for (int i = 0; i < count; ++i)
         {
-            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out T parsed);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out TActualType parsed);
             yield return parsed;
         }
     }
@@ -158,7 +166,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         int count = this.Count;
         for (int i = 0; i < count; ++i)
         {
-            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out T parsed);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out TActualType parsed);
             if (item.Equals(parsed))
             {
                 return i;
@@ -179,7 +187,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
         for (int i = 0; i < count; ++i)
         {
-            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out T item);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out TActualType item);
             list.Add(item);
         }
 
@@ -229,4 +237,72 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     int IFlatBufferDeserializedVector.OffsetOf(int index) => this.itemAccessor.OffsetOf(index);
 
     object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
+
+    internal TActualType GetValue(int index)
+    {
+        this.CheckIndex(index);
+        this.itemAccessor.ParseItem(index, this.memory, this.remainingDepth, this.fieldContext, out TActualType item);
+        return item;
+    }
+
+    public TReturn Iterate<TIterator, TReturn>(TIterator iterator)
+#pragma warning disable CS0618 // Type or member is obsolete
+        where TIterator : IFlatBufferVectorIterator<TReturn, T>
+#pragma warning restore CS0618 // Type or member is obsolete
+    {
+        if (typeof(T).IsValueType)
+        {
+            if (iterator is IFlatBufferValueVectorIterator<TReturn, T>)
+            {
+                return ((IFlatBufferValueVectorIterator<TReturn, T>)iterator).Iterate(new ValueVector(this));
+            }
+
+            throw new Exception("something");
+        }
+        else
+        {
+            if (iterator is IFlatBufferReferenceVectorIterator<TReturn, T>)
+            {
+                return ((IFlatBufferReferenceVectorIterator<TReturn, T>)iterator).Iterate<ReferenceVector, TActualType>(new ReferenceVector(this));
+            }
+
+            throw new Exception("something");
+        }
+    }
+
+    private struct ValueVector : IFlatBufferIterableVector<T>
+    {
+        private readonly FlatBufferVectorBase<T, TInputBuffer, TItemAccessor, TActualType> inner;
+
+        public ValueVector(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor, TActualType> inner)
+        {
+            this.inner = inner;
+        }
+
+        public T this[int index]
+        {
+            get => this.inner.GetValue(index);
+            set => this.inner[index] = value;
+        }
+
+        public int Count => this.inner.Count;
+    }
+
+    private struct ReferenceVector : IFlatBufferIterableVector<TActualType>
+    {
+        private readonly FlatBufferVectorBase<T, TInputBuffer, TItemAccessor, TActualType> inner;
+
+        public ReferenceVector(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor, TActualType> inner)
+        {
+            this.inner = inner;
+        }
+
+        public TActualType this[int index]
+        {
+            get => this.inner.GetValue(index);
+            set => this.inner[index] = value;
+        }
+
+        public int Count => this.inner.Count;
+    }
 }

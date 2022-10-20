@@ -17,19 +17,12 @@
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Small interface for reading and writing to/from vectors. Implementations should
-/// prefer using a struct as that will enable devirtualization.
+/// An interface for building a FlatBufferVectorIterator. Note: this interface should not be used directly. Please
+/// implement <see cref="IFlatBufferReferenceVectorIterator{TReturn, T}"/> or <see cref="IFlatBufferValueVectorIterator{TReturn, T}"/>
+/// instead.
 /// </summary>
-public interface IVectorItemAccessor<TItem, TInputBuffer, TActualType>
-    where TActualType : TItem
-{
-    int Count { get; }
-
-    int ItemSize { get; }
-
-    void ParseItem(int index, TInputBuffer buffer, short remainingDepth, TableFieldContext context, out TActualType item);
-
-    void WriteThrough(int index, TItem value, TInputBuffer inputBuffer, TableFieldContext context);
-
-    int OffsetOf(int index);
+[Obsolete("Use IFlatBufferReferenceVectorIterator or IFlatBufferValueVectorIterator instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IFlatBufferVectorIterator<TReturn, T> 
+{ 
 }

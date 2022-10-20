@@ -686,6 +686,7 @@ $@"
         }
 
         string clrType = typeModel.GetGlobalCompilableTypeName();
+        string actualType = typeModel.GetDeserializedTypeName("TInputBuffer", context.Options.DeserializationOption, context.MethodNameResolver);
 
         // If we require depth tracking due to the schema, inject the if statement and the decrement instruction.
         string depthCheck = string.Empty;
@@ -700,7 +701,7 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static {clrType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
+            internal static {actualType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
                 short {context.RemainingDepthVariableName}

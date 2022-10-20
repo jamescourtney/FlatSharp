@@ -38,6 +38,8 @@ internal static class FlatBufferVectorHelpers
             RemainingDepthVariableName = "remainingDepth",
         };
 
+        string actualTypeName = itemTypeModel.GetDeserializedTypeName(context.InputBufferTypeName, context.Options.DeserializationOption, context.MethodNameResolver);
+
         var serializeContext = context.GetWriteThroughContext("data", "item", "0");
         string writeThroughBody = $"throw new NotMutableException(\"FlatBufferVector does not support mutation.\");";
         if (isEverWriteThrough)
@@ -57,7 +59,7 @@ internal static class FlatBufferVectorHelpers
 
         string body = $@"
 
-internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
+internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}, {actualTypeName}>
     where {context.InputBufferTypeName} : IInputBuffer
 {{
     private readonly int offset;
@@ -78,7 +80,7 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
     public int Count => this.count;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
+    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {actualTypeName} item)
     {{
         int {context.OffsetVariableName} = this.offset + ({inlineSize} * index);
         item = {context.GetParseInvocation(itemTypeModel.ClrType)};
@@ -115,7 +117,7 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
 
         string classDef = $@"
 
-internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
+internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}, {itemTypeName}>
     where {context.InputBufferTypeName} : IInputBuffer
 {{
     private readonly int discriminatorVectorOffset;

@@ -22,9 +22,11 @@ namespace Microbench
     using System.Linq;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
+    using FlatSharp.Internal;
 
     public class ParseBenchmarks
     {
+        /*
         [Benchmark]
         public int Parse_StringTable_SingleString()
         {
@@ -98,6 +100,38 @@ namespace Microbench
             st.SingleValue = new ValueStruct { Value = 3 };
         }
 
+
+        [Benchmark]
+        public void Parse_StructTable_VecRef_WriteThrough()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+
+            var vecRef = st.VecRef!;
+            int count = vecRef.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                vecRef[i].Value++;
+            }
+        }
+
+
+        [Benchmark]
+        public void Parse_StructTable_VecValue_WriteThrough()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+
+            var vecValue = st.VecValue!;
+            int count = vecValue.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = vecValue[i];
+                item.Value++;
+                vecValue[i] = item;
+            }
+        }
+
         [Benchmark]
         public int Parse_StructTable_VecRef()
         {
@@ -116,20 +150,6 @@ namespace Microbench
         }
 
         [Benchmark]
-        public void Parse_StructTable_VecRef_WriteThrough()
-        {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
-
-            var vecRef = st.VecRef!;
-            int count = vecRef.Count;
-
-            for (int i = 0; i < count; ++i)
-            {
-                vecRef[i].Value++;
-            }
-        }
-
-        [Benchmark]
         public int Parse_StructTable_VecValue()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
@@ -145,22 +165,128 @@ namespace Microbench
 
             return sum;
         }
+        */
+
+#if VECTOR_ENUMERATORS
 
         [Benchmark]
-        public void Parse_StructTable_VecValue_WriteThrough()
+        public int Parse_StructTable_VecRef_Fast()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+            var vecRef = (IFlatBufferVector<RefStruct>)st.VecRef!;
+            return vecRef.Iterate<SumEnumerator, int>(new SumEnumerator());
+        }
+
+
+        [Benchmark]
+        public int Parse_StructTable_VecValue_Fast()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+            var vecRef = (IFlatBufferVector<ValueStruct>)st.VecValue!;
+            return vecRef.Iterate<SumEnumerator, int>(new SumEnumerator());
+        }
 
-            var vecValue = st.VecValue!;
-            int count = vecValue.Count;
+        [Benchmark]
+        public int Parse_StructTable_VecRef_Fast_WriteThrough()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+            var vecRef = (IFlatBufferVector<RefStruct>)st.VecRef!;
+            return vecRef.Iterate<WriteThroughEnumerator, int>(new WriteThroughEnumerator());
+        }
 
-            for (int i = 0; i < count; ++i)
+
+        [Benchmark]
+        public int Parse_StructTable_VecValue_Fast_WriteThrough()
+        {
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+            var vecRef = (IFlatBufferVector<ValueStruct>)st.VecValue!;
+            return vecRef.Iterate<WriteThroughEnumerator, int>(new WriteThroughEnumerator());
+        }
+
+        private struct SumEnumerator 
+            : IFlatBufferReferenceVectorIterator<int, RefStruct>
+            , IFlatBufferValueVectorIterator<int, ValueStruct>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Iterate<TVector, TDerived>(TVector vector)
+                where TVector : IFlatBufferIterableVector<TDerived>
+                where TDerived : RefStruct
             {
-                var item = vecValue[i];
-                item.Value++;
-                vecValue[i] = item;
+                int sum = 0;
+
+                for (int j = 0; j < 5; ++j)
+                {
+                    int count = vector.Count;
+                    for (int i = 0; i < count; ++i)
+                    {
+                        sum += vector[i].Value;
+                    }
+                }
+
+                return sum;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Iterate<TVector>(TVector vector)
+                where TVector : IFlatBufferIterableVector<ValueStruct>
+            {
+                int sum = 0;
+                for (int j = 0; j < 5; ++j)
+                {
+                    int count = vector.Count;
+                    for (int i = 0; i < count; ++i)
+                    {
+                        sum += vector[i].Value;
+                    }
+                }
+
+                return sum;
             }
         }
+
+        private struct WriteThroughEnumerator
+            : IFlatBufferValueVectorIterator<int, ValueStruct>
+            , IFlatBufferReferenceVectorIterator<int, RefStruct>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Iterate<TVector>(TVector vector) where TVector : IFlatBufferIterableVector<ValueStruct>
+            {
+                int count = vector.Count;
+
+                for (int j = 0; j < 5; ++j)
+                {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var item = vector[i];
+                        item.Value++;
+                        vector[i] = item;
+                    }
+                }
+
+                return 3;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Iterate<TVector, TDerived>(TVector vector)
+                where TVector : IFlatBufferIterableVector<TDerived>
+                where TDerived : RefStruct
+            {
+                int count = vector.Count;
+
+                for (int j = 0; j < 5; ++j)
+                {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var item = vector[i];
+                        item.Value++;
+                    }
+                }
+
+                return 3;
+            }
+        }
+
+#endif
 
         private static int ParseAndTraverse(PrimitivesTable table)
         {

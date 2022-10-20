@@ -16,14 +16,46 @@
 
 namespace FlatSharp.Internal;
 
+public class ItemAccessor : IVectorItemAccessor<int, ArrayInputBuffer, int>
+{
+    public int Count => throw new NotImplementedException();
+
+    public int ItemSize => throw new NotImplementedException();
+
+    public int OffsetOf(int index)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ParseItem(int index, ArrayInputBuffer buffer, short remainingDepth, TableFieldContext context, out int item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteThrough(int index, int value, ArrayInputBuffer inputBuffer, TableFieldContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class Foo
+{
+
+}
+
 /// <summary>
 /// A vector implementation that is filled on demand. Optimized
 /// for data locality, random access, and reasonably low memory overhead.
 /// </summary>
-public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> : IList<T>, IReadOnlyList<T>
+public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor, TActualType> 
+    : IList<T>
+    , IReadOnlyList<T>
+    , IFlatBufferVector<T>
+
     where T : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+    where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer, TActualType>
+    where TActualType : T
 {
     // The chunk size here matches the number of bits in the presenceMask array below.
     private const uint ChunkSize = 32;
@@ -32,10 +64,10 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     // This approach allows fast access while not broadly over allocating.
     // Using "mini arrays" also ensures good sequential access performance.
     private readonly T?[]?[] items;
-    private readonly FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector;
+    private readonly FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor, TActualType> innerVector;
 
     public FlatBufferProgressiveVector(
-        FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector)
+        FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor, TActualType> innerVector)
     {
         this.Count = innerVector.Count;
         this.innerVector = innerVector;
@@ -198,5 +230,71 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
         }
 
         return row;
+    }
+
+    private TActualType GetActualType(int index)
+    {
+        return (TActualType)this[index];
+    }
+
+    public TReturn Iterate<TIterator, TReturn>(TIterator iterator)
+#pragma warning disable CS0618 // Type or member is obsolete
+        where TIterator : IFlatBufferVectorIterator<TReturn, T>
+#pragma warning restore CS0618 // Type or member is obsolete
+    {
+        if (typeof(T).IsValueType)
+        {
+            if (iterator is IFlatBufferValueVectorIterator<TReturn, T>)
+            {
+                return ((IFlatBufferValueVectorIterator<TReturn, T>)iterator).Iterate(new ValueVector(this));
+            }
+
+            throw new Exception("something");
+        }
+        else
+        {
+            if (iterator is IFlatBufferReferenceVectorIterator<TReturn, T>)
+            {
+                return ((IFlatBufferReferenceVectorIterator<TReturn, T>)iterator).Iterate<ReferenceVector, TActualType>(new ReferenceVector(this));
+            }
+
+            throw new Exception("something");
+        }
+    }
+
+    private struct ValueVector : IFlatBufferIterableVector<T>
+    {
+        private readonly FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor, TActualType> inner;
+
+        public ValueVector(FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor, TActualType> inner)
+        {
+            this.inner = inner;
+        }
+
+        public T this[int index]
+        {
+            get => this.inner.GetActualType(index);
+            set => this.inner[index] = value;
+        }
+
+        public int Count => this.inner.Count;
+    }
+
+    private struct ReferenceVector : IFlatBufferIterableVector<TActualType>
+    {
+        private readonly FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor, TActualType> inner;
+
+        public ReferenceVector(FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor, TActualType> inner)
+        {
+            this.inner = inner;
+        }
+
+        public TActualType this[int index]
+        {
+            get => this.inner.GetActualType(index);
+            set => this.inner[index] = value;
+        }
+
+        public int Count => this.inner.Count;
     }
 }

@@ -17,19 +17,9 @@
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Small interface for reading and writing to/from vectors. Implementations should
-/// prefer using a struct as that will enable devirtualization.
+/// Wraps a value.
 /// </summary>
-public interface IVectorItemAccessor<TItem, TInputBuffer, TActualType>
-    where TActualType : TItem
+public interface IValueWrapper<TItem>
 {
-    int Count { get; }
-
-    int ItemSize { get; }
-
-    void ParseItem(int index, TInputBuffer buffer, short remainingDepth, TableFieldContext context, out TActualType item);
-
-    void WriteThrough(int index, TItem value, TInputBuffer inputBuffer, TableFieldContext context);
-
-    int OffsetOf(int index);
+    public TItem Value { get; set; }
 }

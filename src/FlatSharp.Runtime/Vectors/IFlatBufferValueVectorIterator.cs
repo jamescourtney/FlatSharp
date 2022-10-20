@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Internal;
+namespace FlatSharp;
 
 /// <summary>
-/// Small interface for reading and writing to/from vectors. Implementations should
-/// prefer using a struct as that will enable devirtualization.
+/// A vector iterator that works for vectors of value types.
 /// </summary>
-public interface IVectorItemAccessor<TItem, TInputBuffer, TActualType>
-    where TActualType : TItem
+public interface IFlatBufferValueVectorIterator<TReturn, T>
+#pragma warning disable CS0618 // Type or member is obsolete
+    : IFlatBufferVectorIterator<TReturn, T>
+#pragma warning restore CS0618 // Type or member is obsolete
 {
-    int Count { get; }
-
-    int ItemSize { get; }
-
-    void ParseItem(int index, TInputBuffer buffer, short remainingDepth, TableFieldContext context, out TActualType item);
-
-    void WriteThrough(int index, TItem value, TInputBuffer inputBuffer, TableFieldContext context);
-
-    int OffsetOf(int index);
+    /// <summary>
+    /// Iterates the given <typeparamref name="TVector"/> instance.
+    /// </summary>
+    TReturn Iterate<TVector>(TVector vector)
+        where TVector : IFlatBufferIterableVector<T>;
 }

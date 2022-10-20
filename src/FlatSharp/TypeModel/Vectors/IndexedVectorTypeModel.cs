@@ -109,9 +109,10 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
             isEverWriteThrough);
 
         string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
+        string actualTypeName = this.valueTypeModel.GetDeserializedTypeName(context.InputBufferTypeName, context.Options.DeserializationOption, context.MethodNameResolver);
 
         string createFlatBufferVector =
-            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}> (
+            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}, {actualTypeName}> (
                     {context.InputBufferVariableName}, 
                     new {accessorClassName}(
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
@@ -128,12 +129,12 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         else if (context.Options.Lazy)
         {
             // Lazy indexed vector.
-            body = $@"return new FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}>({createFlatBufferVector});";
+            body = $@"return new FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}, {actualTypeName}>({createFlatBufferVector});";
         }
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            body = $@"return new FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}>({createFlatBufferVector});";
+            body = $@"return new FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}, {actualTypeName}>({createFlatBufferVector});";
         }
 
         return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };

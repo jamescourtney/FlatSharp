@@ -37,9 +37,10 @@ public class ArrayVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
             context);
 
         string itemAccessorTypeName = $"{className}<{context.InputBufferTypeName}>";
+        string actualTypeName = this.ItemTypeModel.GetDeserializedTypeName(context.InputBufferTypeName, context.Options.DeserializationOption, context.MethodNameResolver);
 
         string createFlatBufferVector =
-            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}> (
+            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}, {actualTypeName}> (
                     {context.InputBufferVariableName}, 
                     new {itemAccessorTypeName}(
                         {context.InputBufferVariableName},

@@ -26,6 +26,7 @@ namespace FlatSharp.TypeModel;
 /// </summary>
 public class StructTypeModel : RuntimeTypeModel
 {
+    private readonly string GuidBase = Guid.NewGuid().ToString("n");
     private readonly List<StructMemberModel> memberTypes = new List<StructMemberModel>();
     private int inlineSize;
     private int maxAlignment = 1;
@@ -108,7 +109,8 @@ public class StructTypeModel : RuntimeTypeModel
     {
         // We have to implement two items: The table class and the overall "read" method.
         // Let's start with the read method.
-        string className = "structReader_" + Guid.NewGuid().ToString("n");
+
+        string className = this.GetUnboundTypeName(context.Options.DeserializationOption);
         DeserializeClassDefinition classDef = DeserializeClassDefinition.Create(
             className,
             this.onDeserializeMethod,
@@ -275,6 +277,17 @@ public class StructTypeModel : RuntimeTypeModel
 
             member.Validate();
         }
+    }
+
+    public override string GetDeserializedTypeName(string inputBufferTypeName, FlatBufferDeserializationOption option, IMethodNameResolver resolver)
+    {
+        (string ns, string @class, _) = resolver.ResolveSerialize(this);
+        return $"{ns}.{@class}.structReader_{this.GuidBase}_{option}<{inputBufferTypeName}>";
+    }
+
+    private string GetUnboundTypeName(FlatBufferDeserializationOption option)
+    {
+        return $"structReader_{this.GuidBase}_{option}";
     }
 
     private IEnumerable<(PropertyInfo Property, FlatBufferItemAttribute Attribute)> GetProperties()

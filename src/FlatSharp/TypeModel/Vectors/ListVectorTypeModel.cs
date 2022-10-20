@@ -110,9 +110,10 @@ public class ListVectorTypeModel : BaseVectorTypeModel
             isEverWriteThrough);
 
         string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
+        string actualTypeName = this.ItemTypeModel.GetDeserializedTypeName(context.InputBufferTypeName, context.Options.DeserializationOption, context.MethodNameResolver);
 
         string createFlatBufferVector =
-            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}> (
+            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}, {actualTypeName}> (
                     {context.InputBufferVariableName}, 
                     new {accessorClassName}(
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
@@ -132,6 +133,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
     {
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
+        string actualTypeName = itemTypeModel.GetDeserializedTypeName(context.InputBufferTypeName, context.Options.DeserializationOption, context.MethodNameResolver);
         if (context.Options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable && isEverWriteThrough)
         {
             string body = $@"
@@ -164,7 +166,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>({createFlatBufferVector});";
+            return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}, {actualTypeName}>({createFlatBufferVector});";
         }
     }
 }
