@@ -43,6 +43,7 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.VectorKind = other.VectorKind;
             this.WriteThrough = other.WriteThrough;
             this.StreamingType = other.StreamingType;
+            this.External = other.External;
         }
     }
 
@@ -75,4 +76,6 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
     public bool? WriteThrough { get; set; }
 
     public RpcStreamingType? StreamingType { get; set; }
+
+    public bool? External { get; set; }
 }

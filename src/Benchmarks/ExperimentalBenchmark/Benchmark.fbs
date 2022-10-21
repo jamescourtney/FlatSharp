@@ -5,8 +5,16 @@ attribute "fs_valueStruct";
 attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
+attribute "fs_external";
 
 namespace BenchmarkCore;
+
+enum Test : ubyte
+{
+   A,
+   B,
+   C
+}
 
 table Table (fs_serializer) {
     Items : [ VecTable ] (fs_sortedVector);

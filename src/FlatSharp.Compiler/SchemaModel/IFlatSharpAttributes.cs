@@ -48,4 +48,6 @@ public interface IFlatSharpAttributes
     bool? WriteThrough { get; }
 
     RpcStreamingType? StreamingType { get; }
+
+    bool? External { get; }
 }

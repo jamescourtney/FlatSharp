@@ -64,6 +64,11 @@ public abstract class BaseSchemaModel
     {
         this.Validate();
 
+        if (this.Attributes.External == true && context.CompilePass == CodeWritingPass.LastPass)
+        {
+            return;
+        }
+
         writer.AppendLine($"namespace {this.Namespace}");
         using (writer.WithBlock())
         {

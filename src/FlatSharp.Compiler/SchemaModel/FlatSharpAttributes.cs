@@ -67,6 +67,8 @@ public class FlatSharpAttributes : IFlatSharpAttributes
 
     public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
+    public bool? External => this.TryParseBoolean(MetadataKeys.External);
+
     private bool? TryParseBoolean(string key)
     {
         if (this.parsed.TryGetValue(key, out object? obj))
