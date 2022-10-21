@@ -105,6 +105,6 @@ namespace ExternalTests
 
         public virtual int A { get; set; }
 
-        public virtual string B { get; set; }
+        public virtual string? B { get; set; }
     }
 }
