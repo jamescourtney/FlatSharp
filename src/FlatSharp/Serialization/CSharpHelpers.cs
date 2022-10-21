@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Linq;
+
 namespace FlatSharp.CodeGen;
 
 /// <summary>
@@ -85,6 +87,11 @@ internal static class CSharpHelpers
         var setModifier = GetAccessModifier(property.SetMethod, convertProtectedInternalToProtected);
 
         return GetPropertyAccessModifiers(getModifier, setModifier);
+    }
+
+    internal static bool IsCSharp11RequiredProperty(PropertyInfo property)
+    {
+        return property.GetCustomAttributes().Any(x => x.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute");
     }
 
     internal static string ToCSharpString(this AccessModifier? modifier)

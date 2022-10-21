@@ -2,7 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
@@ -12,7 +12,7 @@
     <Nullable>annotations</Nullable>
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
-    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net6.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
   </PropertyGroup>
   
   <ItemGroup>

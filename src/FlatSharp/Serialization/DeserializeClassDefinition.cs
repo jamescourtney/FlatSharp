@@ -216,9 +216,15 @@ internal class DeserializeClassDefinition
                 }}";
         }
 
+        string required = string.Empty;
+        if (CSharpHelpers.IsCSharp11RequiredProperty(itemModel.PropertyInfo))
+        {
+            required = " required";
+        }
+
         string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
         this.propertyOverrides.Add($@"
-            {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
+            {accessModifiers.propertyModifier.ToCSharpString()}{required} override {typeName} {itemModel.PropertyInfo.Name}
             {{ 
                 {accessModifiers.getModifer.ToCSharpString()} get
                 {{
@@ -376,6 +382,9 @@ internal class DeserializeClassDefinition
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
+#if NET7_0_OR_GREATER
+            [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+#endif
             [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
             private {this.ClassName}(TInputBuffer buffer, int offset, short remainingDepth) : base({baseCtorParams}) 
             {{ 

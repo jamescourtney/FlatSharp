@@ -108,6 +108,9 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     private void EmitCopyConstructor(CodeWriter writer, CompileContext context)
     {
+        writer.AppendLine("#if NET7_0_OR_GREATER");
+        writer.AppendLine("[System.Diagnostics.CodeAnalysis.SetsRequiredMembers]");
+        writer.AppendLine("#endif");
         writer.AppendLine($"public {this.Name}({this.Name} source)");
         using (writer.WithBlock())
         {

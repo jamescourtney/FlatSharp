@@ -14,40 +14,60 @@
  * limitations under the License.
  */
 
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Running;
 using FlatSharp;
 using FlatSharp.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace BenchmarkCore
 {
-    public class Benchmark
-    {
-    }
-
     public class Program
     {
         public static void Main(string[] args)
         {
-            Job job = Job.ShortRun
-                .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(1)
-                .WithWarmupCount(3)
-                .WithIterationCount(5)
-                .WithRuntime(CoreRuntime.Core60)
-                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
+            var table = new StructsTable
+            {
+                VecValue = Enumerable.Range(1, 300).Select(x => new ValueStruct() { Value = 1 }).ToArray(),
+                SingleValue = new(),
+            };
+            /*
+            var serializer = StructsTable.Serializer;
+            byte[] buffer = new byte[serializer.GetMaxSize(table)];
+            serializer.Write(buffer, table);
 
-            var config = DefaultConfig.Instance
-                 .AddDiagnoser(MemoryDiagnoser.Default)
-                 .AddJob(job);
+            for (int i = 0; i < 10000; ++i)
+            {
+                var item = serializer.Parse(buffer);
+                TraverseAndUpdate(item);
+            }
 
-            BenchmarkRunner.Run(typeof(Benchmark), config);
+            Stopwatch sw = Stopwatch.StartNew();
+
+            for (int i = 0; i < 1000000; ++i)
+            {
+                var item = serializer.Parse(buffer);
+                TraverseAndUpdate(item);
+            }
+
+            sw.Stop();
+
+            Console.WriteLine(sw.ElapsedMilliseconds);
         }
+
+        private static void TraverseAndUpdate(StructsTable table)
+        {
+            var vector = table.VecValue;
+            int count = vector.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = vector[i];
+                item.Value++;
+                vector[i] = item;
+            }*/
+        }
+
     }
 }

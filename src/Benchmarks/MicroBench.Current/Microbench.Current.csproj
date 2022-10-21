@@ -3,12 +3,12 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net6.0</TargetFrameworks>
+        <TargetFrameworks>net7.0</TargetFrameworks>
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
         <Nullable>enable</Nullable>
         <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE</DefineConstants>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net6.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     </PropertyGroup>
 
     <ItemGroup>
