@@ -31,6 +31,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
     private int inlineSize;
     private int maxAlignment = 1;
+    private bool isExternal;
 
     internal ValueStructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
     {
@@ -108,6 +109,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
+        if (this.isExternal)
+        {
+            return this.CreateExternalParseMethod(context);
+        }
+
         var propertyStatements = new List<string>();
         for (int i = 0; i < this.members.Count; ++i)
         {
@@ -123,7 +129,6 @@ public class ValueStructTypeModel : RuntimeTypeModel
         }
 
         string nonMarshalBody = $@"
-            {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
             var item = default({CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)});
             {string.Join("\r\n", propertyStatements)}
             return item;
@@ -139,11 +144,10 @@ public class ValueStructTypeModel : RuntimeTypeModel
         // For little endian architectures, we can do the equivalent of a reinterpret_cast operation. This will be
         // generally faster than reading fields individually, since we will read entire words.
         string body = $@"
-            {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
             if (BitConverter.IsLittleEndian)
             {{
                 var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
-                return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {globalName}>(mem)[0];
+                return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.{nameof(MemoryMarshal.Read)}<{globalName}>(mem);
             }}
             else
             {{
@@ -156,6 +160,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
+        if (this.isExternal)
+        {
+            return this.CreateExternalSerializeMethod(context);
+        }
+
         var propertyStatements = new List<string>();
         for (int i = 0; i < this.members.Count; ++i)
         {
@@ -169,18 +178,16 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
             propertyStatements.Add(fieldContext.GetSerializeInvocation(member.model.ClrType) + ";");
         }
-
+        
         string body;
         string slice = $"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
         if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
         {
             body = $@"
-                {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
                 {slice}
                 if (BitConverter.IsLittleEndian)
                 {{
-                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(sizedSpan);
-                    tempSpan[0] = {context.ValueVariableName};
+                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
                 }}
                 else
                 {{
@@ -191,12 +198,38 @@ public class ValueStructTypeModel : RuntimeTypeModel
         else
         {
             body = $@"
-                {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
                 {slice}
                 {string.Join("\r\n", propertyStatements)}";
         }
 
         return new CodeGeneratedMethod(body);
+    }
+
+    private CodeGeneratedMethod CreateExternalSerializeMethod(SerializationCodeGenContext context)
+    {
+        string globalName = this.ClrType.GetGlobalCompilableTypeName();
+        string body = $@"
+            FlatSharpInternal.AssertLittleEndian();
+            FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
+            Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
+            {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
+        ";
+
+        return new CodeGeneratedMethod(body) { IsMethodInline = true };
+    }
+
+    private CodeGeneratedMethod CreateExternalParseMethod(ParserCodeGenContext context)
+    {
+        string globalName = this.ClrType.GetGlobalCompilableTypeName();
+
+        string body = $@"
+            FlatSharpInternal.AssertLittleEndian();
+            FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
+            var slice = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
+            return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Read<{globalName}>(slice);
+        ";
+
+        return new CodeGeneratedMethod(body) { IsMethodInline = true };
     }
 
     public override void Initialize()
@@ -273,25 +306,38 @@ public class ValueStructTypeModel : RuntimeTypeModel
             throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
         }
 
+        this.isExternal = this.ClrType.GetCustomAttribute<ExternalDefinitionAttribute>() is not null;
         this.CanMarshalOnSerialize = false;
         this.CanMarshalOnParse = false;
+
 
         if (UnsafeSizeOf(this.ClrType) == this.inlineSize)
         {
             this.CanMarshalOnParse = structAttribute.MemoryMarshalBehavior switch
             {
-                MemoryMarshalBehavior.Never => false,
-                MemoryMarshalBehavior.Serialize => false,
-                _ => true,
+                MemoryMarshalBehavior.Parse or MemoryMarshalBehavior.Always => true,
+                MemoryMarshalBehavior.Default => this.IsComplexStruct(),
+                _ => false,
             };
 
             this.CanMarshalOnSerialize = structAttribute.MemoryMarshalBehavior switch
             {
-                MemoryMarshalBehavior.Never => false,
-                MemoryMarshalBehavior.Parse => false,
-                _ => true,
+                MemoryMarshalBehavior.Serialize or MemoryMarshalBehavior.Always => true,
+                MemoryMarshalBehavior.Default => this.IsComplexStruct(),
+                _ => false,
             };
         }
+    }
+
+    /// <summary>
+    /// A complex struct is defined as:
+    /// Having nested structs OR having at least 4 members. Not rocket science, but 
+    /// experimentally, performance of MemoryMarshal.Cast overtakes field-by-field serialization 
+    /// at around the 4 element mark. This is a heurustic, and can be overridden.
+    /// </summary>
+    private bool IsComplexStruct()
+    {
+        return this.members.Count >= 4 || this.members.Any(x => x.model.SchemaType != FlatBufferSchemaType.Scalar);
     }
 
     private static int UnsafeSizeOf(Type t)

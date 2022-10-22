@@ -45,6 +45,20 @@ public static class FlatSharpInternal
             throw new FlatSharpInternalException(message);
         }
     }
+
+    /// <summary>
+    /// Asserts that the system is a LE architecture.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] //inline keeps the JIT codegen the same as this method should be known at JIT time.
+    public static void AssertLittleEndian()
+    {
+        if (!BitConverter.IsLittleEndian)
+        {
+            string message = $"FlatSharp encountered a code path that is only functional on little endian architectures.";
+            throw new FlatSharpInternalException(message);
+        }
+    }
 }
 
 [ExcludeFromCodeCoverage]
