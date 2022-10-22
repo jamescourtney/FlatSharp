@@ -18,6 +18,7 @@ using System.Linq;
 using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using FlatSharp.TypeModel;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -71,6 +72,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         }
 
         this.AttributeValidator.MemoryMarshalValidator = _ => AttributeValidationResult.Valid;
+        this.AttributeValidator.ExternValidator = _ => AttributeValidationResult.Valid;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ValueStructSchemaModel? model)

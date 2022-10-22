@@ -123,6 +123,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         }
 
         string nonMarshalBody = $@"
+            {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
             var item = default({CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)});
             {string.Join("\r\n", propertyStatements)}
             return item;
@@ -133,13 +134,16 @@ public class ValueStructTypeModel : RuntimeTypeModel
             return new CodeGeneratedMethod(nonMarshalBody);
         }
 
+        string globalName = this.ClrType.GetGlobalCompilableTypeName();
+
         // For little endian architectures, we can do the equivalent of a reinterpret_cast operation. This will be
         // generally faster than reading fields individually, since we will read entire words.
         string body = $@"
+            {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
             if (BitConverter.IsLittleEndian)
             {{
                 var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
-                return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(mem)[0];
+                return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {globalName}>(mem)[0];
             }}
             else
             {{
@@ -171,6 +175,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
         {
             body = $@"
+                {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
                 {slice}
                 if (BitConverter.IsLittleEndian)
                 {{
@@ -186,6 +191,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         else
         {
             body = $@"
+                {CSharpHelpers.GetAssertSizeOfStatement(this, this.inlineSize)}
                 {slice}
                 {string.Join("\r\n", propertyStatements)}";
         }
@@ -274,29 +280,18 @@ public class ValueStructTypeModel : RuntimeTypeModel
         {
             this.CanMarshalOnParse = structAttribute.MemoryMarshalBehavior switch
             {
-                MemoryMarshalBehavior.Parse or MemoryMarshalBehavior.Always => true,
-                MemoryMarshalBehavior.Default => this.IsComplexStruct(),
-                _ => false,
+                MemoryMarshalBehavior.Never => false,
+                MemoryMarshalBehavior.Serialize => false,
+                _ => true,
             };
 
             this.CanMarshalOnSerialize = structAttribute.MemoryMarshalBehavior switch
             {
-                MemoryMarshalBehavior.Serialize or MemoryMarshalBehavior.Always => true,
-                MemoryMarshalBehavior.Default => this.IsComplexStruct(),
-                _ => false,
+                MemoryMarshalBehavior.Never => false,
+                MemoryMarshalBehavior.Parse => false,
+                _ => true,
             };
         }
-    }
-
-    /// <summary>
-    /// A complex struct is defined as:
-    /// Having nested structs OR having at least 4 members. Not rocket science, but 
-    /// experimentally, performance of MemoryMarshal.Cast overtakes field-by-field serialization 
-    /// at around the 4 element mark. This is a heurustic, and can be overridden.
-    /// </summary>
-    private bool IsComplexStruct()
-    {
-        return this.members.Count >= 4 || this.members.Any(x => x.model.SchemaType != FlatBufferSchemaType.Scalar);
     }
 
     private static int UnsafeSizeOf(Type t)

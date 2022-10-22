@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-using System.IO;
+namespace FlatSharp.Internal;
 
-namespace FlatSharp;
-
-internal static class FlatSharpInternal
+public static class FlatSharpInternal
 {
     [ExcludeFromCodeCoverage]
     public static void Assert(
@@ -31,6 +29,20 @@ internal static class FlatSharpInternal
         if (!condition)
         {
             throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+        }
+    }
+
+    /// <summary>
+    /// Asserts that the type T has the expected size.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] //inline keeps the JIT codegen the same as this method should be known at JIT time.
+    public static void AssertSizeOf<T>(int expectedSize) where T : struct
+    {
+        if (Unsafe.SizeOf<T>() != expectedSize)
+        {
+            string message = $"Flatsharp expected type: {typeof(T).FullName} to have size {expectedSize}. Unsafe.SizeOf reported size {Unsafe.SizeOf<T>()}.";
+            throw new FlatSharpInternalException(message);
         }
     }
 }

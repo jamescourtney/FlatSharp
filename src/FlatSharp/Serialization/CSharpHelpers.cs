@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using FlatSharp.TypeModel;
+
 namespace FlatSharp.CodeGen;
 
 /// <summary>
@@ -136,5 +138,11 @@ internal static class CSharpHelpers
         }
 
         throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
+    }
+
+    internal static string GetAssertSizeOfStatement(ITypeModel model, object size)
+    {
+        string globalName = model.GetGlobalCompilableTypeName();
+        return $"{typeof(FlatSharpInternal).GetGlobalCompilableTypeName()}.AssertSizeOf<{globalName}>({size});";
     }
 }
