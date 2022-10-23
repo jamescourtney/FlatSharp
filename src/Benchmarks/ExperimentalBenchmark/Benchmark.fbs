@@ -6,20 +6,24 @@ attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
 attribute "fs_external";
+attribute "fs_memoryMarshal";
+
+namespace System.Numerics;
+
+struct Vector3 (fs_external, fs_valueStruct)
+{
+    Data : [ubyte : 12];
+}
 
 namespace BenchmarkCore;
 
-enum Test : ubyte
-{
-   A,
-   B,
-   C
+struct FlatBufferVec3 (fs_valueStruct, fs_memoryMarshal:"Always") {
+    X : float;
+    Y : float;
+    Z : float;
 }
 
 table Table (fs_serializer) {
-    Items : [ VecTable ] (fs_sortedVector);
-}
-
-table VecTable {
-    Key : string (key);
+    Items : [ System.Numerics.Vector3 ];
+    NormalItems : [ FlatBufferVec3 ];
 }
