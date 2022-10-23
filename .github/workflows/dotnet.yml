@@ -14,26 +14,34 @@ jobs:
       AppVeyorBuild: true
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 7
+    
+    - name: Setup .NET 7 Preview
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 7.0.x
+        dotnet-quality: 'preview'
+        
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+        
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
+      
     - name: Build Compiler
       working-directory: src/FlatSharp.Compiler
       run: dotnet build -c Release --no-restore
+      
     - name: Build
       working-directory: src
       run: dotnet build -c Release --no-restore
+      
     - name: Test
       working-directory: src
       run: dotnet test -c Release --no-build --verbosity normal
+      
     - name: Upload Packages
       uses: actions/upload-artifact@v2
       with:
