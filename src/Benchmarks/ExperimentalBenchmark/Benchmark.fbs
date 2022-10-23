@@ -12,7 +12,7 @@ namespace System.Numerics;
 
 struct Vector3 (fs_external, fs_valueStruct)
 {
-    Data : [ubyte : 12];
+    Data : [ float32 : 3 ];
 }
 
 namespace BenchmarkCore;
