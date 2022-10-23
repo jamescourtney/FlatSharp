@@ -17,6 +17,7 @@
 using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using System.Text;
+using FlatSharp.CodeGen;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -156,12 +157,17 @@ public record PropertyFieldModel
             access = "protected ";
         }
 
-        writer.AppendLine($@"
-            {access}{@virtual} 
-#if NET7_0_OR_GREATER
-            {(this.Field.Required ? "required" : string.Empty)}
-#endif
-            {typeName} {this.FieldName} {{ get; {setter} }}");
+        string property = $"{access}{@virtual} {typeName} {this.FieldName} {{ get; {setter} }}";
+        if (this.Field.Required == true)
+        {
+            writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, $"required {property}")
+                  .Else(property)
+                  .Flush();
+        }
+        else
+        {
+            writer.AppendLine(property);
+        }
     }
 
     public string GetDefaultValue()

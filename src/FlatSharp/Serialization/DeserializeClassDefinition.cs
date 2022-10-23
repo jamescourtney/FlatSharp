@@ -224,7 +224,11 @@ internal class DeserializeClassDefinition
 
         string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
         this.propertyOverrides.Add($@"
+#if {CSharpHelpers.Net7PreprocessorVariable}
             {accessModifiers.propertyModifier.ToCSharpString()}{required} override {typeName} {itemModel.PropertyInfo.Name}
+#else
+            {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
+#endif
             {{ 
                 {accessModifiers.getModifer.ToCSharpString()} get
                 {{
@@ -382,7 +386,7 @@ internal class DeserializeClassDefinition
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
-#if NET7_0_OR_GREATER
+#if {CSharpHelpers.Net7PreprocessorVariable}
             [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
 #endif
             [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]

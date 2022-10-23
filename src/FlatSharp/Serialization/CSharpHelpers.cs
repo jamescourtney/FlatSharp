@@ -23,6 +23,8 @@ namespace FlatSharp.CodeGen;
 /// </summary>
 internal static class CSharpHelpers
 {
+    internal const string Net7PreprocessorVariable = "NET7_0_OR_GREATER";
+
     internal static string GetGlobalCompilableTypeName(this Type t)
     {
         return $"global::{GetCompilableTypeName(t)}";

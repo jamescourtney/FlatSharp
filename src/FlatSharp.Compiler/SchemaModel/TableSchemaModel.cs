@@ -72,16 +72,11 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
             writer.AppendLine();
 
-            writer.AppendLine("#if NET7_0_OR_GREATER");
-            writer.AppendLine();
-
             foreach (var option in new[] { FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Greedy, FlatBufferDeserializationOption.GreedyMutable, FlatBufferDeserializationOption.Progressive })
             {
-                writer.AppendLine($"static ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{option}Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{option});");
+                string staticAbstractMethod = $"static ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{option}Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{option});";
+                writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, staticAbstractMethod).Flush();
             }
-
-            writer.AppendLine();
-            writer.AppendLine("#endif");
         }
     }
 
@@ -113,16 +108,17 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
     protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
     {
+        string line = $"this.{model.Field.Name} = {model.GetDefaultValue()};";
+
         if (model.Field.Required)
         {
-            writer.AppendLine("#if !NET7_0_OR_GREATER");
+            writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, string.Empty)
+                  .Else(line)
+                  .Flush();
         }
-
-        writer.AppendLine($"this.{model.Field.Name} = {model.GetDefaultValue()};");
-
-        if (model.Field.Required)
+        else
         {
-            writer.AppendLine("#endif");
+            writer.AppendLine(line);
         }
     }
 }
