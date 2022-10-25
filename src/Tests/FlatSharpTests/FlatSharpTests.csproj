@@ -8,8 +8,6 @@
     <AssemblyName>FlatSharpTests</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <RootNamespace>FlatSharpTests</RootNamespace>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>true</SignAssembly>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 

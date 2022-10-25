@@ -6,8 +6,6 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpCompilerTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>true</SignAssembly>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
