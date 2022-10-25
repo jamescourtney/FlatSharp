@@ -36,11 +36,11 @@ jobs:
       
     - name: Build
       working-directory: src/Tests/Coverage
-      run: dotnet build -c Debug /p:SignAssembly=false
+      run: dotnet build -c Debug /p:SignAssembly=false /p:EnableNet7=false
       
     - name: Test
       working-directory: src/Tests/Coverage
-      run: dotnet test -c Debug /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:SignAssembly=false
+      run: dotnet test -c Debug /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:SignAssembly=false /p:EnableNet7=false
       
     - name: Upload
       working-directory: src/Tests/Coverage
