@@ -16,6 +16,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Setup .NET 7 Preview
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
+        
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
       with:
@@ -30,18 +36,14 @@ jobs:
       working-directory: src
       run: dotnet tool install --global Codecov.Tool
       
-    - name: Restore dependencies
-      working-directory: src
-      run: dotnet restore
-      
     - name: Build
       working-directory: src/Tests/Coverage
-      run: dotnet build -c Debug
+      run: dotnet build -c Debug /p:SignAssembly=false
       
     - name: Test
       working-directory: src/Tests/Coverage
-      run: dotnet test -c Debug /p:AltCoverForce=true /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:AltCoverStrongNameKey=..\..\..\misc\strongname.snk -f net6.0
+      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       
     - name: Upload
       working-directory: src/Tests/Coverage
-      run: codecov -f coverage.xml
+      run: codecov -f **/*coverage*.xml

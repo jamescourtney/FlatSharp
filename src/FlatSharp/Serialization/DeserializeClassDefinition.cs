@@ -216,9 +216,19 @@ internal class DeserializeClassDefinition
                 }}";
         }
 
+        string required = string.Empty;
+        if (CSharpHelpers.IsCSharp11RequiredProperty(itemModel.PropertyInfo))
+        {
+            required = " required";
+        }
+
         string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
         this.propertyOverrides.Add($@"
+#if {CSharpHelpers.Net7PreprocessorVariable}
+            {accessModifiers.propertyModifier.ToCSharpString()}{required} override {typeName} {itemModel.PropertyInfo.Name}
+#else
             {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
+#endif
             {{ 
                 {accessModifiers.getModifer.ToCSharpString()} get
                 {{
@@ -376,12 +386,17 @@ internal class DeserializeClassDefinition
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
+#pragma warning disable CS8618
+#if {CSharpHelpers.Net7PreprocessorVariable}
+            [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+#endif
             [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
             private {this.ClassName}(TInputBuffer buffer, int offset, short remainingDepth) : base({baseCtorParams}) 
             {{ 
                 {string.Join("\r\n", this.initializeStatements)}
                 {onDeserializedStatement}
             }}
+#pragma warning restore CS8618
         ";
     }
 

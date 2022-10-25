@@ -61,10 +61,10 @@ namespace Microbench
 
         public static class StructTables
         {
-            public static StructsTable SingleRef = new StructsTable { SingleRef = new RefStruct { Value = 1 } };
+            public static StructsTable SingleRef = new StructsTable { SingleRef = new RefStruct { Value = 1 }, SingleValue = default, };
             public static StructsTable SingleValue = new StructsTable { SingleValue = new ValueStruct { Value = 1 } };
-            public static StructsTable VectorRef = new StructsTable { VecRef = Enumerable.Range(1, 30).Select(x => new RefStruct { Value = x }).ToList() };
-            public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, 30).Select(x => new ValueStruct { Value = x }).ToList() };
+            public static StructsTable VectorRef = new StructsTable { VecRef = Enumerable.Range(1, 30).Select(x => new RefStruct { Value = x }).ToList(), SingleValue = default, };
+            public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, 30).Select(x => new ValueStruct { Value = x }).ToList(), SingleValue = default, };
         }
 
         public static class SortedVectorTables
@@ -106,7 +106,7 @@ namespace Microbench
             public static readonly byte[] StructTable_VecValue = AllocateAndSerialize(StructTables.VectorValue);
         }
 
-        private static byte[] AllocateAndSerialize<T>(T value) where T : class, IFlatBufferSerializable<T>, new()
+        private static byte[] AllocateAndSerialize<T>(T value) where T : class, IFlatBufferSerializable<T>
         {
             byte[] buffer = new byte[value.Serializer.GetMaxSize(value)];
             int length = value.Serializer.Write(buffer, value);

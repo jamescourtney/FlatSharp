@@ -1,55 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\common.props" />
-  
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0</TargetFrameworks>
-    <AssemblyName>FlatSharp</AssemblyName>
-    <RootNamespace>FlatSharp</RootNamespace>
-    <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
-    <Nullable>annotations</Nullable>
-	
-	<!-- Suppress warnings about explicit references to .net standard. -->
-	<NoWarn>NETSDK1023</NoWarn>
-  </PropertyGroup>
+    <Import Project="..\common.props" />
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
+        <AssemblyName>FlatSharp</AssemblyName>
+        <RootNamespace>FlatSharp</RootNamespace>
+        <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
+        <Nullable>annotations</Nullable>
 
-  <ItemGroup>
-    <None Update="TypeModel\ScalarTypeModels.tt">
-      <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.8.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="NetStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
-  </ItemGroup>
+        <!-- Suppress warnings about explicit references to .net standard. -->
+        <NoWarn>NETSDK1023;NU5104</NoWarn>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\netstandard.dll" />
-    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Collections.dll" />
-    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Runtime.dll" />
-  </ItemGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="TypeModel\ScalarTypeModels.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ScalarTypeModels.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="TypeModel\ScalarTypeModels.tt">
+            <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
+            <Generator>TextTemplatingFileGenerator</Generator>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0-2.final" />
+        <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.4.0-2.final">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="System.Memory" Version="4.5.5" />
+        <PackageReference Include="NetStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\netstandard.dll" />
+        <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Collections.dll" />
+        <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Runtime.dll" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="TypeModel\ScalarTypeModels.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>ScalarTypeModels.tt</DependentUpon>
+        </Compile>
+    </ItemGroup>
 </Project>
