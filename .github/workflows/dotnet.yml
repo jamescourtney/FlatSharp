@@ -32,15 +32,15 @@ jobs:
       
     - name: Build Compiler
       working-directory: src/FlatSharp.Compiler
-      run: dotnet build -c Release --no-restore
+      run: dotnet build -c Release /p:SignAssembly=true
       
     - name: Build
       working-directory: src
-      run: dotnet build -c Release --no-restore
+      run: dotnet build -c Release /p:SignAssembly=true
       
     - name: Test
       working-directory: src
-      run: dotnet test -c Release --no-build --verbosity normal
+      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
       
     - name: Upload Packages
       uses: actions/upload-artifact@v2
