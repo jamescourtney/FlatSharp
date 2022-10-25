@@ -15,9 +15,11 @@
     <Compile Include="..\FlatSharpTests\**\*.cs">
       <Link>FS\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
+    <Compile Remove="..\FlatSharpTests\obj\**\*.cs"></Compile>
     <Compile Include="..\FlatSharpCompilerTests\**\*.cs">
       <Link>Compiler\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
+    <Compile Remove="..\FlatSharpCompilerTests\obj\**\*.cs"></Compile>
   </ItemGroup>
 
   <ItemGroup>

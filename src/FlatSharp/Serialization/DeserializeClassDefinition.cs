@@ -386,6 +386,7 @@ internal class DeserializeClassDefinition
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
+#pragma warning disable CS8618
 #if {CSharpHelpers.Net7PreprocessorVariable}
             [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
 #endif
@@ -395,6 +396,7 @@ internal class DeserializeClassDefinition
                 {string.Join("\r\n", this.initializeStatements)}
                 {onDeserializedStatement}
             }}
+#pragma warning restore CS8618
         ";
     }
 
