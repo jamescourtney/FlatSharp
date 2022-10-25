@@ -230,17 +230,8 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         {
             foreach (var method in this.calls)
             {
-                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]},");
-                using (writer.IncreaseIndent())
-                {
-                    writer.AppendLine("serviceImpl == null");
-                    using (writer.IncreaseIndent())
-                    {
-                        writer.AppendLine("? null");
-                        string serverDelegate = GetServerHandlerDelegate(method);
-                        writer.AppendLine($": {serverDelegate});");
-                    }
-                }
+                string serverDelegate = GetServerHandlerDelegate(method);
+                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, {serverDelegate});");
             }
         }
     }

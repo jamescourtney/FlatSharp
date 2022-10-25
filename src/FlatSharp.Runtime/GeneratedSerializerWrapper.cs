@@ -27,7 +27,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     private readonly IGeneratedSerializer<T> innerSerializer;
     private readonly Lazy<string?> lazyCSharp;
-    private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
+    private readonly ThreadLocal<ISharedStringWriter?>? sharedStringWriter;
     private readonly bool enableMemoryCopySerialization;
     private readonly string? fileIdentifier;
     private readonly short remainingDepthLimit;
@@ -47,7 +47,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
         var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
         this.fileIdentifier = tableAttribute?.FileIdentifier;
-        this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
+        this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(() => new SharedStringWriter());
         this.remainingDepthLimit = 1000; // sane default.
         this.option = option;
     }
@@ -64,13 +64,13 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         this.sharedStringWriter = template.sharedStringWriter;
         this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
 
-        Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
+        Func<ISharedStringWriter?>? writerFactory = settings.SharedStringWriterFactory;
         if (writerFactory is not null)
         {
-            ISharedStringWriter writer = writerFactory();
+            ISharedStringWriter? writer = writerFactory();
             if (writer is not null)
             {
-                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(writerFactory);
             }
             else
             {

@@ -1,10 +1,14 @@
 <Project>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly Condition=" '$(SignAssembly)' == '' ">true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SignAssembly)' == 'true' ">
+    <DefineConstants>$(DefineConstants);SIGNED_BUILD</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup>

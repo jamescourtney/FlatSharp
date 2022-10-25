@@ -5,13 +5,17 @@ attribute "fs_valueStruct";
 attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
+attribute "fs_writeThrough";
 
 namespace BenchmarkCore;
 
-table Table (fs_serializer) {
-    Items : [ VecTable ] (fs_sortedVector);
-}
+struct RefStruct (fs_writeThrough) { Value : int; }
+struct ValueStruct (fs_valueStruct) { Value : int; }
 
-table VecTable {
-    Key : string (key);
+table StructsTable //(fs_serializer:"Lazy")
+{
+    SingleRef : RefStruct;
+    SingleValue : ValueStruct (fs_writeThrough, required);
+    VecRef : [RefStruct];
+    VecValue : [ValueStruct] (fs_writeThrough);
 }
