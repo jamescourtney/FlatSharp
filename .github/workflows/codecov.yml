@@ -46,7 +46,7 @@ jobs:
       
     - name: Test
       working-directory: src/Tests/Coverage
-      run: dotnet test -c Debug /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:SignAssembly=false -f net7.0
+      run: dotnet test -c Debug /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:SignAssembly=false
       
     - name: Upload
       working-directory: src/Tests/Coverage
