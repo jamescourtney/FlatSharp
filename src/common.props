@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <SignAssembly Condition=" '$(SignAssembly)' == '' ">true</SignAssembly>
+    <Net7Tfm Condition=" '$(EnableNet7)' != 'false' ">net7.0</Net7Tfm>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <LangVersion>11.0</LangVersion>
