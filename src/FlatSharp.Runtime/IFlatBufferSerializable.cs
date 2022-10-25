@@ -34,7 +34,30 @@ public interface IFlatBufferSerializable<T>
     where T : class
 {
     /// <summary>
-    /// Gets a <see cref="ISerializer{T}"/> instance that can serialize this object.
+    /// Gets a <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
     /// </summary>
     ISerializer<T> Serializer { get; }
+
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// Gets a <see cref="FlatBufferDeserializationOption.Lazy"/> <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
+    /// </summary>
+    static abstract ISerializer<T> LazySerializer { get; }
+
+    /// <summary>
+    /// Gets a <see cref="FlatBufferDeserializationOption.Greedy"/> <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
+    /// </summary>
+    static abstract ISerializer<T> GreedySerializer { get; }
+
+    /// <summary>
+    /// Gets a <see cref="FlatBufferDeserializationOption.GreedyMutable"/> <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
+    /// </summary>
+    static abstract ISerializer<T> GreedyMutableSerializer { get; }
+
+    /// <summary>
+    /// Gets a <see cref="FlatBufferDeserializationOption.Progressive"/> <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
+    /// </summary>
+    static abstract ISerializer<T> ProgressiveSerializer { get; }
+#endif
 }
+

@@ -17,6 +17,7 @@
 using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using System.Text;
+using FlatSharp.CodeGen;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -144,19 +145,29 @@ public record PropertyFieldModel
 
         string @virtual = (this.Attributes.NonVirtual ?? this.Parent.Attributes.NonVirtual) switch
         {
-            false or null => "virtual ",
+            false or null => "virtual",
             true => string.Empty,
         };
 
         string typeName = this.GetTypeName();
 
-        string access = "public";
+        string access = "public ";
         if (this.ProtectedGetter)
         {
-            access = "protected";
+            access = "protected ";
         }
 
-        writer.AppendLine($"{access} {@virtual}{typeName} {this.FieldName} {{ get; {setter} }}");
+        string property = $"{access}{@virtual} {typeName} {this.FieldName} {{ get; {setter} }}";
+        if (this.Field.Required == true)
+        {
+            writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, $"required {property}")
+                  .Else(property)
+                  .Flush();
+        }
+        else
+        {
+            writer.AppendLine(property);
+        }
     }
 
     public string GetDefaultValue()

@@ -6,8 +6,6 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpCompilerTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>true</SignAssembly>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -15,22 +13,27 @@
     <Compile Include="..\FlatSharpTests\**\*.cs">
       <Link>FS\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
+    <Compile Remove="..\FlatSharpTests\obj\**\*.cs"></Compile>
     <Compile Include="..\FlatSharpCompilerTests\**\*.cs">
       <Link>Compiler\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
+    <Compile Remove="..\FlatSharpCompilerTests\obj\**\*.cs"></Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AltCover" Version="6.7.750" />
-    <PackageReference Include="Grpc.Core" Version="2.27.0" />
-    <PackageReference Include="Grpc.Core.Api" Version="2.35.0" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Grpc.Core" Version="2.46.5" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
-    <PackageReference Include="ReportGenerator" Version="4.1.2" />
-    <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="ReportGenerator" Version="5.1.10" />
+    <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.utility" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference> 

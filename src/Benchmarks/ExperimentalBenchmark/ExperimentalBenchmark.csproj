@@ -3,26 +3,22 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net6.0</TargetFrameworks>
+        <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net6.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+        <!--<PublishAot>true</PublishAot>-->
+        <IsPackable>false</IsPackable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
-        <PackageReference Include="Grpc" Version="2.27.0" />
-        <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-        <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj">
+            <PrivateAssets>all</PrivateAssets>
+        </ProjectReference>
+        <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
-        <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-        <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
-    </ItemGroup>
-    
     <ItemGroup>
         <FlatSharpSchema Include="Benchmark.fbs" />
     </ItemGroup>

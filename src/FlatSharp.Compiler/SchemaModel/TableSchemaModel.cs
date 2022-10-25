@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.ExceptionServices;
-
 using FlatSharp.Attributes;
 using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
@@ -71,6 +69,14 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
             writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => (ISerializer)(({nameof(IFlatBufferSerializable)}<{this.FullName}>)this).Serializer;");
             writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
+
+            writer.AppendLine();
+
+            foreach (var option in new[] { FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Greedy, FlatBufferDeserializationOption.GreedyMutable, FlatBufferDeserializationOption.Progressive })
+            {
+                string staticAbstractMethod = $"static ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{option}Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{option});";
+                writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, staticAbstractMethod).Flush();
+            }
         }
     }
 
@@ -102,6 +108,17 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
     protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
     {
-        writer.AppendLine($"this.{model.Field.Name} = {model.GetDefaultValue()};");
+        string line = $"this.{model.Field.Name} = {model.GetDefaultValue()};";
+
+        if (model.Field.Required)
+        {
+            writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, string.Empty)
+                  .Else(line)
+                  .Flush();
+        }
+        else
+        {
+            writer.AppendLine(line);
+        }
     }
 }

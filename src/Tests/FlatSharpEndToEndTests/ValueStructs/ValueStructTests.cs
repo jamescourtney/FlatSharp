@@ -29,7 +29,8 @@ public class ValueStructTestCases
             {
                 new() { X = 1, Y = 2, Z = 3 },
                 new() { X = 4, Y = 5, Z = 6 },
-            }
+            },
+            Point = default,
         };
 
         byte[] data = new byte[1024];
@@ -123,6 +124,7 @@ public class ValueStructTestCases
             valueStruct = vs,
             valueStructVector = Enumerable.Range(0, 10).Select(x => vs).ToList(),
             vectorOfUnion = Enumerable.Range(0, 10).Select(x => new TestUnion(vs)).ToList(),
+            requiredValueStruct = default,
         };
 
         ISerializer<RootTable> serializer = RootTable.Serializer;
@@ -352,7 +354,10 @@ public class ValueStructTestCases
     [Fact]
     public void SerializeAndParse_Empty()
     {
-        RootTable t = new();
+        RootTable t = new()
+        {
+            requiredValueStruct = default,
+        };
 
         Assert.Null(t.valueStruct);
 
