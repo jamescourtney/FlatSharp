@@ -32,7 +32,7 @@ jobs:
       
     - name: Restore dependencies
       working-directory: src
-      run: dotnet restore
+      run: dotnet restore /p:SignAssembly=false /p:EnableNet7=false
       
     - name: Build
       working-directory: src/Tests/Coverage
