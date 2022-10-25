@@ -28,7 +28,7 @@ public class SerializerSettings
     /// A value of <c>null</c> indicates that the default serializer settings should remain unchanged. If this
     /// delegate is set to return <c>null</c>, then shared strings will be disabled.
     /// </summary>
-    public Func<ISharedStringWriter>? SharedStringWriterFactory
+    public Func<ISharedStringWriter?>? SharedStringWriterFactory
     {
         get;
         set;

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>FlatSharpCompilerTests</AssemblyName>
+    <AssemblyName>FlatSharpCoverageTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
