@@ -15,6 +15,12 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Setup .NET 7 Preview
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
         
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
@@ -32,12 +38,12 @@ jobs:
       
     - name: Build
       working-directory: src/Tests/Coverage
-      run: dotnet build -c Debug /p:SignAssembly=false /p:EnableNet7=false
+      run: dotnet build -c Debug /p:SignAssembly=false
       
     - name: Test
       working-directory: src/Tests/Coverage
-      run: dotnet test -c Debug /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:SignAssembly=false /p:EnableNet7=false
+      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       
     - name: Upload
       working-directory: src/Tests/Coverage
-      run: codecov -f coverage.xml
+      run: codecov -f **/*coverage*.xml
