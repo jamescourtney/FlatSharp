@@ -7,7 +7,7 @@
           <Format>opencover</Format>          
           <UseSourceLink>true</UseSourceLink>
           <IncludeTestAssembly>false</IncludeTestAssembly>
-          <SkipAutoProps>true</SkipAutoProps>
+          <SkipAutoProps>false</SkipAutoProps>
           <InstrumentModulesWithoutLocalSources>false</InstrumentModulesWithoutLocalSources>
         </Configuration>
       </DataCollector>
