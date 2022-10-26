@@ -36,6 +36,8 @@ public class EnumSchemaModel : BaseSchemaModel
         this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value);
         this.documentation = @enum.Documentation;
         this.DeclaringFile = @enum.DeclarationFile;
+
+        this.AttributeValidator.ExternValidator = _ => AttributeValidationResult.Valid;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferEnum @enum, [NotNullWhen(true)] out EnumSchemaModel? model)

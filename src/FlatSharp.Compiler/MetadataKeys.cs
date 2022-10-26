@@ -148,8 +148,14 @@ public static class MetadataKeys
     /// </summary>
     public const string Streaming = "streaming";
 
+    /// <summary>
+    /// Indicates that a flatsharp table, struct, or enum is externally defined. FlatSharp will assume
+    /// that the signature matches what is in the FlatBuffer definition.
+    /// </summary>
+    public const string External = "fs_external";
+
     public static IEnumerable<string> UnsupportedStandardAttributes => new[]
     {
-            "force_align", "flexbuffer", "hash", "original_order"
-        };
+        "force_align", "flexbuffer", "hash", "original_order"
+    };
 }

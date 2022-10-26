@@ -14,60 +14,128 @@
  * limitations under the License.
  */
 
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
 using FlatSharp;
 using FlatSharp.Internal;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace BenchmarkCore
 {
-    public class Program
+    public class Test
     {
-        public static void Main(string[] args)
+        private static ISerializer<Table> Serializer;
+        //private static Table Table;
+        private static byte[] Buffer;
+
+        [GlobalSetup]
+        public void Setup()
         {
-            var table = new StructsTable
+            List<Vector3> vector3s = new List<Vector3>();
+            List<FlatBufferVec3> fbVec3s = new List<FlatBufferVec3>();
+            for (int i = 0; i < 300; ++i)
             {
-                VecValue = Enumerable.Range(1, 300).Select(x => new ValueStruct() { Value = 1 }).ToArray(),
-                SingleValue = new(),
-            };
-            /*
-            var serializer = StructsTable.Serializer;
-            byte[] buffer = new byte[serializer.GetMaxSize(table)];
-            serializer.Write(buffer, table);
-
-            for (int i = 0; i < 10000; ++i)
-            {
-                var item = serializer.Parse(buffer);
-                TraverseAndUpdate(item);
+                vector3s.Add(new Vector3(i));
+                fbVec3s.Add(new FlatBufferVec3 { X = i, Y = i, Z = i });
             }
 
-            Stopwatch sw = Stopwatch.StartNew();
+            Serializer = Table.Serializer.WithSettings(new() { DeserializationMode = FlatBufferDeserializationOption.Lazy });
 
-            for (int i = 0; i < 1000000; ++i)
-            {
-                var item = serializer.Parse(buffer);
-                TraverseAndUpdate(item);
-            }
+            Table t = new Table { Items = vector3s, NormalItems = fbVec3s };
 
-            sw.Stop();
-
-            Console.WriteLine(sw.ElapsedMilliseconds);
+            Buffer = new byte[Serializer.GetMaxSize(t)];
+            Serializer.Write(Buffer, t);
         }
 
-        private static void TraverseAndUpdate(StructsTable table)
+        [Benchmark]
+        public int ParseItem_Vec3()
         {
-            var vector = table.VecValue;
+            Table t = Serializer.Parse(Buffer);
+
+            Vector3 sum = new();
+            var vector = t.Items;
+            int count = vector.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                sum += vector[i];
+            }
+
+            return (int)Vector3.Dot(sum, Vector3.One);
+        }
+
+        [Benchmark]
+        public int ParseItem_Normal()
+        {
+            Table t = Serializer.Parse(Buffer);
+
+            float x = 0;
+            float y = 0;
+            float z = 0;
+
+            var vector = t.NormalItems;
             int count = vector.Count;
 
             for (int i = 0; i < count; ++i)
             {
                 var item = vector[i];
-                item.Value++;
-                vector[i] = item;
-            }*/
+
+                x += item.X;
+                y += item.Y;
+                z += item.Z;
+            }
+
+            return (int)(x + y + z);
         }
 
+        [Benchmark]
+        public int ParseItem_Normal_ToVec3()
+        {
+            Table t = Serializer.Parse(Buffer);
+
+            float x = 0;
+            float y = 0;
+            float z = 0;
+
+            var vector = t.NormalItems;
+            int count = vector.Count;
+            var vec3 = Vector3.Zero;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = vector[i];
+                ref Vector3 v3 = ref Unsafe.As<FlatBufferVec3, Vector3>(ref item);
+                vec3 += v3;
+            }
+
+            return (int)(x + y + z);
+        }
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            Job job = Job.ShortRun
+                .WithAnalyzeLaunchVariance(true)
+                .WithLaunchCount(1)
+                .WithWarmupCount(3)
+                .WithIterationCount(5)
+                .WithRuntime(CoreRuntime.Core60)
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
+
+            var config = DefaultConfig.Instance
+                 .AddDiagnoser(MemoryDiagnoser.Default)
+                 .AddJob(job);
+
+            BenchmarkRunner.Run(typeof(Test), config);
+        }
     }
 }

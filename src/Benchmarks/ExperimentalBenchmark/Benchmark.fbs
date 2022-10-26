@@ -5,17 +5,25 @@ attribute "fs_valueStruct";
 attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
-attribute "fs_writeThrough";
+attribute "fs_external";
+attribute "fs_memoryMarshal";
+
+namespace System.Numerics;
+
+struct Vector3 (fs_external, fs_valueStruct)
+{
+    Data : [ float32 : 3 ];
+}
 
 namespace BenchmarkCore;
 
-struct RefStruct (fs_writeThrough) { Value : int; }
-struct ValueStruct (fs_valueStruct) { Value : int; }
+struct FlatBufferVec3 (fs_valueStruct, fs_memoryMarshal:"Always") {
+    X : float;
+    Y : float;
+    Z : float;
+}
 
-table StructsTable //(fs_serializer:"Lazy")
-{
-    SingleRef : RefStruct;
-    SingleValue : ValueStruct (fs_writeThrough, required);
-    VecRef : [RefStruct];
-    VecValue : [ValueStruct] (fs_writeThrough);
+table Table (fs_serializer) {
+    Items : [ System.Numerics.Vector3 ];
+    NormalItems : [ FlatBufferVec3 ];
 }

@@ -18,6 +18,8 @@ using System.Linq;
 using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using FlatSharp.TypeModel;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using FlatSharp.Internal;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -71,6 +73,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         }
 
         this.AttributeValidator.MemoryMarshalValidator = _ => AttributeValidationResult.Valid;
+        this.AttributeValidator.ExternValidator = _ => AttributeValidationResult.Valid;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ValueStructSchemaModel? model)
@@ -107,6 +110,11 @@ public class ValueStructSchemaModel : BaseSchemaModel
         if (this.Attributes.MemoryMarshalBehavior is not null)
         {
             memMarshalBehavior = $"{nameof(FlatBufferStructAttribute.MemoryMarshalBehavior)} = {nameof(MemoryMarshalBehavior)}.{this.Attributes.MemoryMarshalBehavior}";
+        }
+
+        if (this.Attributes.ExternalTypeName is not null)
+        {
+            writer.AppendLine($"[FlatSharp.Internal.ExternalDefinitionAttribute]");
         }
 
         writer.AppendLine($"[FlatBufferStruct({memMarshalBehavior})]");
