@@ -124,7 +124,7 @@ public class TableMemberTests
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type tableType = asm.GetType("TableMemberTests.Table");
-            PropertyInfo property = tableType.GetProperty("member");
+            PropertyInfo property = tableType.GetProperty("Member");
 
             Assert.Equal(typeof(T), property.PropertyType);
             var attribute = property.GetCustomAttribute<FlatBufferItemAttribute>();

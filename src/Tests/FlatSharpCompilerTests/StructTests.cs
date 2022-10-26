@@ -42,7 +42,7 @@ public class StructTests
               size:ushort;
             }";
 
-        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new() { NormalizeFieldNames = false });
 
         Type tableType = asm.GetTypes().Single(x => x.FullName == "StructTests.Table");
         object table = Activator.CreateInstance(tableType);

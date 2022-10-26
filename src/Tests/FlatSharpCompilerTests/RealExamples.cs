@@ -105,18 +105,18 @@ table TableThatStartsItAll {{
         object vec = Activator.CreateInstance(vec3Type);
         dynamic dVec = vec;
 
-        Assert.Equal((short)150, dMonster.mana);
-        Assert.Equal((short)100, dMonster.hp);
-        Assert.False(dMonster.friendly);
-        Assert.Equal("Blue", dMonster.color.ToString());
-        Assert.Null(dMonster.pos);
+        Assert.Equal((short)150, dMonster.Mana);
+        Assert.Equal((short)100, dMonster.Hp);
+        Assert.False(dMonster.Friendly);
+        Assert.Equal("Blue", dMonster.Color.ToString());
+        Assert.Null(dMonster.Pos);
 
-        Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
-        Assert.Equal(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
-        Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-        Assert.True(typeof(IFlatBufferUnion<,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("equipped").PropertyType)));
-        Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
-        Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
+        Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("Inventory").PropertyType);
+        Assert.Equal(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("Path").PropertyType);
+        Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("Weapons").PropertyType);
+        Assert.True(typeof(IFlatBufferUnion<,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("Equipped").PropertyType)));
+        Assert.Equal(typeof(string), monsterType.GetProperty("Name").PropertyType);
+        Assert.True(monsterType.GetProperty("Friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
         Assert.Equal(arrayVectorType, monsterType.GetProperty("FakeVector2").PropertyType);
 
