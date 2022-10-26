@@ -28,25 +28,22 @@ public class FieldNameNormalizationTests
             table Table {{
                 item_one : int32;
                 item_two : int32;
-                item__three : int32;
-                lowerPascalCase : int32;
-                item_f : int32;
+                ____item__three__ : int32;
+                lowerPascal_Case : int32;
+                _item_f_ : int32;
             }}
 
             struct Struct {{
                 item_one : int32;
                 item_two : int32;
                 ____item__three__ : int32;
-                lowerPascalCase : int32;
-                item_f : int32;
+                lowerPascal_Case : int32;
+                _item_f_ : int32;
             }}";
 
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
             schema,
-            new CompilerOptions
-            {
-                NormalizeFieldNames = true,
-            });
+            new CompilerOptions());
 
         foreach (string typeName in new[] { "FieldNameNormalizationTests.Table", "FieldNameNormalizationTests.Struct" })
         {
@@ -62,6 +59,46 @@ public class FieldNameNormalizationTests
     }
 
     [Fact]
+    public void NormalizeFieldNames_Disabled()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace FieldNameNormalizationTests;
+
+            table Table {{
+                item_one : int32;
+                item_two : int32;
+                ____item__three__ : int32;
+                lowerPascal_Case : int32;
+                _item_f_ : int32;
+            }}
+
+            struct Struct {{
+                item_one : int32;
+                item_two : int32;
+                ____item__three__ : int32;
+                lowerPascal_Case : int32;
+                _item_f_ : int32;
+            }}";
+
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new CompilerOptions() { NormalizeFieldNames = false });
+
+        foreach (string typeName in new[] { "FieldNameNormalizationTests.Table", "FieldNameNormalizationTests.Struct" })
+        {
+            Type type = asm.GetType(typeName);
+
+            Assert.NotNull(type);
+            Assert.NotNull(type.GetProperty("item_one"));
+            Assert.NotNull(type.GetProperty("item_two"));
+            Assert.NotNull(type.GetProperty("____item__three__"));
+            Assert.NotNull(type.GetProperty("lowerPascal_Case"));
+            Assert.NotNull(type.GetProperty("_item_f_"));
+        }
+    }
+
+    [Fact]
     public void PreserveFieldCasingOnField()
     {
         string schema = $@"
@@ -70,12 +107,12 @@ public class FieldNameNormalizationTests
 
             table Table {{
                 item_one : int32;
-                item_two : int32 ({MetadataKeys.PreserveFieldCasing});
+                item_two : int32 ({MetadataKeys.LiteralName});
             }}
 
             struct Struct {{
                 item_one : int32;
-                item_two : int32 ({MetadataKeys.PreserveFieldCasing});
+                item_two : int32 ({MetadataKeys.LiteralName});
             }}";
 
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
@@ -102,13 +139,13 @@ public class FieldNameNormalizationTests
             {MetadataHelpers.AllAttributes}
             namespace FieldNameNormalizationTests;
 
-            table Table ({MetadataKeys.PreserveFieldCasing}) {{
-                item_one : int32 ({MetadataKeys.PreserveFieldCasing}:""false"");
+            table Table ({MetadataKeys.LiteralName}) {{
+                item_one : int32 ({MetadataKeys.LiteralName}:""false"");
                 item_two : int32;
             }}
 
-            struct Struct ({MetadataKeys.PreserveFieldCasing}) {{
-                item_one : int32 ({MetadataKeys.PreserveFieldCasing}:""false"");
+            struct Struct ({MetadataKeys.LiteralName}) {{
+                item_one : int32 ({MetadataKeys.LiteralName}:""false"");
                 item_two : int32;
             }}";
 

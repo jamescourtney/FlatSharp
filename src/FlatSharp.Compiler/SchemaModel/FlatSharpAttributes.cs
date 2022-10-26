@@ -41,7 +41,7 @@ public class FlatSharpAttributes : IFlatSharpAttributes
 
     public bool? NonVirtual => this.TryParseBoolean(MetadataKeys.NonVirtualProperty);
 
-    public bool? PreserveFieldCasing => this.TryParseBoolean(MetadataKeys.PreserveFieldCasing);
+    public bool? PreserveFieldCasing => this.TryParseBoolean(MetadataKeys.LiteralName);
 
     public bool? SortedVector => this.TryParseBoolean(MetadataKeys.SortedVector);
 

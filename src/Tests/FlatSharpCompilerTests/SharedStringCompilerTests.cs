@@ -33,15 +33,15 @@ public class SharedStringCompilerTests
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
         Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
-        var property = tableType.GetProperty("foo");
+        var property = tableType.GetProperty("Foo");
 
         Assert.Equal(typeof(string), property.PropertyType);
         Assert.True(property.GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
 
-        Assert.Equal(typeof(string[]), tableType.GetProperty("bar").PropertyType);
-        Assert.True(tableType.GetProperty("bar").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
+        Assert.Equal(typeof(string[]), tableType.GetProperty("Bar").PropertyType);
+        Assert.True(tableType.GetProperty("Bar").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
 
-        Assert.Equal(typeof(IList<string>), tableType.GetProperty("baz").PropertyType);
-        Assert.True(tableType.GetProperty("baz").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
+        Assert.Equal(typeof(IList<string>), tableType.GetProperty("Baz").PropertyType);
+        Assert.True(tableType.GetProperty("Baz").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
     }
 }

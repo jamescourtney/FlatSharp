@@ -552,7 +552,7 @@ public class FlatSharpCompiler
         var schema = mutableSerializer.Parse(bfbs);
 
         // Modify
-        if (options.NormalizeFieldNames == true)
+        if (options.NormalizeFieldNames != false)
         {
             foreach (Schema.FlatBufferObject item in schema.Objects)
             {
