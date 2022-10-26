@@ -11,6 +11,7 @@
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
     <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+    <FlatSharpNameNormalization>false</FlatSharpNameNormalization>
   </PropertyGroup>
   
   <ItemGroup>
