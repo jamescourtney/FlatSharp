@@ -29,7 +29,7 @@ using System.Runtime.CompilerServices;
 
 namespace BenchmarkCore
 {
-    public class Benchmark
+    public class Test
     {
         private static ISerializer<Table> Serializer;
         //private static Table Table;
@@ -135,7 +135,7 @@ namespace BenchmarkCore
                  .AddDiagnoser(MemoryDiagnoser.Default)
                  .AddJob(job);
 
-            BenchmarkRunner.Run(typeof(Benchmark), config);
+            BenchmarkRunner.Run(typeof(Test), config);
         }
     }
 }
