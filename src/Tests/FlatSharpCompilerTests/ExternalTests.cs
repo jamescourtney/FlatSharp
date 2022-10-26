@@ -21,7 +21,7 @@ namespace FlatSharpTests.Compiler
     public class ExternalTests
     {
         [Fact]
-        public void ExternalItems()
+        public void ExternalStructAndEnum()
         {
             string schema = $@"
                 {MetadataHelpers.AllAttributes}
@@ -30,7 +30,6 @@ namespace FlatSharpTests.Compiler
 
                 enum ExternalEnum : ubyte ({MetadataKeys.External}) {{ A, B, C }}
                 struct ExternalStruct ({MetadataKeys.External}, {MetadataKeys.ValueStruct}) {{ X : float32; Y : float32; Z : float32; }}
-                //table ExternalTable ({MetadataKeys.External}) {{ A : int; B : string; }}
         
                 table Table {{ E : ExternalEnum; S : ExternalStruct;  }}
             ";
@@ -52,11 +51,61 @@ namespace FlatSharpTests.Compiler
             prop = externalTable.GetProperty("S");
             Assert.NotNull(prop);
             Assert.Equal(typeof(global::ExternalTests.ExternalStruct?), prop.PropertyType);
+        }
 
-            //Assert.Null(asm.GetType("ExternalTests.ExternalTable"));
-            //prop = externalTable.GetProperty("T");
-            //Assert.NotNull(prop);
-            //Assert.Equal(typeof(global::ExternalTests.ExternalTable), prop.PropertyType);
+        [Fact]
+        public void ExternalTable_NotAllowed()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace ExternalTests;
+                table ExternalTable ({MetadataKeys.External}) {{ A : int; }}
+            ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new()));
+
+            Assert.Contains("The attribute 'fs_external' is never valid on Table elements.", ex.Message);
+        }
+
+        [Fact]
+        public void ExternalReferenceStruct_NotAllowed()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace ExternalTests;
+                struct ExternalTable ({MetadataKeys.External}) {{ A : int; }}
+            ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new()));
+
+            Assert.Contains("The attribute 'fs_external' is never valid on ReferenceStruct elements.", ex.Message);
+        }
+
+        [Fact]
+        public void ExternalReferenceUnion_NotAllowed()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace ExternalTests;
+                
+                table A {{}}
+                table B {{}}
+
+                union Test ({MetadataKeys.External}) {{ A, B }}
+            ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new()));
+
+            Assert.Contains("The attribute 'fs_external' is never valid on Union elements.", ex.Message);
         }
     }
 }
@@ -81,30 +130,5 @@ namespace ExternalTests
 
         [FieldOffset(8)]
         public float Z;
-    }
-
-    public class ExternalTable
-    {
-        public ExternalTable()
-        {
-        }
-
-        public ExternalTable(ExternalTable item)
-        {
-            this.A = item.A;
-            this.B = item.B;
-        }
-
-        protected ExternalTable(FlatBufferDeserializationContext context)
-        {
-        }
-
-        protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
-        {
-        }
-
-        public virtual int A { get; set; }
-
-        public virtual string? B { get; set; }
     }
 }

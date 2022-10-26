@@ -85,7 +85,7 @@ public class DefaultCtorTests
             struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.None}"") {{ Int:int; }}";
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-        Assert.Contains("The attribute 'fs_defaultCtor' value None is not valid on Struct elements.", ex.Errors[0]);
+        Assert.Contains("The attribute 'fs_defaultCtor' value None is not valid on ReferenceStruct elements.", ex.Errors[0]);
     }
 
     [Fact]

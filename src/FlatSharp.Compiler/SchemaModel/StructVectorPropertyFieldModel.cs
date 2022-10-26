@@ -92,7 +92,7 @@ public record StructVectorPropertyFieldModel
         [NotNullWhen(true)] out StructVectorPropertyFieldModel? model)
     {
         model = null;
-        if (parent.ElementType != FlatBufferSchemaElementType.Struct)
+        if (parent.ElementType != FlatBufferSchemaElementType.ReferenceStruct)
         {
             return false;
         }

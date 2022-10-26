@@ -90,7 +90,7 @@ public record PropertyFieldModel
     public static bool TryCreate(BaseReferenceTypeSchemaModel parent, Field field, int previousIndex, [NotNullWhen(true)] out PropertyFieldModel? model)
     {
         model = null;
-        if (parent.ElementType != FlatBufferSchemaElementType.Table && parent.ElementType != FlatBufferSchemaElementType.Struct)
+        if (parent.ElementType != FlatBufferSchemaElementType.Table && parent.ElementType != FlatBufferSchemaElementType.ReferenceStruct)
         {
             return false;
         }
