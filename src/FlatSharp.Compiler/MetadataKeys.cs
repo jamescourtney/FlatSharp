@@ -110,7 +110,7 @@ public static class MetadataKeys
     /// - Struct (as a default for all fields in the struct, overridden by the setting on a field)
     /// - Field 
     /// </summary>
-    public const string PreserveFieldCasing = "fs_preserveFieldCasing";
+    public const string LiteralName = "fs_literalName";
 
     /// <summary>
     /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.

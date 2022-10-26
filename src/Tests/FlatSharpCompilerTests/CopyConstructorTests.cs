@@ -127,7 +127,7 @@ table InnerTable {{
         byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(original)];
         int bytesWritten = FlatBufferSerializer.Default.Serialize(original, data);
 
-        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new() { NormalizeFieldNames = false });
 
         Type outerTableType = asm.GetType("CopyConstructorTest.OuterTable");
         dynamic serializer = outerTableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);

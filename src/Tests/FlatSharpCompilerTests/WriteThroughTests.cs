@@ -37,20 +37,20 @@ public class WriteThroughTests
             ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
             dynamic table = Activator.CreateInstance(tableType);
             table.Struct = (dynamic)Activator.CreateInstance(structType);
-            table.Struct.foo = 42;
-            table.Struct.bar = 65;
+            table.Struct.Foo = 42;
+            table.Struct.Bar = 65;
 
             byte[] data = new byte[100];
             serializer.Write(data, (object)table);
 
             dynamic parsed = serializer.Parse(data);
-            parsed.Struct.foo = 100;
+            parsed.Struct.Foo = 100;
 
-            Assert.Throws<NotMutableException>(() => parsed.Struct.bar = 22);
+            Assert.Throws<NotMutableException>(() => parsed.Struct.Bar = 22);
 
             dynamic parsed2 = serializer.Parse(data);
-            Assert.Equal(100, (int)parsed2.Struct.foo);
-            Assert.Equal(65, (int)parsed2.Struct.bar);
+            Assert.Equal(100, (int)parsed2.Struct.Foo);
+            Assert.Equal(65, (int)parsed2.Struct.Bar);
         }
 
         Test(FlatBufferDeserializationOption.Lazy);

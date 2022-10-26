@@ -96,7 +96,7 @@
         </PropertyGroup>
 
         <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' == '' ">
-            <FlatSharpNameNormalization>false</FlatSharpNameNormalization>
+            <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
         </PropertyGroup>
 
         <!-- Query the installed SDKs. -->
