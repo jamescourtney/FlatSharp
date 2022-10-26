@@ -551,15 +551,15 @@ public class FlatSharpCompiler
         // Mutable
         var schema = mutableSerializer.Parse(bfbs);
 
-        // Modify
+        // Normalize names.
         if (options.NormalizeFieldNames != false)
         {
             foreach (Schema.FlatBufferObject item in schema.Objects)
             {
-                bool? preserveFieldCasingParent = item.Attributes != null ? new FlatSharpAttributes(item.Attributes).PreserveFieldCasing : default;
+                bool? preserveFieldCasingParent = item.Attributes != null ? new FlatSharpAttributes(item.Attributes).PreserveFieldName : default;
                 foreach (Schema.Field field in item.Fields)
                 {
-                    bool? preserveFieldCasing = field.Attributes != null ? preserveFieldCasing = new FlatSharpAttributes(field.Attributes).PreserveFieldCasing : default;
+                    bool? preserveFieldCasing = field.Attributes != null ? preserveFieldCasing = new FlatSharpAttributes(field.Attributes).PreserveFieldName : default;
 
                     var preserve = (preserveFieldCasing ?? preserveFieldCasingParent) switch
                     {
@@ -571,6 +571,37 @@ public class FlatSharpCompiler
                     {
                         field.Name = NormalizeFieldName(field.Name);
                     }
+                }
+            }
+        }
+
+        // Swap external type names.
+        {
+            foreach (Schema.FlatBufferObject item in schema.Objects)
+            {
+                if (item.Attributes is null)
+                {
+                    continue;
+                }
+
+                FlatSharpAttributes attrs = new(item.Attributes);
+                if (!string.IsNullOrWhiteSpace(attrs.ExternalTypeName))
+                {
+                    item.Name = attrs.ExternalTypeName.Trim();
+                }
+            }
+
+            foreach (Schema.FlatBufferEnum item in schema.Enums)
+            {
+                if (item.Attributes is null)
+                {
+                    continue;
+                }
+
+                FlatSharpAttributes attrs = new(item.Attributes);
+                if (!string.IsNullOrWhiteSpace(attrs.ExternalTypeName))
+                {
+                    item.Name = attrs.ExternalTypeName.Trim();
                 }
             }
         }

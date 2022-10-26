@@ -64,7 +64,7 @@ public abstract class BaseSchemaModel
     {
         this.Validate();
 
-        if (this.Attributes.External == true && context.CompilePass == CodeWritingPass.LastPass)
+        if (this.Attributes.ExternalTypeName is not null && context.CompilePass == CodeWritingPass.LastPass)
         {
             return;
         }

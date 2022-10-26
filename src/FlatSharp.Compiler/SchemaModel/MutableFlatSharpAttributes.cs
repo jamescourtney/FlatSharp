@@ -33,7 +33,7 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.ForceWrite = other.ForceWrite;
             this.MemoryMarshalBehavior = other.MemoryMarshalBehavior;
             this.NonVirtual = other.NonVirtual;
-            this.PreserveFieldCasing = other.PreserveFieldCasing;
+            this.PreserveFieldName = other.PreserveFieldName;
             this.RpcInterface = other.RpcInterface;
             this.SetterKind = other.SetterKind;
             this.SharedString = other.SharedString;
@@ -43,7 +43,7 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.VectorKind = other.VectorKind;
             this.WriteThrough = other.WriteThrough;
             this.StreamingType = other.StreamingType;
-            this.External = other.External;
+            this.ExternalTypeName = other.ExternalTypeName;
         }
     }
 
@@ -57,7 +57,7 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
 
     public bool? NonVirtual { get; set; }
 
-    public bool? PreserveFieldCasing { get; set; }
+    public bool? PreserveFieldName { get; set; }
 
     public bool? RpcInterface { get; set; }
 
@@ -77,5 +77,5 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
 
     public RpcStreamingType? StreamingType { get; set; }
 
-    public bool? External { get; set; }
+    public string? ExternalTypeName { get; set; }
 }

@@ -21,7 +21,7 @@ namespace FlatSharpTests.Compiler
     public class ExternalTests
     {
         [Fact]
-        public void ExternalStructAndEnum()
+        public void ExternalStructAndEnum_WithImplicitNames()
         {
             string schema = $@"
                 {MetadataHelpers.AllAttributes}
@@ -48,6 +48,39 @@ namespace FlatSharpTests.Compiler
             Assert.Equal(typeof(global::ExternalTests.ExternalEnum), prop.PropertyType);
 
             Assert.Null(asm.GetType("ExternalTests.ExternalStruct"));
+            prop = externalTable.GetProperty("S");
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(global::ExternalTests.ExternalStruct?), prop.PropertyType);
+        }
+
+        [Fact]
+        public void ExternalStructAndEnum_WithExplicitNames()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace Something;
+
+                enum ExternalEnum : ubyte ({MetadataKeys.External}:""ExternalTests.ExternalEnum"") {{ A, B, C }}
+                struct ExternalStruct ({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct}) {{ X : float32; Y : float32; Z : float32; }}
+        
+                table Table {{ E : ExternalEnum; S : ExternalStruct;  }}
+            ";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly });
+
+            Type externalTable = asm.GetType("Something.Table");
+            Assert.NotNull(externalTable);
+
+            Assert.Null(asm.GetType("Something.ExternalEnum"));
+            PropertyInfo prop = externalTable.GetProperty("E");
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(global::ExternalTests.ExternalEnum), prop.PropertyType);
+
+            Assert.Null(asm.GetType("Something.ExternalStruct"));
             prop = externalTable.GetProperty("S");
             Assert.NotNull(prop);
             Assert.Equal(typeof(global::ExternalTests.ExternalStruct?), prop.PropertyType);

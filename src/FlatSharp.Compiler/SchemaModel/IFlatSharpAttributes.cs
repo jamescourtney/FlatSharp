@@ -29,7 +29,7 @@ public interface IFlatSharpAttributes
 
     bool? NonVirtual { get; }
 
-    bool? PreserveFieldCasing { get; }
+    bool? PreserveFieldName { get; }
 
     bool? RpcInterface { get; }
 
@@ -49,5 +49,5 @@ public interface IFlatSharpAttributes
 
     RpcStreamingType? StreamingType { get; }
 
-    bool? External { get; }
+    string? ExternalTypeName { get; }
 }

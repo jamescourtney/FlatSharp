@@ -50,12 +50,12 @@ public record PropertyFieldModel
                 switch (this.Attributes.SetterKind)
                 {
 #if !NET5_0_OR_GREATER
-                        case SetterKind.PublicInit:
+                    case SetterKind.PublicInit:
                     case SetterKind.ProtectedInit:
                     case SetterKind.ProtectedInternalInit:
                         return AttributeValidationResult.NeedsAtLeastDotNet5;
 #endif
-                        default:
+                    default:
                         return AttributeValidationResult.Valid;
                 }
             },

@@ -112,7 +112,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
             memMarshalBehavior = $"{nameof(FlatBufferStructAttribute.MemoryMarshalBehavior)} = {nameof(MemoryMarshalBehavior)}.{this.Attributes.MemoryMarshalBehavior}";
         }
 
-        if (this.Attributes.External == true)
+        if (this.Attributes.ExternalTypeName is not null)
         {
             writer.AppendLine($"[FlatSharp.Internal.ExternalDefinitionAttribute]");
         }
