@@ -7,23 +7,31 @@ attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
 attribute "fs_external";
 attribute "fs_memoryMarshal";
-
-namespace System.Numerics;
-
-struct Vector3 (fs_external, fs_valueStruct)
-{
-    Data : [ float32 : 3 ];
-}
+attribute "fs_vector";
 
 namespace BenchmarkCore;
 
-struct FlatBufferVec3 (fs_valueStruct, fs_memoryMarshal:"Always") {
-    X : float;
-    Y : float;
-    Z : float;
+struct ExternalVector3(fs_external:"System.Numerics.Vector3", fs_valueStruct)
+{
+    X : float32;
+    Y : float32;
+    Z : float32;
 }
 
-table Table (fs_serializer) {
-    Items : [ System.Numerics.Vector3 ];
-    NormalItems : [ FlatBufferVec3 ];
+struct ExternalVectorAvx2(fs_external:"System.Numerics.Vector<float>", fs_valueStruct)
+{
+    Data : [ float32 : 4 ];
+}
+
+table Item
+{
+    Key : string (key, required);
+    Value : int;
+    Vec3 : ExternalVector3;
+    AVX : ExternalVectorAvx2;
+}
+
+table Outer (fs_serializer:"Lazy")
+{
+    Items : [ Item ] (fs_vector:"IIndexedVector");
 }

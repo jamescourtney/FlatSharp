@@ -3,10 +3,10 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net7.0</TargetFrameworks>
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
-        <!--<PublishAot>true</PublishAot>-->
+        <PublishAot>true</PublishAot>
         <IsPackable>false</IsPackable>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
@@ -18,9 +18,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj">
+        <!--<ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj">
             <PrivateAssets>all</PrivateAssets>
-        </ProjectReference>
+        </ProjectReference>-->
         <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     </ItemGroup>
 

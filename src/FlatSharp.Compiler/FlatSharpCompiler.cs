@@ -32,7 +32,7 @@ public class FlatSharpCompiler
 {
     public const string FailureMessage = "// !! FLATSHARP CODE GENERATION FAILED. THIS FILE MAY CONTAIN INCOMPLETE OR INACCURATE DATA !!";
 
-    private static string AssemblyVersion => typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
+    private static string AssemblyVersion => typeof(ISchemaMutator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
     [ExcludeFromCodeCoverage]
     static int Main(string[] args)
@@ -59,6 +59,11 @@ public class FlatSharpCompiler
     [ExcludeFromCodeCoverage]
     private static int RunCompiler(CompilerOptions options)
     {
+        if (options.Debug)
+        {
+            Debugger.Launch();
+        }
+
         if (options.InputFiles?.Any() != true)
         {
             Console.Error.WriteLine($"FlatSharp Compiler: No input file specified.");
@@ -354,7 +359,7 @@ public class FlatSharpCompiler
                 throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
             }
 
-            string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
+            string currentProcess = typeof(ISchemaMutator).Assembly.Location;
             string currentDirectory = Path.GetDirectoryName(currentProcess)!;
             flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
         }
@@ -388,7 +393,7 @@ public class FlatSharpCompiler
             "--bfbs-comments",
             "--bfbs-builtins",
             "--bfbs-filenames",
-            Path.GetDirectoryName(typeof(FlatSharpCompiler).Assembly.Location!)!,
+            Path.GetDirectoryName(typeof(ISchemaMutator).Assembly.Location!)!,
             "--no-warnings",
             "-o",
             outputDir,
@@ -491,9 +496,17 @@ public class FlatSharpCompiler
             };
 
             RootModel rootModel = new(Schema.AdvancedFeatures.None);
+            List<Func<string, string>> postProcessTransforms = new();
+
+            var mutators = new ISchemaMutator[]
+            {
+                new FieldNameNormalizerSchemaMutator(),
+                new ExternalTypeSchemaMutator(),
+            };
+
             foreach (var s in bfbs)
             {
-                rootModel.UnionWith(ParseSchema(s, options).ToRootModel());
+                rootModel.UnionWith(ParseSchema(s, options, postProcessTransforms, mutators).ToRootModel());
             }
 
             ErrorContext.Current.ThrowIfHasErrors();
@@ -529,6 +542,11 @@ public class FlatSharpCompiler
             }
 
             csharp = writer.ToString();
+
+            foreach (var transform in postProcessTransforms)
+            {
+                csharp = transform(csharp);
+            }
         }
         finally
         {
@@ -539,7 +557,11 @@ public class FlatSharpCompiler
         }
     }
 
-    private static Schema.Schema ParseSchema(byte[] bfbs, CompilerOptions options)
+    private static Schema.Schema ParseSchema(
+        byte[] bfbs,
+        CompilerOptions options,
+        List<Func<string, string>> postProcessTransforms,
+        params ISchemaMutator[] mutators)
     {
         ISerializer<Schema.Schema> mutableSerializer = FlatBufferSerializer.Default.Compile<Schema.Schema>();
         ISerializer<Schema.Schema> immutableSerializer = mutableSerializer
@@ -551,59 +573,9 @@ public class FlatSharpCompiler
         // Mutable
         var schema = mutableSerializer.Parse(bfbs);
 
-        // Normalize names.
-        if (options.NormalizeFieldNames != false)
+        foreach (var mutator in mutators)
         {
-            foreach (Schema.FlatBufferObject item in schema.Objects)
-            {
-                bool? preserveFieldCasingParent = item.Attributes != null ? new FlatSharpAttributes(item.Attributes).PreserveFieldName : default;
-                foreach (Schema.Field field in item.Fields)
-                {
-                    bool? preserveFieldCasing = field.Attributes != null ? preserveFieldCasing = new FlatSharpAttributes(field.Attributes).PreserveFieldName : default;
-
-                    var preserve = (preserveFieldCasing ?? preserveFieldCasingParent) switch
-                    {
-                        false or null => false,
-                        true => true,
-                    };
-
-                    if (!preserve)
-                    {
-                        field.Name = NormalizeFieldName(field.Name);
-                    }
-                }
-            }
-        }
-
-        // Swap external type names.
-        {
-            foreach (Schema.FlatBufferObject item in schema.Objects)
-            {
-                if (item.Attributes is null)
-                {
-                    continue;
-                }
-
-                FlatSharpAttributes attrs = new(item.Attributes);
-                if (!string.IsNullOrWhiteSpace(attrs.ExternalTypeName))
-                {
-                    item.Name = attrs.ExternalTypeName.Trim();
-                }
-            }
-
-            foreach (Schema.FlatBufferEnum item in schema.Enums)
-            {
-                if (item.Attributes is null)
-                {
-                    continue;
-                }
-
-                FlatSharpAttributes attrs = new(item.Attributes);
-                if (!string.IsNullOrWhiteSpace(attrs.ExternalTypeName))
-                {
-                    item.Name = attrs.ExternalTypeName.Trim();
-                }
-            }
+            mutator.Mutate(schema, options, postProcessTransforms);
         }
 
         // Serialize
@@ -612,22 +584,5 @@ public class FlatSharpCompiler
 
         // Immutable.
         return immutableSerializer.Parse(temp);
-    }
-
-    private static string NormalizeFieldName(string name)
-    {
-        StringBuilder sb = new();
-        string[] parts = name.Split('_', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (string part in parts)
-        {
-            sb.Append(char.ToUpperInvariant(part[0]));
-            if (part.Length > 1)
-            {
-                sb.Append(part.AsSpan()[1..]);
-            }
-        }
-
-        return sb.ToString();
     }
 }

@@ -45,7 +45,8 @@ public class RootModel
             {
                 if (model.DeclaringFile != kvp.Value.DeclaringFile)
                 {
-                    ErrorContext.Current.RegisterError($"Duplicate type declared in two different FBS files: {model.FullName}. File1: {model.DeclaringFile}, File2: {model.DeclaringFile}");
+                    string name = kvp.Value.OriginalName ?? model.OriginalName ?? kvp.Value.FullName;
+                    ErrorContext.Current.RegisterError($"Duplicate type declared in two different FBS files: {name}. File1: {kvp.Value.DeclaringFile}, File2: {model.DeclaringFile}");
                 }
             }
             else
@@ -57,7 +58,10 @@ public class RootModel
 
     public void AddElement(BaseSchemaModel model)
     {
-        this.elements[model.FullName] = model;
+        if (!this.elements.TryAdd(model.FullName, model))
+        {
+            ErrorContext.Current.RegisterError($"Duplicate type declared in same FBS file: {model.OriginalName ?? model.FullName}. File: {model.DeclaringFile}");
+        }
     }
 
     internal void WriteCode(CodeWriter writer, CompileContext context)

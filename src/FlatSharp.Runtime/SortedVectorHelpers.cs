@@ -209,7 +209,11 @@ public static class SortedVectorHelpers
     /// <summary>
     /// Holds lookup information for keys. Faster than dictionary.
     /// </summary>
-    internal static class KeyLookup<TTable, TKey>
+    internal static class KeyLookup<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
+#endif
+        TTable, TKey>
     {
         static KeyLookup()
         {
