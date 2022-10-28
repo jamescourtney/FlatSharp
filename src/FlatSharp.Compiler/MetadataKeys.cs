@@ -152,7 +152,7 @@ public static class MetadataKeys
     /// Indicates that a flatsharp table, struct, or enum is externally defined. FlatSharp will assume
     /// that the signature matches what is in the FlatBuffer definition.
     /// </summary>
-    public const string External = "fs_external";
+    public const string External = "fs_unsafeExternal";
 
     public static IEnumerable<string> UnsupportedStandardAttributes => new[]
     {
