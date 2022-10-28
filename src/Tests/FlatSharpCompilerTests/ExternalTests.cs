@@ -88,6 +88,53 @@ namespace FlatSharpTests.Compiler
         }
 
         [Fact]
+        public void ExternalGenericStruct()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace Something;
+
+                struct ExternalStruct ({MetadataKeys.External}:""ExternalTests.ExternalGenericStruct<System.Single>"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
+        
+                table Table {{ S : ExternalStruct;  }}
+            ";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly });
+
+            Type externalTable = asm.GetType("Something.Table");
+            Assert.NotNull(externalTable);
+
+            var prop = externalTable.GetProperty("S");
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(global::ExternalTests.ExternalGenericStruct<float>?), prop.PropertyType);
+        }
+
+        [Fact]
+        public void ExternalStruct_NoNamespace()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace Something;
+
+                struct ExternalStruct ({MetadataKeys.External}:""float"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
+        
+                table Table {{ S : ExternalStruct;  }}
+            ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly }));
+
+            Assert.Contains("External types must be in a namespace. Type = 'float'.", ex.Message);
+        }
+
+        [Fact]
         public void ExternalTable_NotAllowed()
         {
             string schema = $@"
@@ -309,5 +356,10 @@ namespace ExternalTests
 
         [FieldOffset(8)]
         public float Z;
+    }
+
+    public struct ExternalGenericStruct<T> where T : struct
+    {
+        public T Value;
     }
 }

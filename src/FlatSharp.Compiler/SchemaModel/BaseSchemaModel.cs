@@ -50,7 +50,7 @@ public abstract class BaseSchemaModel
 
     public string FullName { get; }
 
-    public virtual string? OriginalName => null;
+    public virtual string FriendlyName => this.FullName;
 
     public abstract string DeclaringFile { get; }
 

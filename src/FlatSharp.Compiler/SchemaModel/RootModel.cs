@@ -45,7 +45,7 @@ public class RootModel
             {
                 if (model.DeclaringFile != kvp.Value.DeclaringFile)
                 {
-                    string name = kvp.Value.OriginalName ?? model.OriginalName ?? kvp.Value.FullName;
+                    string name = kvp.Value.FriendlyName;
                     ErrorContext.Current.RegisterError($"Duplicate type declared in two different FBS files: {name}. File1: {kvp.Value.DeclaringFile}, File2: {model.DeclaringFile}");
                 }
             }
@@ -60,7 +60,7 @@ public class RootModel
     {
         if (!this.elements.TryAdd(model.FullName, model))
         {
-            ErrorContext.Current.RegisterError($"Duplicate type declared in same FBS file: {model.OriginalName ?? model.FullName}. File: {model.DeclaringFile}");
+            ErrorContext.Current.RegisterError($"Duplicate type declared in same FBS file: {model.FriendlyName}. File: {model.DeclaringFile}");
         }
     }
 

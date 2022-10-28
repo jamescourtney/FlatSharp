@@ -97,7 +97,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
     public override string DeclaringFile { get; }
 
-    public override string? OriginalName => this.@struct.OriginalName;
+    public override string FriendlyName => this.@struct.OriginalName ?? this.FullName;
 
     protected override void OnValidate()
     {
