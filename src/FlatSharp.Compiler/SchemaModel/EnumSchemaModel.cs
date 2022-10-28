@@ -36,6 +36,7 @@ public class EnumSchemaModel : BaseSchemaModel
         this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value);
         this.documentation = @enum.Documentation;
         this.DeclaringFile = @enum.DeclarationFile;
+        this.FriendlyName = @enum.OriginalName ?? @enum.Name;
 
         this.AttributeValidator.ExternValidator = _ => AttributeValidationResult.Valid;
     }
@@ -55,6 +56,8 @@ public class EnumSchemaModel : BaseSchemaModel
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Enum;
 
     public override string DeclaringFile { get; }
+
+    public override string FriendlyName { get; }
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using ExternalTests;
 using System.Runtime.InteropServices;
 
 namespace FlatSharpTests.Compiler
@@ -87,6 +88,53 @@ namespace FlatSharpTests.Compiler
         }
 
         [Fact]
+        public void ExternalGenericStruct()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace Something;
+
+                struct ExternalStruct ({MetadataKeys.External}:""ExternalTests.ExternalGenericStruct<System.Single>"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
+        
+                table Table {{ S : ExternalStruct;  }}
+            ";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly });
+
+            Type externalTable = asm.GetType("Something.Table");
+            Assert.NotNull(externalTable);
+
+            var prop = externalTable.GetProperty("S");
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(global::ExternalTests.ExternalGenericStruct<float>?), prop.PropertyType);
+        }
+
+        [Fact]
+        public void ExternalStruct_NoNamespace()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace Something;
+
+                struct ExternalStruct ({MetadataKeys.External}:""float"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
+        
+                table Table {{ S : ExternalStruct;  }}
+            ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly }));
+
+            Assert.Contains("External types must be in a namespace. Type = 'float'.", ex.Message);
+        }
+
+        [Fact]
         public void ExternalTable_NotAllowed()
         {
             string schema = $@"
@@ -121,7 +169,7 @@ namespace FlatSharpTests.Compiler
         }
 
         [Fact]
-        public void ExternalReferenceUnion_NotAllowed()
+        public void ExternalUnion_NotAllowed()
         {
             string schema = $@"
                 {MetadataHelpers.AllAttributes}
@@ -136,9 +184,154 @@ namespace FlatSharpTests.Compiler
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
-                new()));
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly }));
 
             Assert.Contains("The attribute 'fs_external' is never valid on Union elements.", ex.Message);
+        }
+
+        /// <summary>
+        /// This tests a bug where the renaming of external types affects
+        /// the order of the types alphabetically. This can lead to bugs
+        /// since BFBS schemas are ordered alphabetically, so renaming
+        /// 'AAAA' to 'ExternalTests.stuff' might reorder the list of types,
+        /// which throws off indices.
+        /// </summary>
+        [Fact]
+        public void ExternalStruct_WithRenamingChangingOrder()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace AAAA;
+
+                // AAAA.BBBB -> ExternalTests.ExternalStruct
+                struct BBBB({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                {{
+                    X : float32;
+                    Y : float32;
+                    Z : float32;
+                }}
+
+                // AAAA.CCCC
+                table CCCC
+                {{
+                    Key : string (key, required);
+                    Value : int;
+                }}
+
+                // AAAA.DDDD
+                table DDDD ({MetadataKeys.SerializerKind}:""Lazy"")
+                {{
+                    Items : [ CCCC ] ({MetadataKeys.VectorKind}:""IIndexedVector"");
+                }}
+            ";
+
+            // Compiling is good enough.
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly });
+        }
+
+        [Fact]
+        public void ExternalStruct_Duplicates_SameFile()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+
+                namespace Test;
+
+                struct First({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                {{
+                    Data : [ float32 : 3 ];
+                }}
+
+                struct Second({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                {{
+                    Data : [ float32 : 3 ];
+                }}
+
+                table MyTable ({MetadataKeys.SerializerKind}:""Lazy"")
+                {{
+                    A : First;
+                    B : Second;
+                }}
+            ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly }));
+
+            Assert.Contains("Duplicate type declared in same FBS file: Test.Second (ExternalTests.ExternalStruct)", ex.Message);
+        }
+
+
+        [Fact]
+        public void ExternalStruct_Duplicates_DifferentFiles()
+        {
+            var schemaA = $@"
+                include ""B.fbs"";
+                include ""C.fbs"";
+                include ""D.fbs"";
+
+                {MetadataHelpers.AllAttributes}
+
+                namespace Test;
+
+                table Root
+                {{ 
+                    B : StructB;
+                    C : StructC;
+                    D : D.StructD;
+                }}
+            ";
+
+            var schemaB = $@"
+                {MetadataHelpers.AllAttributes}
+                namespace Test;
+
+                struct StructB({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                {{
+                    Data : [ float32 : 3 ];
+                }}
+            ";
+
+            var schemaC = $@"
+                {MetadataHelpers.AllAttributes}
+                namespace Test;
+
+                struct StructC({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                {{
+                    Data : [ float32 : 3 ];
+                }}
+            ";
+
+            var schemaD = $@"
+                {MetadataHelpers.AllAttributes}
+                namespace D;
+
+                struct StructD({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                {{
+                    Data : [ float32 : 3 ];
+                }}
+            ";
+
+            var schemas = new[]
+            {
+                ("A.fbs", schemaA),
+                ("B.fbs", schemaB),
+                ("C.fbs", schemaC),
+                ("D.fbs", schemaD),
+            };
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schemas,
+                new(),
+                new Assembly[] { typeof(ExternalTests).Assembly }));
+
+            Assert.Contains("Duplicate type declared in two different FBS files: Test.StructB (ExternalTests.ExternalStruct)", ex.Message);
         }
     }
 }
@@ -163,5 +356,10 @@ namespace ExternalTests
 
         [FieldOffset(8)]
         public float Z;
+    }
+
+    public struct ExternalGenericStruct<T> where T : struct
+    {
+        public T Value;
     }
 }

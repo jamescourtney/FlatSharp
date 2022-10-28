@@ -37,10 +37,12 @@ table Schema {
 [FlatBufferTable]
 public class Schema
 {
-    [FlatBufferItem(0, Required = true, SortedVector = true)]
+    // Note that this is a sorted vector in the BFBS. However, this can lead to bugs as we rewrite field names since fields refer to the index of the object's type.
+    [FlatBufferItem(0, Required = true)]
     public virtual IList<FlatBufferObject> Objects { get; set; } = new List<FlatBufferObject>();
 
-    [FlatBufferItem(1, Required = true, SortedVector = true)]
+    // Note that this is a sorted vector in the BFBS. However, this can lead to bugs as we rewrite field names.
+    [FlatBufferItem(1, Required = true)]
     public virtual IList<FlatBufferEnum> Enums { get; set; } = new List<FlatBufferEnum>();
 
     [FlatBufferItem(2)]

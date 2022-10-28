@@ -37,4 +37,7 @@ public record CompilerOptions
 
     [Option("flatc-path", Hidden = true)]
     public string? FlatcPath { get; set; }
+
+    [Option("debug", Hidden = true, Default = false)]
+    public bool Debug { get; set; }
 }
