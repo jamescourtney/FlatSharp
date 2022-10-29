@@ -236,7 +236,7 @@ public class SerializerOptionsExample
     /// </summary>
     public static void GreedyMutableDeserialization(Person person)
     {
-        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Greedy });
+        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.GreedyMutable });
         Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable);
 
         byte[] buffer = new byte[serializer.GetMaxSize(person)];

@@ -41,8 +41,8 @@ public class SharedStringsExample
         ISerializer<Matrix> noSharedStringsSerializer = Matrix.Serializer.WithSettings(
             new SerializerSettings
             {
-                // This can be null to disable shared string writing:
-                SharedStringWriterFactory = null,
+                // Setting this to a delegate that returns null will disable shared strings.
+                SharedStringWriterFactory = () => null,
             });
 
         // We can also create our own shared string providers (defined at the bottom of this file).
@@ -77,9 +77,9 @@ public class SharedStringsExample
         {
             Values = new Cell[]
             {
-                new Cell { ColumnName = "Column" + (row++ % 100), Value = Guid.NewGuid().ToString() },
-                new Cell { ColumnName = "Column" + (row++ % 100), Value = Guid.NewGuid().ToString() },
-                new Cell { ColumnName = "Column" + (row++ % 100), Value = Guid.NewGuid().ToString() },
+                new Cell { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
+                new Cell { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
+                new Cell { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
             }
         };
     }

@@ -20,18 +20,18 @@ attribute "fs_serializer";
 attribute "fs_sharedString";
 
 table Matrix (fs_serializer) {
-	Rows:[Row];
+    Rows:[Row];
 }
 
 table Row {
-	Values:[Cell];
+    Values:[Cell];
 }
 
 table Cell {
-	// the shared string metadata is necessary to enable shared strings. Specifying it in the schema
-	// allows you to choose which strings should be shared and which should not, rather than a global
-	// setting one way or the other. This metadata also works with vectors of strings, shown below.
-	ColumnName:string (fs_sharedString); 
-	Value:string;
-	Vector:[string] (fs_sharedString);
+    // the shared string metadata is necessary to enable shared strings. Specifying it in the schema
+    // allows you to choose which strings should be shared and which should not, rather than a global
+    // setting one way or the other. This metadata also works with vectors of strings, shown below.
+    ColumnName:string (fs_sharedString); 
+    Value:string;
+    Vector:[string] (fs_sharedString);
 }
