@@ -148,7 +148,7 @@ namespace FlatSharpTests.Compiler
                 schema,
                 new()));
 
-            Assert.Contains("The attribute 'fs_external' is never valid on Table elements.", ex.Message);
+            Assert.Contains("The attribute 'fs_unsafeExternal' is never valid on Table elements.", ex.Message);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace FlatSharpTests.Compiler
                 schema,
                 new()));
 
-            Assert.Contains("The attribute 'fs_external' is never valid on ReferenceStruct elements.", ex.Message);
+            Assert.Contains("The attribute 'fs_unsafeExternal' is never valid on ReferenceStruct elements.", ex.Message);
         }
 
         [Fact]
@@ -187,7 +187,7 @@ namespace FlatSharpTests.Compiler
                 new(),
                 new Assembly[] { typeof(ExternalTests).Assembly }));
 
-            Assert.Contains("The attribute 'fs_external' is never valid on Union elements.", ex.Message);
+            Assert.Contains("The attribute 'fs_unsafeExternal' is never valid on Union elements.", ex.Message);
         }
 
         /// <summary>

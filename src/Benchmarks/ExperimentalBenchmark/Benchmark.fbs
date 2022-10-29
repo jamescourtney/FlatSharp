@@ -5,20 +5,20 @@ attribute "fs_valueStruct";
 attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
-attribute "fs_external";
+attribute "fs_unsafeExternal";
 attribute "fs_memoryMarshal";
 attribute "fs_vector";
 
 namespace BenchmarkCore;
 
-struct ExternalVector3(fs_external:"System.Numerics.Vector3", fs_valueStruct)
+struct ExternalVector3(fs_unsafeExternal:"System.Numerics.Vector3", fs_valueStruct)
 {
     X : float32;
     Y : float32;
     Z : float32;
 }
 
-struct ExternalVectorAvx2(fs_external:"System.Numerics.Vector<float>", fs_valueStruct)
+struct ExternalVectorAvx2(fs_unsafeExternal:"System.Numerics.Vector<float>", fs_valueStruct)
 {
     Data : [ float32 : 4 ];
 }

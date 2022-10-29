@@ -113,6 +113,12 @@ public static class MetadataKeys
     public const string LiteralName = "fs_literalName";
 
     /// <summary>
+    /// Indicates that a flatsharp table, struct, or enum is externally defined. FlatSharp will assume
+    /// that the signature matches what is in the FlatBuffer definition.
+    /// </summary>
+    public const string External = "fs_unsafeExternal";
+
+    /// <summary>
     /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
     /// Valid On:
     /// - Table field
@@ -147,12 +153,6 @@ public static class MetadataKeys
     /// gRPC streaming kinds.
     /// </summary>
     public const string Streaming = "streaming";
-
-    /// <summary>
-    /// Indicates that a flatsharp table, struct, or enum is externally defined. FlatSharp will assume
-    /// that the signature matches what is in the FlatBuffer definition.
-    /// </summary>
-    public const string External = "fs_external";
 
     public static IEnumerable<string> UnsupportedStandardAttributes => new[]
     {
