@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-namespace Samples.SortedVectors.Fbs;
+namespace Samples.SortedVectors;
 
 attribute "fs_serializer";
 attribute "fs_sortedVector";
 
 table UserList (fs_serializer) {
-    Users:[User] (fs_sortedVector); // Declare the vector to be sorted.
+    users:[User] (fs_sortedVector); // Declare the vector to be sorted.
 }
 
 table User {
-    FirstName:string;
-    LastName:string;
-    SSN:string (key); // Use the SSN field as the key to sort the user table by.
+    first_name:string;
+    last_name:string;
+    SSN:string (key, required); // Use the SSN field as the key to sort the user table by. Best practice is for keys to be required.
 }

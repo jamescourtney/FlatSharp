@@ -18,7 +18,6 @@ namespace Samples.CopyConstructorsExample;
 
 /// <summary>
 /// This sample shows the use cases for FlatSharp's auto-generated copy constructors.
-/// These are only available when using the FlatSharp compiler and FBS files.
 /// </summary>
 public class CopyConstructorsExample
 {
@@ -26,21 +25,21 @@ public class CopyConstructorsExample
     {
         FooBarContainer container = new FooBarContainer
         {
-            fruit = Fruit.Pears,
-            initialized = true,
-            location = "location",
-            list = new List<FooBar>
+            Fruit = Fruit.Pears,
+            Initialized = true,
+            Location = "location",
+            List = new List<FooBar>
             {
                 new FooBar
                 {
-                    name = "name",
-                    postfix = 1,
-                    rating = 3,
-                    sibling = new Bar
+                    Name = "name",
+                    Postfix = 1,
+                    Rating = 3,
+                    Sibling = new Bar
                     {
-                        ratio = 3.14f,
-                        size = ushort.MaxValue,
-                        time = int.MinValue,
+                        Ratio = 3.14f,
+                        Size = ushort.MaxValue,
+                        Time = int.MinValue,
                     }
                 }
             },
@@ -48,21 +47,18 @@ public class CopyConstructorsExample
 
         // Simple use case: make a deep copy of an object you're using.
         var copy = new FooBarContainer(container);
-        Debug.Assert(!object.ReferenceEquals(copy.list, container.list), "A new list is created");
-        for (int i = 0; i < container.list.Count; ++i)
+        Debug.Assert(!object.ReferenceEquals(copy.List, container.List), "A new list is created");
+        for (int i = 0; i < container.List.Count; ++i)
         {
-            var originalItem = container.list[i];
-
-            Debug.Assert(copy.list is not null);
-            var copyItem = copy.list[i];
+            var originalItem = container.List[i];
+            var copyItem = copy.List![i];
             Debug.Assert(!object.ReferenceEquals(copyItem, originalItem));
         }
 
         // Now let's look at how this can be useful when operating on deserialized objects.
-        var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
         byte[] data = new byte[1024];
-        serializer.Serialize(container, data);
-        var deserialized = serializer.Parse<FooBarContainer>(data);
+        FooBarContainer.Serializer.Write(data, container);
+        var deserialized = FooBarContainer.Serializer.Parse(data);
 
         // Take a deserialized item and "upcast" it back to the original type.
         // This performs a full traversal of the object and allows the underlying buffer to be reused.
@@ -75,7 +71,7 @@ public class CopyConstructorsExample
         try
         {
             // will throw
-            deserialized.fruit = Fruit.Apples;
+            deserialized.Fruit = Fruit.Apples;
             Debug.Assert(false);
         }
         catch
@@ -83,6 +79,6 @@ public class CopyConstructorsExample
         }
 
         // Modifying the copy is just fine, though.
-        copy.fruit = Fruit.Apples;
+        copy.Fruit = Fruit.Apples;
     }
 }

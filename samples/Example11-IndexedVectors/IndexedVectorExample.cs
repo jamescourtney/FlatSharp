@@ -56,13 +56,13 @@ public class IndexedVectorsExample
         // Indexed vectors look and act like dictionaries. The main difference
         // is that adding arbitrary keys is not supported.
         Debug.Assert(table.Users.TryGetValue("5", out var bird));
-        Debug.Assert(bird.UserId == "5");
+        Debug.Assert(bird.Id == "5");
         Debug.Assert(table.Users["5"].FirstName == "Deeandra");
 
         byte[] data = new byte[1024];
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
+        int bytesWritten = IndexedVectorTable.Serializer.Write(data, table);
 
-        IndexedVectorTable parsedTable = FlatBufferSerializer.Default.Parse<IndexedVectorTable>(data);
+        IndexedVectorTable parsedTable = IndexedVectorTable.Serializer.Parse(data);
 
         Debug.Assert(parsedTable.Users is not null);
 
@@ -73,46 +73,15 @@ public class IndexedVectorsExample
         Debug.Assert(parsedTable.Users.TryGetValue("5", out bird));
         Debug.Assert(parsedTable.Users.TryGetValue("4", out var frank));
     }
+}
 
-    [FlatBufferTable]
-    public class IndexedVectorTable
+/// <summary>
+/// Define a partial class for user to expose a public constructor that correctly initializes the object.
+/// </summary>
+public partial class User
+{
+    public User(string id)
     {
-        /// <summary>
-        /// Indexed vectors have two generic parameters: key type and value type. The type of the key must match 
-        /// the "key" in the value.
-        /// </summary>
-        [FlatBufferItem(0)]
-        public virtual IIndexedVector<string, User>? Users { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class User
-    {
-        public User(string id)
-        {
-            this.UserId = id;
-        }
-
-        /// <summary>
-        /// This constructor is used by Flatsharp when it is defined.
-        /// The context parameter gives a little information about the deserialization,
-        /// but it is not required to do anything with it.
-        /// </summary>
-        protected User(FlatBufferDeserializationContext context)
-        {
-        }
-
-        /// <summary>
-        /// This is the key. The type here (string) matches the key in the IIndexedVector up above.
-        /// It is recommended to keep key properties immutable when using Indexed Vectors.
-        /// </summary>
-        [FlatBufferItem(0, Key = true)]
-        public virtual string? UserId { get; init; }
-
-        [FlatBufferItem(1)]
-        public virtual string? FirstName { get; set; }
-
-        [FlatBufferItem(2)]
-        public virtual string? LastName { get; set; }
+        this.Id = id;
     }
 }

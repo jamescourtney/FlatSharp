@@ -19,13 +19,16 @@ namespace Samples.IndexedVectors;
 attribute "fs_defaultCtor";
 attribute "fs_vector";
 attribute "fs_setter";
+attribute "fs_serializer";
 
-table IndexedVectorTableFbs {
-	Users:[UserFbs] (fs_vector:"IIndexedVector");
+table IndexedVectorTable (fs_serializer:"Progressive")
+{
+    Users : [ User ] (fs_vector:"IIndexedVector");
 }
 
-table UserFbs (fs_defaultCtor:"None") {
-	Id:string (key, fs_setter:"PublicInit");
-	FirstName:string;
-	LastName:string;
+table User (fs_defaultCtor:"None") 
+{
+    id : string (key, required, fs_setter:"PublicInit");
+    first_name : string;
+    last_name : string;
 }

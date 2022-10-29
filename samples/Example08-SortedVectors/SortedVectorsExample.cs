@@ -38,8 +38,8 @@ public class SortedVectorsExample
         };
 
         byte[] data = new byte[1024];
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(userList, data);
-        UserList parsedList = FlatBufferSerializer.Default.Parse<UserList>(data);
+        int bytesWritten = UserList.Serializer.Write(data, userList);
+        UserList parsedList = UserList.Serializer.Parse(data);
 
         Debug.Assert(parsedList.Users is not null);
 
@@ -54,26 +54,5 @@ public class SortedVectorsExample
         User? user = parsedList.Users.BinarySearchByFlatBufferKey("234-56-7890");
         Debug.Assert(user is not null);
         Debug.Assert(user.LastName == "Bourne");
-    }
-
-    [FlatBufferTable]
-    public class UserList
-    {
-        [FlatBufferItem(0, SortedVector = true)]
-        public virtual IList<User>? Users { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class User
-    {
-        [FlatBufferItem(0)]
-        public virtual string? FirstName { get; set; }
-
-        [FlatBufferItem(1)]
-        public virtual string? LastName { get; set; }
-
-        // Indicate that this is what we should sort by. Only one key is permitted per table.
-        [FlatBufferItem(2, Key = true)]
-        public virtual string? SSN { get; set; }
     }
 }

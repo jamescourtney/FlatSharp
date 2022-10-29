@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Security.Cryptography;
+
 namespace Samples.SerializerOptions;
 
 /// <summary>
@@ -56,41 +58,47 @@ public class SerializerOptionsExample
 {
     public static void Run()
     {
-        DemoTable demo = new DemoTable
+        Person person = new Person
         {
-            Name = "My demo table",
-            ListVector = new List<InnerTable>
-                {
-                    new InnerTable { Fruit = "Apple" },
-                    new InnerTable { Fruit = "Banana" },
-                    new InnerTable { Fruit = "Pear" }
-                }
+            Name = "James",
+            FavoriteFruits = new List<Fruit>
+            { 
+                new Fruit { Name = "Banana", Reason = "Pretty good" },
+                new Fruit { Name = "Apple", Reason = "put it in pie" },
+                new Fruit { Name = "Strawberry", Reason = "Blend them up" }
+            }
         };
 
         // In order of greediness
-        LazyDeserialization(demo);
-        ProgressiveDeserialization(demo);
-        GreedyDeserialization(demo);
-        GreedyMutableDeserialization(demo);
+        LazyDeserialization(person);
+        ProgressiveDeserialization(person);
+        GreedyDeserialization(person);
+        GreedyMutableDeserialization(person);
     }
 
     /// <summary>
     /// In lazy deserialization, FlatSharp reads from the underlying buffer each time. No caching is done. This will be
     /// the fastest option if your access patterns are sparse and you touch each element only once.
     /// </summary>
-    public static void LazyDeserialization(DemoTable demo)
+    public static void LazyDeserialization(Person person)
     {
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
+        // We told FlatSharp to generate a lazy serializer in the FBS file, so 
+        // Person.Serializer contains a lazy serializer.
+        ISerializer<Person> serializer = Person.Serializer;
 
-        byte[] buffer = new byte[1024];
-        serializer.Serialize(demo, buffer);
-        var parsed = serializer.Parse<DemoTable>(buffer);
+        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Lazy);
+
+        // Allocate, serializer, and parse the same person. This gives us a lazy object back.
+        byte[] buffer = new byte[serializer.GetMaxSize(person)];
+        serializer.Write(buffer, person);
+        Person parsed = serializer.Parse(buffer);
 
         // Lazy deserialization reads objects from vectors each time you ask for them.
-        InnerTable index0_1 = parsed.ListVector![0];
-        InnerTable index0_2 = parsed.ListVector[0];
+        Fruit index0_1 = parsed.FavoriteFruits![0];
+        Fruit index0_2 = parsed.FavoriteFruits[0];
         Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
 
+        // Lazy mode is immutable. Writes will never succeed unless using write through.
         try
         {
             parsed.Name = "Bob";
@@ -98,10 +106,10 @@ public class SerializerOptionsExample
         }
         catch (NotMutableException)
         {
-            // Lazy mode is immutable. Writes will never succeed unless using write through.
         }
 
-        // Properties from tables and structs are cached after they are read.
+        // Properties from tables and reference structs are different instances each time. Lazy consults the
+        // buffer each time.
         string? name = parsed.Name;
         string? name2 = parsed.Name;
 
@@ -114,7 +122,7 @@ public class SerializerOptionsExample
 
         try
         {
-            var whoKnows = parsed.ListVector[1];
+            var whoKnows = parsed.FavoriteFruits[1];
             Debug.Assert(false);
         }
         catch
@@ -127,13 +135,15 @@ public class SerializerOptionsExample
     /// The next step up in greediness is Progressive mode. In this mode, Flatsharp will cache the results of property and
     /// vector accesses. So, if you read the results of FooObject.Property1 multiple times, the same value comes back each time.
     /// </summary>
-    public static void ProgressiveDeserialization(DemoTable demo)
+    public static void ProgressiveDeserialization(Person person)
     {
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive));
+        // The .Serializer on Person might is not progressive. Let's force it to be!
+        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Progressive });
+        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Progressive);
 
-        byte[] buffer = new byte[1024];
-        serializer.Serialize(demo, buffer);
-        var parsed = serializer.Parse<DemoTable>(buffer);
+        byte[] buffer = new byte[serializer.GetMaxSize(person)];
+        serializer.Write(buffer, person);
+        Person parsed = serializer.Parse(buffer);
 
         try
         {
@@ -154,18 +164,18 @@ public class SerializerOptionsExample
             "When reading table/struct properties, Progressive mode returns the same instance.");
 
         // PropertyCache deserialization doesn't cache the results of vector lookups.
-        InnerTable index0_1 = parsed.ListVector![0];
-        InnerTable index0_2 = parsed.ListVector[0];
+        Fruit index0_1 = parsed.FavoriteFruits![0];
+        Fruit index0_2 = parsed.FavoriteFruits[0];
 
-        Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "The same instances is also returned from vectors.");
+        Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "The same instance is also returned from vectors.");
 
         // Invalidate the whole buffer. Undefined behavior past here!
         buffer.AsSpan().Fill(0);
 
         try
         {
-            var whoKnows = parsed.ListVector[1]; // we haven't accessed element 1 before, so this will lead to issues since Progressive still uses
-                                                 // the underlying buffer.
+            var whoKnows = parsed.FavoriteFruits[1]; // we haven't accessed element 1 before, so this will lead to issues since Progressive still reads
+                                                     // from the underlying buffer for things it hasn't read before.
             Debug.Assert(false);
         }
         catch
@@ -180,22 +190,21 @@ public class SerializerOptionsExample
     /// because the results it gives are predictable, and require no developer cognitive overhead. However, it can be less efficient
     /// in cases where you do not need to access all data in the buffer.
     /// </summary>
-    public static void GreedyDeserialization(DemoTable demo)
+    public static void GreedyDeserialization(Person person)
     {
-        // Same as FlatBufferSerializer.Default
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy));
+        // The .Serializer on Person is Lazy, so let's tell it to be greedy instead.
+        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Greedy });
+        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Greedy);
 
-        byte[] buffer = new byte[1024];
-        serializer.Serialize(demo, buffer);
-        long originalSum = buffer.Sum(x => (long)x);
-
-        var parsed = serializer.Parse<DemoTable>(buffer);
+        byte[] buffer = new byte[serializer.GetMaxSize(person)];
+        serializer.Write(buffer, person);
+        Person parsed = serializer.Parse(buffer);
 
         // Fill array with 0. Source data is gone now, but we can still read the buffer because we were greedy!
         buffer.AsSpan().Fill(0);
 
-        InnerTable index0_1 = parsed.ListVector![0];
-        InnerTable index0_2 = parsed.ListVector[0];
+        Fruit index0_1 = parsed.FavoriteFruits![0];
+        Fruit index0_2 = parsed.FavoriteFruits[0];
         Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "Greedy deserialization returns you the same instance each time");
 
         // We cleared the data, but can still read the name. Greedy deserialization is easy!
@@ -213,7 +222,7 @@ public class SerializerOptionsExample
 
         try
         {
-            parsed.ListVector.Clear();
+            parsed.FavoriteFruits.Clear();
             Debug.Assert(false);
         }
         catch (NotSupportedException)
@@ -225,41 +234,30 @@ public class SerializerOptionsExample
     /// This example shows GreedyMutable deserialization. This is exactly the same as Greedy deserialization, but setters are generated for
     /// the objects, so vectors and properties are mutable in a predictable way.
     /// </summary>
-    public static void GreedyMutableDeserialization(DemoTable demo)
+    public static void GreedyMutableDeserialization(Person person)
     {
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.GreedyMutable));
+        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Greedy });
+        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable);
 
-        byte[] buffer = new byte[1024];
-        serializer.Serialize(demo, buffer);
+        byte[] buffer = new byte[serializer.GetMaxSize(person)];
+        serializer.Write(buffer, person);
+        Person parsed = serializer.Parse(buffer);
 
-        long originalSum = buffer.Sum(x => (long)x);
+        using SHA256 sha = SHA256.Create();
 
-        var parsed = serializer.Parse<DemoTable>(buffer);
+        // Get the hash of the buffer.
+        byte[] hash = sha.ComputeHash(buffer);
 
+        // Change some stuff.
         parsed.Name = "James Adams";
-        parsed.ListVector!.Clear();
-        parsed.ListVector.Add(new InnerTable());
+        parsed.FavoriteFruits!.Clear();
+        parsed.FavoriteFruits.Add(new Fruit());
 
-        long newSum = buffer.Sum(x => (long)x);
+        byte[] hash2 = sha.ComputeHash(buffer);
+
+        // They are the same -- greedy and greedymutable don't store a reference to the buffer.
         Debug.Assert(
-            newSum == originalSum,
+            hash.AsSpan().SequenceEqual(hash2),
             "Changes to the deserialized objects are not written back to the buffer. You'll need to re-serialize it to a new buffer for that.");
     }
-}
-
-[FlatBufferTable]
-public class DemoTable : object
-{
-    [FlatBufferItem(0)]
-    public virtual string? Name { get; set; }
-
-    [FlatBufferItem(1)]
-    public virtual IList<InnerTable>? ListVector { get; set; }
-}
-
-[FlatBufferTable]
-public class InnerTable
-{
-    [FlatBufferItem(0)]
-    public virtual string? Fruit { get; set; }
 }

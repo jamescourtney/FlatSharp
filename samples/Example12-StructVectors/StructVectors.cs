@@ -51,7 +51,7 @@ public class StructVectorsSample
             Receiver = "0011223344",
             Sender = "5566779900",
 
-            Hash_Reference = new Sha256_Reference(),
+            HashReference = new Sha256_Reference(),
         };
 
         byte[] hash;
@@ -63,7 +63,7 @@ public class StructVectorsSample
             hash = sha256.ComputeHash(data);
 
             // Bulk-load the reference struct vector.
-            transaction.Hash_Reference.Value.CopyFrom(hash.AsSpan());
+            transaction.HashReference.Value.CopyFrom(hash.AsSpan());
 
             // Create value-type structs to represent the same.
             // These two types have the same API and behave the same,
@@ -84,28 +84,28 @@ public class StructVectorsSample
             }
 
             // Assign these later due to value type semantics.
-            transaction.Hash_Value = sha256Struct;
-            transaction.Hash_FastValue = sha256FastStruct;
+            transaction.HashValue = sha256Struct;
+            transaction.HashFastValue = sha256FastStruct;
         }
 
         byte[] serialized = new byte[1024];
         Transaction.Serializer.Write(serialized, transaction);
         var parsed = Transaction.Serializer.Parse(serialized);
 
-        Debug.Assert(parsed.Hash_Reference is not null);
-        Debug.Assert(parsed.Hash_Value is not null);
-        Debug.Assert(parsed.Hash_FastValue is not null);
+        Debug.Assert(parsed.HashReference is not null);
+        Debug.Assert(parsed.HashValue is not null);
+        Debug.Assert(parsed.HashFastValue is not null);
 
-        Debug.Assert(parsed.Hash_Reference.Value.Count == 32);
+        Debug.Assert(parsed.HashReference.Value.Count == 32);
         Debug.Assert(default(Sha256_Value).Value_Length == 32);
         Debug.Assert(default(Sha256_FastValue).Value_Length == 32);
 
-        Sha256_Value valueStruct = parsed.Hash_Value.Value;
-        Sha256_FastValue fastValueStruct = parsed.Hash_FastValue.Value;
+        Sha256_Value valueStruct = parsed.HashValue.Value;
+        Sha256_FastValue fastValueStruct = parsed.HashFastValue.Value;
 
         for (int i = 0; i < 32; ++i)
         {
-            Debug.Assert(parsed.Hash_Reference.Value[i] == hash[i]);
+            Debug.Assert(parsed.HashReference.Value[i] == hash[i]);
             Debug.Assert(valueStruct.Value(i) == hash[i]);
             Debug.Assert(fastValueStruct.Value(i) == hash[i]);
         }

@@ -46,62 +46,10 @@ public class UnionsExample
             Dog dog = pet.Doggo;
             string? lowerName = dog.Name?.ToLowerInvariant();
         }
-
-        // Similiarly, FlatSharp unions also include a method called "Switch".
-        // You can use this instead of a switch statement. The advantage is that
-        // if a union element is added later, your code will fail to compile, so
-        // it helps you to handle all of the cases.
-        string breed = pet.Switch(
-            caseDefault: () => "unknown",
-            caseDoggo: d => d.Breed.ToString(),
-            caseCat: c => c.Breed.ToString(),
-            caseFish: f => f.Kind.ToString());
          
         // Finally, each union can accept a visitor. Using structs as visitors
         // will allow you to benefit from devirtualization if performance is a concern.
         string? name = pet.Accept<PetNameVisitor, string?>(new PetNameVisitor());
-    }
-
-    /// <summary>
-    /// You can also use unions from C#. However, the semantics are not as nice.
-    /// </summary>
-    [FlatBufferTable]
-    public class PersonCS
-    {
-        [FlatBufferItem(0)]
-        public virtual FlatBufferUnion<Dog, Cat, Fish>? Pet { get; set; }
-
-        public void UsePet()
-        {
-            if (this.Pet is null)
-            {
-                return;
-            }
-
-            var union = this.Pet.Value;
-
-            if (union.TryGet(out Dog? dog))
-            {
-                // Woof woof
-            }
-            else if (union.TryGet(out Cat? cat))
-            {
-                // Meow meow
-            }
-            else if (union.TryGet(out Fish? fish))
-            {
-                // gurgle gurgle
-            }
-
-            // C# unions still support the switch method above:
-            union.Switch(
-                defaultCase: () => { },
-                case1: (Dog d) => { },
-                case2: (Cat c) => { },
-                case3: (Fish f) => { });
-
-            string? name = union.Accept<PetNameVisitor, string?>(new PetNameVisitor());
-        }
     }
 
     // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish>

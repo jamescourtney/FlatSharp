@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+attribute "fs_serializer";
+
 namespace Samples.CopyConstructorsExample;
 
 enum Fruit : byte { Apples, Pears, Bananas }
@@ -39,7 +41,7 @@ table FooBar {
   postfix:ubyte; 
 }
 
-table FooBarContainer {
+table FooBarContainer (fs_serializer:"Lazy") {
   list:[FooBar];
   initialized:bool;
   fruit:Fruit;
