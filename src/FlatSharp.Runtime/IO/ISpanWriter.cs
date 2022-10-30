@@ -91,10 +91,8 @@ public interface ISpanWriter
         IGeneratedSerializer<TItemType> serializer,
         Span<byte> destination,
         TItemType item,
-        int offset,
         SerializationContext context);
 
-    /// <summary>
     /// Invokes the <see cref="ISharedStringWriter.FlushWrites{TSpanWriter}(TSpanWriter, Span{byte}, SerializationContext)"/> method.
     /// </summary>
     /// ISharedStringWriter is a generic interface that accepts a SpanWriter. However, with precise type information,

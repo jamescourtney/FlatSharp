@@ -1,0 +1,35 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+
+namespace FlatSharpEndToEndTests.SortedVectors;
+
+table StringKey
+{
+    key : string (key);
+    value : int;
+}
+
+table IntKey
+{
+    key : int (key);
+    value : int;
+}
+
+table Root (fs_serializer)
+{
+    indexed_vector_string : [ StringKey ] (fs_vector:"IIndexedVector");
+    indexed_vector_int : [ IntKey ] (fs_vector:"IIndexedVector");
+
+    list_vector_string : [ StringKey ] (fs_vector:"IList");
+    list_vector_int : [ IntKey ] (fs_vector:"IList");
+
+    readonly_list_vector_string : [ StringKey ] (fs_vector:"IReadOnlyList");
+    readonly_list_vector_int : [ IntKey ] (fs_vector:"IReadOnlyList");
+
+    array_vector_string : [ StringKey ] (fs_vector:"Array");
+    array_vector_int : [ IntKey ] (fs_vector:"Array");
+}

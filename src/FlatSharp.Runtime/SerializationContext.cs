@@ -62,6 +62,7 @@ public sealed class SerializationContext
     /// <summary>
     /// Resets the context.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset(int capacity)
     {
         this.offset = 0;
@@ -74,6 +75,7 @@ public sealed class SerializationContext
     /// <summary>
     /// Invokes any post-serialize actions.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void InvokePostSerializeActions(Span<byte> span)
     {
         var actions = this.postSerializeActions;
@@ -85,6 +87,7 @@ public sealed class SerializationContext
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddPostSerializeAction(PostSerializeAction action)
     {
         this.postSerializeActions.Add(action);

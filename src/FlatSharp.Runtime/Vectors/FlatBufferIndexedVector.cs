@@ -85,7 +85,7 @@ public class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAcce
 
     public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value)
     {
-        value = ((IList<TValue>)this.vector).BinarySearchByFlatBufferKey(key);
+        value = SortedVectorHelpers.BinarySearchByFlatBufferKey(this.vector, key);
         return value is not null;
     }
 

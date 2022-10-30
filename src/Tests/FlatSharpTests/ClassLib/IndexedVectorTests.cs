@@ -214,6 +214,11 @@ public class IndexedVectorTests
     [FlatBufferTable]
     public class VectorMember<TKey> where TKey : notnull
     {
+        static VectorMember()
+        {
+            SortedVectorHelpers.RegisterKeyLookup<VectorMember<TKey>, TKey>(x => x.Key, 0);
+        }
+
         [FlatBufferItem(0, Key = true)]
         public virtual TKey? Key { get; set; }
 

@@ -143,9 +143,7 @@ $@"
         return new GeneratedSerializerWrapper<TRoot>(
             this.options.DeserializationOption,
             (IGeneratedSerializer<TRoot>)item,
-            assembly,
-            formattedTextFactory,
-            assemblyData);
+            formattedTextFactory);
     }
 
     internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>()
@@ -404,24 +402,50 @@ $@"
 
         {
             var parts = resolver.ResolveSerialize(typeModel);
+
+            // Reserve first 4 bytes for offset to first table.
+            string writeFileId = $"context.Offset = 4;";
+
+            // Or if there is a file ID, reserve the first 8 bytes.
+            if (typeModel.TryGetFileIdentifier(out string? fileId))
+            {
+                writeFileId = $"""
+                    context.Offset = 8;
+                    target[7] = {(byte)fileId[3]};
+                    target[6] = {(byte)fileId[2]};
+                    target[5] = {(byte)fileId[1]};
+                    target[4] = {(byte)fileId[0]};
+                """;
+            }
+
             string methodText =
 $@"
-                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, int offset, SerializationContext context)
+                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, SerializationContext context)
                     where TSpanWriter : ISpanWriter
                 {{
-                    {parts.@namespace}.{parts.className}.{parts.methodName}(writer, target, root, offset, context);
+                    {writeFileId}
+                    {parts.@namespace}.{parts.className}.{parts.methodName}(writer, target, root, 0, context);
                 }}
 ";
             bodyParts.Add(methodText);
         }
 
         {
+            string fileIdSize = string.Empty;
+            if (typeModel.TryGetFileIdentifier(out _))
+            {
+                fileIdSize = "maxSize += 4; // file id";
+            }
+
             var parts = resolver.ResolveGetMaxSize(typeModel);
             string methodText =
 $@"
                 public int GetMaxSize({CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root)
                 {{
-                    return {parts.@namespace}.{parts.className}.{parts.methodName}(root);
+                    int maxSize = 0;
+                    {fileIdSize}
+                    maxSize += {parts.@namespace}.{parts.className}.{parts.methodName}(root);
+                    return maxSize;
                 }}
 ";
             bodyParts.Add(methodText);
@@ -461,8 +485,8 @@ $@"
                 // Method generated to help AOT compilers make good decisions about generics.
                 public void __AotHelper()
                 {{
-                    this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
-                    this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
+                    this.Write<ISpanWriter>(default!, new byte[10], default!, default!);
+                    this.Write<SpanWriter>(default!, new byte[10], default!, default!);
 
                     this.ParseLazy<IInputBuffer>(default!, default);
                     this.ParseLazy<MemoryInputBuffer>(default!, default);

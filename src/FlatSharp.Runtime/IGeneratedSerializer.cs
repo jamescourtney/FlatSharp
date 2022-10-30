@@ -49,7 +49,6 @@ public interface IGeneratedSerializer<T>
         TSpanWriter writer,
         Span<byte> destination,
         T item,
-        int offset,
         SerializationContext context) where TSpanWriter : ISpanWriter;
 
     /// <summary>

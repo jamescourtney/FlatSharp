@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +14,21 @@
  * limitations under the License.
  */
 
-global using System;
-global using System.Collections;
-global using System.Collections.Generic;
-global using System.ComponentModel;
-global using System.Diagnostics;
-global using System.Diagnostics.CodeAnalysis;
-global using System.Runtime.CompilerServices;
+using FlatSharp.Attributes;
+using System.Linq;
 
-global using FlatSharp.Internal;
+namespace FlatSharp;
 
-#if NETSTANDARD2_0
-global using FlatSharp.Polyfills;
-#endif
+public static class FlatBufferMetadataAttributeExtensions
+{
+    public static string? GetFlatBufferMetadataOrNull(
+        this MemberInfo memberInfo,
+        FlatBufferMetadataKind kind)
+    {
+        return memberInfo
+            .GetCustomAttributes<FlatBufferMetadataAttribute>()
+            .Where(x => x.Kind == kind)
+            .FirstOrDefault()?
+            .Value;
+    }
+}

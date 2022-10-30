@@ -271,7 +271,7 @@ public class WriteThroughTests
 
             byte[] buffer = new byte[1024];
             serializer.Serialize(table, buffer);
-            string csharp = serializer.Compile<Table<OtherStruct>>().CSharp;
+            string csharp = serializer.Compile<Table<OtherStruct>>().GetCSharp();
 
             var parsed = serializer.Parse<Table<OtherStruct>>(buffer);
 
@@ -293,7 +293,7 @@ public class WriteThroughTests
 
             byte[] result = new byte[1024];
 
-            var code = serializer.Compile<WriteThroughTable_Required<ValueStruct?>>().CSharp;
+            var code = serializer.Compile<WriteThroughTable_Required<ValueStruct?>>().GetCSharp();
             serializer.Serialize(table, result);
 
             var parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct?>>(result);
@@ -321,7 +321,7 @@ public class WriteThroughTests
 
             byte[] result = new byte[1024];
 
-            var code = serializer.Compile<WriteThroughTable_Required<ValueStruct?>>().CSharp;
+            var code = serializer.Compile<WriteThroughTable_Required<ValueStruct?>>().GetCSharp();
             serializer.Serialize(table, result);
 
             var parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct?>>(result);
@@ -353,7 +353,7 @@ public class WriteThroughTests
 
             byte[] result = new byte[1024];
 
-            var code = serializer.Compile<WriteThroughTable_Required<ValueStruct>>().CSharp;
+            var code = serializer.Compile<WriteThroughTable_Required<ValueStruct>>().GetCSharp();
             serializer.Serialize(table, result);
 
             var parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct>>(result);

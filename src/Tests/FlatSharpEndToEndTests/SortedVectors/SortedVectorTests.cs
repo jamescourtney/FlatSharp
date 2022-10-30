@@ -1,4 +1,3 @@
-﻿
 /*
  * Copyright 2021 James Courtney
  *
@@ -15,16 +14,9 @@
  * limitations under the License.
  */
 
-global using System;
-global using System.Collections;
-global using System.Collections.Generic;
-global using System.ComponentModel;
-global using System.Diagnostics;
-global using System.Diagnostics.CodeAnalysis;
-global using System.Runtime.CompilerServices;
+namespace FlatSharpEndToEndTests.SortedVectors;
 
-global using FlatSharp.Internal;
-
-#if NETSTANDARD2_0
-global using FlatSharp.Polyfills;
-#endif
+public class SortedVectorTestCases
+{
+    //todo
+}

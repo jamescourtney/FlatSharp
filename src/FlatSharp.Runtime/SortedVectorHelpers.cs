@@ -30,10 +30,10 @@ furnished to do so, subject to the following conditions:
 */
 
 using System.Buffers;
-using System.Buffers.Binary;
 using System.Linq;
 using FlatSharp.Attributes;
-using FlatSharp.Internal;
+using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FlatSharp;
 
@@ -47,7 +47,7 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
+    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(IList<TTable> sortedVector, TKey key)
         where TTable : class
     {
         CheckKeyNotNull(key);
@@ -74,7 +74,65 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
+    internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferVectorBase<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
+        where TInputBuffer : IInputBuffer
+        where TItemAccessor : IVectorItemAccessor<TTable, TInputBuffer>
+        where TTable : class
+    {
+        CheckKeyNotNull(key);
+
+        if (key is string str)
+        {
+            using SimpleStringComparer cmp = new SimpleStringComparer(str);
+
+            return BinarySearchByFlatBufferKey<LazyVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>, TTable, string?, SimpleStringComparer>(
+                new LazyVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>(sortedVector),
+                sortedVector,
+                cmp);
+        }
+        else
+        {
+            return BinarySearchByFlatBufferKey<LazyVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>, TTable, TKey, NaiveComparer<TKey>>(
+                new LazyVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>(sortedVector),
+                sortedVector,
+                new NaiveComparer<TKey>(key));
+        }
+    }
+
+    /// <summary>
+    /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+    /// </summary>
+    /// <returns>A value if found, null otherwise.</returns>
+    internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferProgressiveVector<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
+        where TInputBuffer : IInputBuffer
+        where TItemAccessor : IVectorItemAccessor<TTable, TInputBuffer>
+        where TTable : class
+    {
+        CheckKeyNotNull(key);
+
+        if (key is string str)
+        {
+            using SimpleStringComparer cmp = new SimpleStringComparer(str);
+
+            return BinarySearchByFlatBufferKey<ProgressiveVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>, TTable, string?, SimpleStringComparer>(
+                new ProgressiveVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>(sortedVector),
+                sortedVector,
+                cmp);
+        }
+        else
+        {
+            return BinarySearchByFlatBufferKey<ProgressiveVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>, TTable, TKey, NaiveComparer<TKey>>(
+                new ProgressiveVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>(sortedVector),
+                sortedVector,
+                new NaiveComparer<TKey>(key));
+        }
+    }
+
+    /// <summary>
+    /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+    /// </summary>
+    /// <returns>A value if found, null otherwise.</returns>
+    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(TTable[] sortedVector, TKey key)
         where TTable : class
     {
         CheckKeyNotNull(key);
@@ -101,7 +159,7 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
+    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(IReadOnlyList<TTable> sortedVector, TKey key)
        where TTable : class
     {
         CheckKeyNotNull(key);
@@ -122,6 +180,12 @@ public static class SortedVectorHelpers
                 sortedVector,
                 new NaiveComparer<TKey>(key));
         }
+    }
+
+    public static void RegisterKeyLookup<TTable, TKey>(Func<TTable, TKey> keyGetter, ushort keyIndex)
+    {
+        KeyLookup<TTable, TKey>.KeyGetter = keyGetter;
+        KeyLookup<TTable, TKey>.KeyIndex = keyIndex;
     }
 
     private static void CheckKeyNotNull<TKey>(TKey key)
@@ -151,7 +215,7 @@ public static class SortedVectorHelpers
                 vector.ItemSize == sizeof(int) &&
                 comparer is SimpleStringComparer ssc)
             {
-                ushort keyIndex = KeyLookup<TTable, string>.KeyAttribute.Index;
+                ushort keyIndex = KeyLookup<TTable, string>.KeyIndex;
 
                 return GenericBinarySearch<RawIndexableVector<TTable>, TTable, ReadOnlyMemory<byte>, SimpleStringComparer>(
                     new RawIndexableVector<TTable>(vector, keyIndex),
@@ -209,46 +273,60 @@ public static class SortedVectorHelpers
     /// <summary>
     /// Holds lookup information for keys. Faster than dictionary.
     /// </summary>
-    internal static class KeyLookup<
-#if NET5_0_OR_GREATER
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
-#endif
-        TTable, TKey>
+    internal static class KeyLookup<TTable, TKey>
     {
         static KeyLookup()
         {
-            var keys = typeof(TTable)
-               .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-               .Where(p => p.GetCustomAttribute<FlatBufferItemAttribute>()?.Key == true)
-               .ToArray();
-
-            if (keys.Length == 0)
-            {
-                throw new InvalidOperationException($"Table '{typeof(TTable).Name}' does not declare a property with the Key attribute set.");
-            }
-            else if (keys.Length > 1)
-            {
-                throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares more than one property with the Key attribute set.");
-            }
-
-            PropertyInfo keyProperty = keys[0];
-            if (keyProperty.GetMethod is null)
-            {
-                throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares key property '{keyProperty.Name}' without a get method.");
-            }
-
-            if (keyProperty.PropertyType != typeof(TKey))
-            {
-                throw new InvalidOperationException($"Key type was: '{typeof(TKey)}', but the key for table '{typeof(TTable).Name}' is of type '{keyProperty.PropertyType}'.");
-            }
-
-            KeyGetter = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod);
-            KeyAttribute = keyProperty.GetCustomAttribute<FlatBufferItemAttribute>()!;
+            // Convention is for static constructors in the table to register key lookups. Force them to run here before fields
+            // are accessed.
+            RuntimeHelpers.RunClassConstructor(typeof(TTable).TypeHandle);
         }
 
-        public static Func<TTable, TKey> KeyGetter { get; }
+        private static Func<TTable, TKey>? getter;
+        private static ushort index;
 
-        public static FlatBufferItemAttribute KeyAttribute { get; }
+        public static Func<TTable, TKey> KeyGetter
+        {
+            get
+            {
+                if (getter is null)
+                {
+                    ThrowNotInitialized();
+                }
+
+                return getter;
+            }
+
+            set
+            {
+                getter = value;
+            }
+        }
+
+        public static ushort KeyIndex
+        {
+            get
+            {
+                if (getter is null)
+                {
+                    ThrowNotInitialized();
+                }
+
+                return index;
+            }
+
+            set
+            {
+                index = value;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        private static void ThrowNotInitialized()
+        {
+            throw new InvalidOperationException($"Type '{typeof(TTable).Name}' has not registered a sorted vector key of type '{typeof(TKey).Name}'.");
+        }
     }
 
     /// <summary>
@@ -277,6 +355,43 @@ public static class SortedVectorHelpers
         public T this[int index] => this.items[index];
 
         public int Count => this.items.Length;
+    }
+
+    private struct LazyVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
+        where TInputBuffer : IInputBuffer
+        where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+    {
+        private readonly FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> items;
+
+        public LazyVectorIndexable(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> items)
+        {
+            this.items = items;
+        }
+
+        public T this[int index] => this.items[index];
+
+        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
+
+        public int Count => this.items.Count;
+    }
+
+    private struct ProgressiveVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
+        where TInputBuffer : IInputBuffer
+        where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+        where T : notnull
+    {
+        private readonly FlatBufferProgressiveVector<T, TInputBuffer, TItemAccessor> items;
+
+        public ProgressiveVectorIndexable(FlatBufferProgressiveVector<T, TInputBuffer, TItemAccessor> items)
+        {
+            this.items = items;
+        }
+
+        public T this[int index] => this.items[index];
+
+        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
+
+        public int Count => this.items.Count;
     }
 
     private struct ListIndexable<T, TKey> : IIndexable<T, TKey>

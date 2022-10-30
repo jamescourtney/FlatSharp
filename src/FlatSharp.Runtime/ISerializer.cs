@@ -17,46 +17,22 @@
 namespace FlatSharp;
 
 /// <summary>
-/// Attributes about a generated serializer.
-/// </summary>
-public interface ISerializerAttributes
-{
-    /// <summary>
-    /// The type of object that this serializer can read and write.
-    /// </summary>
-    Type RootType { get; }
-
-    /// <summary>
-    /// Gets the C# code that FlatSharp generated to produce this serializer.
-    /// This will only be set for runtime-generated serializers.
-    /// </summary>
-    string? CSharp { get; }
-
-    /// <summary>
-    /// Gets the Assembly FlatSharp generated to produce this serializer.
-    /// This will only be set for runtime-generated serializers.
-    /// </summary>
-    Assembly? Assembly { get; }
-
-    /// <summary>
-    /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
-    /// This will only be set for runtime-generated serializers.
-    /// </summary>
-    byte[]? AssemblyBytes { get; }
-
-    /// <summary>
-    /// Gets the type of deserializer in use. This can be used to distinguish between Greedy and Lazy modes.
-    /// </summary>
-    FlatBufferDeserializationOption DeserializationOption { get; }
-}
-
-/// <summary>
 /// An object that can read and write a FlatBuffer table from a buffer. The type
 /// of table this ISerializer supports is indicated by the <see cref="RootType"/> property.
 /// The use of other types may cause undefined behavior.
 /// </summary>
-public interface ISerializer : ISerializerAttributes
+public interface ISerializer
 {
+    /// <summary>
+    /// Gets the root type for this serializer.
+    /// </summary>
+    Type RootType { get; }
+
+    /// <summary>
+    /// Gets the default DeserializationOption for this serializer.
+    /// </summary>
+    FlatBufferDeserializationOption DeserializationOption { get; }
+
     /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
@@ -67,22 +43,29 @@ public interface ISerializer : ISerializerAttributes
     int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item) where TSpanWriter : ISpanWriter;
 
     /// <summary>
-    /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
+    /// Computes the maximum size necessary to serialize the given instance.
     /// </summary>
     int GetMaxSize(object item);
 
     /// <summary>
-    /// Parses the given buffer as an instance of <typeparamref name="T"/>.
+    /// Parses the given buffer as an instance of this ISerializer's type.
     /// </summary>
-    object Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+    /// <param name="buffer">The input buffer.</param>
+    /// <param name="option">The deserialization option. If <c>null</c>, the serializer's default setting is used.</param>
+    object Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer;
 }
 
 /// <summary>
 /// An object that can read and write <typeparamref name="T"/> from a buffer.
 /// </summary>
-public interface ISerializer<T> : ISerializerAttributes
+public interface ISerializer<T>
     where T : class
 {
+    /// <summary>
+    /// Gets the default DeserializationOption for this serializer.
+    /// </summary>
+    FlatBufferDeserializationOption DeserializationOption { get; }
+
     /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
@@ -100,7 +83,9 @@ public interface ISerializer<T> : ISerializerAttributes
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/>.
     /// </summary>
-    T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+    /// <param name="buffer">The input buffer.</param>
+    /// <param name="option">The deserialization option. If <c>null</c>, the serializer's default setting is used.</param>
+    T Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer;
 
     /// <summary>
     /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.

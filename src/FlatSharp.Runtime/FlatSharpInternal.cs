@@ -19,6 +19,7 @@ namespace FlatSharp.Internal;
 public static class FlatSharpInternal
 {
     [ExcludeFromCodeCoverage]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assert(
         [DoesNotReturnIf(false)] bool condition,
         string message,
@@ -28,8 +29,19 @@ public static class FlatSharpInternal
     {
         if (!condition)
         {
-            throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+            ThrowAssertFailed(message, memberName, fileName, lineNumber);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    private static void ThrowAssertFailed(
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string fileName = "",
+        [CallerLineNumber] int lineNumber = -1)
+    {
+        throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
     }
 
     /// <summary>

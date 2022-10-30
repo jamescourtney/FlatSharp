@@ -85,7 +85,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
             return value is not null;
         }
 
-        value = ((IList<TValue>)this.backingVector).BinarySearchByFlatBufferKey(key);
+        value = SortedVectorHelpers.BinarySearchByFlatBufferKey(this.backingVector, key);
         this.backingDictionary[key] = value;
         return value is not null;
     }

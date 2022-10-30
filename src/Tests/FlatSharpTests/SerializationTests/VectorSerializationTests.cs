@@ -123,7 +123,7 @@ public class VectorSerializationTests
 
                 Span<byte> target = new byte[1024];
                 int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
+                string csharp = FlatBufferSerializer.Default.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -163,7 +163,7 @@ public class VectorSerializationTests
 
                 Span<byte> target = new byte[1024];
                 int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
+                string csharp = FlatBufferSerializer.Default.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -200,7 +200,7 @@ public class VectorSerializationTests
 
                 Span<byte> target = new byte[1024];
                 int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
+                string csharp = FlatBufferSerializer.Default.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -517,9 +517,9 @@ public class VectorSerializationTests
 
                 var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<string>[]>>(data);
                 Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
-                Assert.Throws<InvalidOperationException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey("AAA"));
-                Assert.Throws<InvalidOperationException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey(3));
-                Assert.Throws<ArgumentNullException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey((string)null));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, "AAA"));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, 3));
+                Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
             }
 
             // Fail to binary search through lazy sorted vector with null key.
@@ -528,25 +528,14 @@ public class VectorSerializationTests
                 FlatBufferSerializer.Default.Serialize(root, data);
                 var lazyCopy = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IList<TableWithKey<string>>>>(data);
 
-                Assert.Throws<InvalidOperationException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey("AAA"));
-                Assert.Throws<InvalidOperationException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey(3));
-                Assert.Throws<ArgumentNullException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey((string)null));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, "AAA"));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, 3));
+                Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, (string)null));
             }
 
-            // Two keys / one key errors
-            {
-                // Can't have more than one key on something we serialize as that trips up type model validation.
-                IReadOnlyList<TableWithTwoKeys<string>> list = new List<TableWithTwoKeys<string>>
-                {
-                    new TableWithTwoKeys<string>() { Key = "a", Value = "a" },
-                    new TableWithTwoKeys<string>() { Key = "b", Value = "b" },
-                };
-
-                var ex = Assert.Throws<InvalidOperationException>(() => list.BinarySearchByFlatBufferKey("foo"));
-            }
             {
                 var parsed = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IReadOnlyList<TableWithNoKey<string>>>>(data);
-                var ex = Assert.Throws<InvalidOperationException>(() => parsed.Vector.BinarySearchByFlatBufferKey("foo"));
+                var ex = Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed.Vector, "foo"));
             }
         }
     }
@@ -897,11 +886,11 @@ public class VectorSerializationTests
             if (kvp.Key == FlatBufferDeserializationOption.Greedy
              || kvp.Key == FlatBufferDeserializationOption.GreedyMutable)
             {
-                RunTest<TableWithKey<TKey>[]>(kvp.Value, x => x.Length, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
+                RunTest<TableWithKey<TKey>[]>(kvp.Value, x => x.Length, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
             }
 
-            RunTest<IList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
-            RunTest<IReadOnlyList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
+            RunTest<IList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
+            RunTest<IReadOnlyList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
         }
     }
 
@@ -984,6 +973,11 @@ public class VectorSerializationTests
     [FlatBufferTable]
     public class TableWithKey<TKey>
     {
+        static TableWithKey()
+        {
+            SortedVectorHelpers.RegisterKeyLookup<TableWithKey<TKey>, TKey>(x => x.Key, 1);
+        }
+
         [FlatBufferItem(0)]
         public virtual string? Value { get; set; }
 

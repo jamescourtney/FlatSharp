@@ -72,9 +72,12 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
         using (writer.WithBlock())
         {
+            this.EmitStaticConstructor(writer, context);
             this.EmitDefaultConstrutor(writer, context);
             this.EmitDeserializationConstructor(writer);
             this.EmitCopyConstructor(writer, context);
+
+            writer.AppendLine("static partial void OnStaticInitialize();");
 
             writer.AppendLine("partial void OnInitialized(FlatBufferDeserializationContext? context);");
 
@@ -164,5 +167,20 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
         }
 
         writer.AppendLine("#pragma warning restore CS8618"); // nullable
+    }
+
+    protected virtual void EmitStaticConstructor(CodeWriter writer, CompileContext context)
+    {
+        writer.AppendLine($"static {this.Name}()");
+        using (writer.WithBlock())
+        {
+            var keyProperty = this.properties.Values.SingleOrDefault(p => p.Field.Key);
+            if (keyProperty is not null)
+            {
+                writer.AppendLine($"global::FlatSharp.SortedVectorHelpers.RegisterKeyLookup<{this.Name}, {keyProperty.Field.Type.ResolveTypeOrElementTypeName(this.Schema, keyProperty.Attributes)}>(x => x.{keyProperty.FieldName}, {keyProperty.Index});");
+            }
+
+            writer.AppendLine("OnStaticInitialize();");
+        }
     }
 }
