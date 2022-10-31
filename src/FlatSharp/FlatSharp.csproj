@@ -21,6 +21,10 @@
             <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
             <Generator>TextTemplatingFileGenerator</Generator>
         </None>
+        <None Update="UnionTypes.tt">
+          <LastGenOutput>UnionTypes.cs</LastGenOutput>
+          <Generator>TextTemplatingFileGenerator</Generator>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
@@ -50,6 +54,11 @@
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
             <DependentUpon>ScalarTypeModels.tt</DependentUpon>
+        </Compile>
+        <Compile Update="UnionTypes.cs">
+          <DependentUpon>UnionTypes.tt</DependentUpon>
+          <DesignTime>True</DesignTime>
+          <AutoGen>True</AutoGen>
         </Compile>
     </ItemGroup>
 </Project>
