@@ -403,6 +403,8 @@ table InnerTable {{
     [FlatBufferTable]
     public class InnerTable
     {
+        static InnerTable() => SortedVectorHelpers.RegisterKeyLookup<InnerTable, string>(it => it.Name, 0);
+
         [FlatBufferItem(0, Key = true, Required = true)]
         public string Name { get; set; } = "Foo";
 
