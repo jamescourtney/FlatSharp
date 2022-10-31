@@ -14,7 +14,6 @@ As such, FlatSharp's safe-code implementations are often faster than other imple
 All FlatSharp packages are published on nuget.org:
 - **FlatSharp.Runtime**: The runtime library. You always need this.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
-- **FlatSharp**: Use attributes to define FlatBuffer schemas at Runtime. Most users should not consume this package as the Compiler offers much more flexibility.
 
 FlatSharp is a mature library and has been shipped to production at Microsoft, Unity3D, and others. Full status can be found at [ProjectStatus.md](ProjectStatus.md).
 
@@ -22,8 +21,7 @@ FlatSharp is a mature library and has been shipped to production at Microsoft, U
 If you're completely new to FlatBuffers, take a minute to look over [the FlatBuffer overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview). Additionally, it's worth the time to understand the different elements of [FlatBuffer schemas](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
 
 #### 1. Define a schema
-There are two ways to define a FlatBuffer schema with FlatSharp. The recommended way is to use a `.fbs` use an [FBS schema file](samples/Example02-SchemaFiles/SchemaFilesExample.fbs) and run the FlatSharp compiler at build-time with your project.
-This enables the best experience with FlatSharp, including AOT compilation.
+FlatSharp, like other FlatBuffers implementations, uses [FBS files](samples/Example02-SchemaFiles/SchemaFilesExample.fbs) to define schemas. Because FlatSharp runs with your build, all code is generated at build time, making FlatSharp compatible with .NET AOT, Blazor, and Unity.
 
 ``` fbs
 // all FlatSharp FBS attributes start with the 'fs_' prefix.
@@ -51,8 +49,6 @@ rpc_service PersonService {
     GetParent(Person):Person;
 }
 ```
-
-FlatSharp is also usable with [C# attribute annotations at Runtime](samples/Example00-AttributeBasedSchemas/MonsterAttributeExample.cs), though this is not the recommended pattern.
 
 #### 2. Serialize your data
 Serialization is easy!
