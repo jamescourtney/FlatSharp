@@ -21,33 +21,87 @@ namespace FlatSharp;
 /// </summary>
 public class SerializerSettings
 {
-    /// <summary>
-    /// A shared string writer factory that disables shared strings.
-    /// </summary>
-    public static readonly Func<ISharedStringWriter?> DisabledSharedStringWriterFactory = () => null;
+    internal SerializerSettings()
+    {
+    }
+
+    internal FlatBufferDeserializationOption? DeserializationMode { get; set; }
+
+    internal Func<ISharedStringWriter?>? SharedStringWriterFactory { get; set; }
+
+    internal bool? EnableMemoryCopySerialization { get; set; }
+
+    internal short? ObjectDepthLimit { get; set; }
 
     /// <summary>
-    /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
-    /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
-    /// 
-    /// A value of <c>null</c> indicates that the default serializer settings should remain unchanged. If this
-    /// delegate is set to return <c>null</c>, then shared strings will be disabled.
+    /// Configures the serializer to use <see cref="FlatBufferDeserializationOption.Lazy"/> serialization by default.
     /// </summary>
-    public Func<ISharedStringWriter?>? SharedStringWriterFactory
+    public SerializerSettings UseLazyDeserialization() => this.UseDeserializationMode(FlatBufferDeserializationOption.Lazy);
+
+    /// <summary>
+    /// Configures the serializer to use <see cref="FlatBufferDeserializationOption.Progressive"/> serialization by default.
+    /// </summary>
+    public SerializerSettings UseProgressiveDeserialization() => this.UseDeserializationMode(FlatBufferDeserializationOption.Progressive);
+
+    /// <summary>
+    /// Configures the serializer to use <see cref="FlatBufferDeserializationOption.Greedy"/> serialization by default.
+    /// </summary>
+    public SerializerSettings UseGreedyDeserialization() => this.UseDeserializationMode(FlatBufferDeserializationOption.Greedy);
+
+    /// <summary>
+    /// Configures the serializer to use <see cref="FlatBufferDeserializationOption.GreedyMutable"/> serialization by default.
+    /// </summary>
+    public SerializerSettings UseGreedyMutableDeserialization() => this.UseDeserializationMode(FlatBufferDeserializationOption.GreedyMutable);
+
+    /// <summary>
+    /// Configures the serializer to use the provided deserialization mode by default.
+    /// </summary>
+    public SerializerSettings UseDeserializationMode(FlatBufferDeserializationOption option)
     {
-        get;
-        set;
+        this.DeserializationMode = option;
+        return this;
     }
 
     /// <summary>
-    /// When set, enables a performance optimization that allows serialization of a deserialized object
+    /// Configures the serializer to use the given factory for creating shared string writers.
+    /// </summary>
+    /// <param name="factory">
+    /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
+    /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
+    /// </param>
+    public SerializerSettings UseSharedStringWriter(Func<ISharedStringWriter> factory)
+    {
+        this.SharedStringWriterFactory = factory;
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the serializer to use the default shared string writer with, optionally, the given hash table capacity.
+    /// </summary>
+    public SerializerSettings UseDefaultSharedStringWriter(int? hashTableCapacity = null)
+    {
+        this.SharedStringWriterFactory = () => new SharedStringWriter(hashTableCapacity);
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the serializer to not use shared strings.
+    /// </summary>
+    public SerializerSettings WithoutSharedStrings()
+    {
+        this.SharedStringWriterFactory = () => null;
+        return this;
+    }
+
+    /// <summary>
+    /// Memory copy serialization is a performance optimization that allows serialization of a deserialized object
     /// to be implemented as a memory copy operation. This feature is experimental and may be removed in
     /// future releases of FlatSharp.
     /// </summary>
-    public bool EnableMemoryCopySerialization
+    public SerializerSettings UseMemoryCopySerialization(bool enabled = true)
     {
-        get;
-        set;
+        this.EnableMemoryCopySerialization = enabled;
+        return this;
     }
 
     /// <summary>
@@ -55,18 +109,14 @@ public class SerializerSettings
     /// If set to <c>null</c>, a default value of <c>1000</c> will be used. This setting may be used to prevent
     /// stack overflow errors and otherwise guard against malicious inputs.
     /// </summary>
-    public short? ObjectDepthLimit
+    public SerializerSettings WithObjectDepthLimit(short depthLimit = 1000)
     {
-        get;
-        set;
-    }
+        if (depthLimit <= 0)
+        {
+            throw new ArgumentException("ObjectDepthLimit must be nonnegative.");
+        }
 
-    /// <summary>
-    /// When set, specifies a deserialization mode to use with the .Deserialize method.
-    /// </summary>
-    public FlatBufferDeserializationOption? DeserializationMode
-    {
-        get;
-        set;
+        this.ObjectDepthLimit = depthLimit;
+        return this;
     }
 }

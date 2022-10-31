@@ -23,11 +23,6 @@ namespace FlatSharpTests;
 /// </summary>
 public class ListVectorOfUnionTests
 {
-    private readonly FlatBufferSerializer lazySerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
-    private readonly FlatBufferSerializer greedySerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
-    private readonly FlatBufferSerializer greedyMutableSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.GreedyMutable);
-    private readonly FlatBufferSerializer progressiveSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Progressive);
-
     [Theory]
     [InlineData(FlatBufferDeserializationOption.Lazy, 1023, "FlatBufferVectorBase")]
     [InlineData(FlatBufferDeserializationOption.Progressive, 1023, "FlatBufferProgressiveVector")]
@@ -46,7 +41,7 @@ public class ListVectorOfUnionTests
         int size,
         string expectedType) where T : class, ITable, new()
     {
-        var serializer = this.GetSerializer(option);
+        var serializer = this.GetSerializer<T>(option);
         List<FlatBufferUnion<string>> items = new List<FlatBufferUnion<string>>();
         for (int i = 0; i < size; ++i)
         {
@@ -54,7 +49,7 @@ public class ListVectorOfUnionTests
         }
 
         byte[] buffer = new byte[1024 * 1024];
-        serializer.Serialize(new T { Items = items }, buffer);
+        serializer.Write(buffer, new T { Items = items });
 
         T result = serializer.Parse<T>(buffer);
 
@@ -72,15 +67,9 @@ public class ListVectorOfUnionTests
         }
     }
 
-    private FlatBufferSerializer GetSerializer(FlatBufferDeserializationOption option)
+    private ISerializer<T> GetSerializer<T>(FlatBufferDeserializationOption option) where T : class
     {
-        return option switch
-        {
-            FlatBufferDeserializationOption.Lazy => this.lazySerializer,
-            FlatBufferDeserializationOption.Progressive => this.progressiveSerializer,
-            FlatBufferDeserializationOption.GreedyMutable => this.greedyMutableSerializer,
-            _ => this.greedySerializer,
-        };
+        return FlatBufferSerializer.Default.Compile<T>().WithSettings(s => s.UseDeserializationMode(option));
     }
 
     public interface ITable

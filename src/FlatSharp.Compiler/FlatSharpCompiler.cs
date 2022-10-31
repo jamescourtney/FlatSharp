@@ -563,12 +563,12 @@ public class FlatSharpCompiler
         List<Func<string, string>> postProcessTransforms,
         params ISchemaMutator[] mutators)
     {
-        ISerializer<Schema.Schema> mutableSerializer = FlatBufferSerializer.Default.Compile<Schema.Schema>();
+        ISerializer<Schema.Schema> mutableSerializer = FlatBufferSerializer.Default
+            .Compile<Schema.Schema>()
+            .WithSettings(s => s.UseGreedyMutableDeserialization());
+
         ISerializer<Schema.Schema> immutableSerializer = mutableSerializer
-            .WithSettings(new SerializerSettings 
-            { 
-                DeserializationMode = FlatBufferDeserializationOption.Greedy 
-            });
+            .WithSettings(s => s.UseGreedyDeserialization());
 
         // Mutable
         var schema = mutableSerializer.Parse(bfbs);

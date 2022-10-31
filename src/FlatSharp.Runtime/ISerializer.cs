@@ -53,6 +53,11 @@ public interface ISerializer
     /// <param name="buffer">The input buffer.</param>
     /// <param name="option">The deserialization option. If <c>null</c>, the serializer's default setting is used.</param>
     object Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Returns a new <see cref="ISerializer"/> instance based on the current one with the given settings.
+    /// </summary>
+    ISerializer WithSettings(Action<SerializerSettings> settingsCallback);
 }
 
 /// <summary>
@@ -90,5 +95,5 @@ public interface ISerializer<T>
     /// <summary>
     /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.
     /// </summary>
-    ISerializer<T> WithSettings(SerializerSettings settings);
+    ISerializer<T> WithSettings(Action<SerializerSettings> settingsCallback);
 }

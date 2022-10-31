@@ -101,10 +101,10 @@ public class DeserializedConstructorTests
 
         foreach (FlatBufferDeserializationOption item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
         {
-            var serializer = new FlatBufferSerializer(item);
+            var serializer = FlatBufferSerializer.Default.Compile<TTable>().WithSettings(s => s.UseDeserializationMode(item));
 
-            serializer.Serialize(table, data);
-            TTable result = serializer.Parse<TTable>(data);
+            serializer.Write(data, table);
+            TTable result = serializer.Parse(data);
 
             Assert.Null(table.Context);
             Assert.Equal(item, result.Context.DeserializationOption);

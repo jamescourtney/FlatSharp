@@ -26,6 +26,9 @@ namespace FlatSharpTests;
 /// </summary>
 public class ValueStructTests
 {
+    private static readonly FlatBufferSerializer memoryMarshalEnabled = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = true });
+    private static readonly FlatBufferSerializer memoryMarshalDisabled = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = false });
+
     public class TypeModel
     {
         [Theory]
@@ -181,7 +184,7 @@ public class ValueStructTests
 
             simpleTable.Item = s;
 
-            var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
+            var fbs = GetSerializer(enableMarshal);
 
             ISerializer serializer = fbs.Compile(simpleTable);
             byte[] data = new byte[1024];
@@ -233,7 +236,7 @@ public class ValueStructTests
 
             simpleTable.Item = s;
 
-            var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
+            var fbs = GetSerializer(enableMarshal);
 
             ISerializer serializer = fbs.Compile(simpleTable);
             byte[] data = new byte[1024];
@@ -289,7 +292,7 @@ public class ValueStructTests
 
             byte[] buffer = new byte[1024];
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+            var serializer = GetSerializer(marshal);
             int bytesWritten = serializer.Serialize(table, buffer);
 
             Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
@@ -325,7 +328,7 @@ public class ValueStructTests
 
             byte[] buffer = new byte[1024];
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+            var serializer = GetSerializer(marshal);
             var written = serializer.Serialize(source, buffer);
 
             Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
@@ -359,7 +362,7 @@ public class ValueStructTests
 
             byte[] buffer = new byte[1024];
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+            var serializer = GetSerializer(marshal);
             var written = serializer.Serialize(source, buffer);
 
             Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
@@ -395,9 +398,9 @@ public class ValueStructTests
             };
 
             Type tableType = typeof(SimpleTableNullable<>).MakeGenericType(type);
-            var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions(option) { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
+            var fbs = GetSerializer(enableMarshal);
 
-            ISerializer serializer = fbs.Compile(tableType);
+            ISerializer serializer = fbs.Compile(tableType).WithSettings(s => s.UseDeserializationMode(option));
             ISimpleTable table = (ISimpleTable)serializer.Parse(data);
 
             Assert.Equal(
@@ -437,7 +440,7 @@ public class ValueStructTests
             };
 
             Type tableType = typeof(SimpleTableNonNullable<>).MakeGenericType(type);
-            var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
+            var fbs = GetSerializer(enableMarshal);
 
             ISerializer serializer = fbs.Compile(tableType);
             ISimpleTable table = (ISimpleTable)serializer.Parse(data);
@@ -470,7 +473,7 @@ public class ValueStructTests
                 4, 0,
             };
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+            var serializer = GetSerializer(marshal);
             var parsed = serializer.Parse<SimpleTableAnything<NineByteStruct?>>(data);
 
             Assert.NotNull(parsed.Item);
@@ -495,7 +498,7 @@ public class ValueStructTests
                 4, 0,
             };
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+            var serializer = GetSerializer(marshal);
             var parsed = serializer.Parse<SimpleTableAnything<FiveByteStruct?>>(data);
 
             Assert.NotNull(parsed.Item);
@@ -524,7 +527,7 @@ public class ValueStructTests
                 4, 0,
             };
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+            var serializer = GetSerializer(marshal);
             var parsed = serializer.Parse<SimpleTableAnything<SixteenByteStruct?>>(data);
 
             Assert.NotNull(parsed);
@@ -599,8 +602,8 @@ public class ValueStructTests
             byte[] valueMarhalBuffer = new byte[1024];
             byte[] valueNonMarhalBuffer = new byte[1024];
 
-            var marshalSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = true });
-            var nonMarshalSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = false });
+            var marshalSerializer = GetSerializer(true);
+            var nonMarshalSerializer = GetSerializer(false);
 
             int refNullBytesWritten = FlatBufferSerializer.Default.Serialize(new SimpleTableAnything<GenericReferenceStruct<TValue>>(), referenceBufferNull);
             int valueNullMarshalBytesWritten = marshalSerializer.Serialize(new SimpleTableAnything<TStruct?>(), valueMarshalBufferNull);
@@ -673,6 +676,12 @@ public class ValueStructTests
             public virtual T Item { get; set; }
         }
     }
+
+    private static FlatBufferSerializer GetSerializer(bool enableMemoryMarshal)
+    {
+        return enableMemoryMarshal ? memoryMarshalEnabled : memoryMarshalDisabled;
+    }
+
 
     public interface IValidStruct
     {

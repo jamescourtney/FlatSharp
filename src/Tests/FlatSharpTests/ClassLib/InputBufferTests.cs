@@ -59,10 +59,7 @@ public class InputBufferTests
         var serializer = FlatBufferSerializer
                             .Default
                             .Compile<PrimitiveTypesTable>()
-                            .WithSettings(new()
-                            {
-                                DeserializationMode = option,
-                            });
+                            .WithSettings(s => s.UseDeserializationMode(option));
 
         byte[] data = new byte[1024];
         serializer.Write(data, new PrimitiveTypesTable());

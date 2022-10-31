@@ -37,9 +37,9 @@ public static class FlatSharpInternal
     [DoesNotReturn]
     private static void ThrowAssertFailed(
         string message,
-        [CallerMemberName] string memberName = "",
-        [CallerFilePath] string fileName = "",
-        [CallerLineNumber] int lineNumber = -1)
+        string memberName,
+        string fileName,
+        int lineNumber)
     {
         throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
     }

@@ -50,10 +50,11 @@ namespace Benchmark.FBBench
             this.regularStringSerializer = FlatBufferSerializer.Default.Compile<NonSharedVectorTable>();
 
             this.sharedStringSerializer = FlatBufferSerializer.Default.Compile<SharedVectorTable>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize),
-                });
+#if FLATSHARP_7_0_0_OR_GREATER
+                .WithSettings(s => s.UseDefaultSharedStringWriter(this.CacheSize));
+#else
+                .WithSettings(new SerializerSettings { SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize) });
+#endif
 
             Random random = new Random();
 
@@ -140,4 +141,4 @@ namespace Benchmark.FBBench
 
 #endif
     }
-}
+    }
