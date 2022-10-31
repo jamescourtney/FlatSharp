@@ -17,8 +17,7 @@
  
 // WriteThrough is great when you only need to make small changes to a FlatBuffer and don't want to pay the cost
 // of a complete read-modify-write sequence. With WriteThrough enabled, you can make select updates directly back to the buffer.
-
-// WriteThrough is only applicable to structs, and is only available when using "VectorCacheMutable" or "Lazy" as the serializer.
+// WriteThrough is only applicable to structs, and is only available when using "Progressive" or "Lazy" as the serializer.
 
 namespace Samples.WriteThrough;
 

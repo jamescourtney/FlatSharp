@@ -26,6 +26,8 @@ table IndexedVectorTable (fs_serializer:"Progressive")
     Users : [ User ] (fs_vector:"IIndexedVector");
 }
 
+// We tell Flatsharp not to generate a parameterless constructor for this type.
+// In the corresponding C#, we define a constructor that requires an ID.
 table User (fs_defaultCtor:"None") 
 {
     id : string (key, required, fs_setter:"PublicInit");

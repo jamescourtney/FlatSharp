@@ -25,14 +25,14 @@ namespace Samples.SerializerOptions;
 /// FlatSharp exposes 4 core deserialization modes, in order from most greedy to laziest:
 /// 1) Greedy / GreedyMutable: 
 ///    Pre-parse everything and release references to the underlying buffer. 
-///    This is the "normal" option, and therefore the default. When in Greedy mode, FlatSharp behaves like other .NET serializers (JSON.NET, Protobuf, etc).
+///    This is the safest option, and therefore the default. When in Greedy mode, FlatSharp behaves like other .NET serializers (JSON.NET, Protobuf, etc).
 /// 
 /// 2) Progressive: 
 ///    The FlatBuffer is read on-demand. As pieces are read, they are cached. Each logical element of the buffer will be accessed at most once.
 ///    Progressive is a great choice when access patterns are not predictable. It's also a great one-size-fits-most solution.
 /// 
 /// 3) Lazy: 
-///    Nothing is ever cached, and data is reconstituted from the underlying buffer each time. This option is fastest when you access each item
+///    Nothing is ever cached, and data is reconstituted from the underlying buffer each time it is accessed. This option is fastest when you access each item
 ///    no more than once, but gets expensive very quickly if you repeatedly access items.
 ///
 /// In general, your choice of deserialization method will be informed by your answers to these 
@@ -86,12 +86,10 @@ public class SerializerOptionsExample
         // Person.Serializer contains a lazy serializer.
         ISerializer<Person> serializer = Person.Serializer;
 
-        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Lazy);
-
         // Allocate, serializer, and parse the same person. This gives us a lazy object back.
         byte[] buffer = new byte[serializer.GetMaxSize(person)];
         serializer.Write(buffer, person);
-        Person parsed = serializer.Parse(buffer);
+        Person parsed = serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
 
         // Lazy deserialization reads objects from vectors each time you ask for them.
         Fruit index0_1 = parsed.FavoriteFruits![0];
@@ -137,7 +135,7 @@ public class SerializerOptionsExample
     /// </summary>
     public static void ProgressiveDeserialization(Person person)
     {
-        // The .Serializer on Person might is not progressive. Let's force it to be!
+        // The .Serializer on Person is not progressive. Let's force it to be!
         ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Progressive });
         Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Progressive);
 

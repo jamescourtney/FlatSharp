@@ -36,8 +36,7 @@ namespace Samples.StructVectors;
 ///    Value_31:ubyte;
 /// }
 /// 
-/// FlatSharp supports this syntax when using the FBS compiler. This example
-/// shows the usage for fixed-size struct vectors in both reference (class-based) 
+/// This example shows the usage for fixed-size struct vectors in both reference (class-based) 
 /// and value (struct-based) flatbuffer structs. For more information on value-type structs,
 /// see Example15-ValueStructs.
 /// </summary>

@@ -22,19 +22,19 @@ namespace Samples.WriteThrough;
 
 /// <summary>
 /// Write Through allows you to make updates to an already-serialized FlatBuffer in-place without a full parse or re-serialize.
-/// This is extremely performant, especially for large buffers as it avoids series of copies and allows in-place updates.
+/// This is extremely performant, especially for large buffers as it avoids copies and allows in-place updates.
 /// 
 /// FlatSharp supports Write-Through in limited cases:
 /// 
 /// For reference structs, Write-Through is supported on fields inside the struct when:
 /// - Serialization method is Progressive or Lazy.
-/// - Struct field has been opted into write-through.
-/// - Struct field is virtual.
+/// - The struct field has been opted into write-through.
+/// - The struct field is virtual.
 /// 
 /// For value structs, Write-Through is supported when:
 /// - Serialization method is Progressive or Lazy.
-/// - Table field is required and enabled for write through.
-/// - Vector field is enabled for write through.
+/// - The containing table field is required and enabled for write through.
+/// - The containing vector field is enabled for write through.
 /// </summary>
 public class WriteThroughSample
 {

@@ -24,7 +24,7 @@ public class Basics
 {
     public static void Run()
     {
-        // Make a monster!
+        // Make a monster! The definition for moster is defined in Basics.fbs, which sits alongside this file.
         Monster monster = new Monster
         {
             Color = Color.Green,

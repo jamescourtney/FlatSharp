@@ -54,7 +54,7 @@ public class IOOperationsExample
             Name = "Nikola Tesla"
         };
 
-        // SpanWriter is the core code that writes data to a span. Flatsharp provides one:
+        // ISpanWriter is the core code that writes data to a span. Flatsharp provides one: SpanWriter
         // However, you can always implement ISpanWriter yourself.
         SpanWriter spanWriter = default(SpanWriter);
 

@@ -34,8 +34,7 @@ namespace Samples.IndexedVectors;
 /// is intended for use when creating a new object. The other implementation wraps a FlatBuffer vector and performs binary search
 /// to access items. This implementation is hidden and not intended for use outside generated code.
 /// 
-/// Indexed Vectors have all of the limitations of sorted vectors (only strings and scalars supported as keys). They can be declared both
-/// in C# code (below) and in FBS files (IndexedVectors.fbs).
+/// Indexed Vectors have all of the limitations of sorted vectors (only strings and scalars supported as keys).
 /// </summary>
 public class IndexedVectorsExample
 {

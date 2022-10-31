@@ -22,7 +22,6 @@ namespace Samples.GrpcExample;
 
 /// <summary>
 /// This sample shows the implementation and usage of a simple FlatBuffers gRPC service.
-/// FlatSharp only supports gRPC when using the FlatSharp compiler and FBS files.
 /// </summary>
 public class GrpcExample
 {

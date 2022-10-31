@@ -52,7 +52,7 @@ public class UnionsExample
         string? name = pet.Accept<PetNameVisitor, string?>(new PetNameVisitor());
     }
 
-    // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish>
+    // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish, string>
     public struct PetNameVisitor : Pet.Visitor<string?>
     {
         public string? Visit(Dog item)
@@ -68,6 +68,11 @@ public class UnionsExample
         public string? Visit(Fish item)
         {
             return item.Name;
+        }
+
+        public string? Visit(string item)
+        {
+            return item;
         }
     }
 }
