@@ -205,14 +205,15 @@ public class IndexedVectorTests
     }
 
     [FlatBufferTable]
-    public class TableVector<TKey> where TKey : notnull
+    public class TableVector<TKey> where TKey : notnull 
     {
         [FlatBufferItem(0)]
         public virtual IIndexedVector<TKey, VectorMember<TKey>>? Vector { get; set; }
     }
 
     [FlatBufferTable]
-    public class VectorMember<TKey> where TKey : notnull
+    public class VectorMember<TKey> : ISortableTable<TKey>
+        where TKey : notnull
     {
         static VectorMember()
         {

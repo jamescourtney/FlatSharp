@@ -20,7 +20,7 @@ namespace FlatSharp.Internal;
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation that loads data progressively.
 /// </summary>
 public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> : IIndexedVector<TKey, TValue>
-    where TValue : class
+    where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>

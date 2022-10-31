@@ -30,7 +30,7 @@ public class SortedVectorTest<TIntVectorType>
 }
 
 [FlatBufferTable]
-public class SortedVectorItem<T>
+public class SortedVectorItem<T> : ISortableTable<T>
 {
     static SortedVectorItem()
     {

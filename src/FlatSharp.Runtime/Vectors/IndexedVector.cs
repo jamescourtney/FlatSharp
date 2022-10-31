@@ -20,7 +20,7 @@ namespace FlatSharp;
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation based on a <see cref="Dictionary{TKey, TValue}"/>.
 /// </summary>
 public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
-    where TValue : class
+    where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
     private readonly Dictionary<TKey, TValue> backingDictionary;

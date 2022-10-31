@@ -29,7 +29,7 @@ table EnumVal {
 */
 
 [FlatBufferTable]
-public class EnumVal
+public class EnumVal : ISortableTable<long>
 {
     static EnumVal() => SortedVectorHelpers.RegisterKeyLookup<EnumVal, long>(ev => ev.Value, 1);
 

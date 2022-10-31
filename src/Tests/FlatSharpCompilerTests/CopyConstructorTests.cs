@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-using System.Linq;
+using FlatSharp.Internal;
 
 namespace FlatSharpTests.Compiler;
 
@@ -401,7 +401,7 @@ table InnerTable {{
     }
 
     [FlatBufferTable]
-    public class InnerTable
+    public class InnerTable : ISortableTable<string>
     {
         static InnerTable() => SortedVectorHelpers.RegisterKeyLookup<InnerTable, string>(it => it.Name, 0);
 

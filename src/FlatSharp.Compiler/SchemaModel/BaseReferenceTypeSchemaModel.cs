@@ -26,19 +26,19 @@ namespace FlatSharp.Compiler.SchemaModel;
 /// </summary>
 public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 {
-    private readonly Dictionary<int, PropertyFieldModel> properties;
-    private readonly List<StructVectorPropertyFieldModel> structVectors;
-    private readonly FlatBufferObject table;
+    protected readonly Dictionary<int, PropertyFieldModel> properties;
+    protected readonly List<StructVectorPropertyFieldModel> structVectors;
+    protected readonly FlatBufferObject flatBufferObject;
 
-    protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject table) : base(schema, table.Name, new FlatSharpAttributes(table.Attributes))
+    protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject flatBufferObject) : base(schema, flatBufferObject.Name, new FlatSharpAttributes(flatBufferObject.Attributes))
     {
         this.properties = new Dictionary<int, PropertyFieldModel>();
-        this.DeclaringFile = table.DeclarationFile;
+        this.DeclaringFile = flatBufferObject.DeclarationFile;
         this.structVectors = new();
-        this.table = table;
+        this.flatBufferObject = flatBufferObject;
 
         int previousIndex = -1;
-        foreach (var field in table.Fields.OrderBy(x => x.Id))
+        foreach (var field in flatBufferObject.Fields.OrderBy(x => x.Id))
         {
             if (PropertyFieldModel.TryCreate(this, field, previousIndex, out PropertyFieldModel? model))
             {
@@ -64,7 +64,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     public sealed override string DeclaringFile { get; }
 
-    public IEnumerable<string>? Documentation => this.table.Documentation;
+    public IEnumerable<string>? Documentation => this.flatBufferObject.Documentation;
 
     protected sealed override void OnWriteCode(CodeWriter writer, CompileContext context)
     {

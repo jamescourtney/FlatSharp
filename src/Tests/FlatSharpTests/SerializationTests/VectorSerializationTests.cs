@@ -518,7 +518,6 @@ public class VectorSerializationTests
                 var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<string>[]>>(data);
                 Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
                 Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, "AAA"));
-                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, 3));
                 Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
             }
 
@@ -529,7 +528,6 @@ public class VectorSerializationTests
                 var lazyCopy = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IList<TableWithKey<string>>>>(data);
 
                 Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, "AAA"));
-                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, 3));
                 Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, (string)null));
             }
 
@@ -971,7 +969,7 @@ public class VectorSerializationTests
     }
 
     [FlatBufferTable]
-    public class TableWithKey<TKey>
+    public class TableWithKey<TKey> : ISortableTable<TKey>
     {
         static TableWithKey()
         {
@@ -985,23 +983,15 @@ public class VectorSerializationTests
         public virtual TKey? Key { get; set; }
     }
 
+    // Should be impossible since FlatSharp compiler only adds this to types that are sortable. However
+    // a user could technically add this themselves...
     [FlatBufferTable]
-    public class TableWithNoKey<TKey>
+    public class TableWithNoKey<TKey> : ISortableTable<TKey>
     {
         [FlatBufferItem(0)]
         public virtual string? Value { get; set; }
 
         [FlatBufferItem(1)]
-        public virtual TKey? Key { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class TableWithTwoKeys<TKey>
-    {
-        [FlatBufferItem(0, Key = true)]
-        public virtual string? Value { get; set; }
-
-        [FlatBufferItem(1, Key = true)]
         public virtual TKey? Key { get; set; }
     }
 

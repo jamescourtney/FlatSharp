@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2021 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-using FlatSharp.Attributes;
+namespace FlatSharp.Internal;
 
-namespace FlatSharp.Compiler.Schema;
-
-[FlatBufferTable]
-public class KeyValue : ISortableTable<string>
+/// <summary>
+/// A table that may be sorted in a vector.
+/// </summary>
+public interface ISortableTable<TKey> where TKey : notnull
 {
-    static KeyValue()
-    {
-        SortedVectorHelpers.RegisterKeyLookup<KeyValue, string>(kv => kv.Key, 0);
-    }
-
-    [FlatBufferItem(0, Required = true, Key = true)]
-    public virtual string Key { get; set; } = string.Empty;
-
-    [FlatBufferItem(1)]
-    public virtual string? Value { get; set; }
+    // Left empty. This interface exists simply to help satisfy generic constraints and does
+    // not currently have any requirements.
 }

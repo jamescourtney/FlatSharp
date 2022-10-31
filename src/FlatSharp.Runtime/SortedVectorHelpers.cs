@@ -48,7 +48,8 @@ public static class SortedVectorHelpers
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
     public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(IList<TTable> sortedVector, TKey key)
-        where TTable : class
+        where TTable : class, ISortableTable<TKey>
+        where TKey : notnull
     {
         CheckKeyNotNull(key);
 
@@ -77,7 +78,8 @@ public static class SortedVectorHelpers
     internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferVectorBase<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
         where TInputBuffer : IInputBuffer
         where TItemAccessor : IVectorItemAccessor<TTable, TInputBuffer>
-        where TTable : class
+        where TTable : class, ISortableTable<TKey>
+        where TKey : notnull
     {
         CheckKeyNotNull(key);
 
@@ -106,7 +108,8 @@ public static class SortedVectorHelpers
     internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferProgressiveVector<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
         where TInputBuffer : IInputBuffer
         where TItemAccessor : IVectorItemAccessor<TTable, TInputBuffer>
-        where TTable : class
+        where TTable : class, ISortableTable<TKey>
+        where TKey : notnull
     {
         CheckKeyNotNull(key);
 
@@ -133,7 +136,8 @@ public static class SortedVectorHelpers
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
     public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(TTable[] sortedVector, TKey key)
-        where TTable : class
+        where TTable : class, ISortableTable<TKey>
+        where TKey : notnull
     {
         CheckKeyNotNull(key);
 
@@ -160,7 +164,8 @@ public static class SortedVectorHelpers
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
     public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(IReadOnlyList<TTable> sortedVector, TKey key)
-       where TTable : class
+       where TTable : class, ISortableTable<TKey>
+       where TKey : notnull
     {
         CheckKeyNotNull(key);
 
