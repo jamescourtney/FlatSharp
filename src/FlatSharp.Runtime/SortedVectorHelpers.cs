@@ -47,7 +47,7 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(IList<TTable> sortedVector, TKey key)
+    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
         where TTable : class, ISortableTable<TKey>
         where TKey : notnull
     {
@@ -135,7 +135,7 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(TTable[] sortedVector, TKey key)
+    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
         where TTable : class, ISortableTable<TKey>
         where TKey : notnull
     {
@@ -163,7 +163,7 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(IReadOnlyList<TTable> sortedVector, TKey key)
+    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
        where TTable : class, ISortableTable<TKey>
        where TKey : notnull
     {
