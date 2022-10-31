@@ -31,8 +31,10 @@ table SchemaFile {
 
 */
 [FlatBufferTable]
-public class SchemaFile
+public class SchemaFile : ISortableTable<string>
 {
+    static SchemaFile() => SortedVectorHelpers.RegisterKeyLookup<SchemaFile, string>(x => x.FileName, 0);
+
     [FlatBufferItem(0, Required = true, Key = true)]
     public virtual string FileName { get; set; } = string.Empty;
 

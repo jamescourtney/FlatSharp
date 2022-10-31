@@ -29,8 +29,10 @@ table EnumVal {
 */
 
 [FlatBufferTable]
-public class EnumVal
+public class EnumVal : ISortableTable<long>
 {
+    static EnumVal() => SortedVectorHelpers.RegisterKeyLookup<EnumVal, long>(ev => ev.Value, 1);
+
     [FlatBufferItem(0, Required = true)]
     public virtual string Key { get; set; } = string.Empty;
 

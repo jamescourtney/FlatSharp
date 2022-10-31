@@ -200,6 +200,12 @@ public class TableTypeModel : RuntimeTypeModel
         }
     }
 
+    public override bool TryGetFileIdentifier([NotNullWhen(true)] out string? fileIdentifier)
+    {
+        fileIdentifier = this.attribute.FileIdentifier;
+        return fileIdentifier is not null;
+    }
+
     public override List<(ITypeModel, TableFieldContext)> GetFieldContexts()
     {
         List<(ITypeModel, TableFieldContext)> items = new();

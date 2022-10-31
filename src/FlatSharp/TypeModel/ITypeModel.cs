@@ -181,6 +181,11 @@ public interface ITypeModel
     bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember);
 
     /// <summary>
+    /// Tries to get the file identifier. Should only succeed for tables.
+    /// </summary>
+    bool TryGetFileIdentifier([NotNullWhen(true)] out string? fileId);
+
+    /// <summary>
     /// Returns any additional types that must have their assemblies referenced.
     /// </summary>
     IEnumerable<Type> GetReferencedTypes();

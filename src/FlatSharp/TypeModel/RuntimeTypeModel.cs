@@ -170,6 +170,13 @@ public abstract class RuntimeTypeModel : ITypeModel
         return false;
     }
 
+    [ExcludeFromCodeCoverage]
+    public virtual bool TryGetFileIdentifier([NotNullWhen(true)] out string? fileIdentifier)
+    {
+        fileIdentifier = null;
+        return false;
+    }
+
     public virtual void AdjustTableMember(TableMemberModel source)
     {
     }

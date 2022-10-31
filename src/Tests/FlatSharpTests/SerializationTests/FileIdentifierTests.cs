@@ -73,6 +73,15 @@ public class FileIdentifierTests
         Assert.NotNull(parsed2);
     }
 
+    [Fact]
+    public void FileIdentifier_MaxSize()
+    {
+        int withId = FlatBufferSerializer.Default.GetMaxSize<FileIdentifierTable>(new());
+        int withoutId = FlatBufferSerializer.Default.GetMaxSize<NoFileIdentifierTable>(new());
+
+        Assert.Equal(withId, withoutId + 4);
+    }
+
     [FlatBufferTable(FileIdentifier = "abcd")]
     public class FileIdentifierTable
     {

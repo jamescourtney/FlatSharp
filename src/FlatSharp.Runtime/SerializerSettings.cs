@@ -22,6 +22,11 @@ namespace FlatSharp;
 public class SerializerSettings
 {
     /// <summary>
+    /// A shared string writer factory that disables shared strings.
+    /// </summary>
+    public static readonly Func<ISharedStringWriter?> DisabledSharedStringWriterFactory = () => null;
+
+    /// <summary>
     /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
     /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
     /// 
