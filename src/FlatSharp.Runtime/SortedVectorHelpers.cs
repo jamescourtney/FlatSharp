@@ -209,33 +209,24 @@ public static class SortedVectorHelpers
         where TTable : class
         where TComparer : struct, ISimpleComparer<TKey>
     {
-        try
+        // String searches take two forms:
+        // For greedy deserialized buffers, we don't have the raw bytes, so we search inefficiently. This involves
+        // a string -> byte[] copy for each binary search jump.
+        // For lazy buffers (this first case), we can interrogate the underlying buffer directly.
+        if (typeof(TKey) == typeof(string) &&
+            realVector is IFlatBufferDeserializedVector vector &&
+            vector.ItemSize == sizeof(int) &&
+            comparer is SimpleStringComparer ssc)
         {
-            // String searches take two forms:
-            // For greedy deserialized buffers, we don't have the raw bytes, so we search inefficiently. This involves
-            // a string -> byte[] copy for each binary search jump.
-            // For lazy buffers (this first case), we can interrogate the underlying buffer directly.
-            if (typeof(TKey) == typeof(string) &&
-                realVector is IFlatBufferDeserializedVector vector &&
-                vector.ItemSize == sizeof(int) &&
-                comparer is SimpleStringComparer ssc)
-            {
-                ushort keyIndex = KeyLookup<TTable, string>.KeyIndex;
+            ushort keyIndex = KeyLookup<TTable, string>.KeyIndex;
 
-                return GenericBinarySearch<RawIndexableVector<TTable>, TTable, ReadOnlyMemory<byte>, SimpleStringComparer>(
-                    new RawIndexableVector<TTable>(vector, keyIndex),
-                    ssc);
-            }
-            else
-            {
-                return GenericBinarySearch<TIndexable, TTable, TKey, TComparer>(indexable, comparer);
-            }
+            return GenericBinarySearch<RawIndexableVector<TTable>, TTable, ReadOnlyMemory<byte>, SimpleStringComparer>(
+                new RawIndexableVector<TTable>(vector, keyIndex),
+                ssc);
         }
-        catch (TypeInitializationException ex) when (ex.InnerException is not null)
+        else
         {
-            // KeyLookup uses a static .ctor to do its work. However, when that fails,
-            // it manifests as a TypeInitializationException. We rethrow the inner exception here.
-            throw ex.InnerException;
+            return GenericBinarySearch<TIndexable, TTable, TKey, TComparer>(indexable, comparer);
         }
     }
 
@@ -294,11 +285,7 @@ public static class SortedVectorHelpers
         {
             get
             {
-                if (getter is null)
-                {
-                    ThrowNotInitialized();
-                }
-
+                EnsureInitialized();
                 return getter;
             }
 
@@ -312,17 +299,26 @@ public static class SortedVectorHelpers
         {
             get
             {
-                if (getter is null)
-                {
-                    ThrowNotInitialized();
-                }
-
+                EnsureInitialized();
                 return index;
             }
 
             set
             {
                 index = value;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET6_0_OR_GREATER
+        [MemberNotNull("getter")]
+#endif
+        [ExcludeFromCodeCoverage]
+        private static void EnsureInitialized()
+        {
+            if (getter is null)
+            {
+                ThrowNotInitialized();
             }
         }
 

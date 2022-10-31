@@ -24,7 +24,7 @@ public class IndexedVectorTests
     private List<string> stringKeys;
 
     private TableVector<string> stringVectorSource;
-    private TableVector<string> stringVectorParsed;
+    private TableVector<string> stringVectorLazy;
     private TableVector<string> stringVectorProgressive;
 
     private TableVector<int> intVectorSource;
@@ -51,16 +51,16 @@ public class IndexedVectorTests
 
         Span<byte> buffer = new byte[1024];
 
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
-        var progressiveSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive));
+        ISerializer<TableVector<string>> stringSerializer = FlatBufferSerializer.Default.Compile<TableVector<string>>().WithSettings(new() { DeserializationMode = FlatBufferDeserializationOption.Lazy });
+        ISerializer<TableVector<int>> intSerializer = FlatBufferSerializer.Default.Compile<TableVector<int>>().WithSettings(new() { DeserializationMode = FlatBufferDeserializationOption.Lazy });
 
-        int bytesWritten = serializer.Serialize(this.stringVectorSource, buffer);
-        this.stringVectorParsed = serializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
-        this.stringVectorProgressive = progressiveSerializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
+        int bytesWritten = stringSerializer.Write(buffer, this.stringVectorSource);
+        this.stringVectorLazy = stringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Lazy);
+        this.stringVectorProgressive = stringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Progressive);
 
-        bytesWritten = serializer.Serialize(this.intVectorSource, buffer);
-        this.intVectorParsed = serializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
-        this.intVectorProgressive = progressiveSerializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
+        bytesWritten = intSerializer.Write(buffer, this.intVectorSource);
+        this.intVectorParsed = intSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Lazy);
+        this.intVectorProgressive = intSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Progressive);
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class IndexedVectorTests
     {
         Assert.Throws<ArgumentNullException>(() => this.stringVectorSource.Vector[null]);
         Assert.Throws<KeyNotFoundException>(() => this.stringVectorSource.Vector[string.Empty]);
-        Assert.Throws<ArgumentNullException>(() => this.stringVectorParsed.Vector[null]);
-        Assert.Throws<KeyNotFoundException>(() => this.stringVectorParsed.Vector[string.Empty]);
+        Assert.Throws<ArgumentNullException>(() => this.stringVectorLazy.Vector[null]);
+        Assert.Throws<KeyNotFoundException>(() => this.stringVectorLazy.Vector[string.Empty]);
         Assert.Throws<ArgumentNullException>(() => this.stringVectorProgressive.Vector[null]);
         Assert.Throws<KeyNotFoundException>(() => this.stringVectorProgressive.Vector[string.Empty]);
 
@@ -84,7 +84,7 @@ public class IndexedVectorTests
     [Fact]
     public void IndexedVector_NotMutable()
     {
-        Assert.True(this.stringVectorParsed.Vector.IsReadOnly);
+        Assert.True(this.stringVectorLazy.Vector.IsReadOnly);
         Assert.True(this.stringVectorSource.Vector.IsReadOnly);
 
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.AddOrReplace(null));
@@ -92,10 +92,10 @@ public class IndexedVectorTests
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Remove(null));
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Add(null));
 
-        Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.AddOrReplace(null));
-        Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Clear());
-        Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Remove(null));
-        Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Add(null));
+        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.Vector.AddOrReplace(null));
+        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.Vector.Clear());
+        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.Vector.Remove(null));
+        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.Vector.Add(null));
 
         Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.Vector.AddOrReplace(null));
         Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.Vector.Clear());
@@ -106,7 +106,7 @@ public class IndexedVectorTests
     [Fact]
     public void IndexedVector_GetEnumerator()
     {
-        EnumeratorTest(this.stringVectorParsed.Vector);
+        EnumeratorTest(this.stringVectorLazy.Vector);
         EnumeratorTest(this.stringVectorSource.Vector);
         EnumeratorTest(this.stringVectorProgressive.Vector);
     }
@@ -148,10 +148,10 @@ public class IndexedVectorTests
         Assert.False(this.stringVectorSource.Vector.ContainsKey("20"));
         Assert.Throws<ArgumentNullException>(() => this.stringVectorSource.Vector.ContainsKey(null));
 
-        Assert.True(this.stringVectorParsed.Vector.ContainsKey("1"));
-        Assert.True(this.stringVectorParsed.Vector.ContainsKey("5"));
-        Assert.False(this.stringVectorParsed.Vector.ContainsKey("20"));
-        Assert.Throws<ArgumentNullException>(() => this.stringVectorParsed.Vector.ContainsKey(null));
+        Assert.True(this.stringVectorLazy.Vector.ContainsKey("1"));
+        Assert.True(this.stringVectorLazy.Vector.ContainsKey("5"));
+        Assert.False(this.stringVectorLazy.Vector.ContainsKey("20"));
+        Assert.Throws<ArgumentNullException>(() => this.stringVectorLazy.Vector.ContainsKey(null));
 
         Assert.True(this.stringVectorProgressive.Vector.ContainsKey("1"));
         Assert.True(this.stringVectorProgressive.Vector.ContainsKey("5"));
@@ -164,8 +164,8 @@ public class IndexedVectorTests
     {
         foreach (var key in this.stringKeys)
         {
-            Assert.True(this.stringVectorParsed.Vector.TryGetValue(key, out var value));
-            Assert.True(this.stringVectorParsed.Vector.TryGetValue(key, out var value2));
+            Assert.True(this.stringVectorLazy.Vector.TryGetValue(key, out var value));
+            Assert.True(this.stringVectorLazy.Vector.TryGetValue(key, out var value2));
             Assert.NotSame(value, value2);
 
             Assert.True(this.stringVectorProgressive.Vector.TryGetValue(key, out value));

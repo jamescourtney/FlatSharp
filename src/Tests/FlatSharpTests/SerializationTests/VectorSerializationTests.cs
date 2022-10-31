@@ -521,6 +521,19 @@ public class VectorSerializationTests
                 Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
             }
 
+            // Fail to use a table with uninitialized keys.
+            {
+                var rootSorted = new RootTableSorted<IList<TableWithUninitializedKey<string>>>
+                {
+                    Vector = testList.Select(x => new TableWithUninitializedKey<string> { Key = x.Key, Value = x.Value }).ToList(),
+                };
+
+                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithUninitializedKey<string>>>>(data);
+                Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, "AAA"));
+                Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
+            }
+
             // Fail to binary search through lazy sorted vector with null key.
             {
                 // Serialize succeeds here because the "root" is unsorted.
@@ -976,6 +989,16 @@ public class VectorSerializationTests
             SortedVectorHelpers.RegisterKeyLookup<TableWithKey<TKey>, TKey>(x => x.Key, 1);
         }
 
+        [FlatBufferItem(0)]
+        public virtual string? Value { get; set; }
+
+        [FlatBufferItem(1, Key = true)]
+        public virtual TKey? Key { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class TableWithUninitializedKey<TKey> : ISortableTable<TKey>
+    {
         [FlatBufferItem(0)]
         public virtual string? Value { get; set; }
 
