@@ -32,7 +32,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         this.keyMemberModel = null!;
     }
 
-    public override string LengthPropertyName => nameof(IIndexedVector<string, string>.Count);
+    public override string LengthPropertyName => "Count";
 
     public override Type OnInitialize()
     {
@@ -123,7 +123,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         if (context.Options.GreedyDeserialize)
         {
             // Eager indexed vector.
-            body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
+            body = $@"return new IndexedVector<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
         }
         else if (context.Options.Lazy)
         {

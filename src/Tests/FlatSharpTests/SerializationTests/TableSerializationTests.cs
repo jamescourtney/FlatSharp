@@ -242,7 +242,7 @@ public class TableSerializationTests
         serializer.Serialize(table, rawBuffer);
         buffer = new WeakReference<byte[]>(rawBuffer);
 
-        string csharp = serializer.Compile<SimpleTable>().CSharp;
+        string csharp = serializer.Compile<SimpleTable>().GetCSharp();
         return serializer.Parse<SimpleTable>(rawBuffer);
     }
 

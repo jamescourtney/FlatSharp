@@ -615,19 +615,11 @@ public class TypeModelTests
     }
 
     [Fact]
-    public void TypeModel_Vector_IndexedVector_MismatchedKeyTypes_NotAllowed()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-            () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, SortedVectorKeyTable<string>>)));
-        Assert.Equal("FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = System.Int32, Value Key Type = 'FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.String>'.", ex.Message);
-    }
-
-    [Fact]
     public void TypeModel_Vector_IndexedVector_UnkeyedTable_NotAllowed()
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-            () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericTable<string>>)));
-        Assert.Equal("Indexed vector values must have a property with the key attribute defined. Table = 'FlatSharpTests.TypeModelTests.GenericTable<System.String>'", ex.Message);
+            () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericTable<int>>)));
+        Assert.Equal("Indexed vector values must have a property with the key attribute defined. Table = 'FlatSharpTests.TypeModelTests.GenericTable<System.Int32>'", ex.Message);
     }
 
     [Fact]
@@ -636,14 +628,6 @@ public class TypeModelTests
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
             () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericStruct<int>>)));
         Assert.Equal("Indexed vector values must be flatbuffer tables. Type = 'FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>'", ex.Message);
-    }
-
-    [Fact]
-    public void TypeModel_Vector_IndexedVector_Vector_NotAllowed()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-            () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, IList<string>>)));
-        Assert.Equal("Indexed vector values must be flatbuffer tables. Type = 'System.Collections.Generic.IList<System.String>'", ex.Message);
     }
 
     [Fact]
@@ -1095,7 +1079,7 @@ public class TypeModelTests
     }
 
     [FlatBufferTable]
-    public class GenericTable<T>
+    public class GenericTable<T> : ISortableTable<T> where T : notnull
     {
         [FlatBufferItem(0)]
         public virtual T Value { get; set; }
@@ -1112,7 +1096,7 @@ public class TypeModelTests
     }
 
     [FlatBufferStruct]
-    public class GenericStruct<T>
+    public class GenericStruct<T> : ISortableTable<T> where T : notnull
     {
         [FlatBufferItem(0)]
         public virtual T Value { get; set; }
@@ -1327,7 +1311,7 @@ public class TypeModelTests
     }
 
     [FlatBufferTable]
-    public class SortedVectorKeyTable<T>
+    public class SortedVectorKeyTable<T> : ISortableTable<T> where T : notnull
     {
         [FlatBufferItem(0, Key = true)]
         public virtual T Key { get; set; }

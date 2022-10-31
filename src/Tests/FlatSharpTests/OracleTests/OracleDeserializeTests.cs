@@ -472,13 +472,13 @@ public partial class OracleDeserializeTests
 
         foreach (var expectedItem in expectedItems)
         {
-            SortedVectorItem<T> item = items.BinarySearchByFlatBufferKey(expectedItem);
+            SortedVectorItem<T> item = SortedVectorHelpers.BinarySearchByFlatBufferKey(items, expectedItem);
             Assert.NotNull(item);
         }
 
         foreach (var unexpectedItem in unexpectedItems)
         {
-            Assert.Null(items.BinarySearchByFlatBufferKey(unexpectedItem));
+            Assert.Null(SortedVectorHelpers.BinarySearchByFlatBufferKey(items, unexpectedItem));
         }
     }
 

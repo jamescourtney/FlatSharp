@@ -1,6 +1,5 @@
-﻿
-/*
- * Copyright 2021 James Courtney
+﻿/*
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +14,13 @@
  * limitations under the License.
  */
 
-global using System;
-global using System.Collections;
-global using System.Collections.Generic;
-global using System.ComponentModel;
-global using System.Diagnostics;
-global using System.Diagnostics.CodeAnalysis;
-global using System.Runtime.CompilerServices;
+namespace FlatSharp.Internal;
 
-global using FlatSharp.Internal;
-
-#if NETSTANDARD2_0
-global using FlatSharp.Polyfills;
-#endif
+/// <summary>
+/// A table that may be sorted in a vector.
+/// </summary>
+public interface ISortableTable<TKey> where TKey : notnull
+{
+    // Left empty. This interface exists simply to help satisfy generic constraints and does
+    // not currently have any requirements.
+}

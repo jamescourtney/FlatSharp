@@ -35,10 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <FlatSharpSchema Include="Grpc\Grpc.fbs" />
-    <FlatSharpSchema Include="Unions\Unions.fbs" />
-    <FlatSharpSchema Include="ValueStructs\ValueStructs.fbs" />
-    <FlatSharpSchema Include="Documentation\Documentation.fbs" />
+    <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
 
   <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />

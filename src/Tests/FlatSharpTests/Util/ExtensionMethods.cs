@@ -1,6 +1,5 @@
-﻿
-/*
- * Copyright 2021 James Courtney
+﻿/*
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +14,21 @@
  * limitations under the License.
  */
 
-global using System;
-global using System.Collections;
-global using System.Collections.Generic;
-global using System.ComponentModel;
-global using System.Diagnostics;
-global using System.Diagnostics.CodeAnalysis;
-global using System.Runtime.CompilerServices;
+namespace FlatSharpTests;
 
-global using FlatSharp.Internal;
+internal static class Extensions
+{
+    internal static string? GetCSharp<T>(this ISerializer<T> serializer) where T : class
+    {
+        return ((GeneratedSerializerWrapper<T>)serializer).CSharp;
+    }
 
-#if NETSTANDARD2_0
-global using FlatSharp.Polyfills;
-#endif
+    internal static string? GetCSharp(this ISerializer serializer)
+    {
+        var prop = typeof(GeneratedSerializerWrapper<>)
+                    .MakeGenericType(serializer.RootType)
+                    .GetProperty("CSharp");
+
+        return (string?)prop.GetValue(serializer);
+    }
+}

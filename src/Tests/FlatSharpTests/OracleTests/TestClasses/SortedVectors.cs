@@ -30,8 +30,13 @@ public class SortedVectorTest<TIntVectorType>
 }
 
 [FlatBufferTable]
-public class SortedVectorItem<T>
+public class SortedVectorItem<T> : ISortableTable<T>
 {
+    static SortedVectorItem()
+    {
+        SortedVectorHelpers.RegisterKeyLookup<SortedVectorItem<T>, T>(x => x.Value, 0);
+    }
+
     [FlatBufferItem(0, Key = true)]
     public virtual T? Value { get; set; }
 }

@@ -20,7 +20,7 @@ namespace FlatSharp.Internal;
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation that loads data progressively.
 /// </summary>
 public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> : IIndexedVector<TKey, TValue>
-    where TValue : class
+    where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
@@ -85,7 +85,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
             return value is not null;
         }
 
-        value = ((IList<TValue>)this.backingVector).BinarySearchByFlatBufferKey(key);
+        value = SortedVectorHelpers.BinarySearchByFlatBufferKey(this.backingVector, key);
         this.backingDictionary[key] = value;
         return value is not null;
     }

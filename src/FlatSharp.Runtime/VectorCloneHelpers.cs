@@ -201,7 +201,7 @@ public static class VectorCloneHelpers
     [return: NotNullIfNotNull("source")]
     public static IIndexedVector<TKey, TValue>? Clone<TKey, TValue>(IIndexedVector<TKey, TValue>? source, Func<TValue, TValue> cloneItem)
         where TKey : notnull
-        where TValue : class
+        where TValue : class, ISortableTable<TKey>
     {
         if (source is null)
         {

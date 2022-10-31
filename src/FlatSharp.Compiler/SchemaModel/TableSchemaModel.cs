@@ -18,6 +18,7 @@ using FlatSharp.Attributes;
 using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
 using FlatSharp.TypeModel;
+using System.Linq;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -102,6 +103,12 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
             {
                 writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");
                 writer.AppendLine($", {nameof(IFlatBufferSerializable)}");
+            }
+
+            PropertyFieldModel? keyField = this.properties.Values.SingleOrDefault(x => x.Field.Key);
+            if (keyField is not null)
+            {
+                writer.AppendLine($", {nameof(ISortableTable<bool>)}<{keyField.GetTypeName()}>");
             }
         }
     }
