@@ -17,7 +17,7 @@
 namespace FlatSharp;
 
 /// <summary>
-/// Defines FlatSharp serializer options.
+/// Defines FlatSharp deserialization options.
 /// </summary>
 public enum FlatBufferDeserializationOption
 {
@@ -37,7 +37,7 @@ public enum FlatBufferDeserializationOption
     Greedy = 2,
 
     /// <summary>
-    /// Same properties as <see cref="GreedyMutable"/>, but deserialized objects are mutable.
+    /// The entire object graph is traversed and the deserialized objects do not reference the input buffer. Deserialized objects are mutable.
     /// </summary>
     GreedyMutable = 3,
 

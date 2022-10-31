@@ -8,6 +8,8 @@
     <Description>FlatSharp.Runtime is the runtime component of FlatSharp that supports code emitted by the FlatSharp.Compiler package.</Description>
     <Nullable>annotations</Nullable>
     <DebugType>embedded</DebugType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">

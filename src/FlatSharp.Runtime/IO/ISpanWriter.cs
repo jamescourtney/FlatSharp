@@ -79,7 +79,7 @@ public interface ISpanWriter
     int GetStringBytes(Span<byte> destination, string value, Encoding encoding);
 
     /// <summary>
-    /// Invokes the <see cref="IGeneratedSerializer{T}.Write{TSpanWriter}(TSpanWriter, Span{byte}, T, int, SerializationContext)"/>
+    /// Invokes the <see cref="IGeneratedSerializer{T}.Write{TSpanWriter}(TSpanWriter, Span{byte}, T, SerializationContext)"/>
     /// method using the type information for this serializer.
     /// </summary>
     /// <remarks>
@@ -93,12 +93,9 @@ public interface ISpanWriter
         TItemType item,
         SerializationContext context);
 
+    /// <summary>
     /// Invokes the <see cref="ISharedStringWriter.FlushWrites{TSpanWriter}(TSpanWriter, Span{byte}, SerializationContext)"/> method.
     /// </summary>
-    /// ISharedStringWriter is a generic interface that accepts a SpanWriter. However, with precise type information,
-    /// it is possible for SpanWriter instances to avoid vtable indirection when wrapped in a struct or passed as a struct. This
-    /// hook allows SpanWriter implementations to invoke the generated serializer in an efficient way.
-    /// </remarks>
     void FlushSharedStrings(
         ISharedStringWriter writer,
         Span<byte> destination,
