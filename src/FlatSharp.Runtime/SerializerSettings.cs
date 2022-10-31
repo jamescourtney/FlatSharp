@@ -76,6 +76,14 @@ public class SerializerSettings
     }
 
     /// <summary>
+    /// Configures the serializer to use the given type for creating shared string writers.
+    /// </summary>
+    public SerializerSettings UseSharedStringWriter<T>() where T : ISharedStringWriter, new()
+    {
+        return this.UseSharedStringWriter(() => new T());
+    }
+
+    /// <summary>
     /// Configures the serializer to use the default shared string writer with, optionally, the given hash table capacity.
     /// </summary>
     public SerializerSettings UseDefaultSharedStringWriter(int? hashTableCapacity = null)
@@ -87,7 +95,7 @@ public class SerializerSettings
     /// <summary>
     /// Configures the serializer to not use shared strings.
     /// </summary>
-    public SerializerSettings WithoutSharedStrings()
+    public SerializerSettings DisableSharedStrings()
     {
         this.SharedStringWriterFactory = () => null;
         return this;

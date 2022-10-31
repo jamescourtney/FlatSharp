@@ -183,7 +183,7 @@ public class FlatSharpCompiler
         bool hasFailureMessage = false;
         bool containsInputHash = false;
 
-        for (int i = 0; i < 30; ++i)
+        for (int i = 0; i < 100; ++i)
         {
             string? line = reader.ReadLine();
             if (line is null)
@@ -214,7 +214,9 @@ public class FlatSharpCompiler
         string inputHash = AssemblyVersion;
         using (var hash = SHA256.Create())
         {
-            byte[] hashBytes = new byte[32];
+            // Use the assembly hash as the base; this means each build will change the hash for the same schema.
+            byte[] hashBytes = hash.ComputeHash(File.ReadAllBytes(typeof(FlatSharpCompiler).Assembly.Location));
+
             foreach (var schema in bfbs)
             {
                 var tempHash = hash.ComputeHash(schema);
@@ -567,9 +569,6 @@ public class FlatSharpCompiler
             .Compile<Schema.Schema>()
             .WithSettings(s => s.UseGreedyMutableDeserialization());
 
-        ISerializer<Schema.Schema> immutableSerializer = mutableSerializer
-            .WithSettings(s => s.UseGreedyDeserialization());
-
         // Mutable
         var schema = mutableSerializer.Parse(bfbs);
 
@@ -583,6 +582,6 @@ public class FlatSharpCompiler
         mutableSerializer.Write(temp, schema);
 
         // Immutable.
-        return immutableSerializer.Parse(temp);
+        return mutableSerializer.WithSettings(s => s.UseGreedyDeserialization()).Parse(temp);
     }
 }
