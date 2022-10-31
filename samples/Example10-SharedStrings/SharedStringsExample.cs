@@ -38,19 +38,10 @@ public class SharedStringsExample
 
         // We can create a new serializer based on the current one with shared strings turned off.
         // These factory delegates configure the writer.
-        ISerializer<Matrix> noSharedStringsSerializer = Matrix.Serializer.WithSettings(
-            new SerializerSettings
-            {
-                // Setting this to a delegate that returns null will disable shared strings.
-                SharedStringWriterFactory = () => null,
-            });
+        ISerializer<Matrix> noSharedStringsSerializer = Matrix.Serializer.WithSettings(s => s.WithoutSharedStrings());
 
         // We can also create our own shared string providers (defined at the bottom of this file).
-        ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(
-            new SerializerSettings
-            {
-                SharedStringWriterFactory = () => new PerfectSharedStringWriter(),
-            });
+        ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(s => s.UseSharedStringWriter(() => new PerfectSharedStringWriter()));
 
         byte[] unsharedBuffer = new byte[noSharedStringsSerializer.GetMaxSize(matrix)];
         byte[] sharedBuffer = new byte[defaultSerializer.GetMaxSize(matrix)];

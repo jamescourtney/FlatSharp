@@ -30,19 +30,14 @@ public class GrpcExample
         {
             // The echo service often returns back the same item that it received. We should configure it to enable shared strings
             // and other optimizations.
-            SerializerSettings settings = new()
-            {
-                // Memory copy serialization enables fast re-serialization for already-deserialized flatbuffer items.
-                // Since the echo service is simple, this is a good optimization to enable.
-                EnableMemoryCopySerialization = true,
+            Action<SerializerSettings> settingsConfig = s =>
+                s.UseMemoryCopySerialization()
+                 .UseLazyDeserialization()
+                 .UseDefaultSharedStringWriter();
 
-                // Turn on writing shared strings.
-                SharedStringWriterFactory = () => new SharedStringWriter(),
-            };
-
-            // Update the serializers used for the echo service.
-            EchoService.Serializer<SingleMessage>.Value = EchoService.Serializer<SingleMessage>.Value.WithSettings(settings);
-            EchoService.Serializer<MultiMessage>.Value = EchoService.Serializer<MultiMessage>.Value.WithSettings(settings);
+            // Update the serializers used for the echo service based on what we configured.
+            EchoService.Serializer<SingleMessage>.Value = EchoService.Serializer<SingleMessage>.Value.WithSettings(settingsConfig);
+            EchoService.Serializer<MultiMessage>.Value = EchoService.Serializer<MultiMessage>.Value.WithSettings(settingsConfig);
         }
 
         Server server = new Server();

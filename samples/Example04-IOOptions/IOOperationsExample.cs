@@ -28,11 +28,13 @@ public class IOOperationsExample
             Breed = DogBreed.BostonTerrier,
             Vitals = new AnimalVitals { Age = 11, Gender = Gender.Male, Name = "Tony" }
         };
+
         Dog rocket = new Dog
         {
             Breed = DogBreed.GoldenRetriever,
             Vitals = new AnimalVitals { Age = 8, Gender = Gender.Female, Name = "Rocket" }
         };
+
         Dog peaches = new Dog
         {
             Breed = DogBreed.GermanShepard,

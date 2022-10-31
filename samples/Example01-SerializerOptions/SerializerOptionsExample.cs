@@ -82,14 +82,9 @@ public class SerializerOptionsExample
     /// </summary>
     public static void LazyDeserialization(Person person)
     {
-        // We told FlatSharp to generate a lazy serializer in the FBS file, so 
-        // Person.Serializer contains a lazy serializer.
-        ISerializer<Person> serializer = Person.Serializer;
-
-        // Allocate, serializer, and parse the same person. This gives us a lazy object back.
-        byte[] buffer = new byte[serializer.GetMaxSize(person)];
-        serializer.Write(buffer, person);
-        Person parsed = serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
+        byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
+        Person.Serializer.Write(buffer, person);
+        Person parsed = Person.Serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
 
         // Lazy deserialization reads objects from vectors each time you ask for them.
         Fruit index0_1 = parsed.FavoriteFruits![0];
@@ -135,13 +130,9 @@ public class SerializerOptionsExample
     /// </summary>
     public static void ProgressiveDeserialization(Person person)
     {
-        // The .Serializer on Person is not progressive. Let's force it to be!
-        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Progressive });
-        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Progressive);
-
-        byte[] buffer = new byte[serializer.GetMaxSize(person)];
-        serializer.Write(buffer, person);
-        Person parsed = serializer.Parse(buffer);
+        byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
+        Person.Serializer.Write(buffer, person);
+        Person parsed = Person.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
 
         try
         {
@@ -190,13 +181,9 @@ public class SerializerOptionsExample
     /// </summary>
     public static void GreedyDeserialization(Person person)
     {
-        // The .Serializer on Person is Lazy, so let's tell it to be greedy instead.
-        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.Greedy });
-        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.Greedy);
-
-        byte[] buffer = new byte[serializer.GetMaxSize(person)];
-        serializer.Write(buffer, person);
-        Person parsed = serializer.Parse(buffer);
+        byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
+        Person.Serializer.Write(buffer, person);
+        Person parsed = Person.Serializer.Parse(buffer, FlatBufferDeserializationOption.Greedy);
 
         // Fill array with 0. Source data is gone now, but we can still read the buffer because we were greedy!
         buffer.AsSpan().Fill(0);
@@ -234,12 +221,9 @@ public class SerializerOptionsExample
     /// </summary>
     public static void GreedyMutableDeserialization(Person person)
     {
-        ISerializer<Person> serializer = Person.Serializer.WithSettings(new SerializerSettings { DeserializationMode = FlatBufferDeserializationOption.GreedyMutable });
-        Debug.Assert(serializer.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable);
-
-        byte[] buffer = new byte[serializer.GetMaxSize(person)];
-        serializer.Write(buffer, person);
-        Person parsed = serializer.Parse(buffer);
+        byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
+        Person.Serializer.Write(buffer, person);
+        Person parsed = Person.Serializer.Parse(buffer, FlatBufferDeserializationOption.GreedyMutable);
 
         using SHA256 sha = SHA256.Create();
 
