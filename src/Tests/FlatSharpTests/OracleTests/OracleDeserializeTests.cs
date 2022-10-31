@@ -429,8 +429,8 @@ public partial class OracleDeserializeTests
         builder.Finish(table.Value);
         byte[] serialized = builder.SizedByteArray();
 
-        var serializer = new FlatBufferSerializer(option);
-        var parsed = serializer.Parse<SortedVectorTest<SortedVectorItem<int>>>(serialized);
+        var serializer = FlatBufferSerializer.Default.Compile<SortedVectorTest<SortedVectorItem<int>>>().WithSettings(s => s.UseDeserializationMode(option));
+        var parsed = serializer.Parse(serialized);
 
         VerifySorted(parsed.StringVector, new Utf8StringComparer(), strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
         VerifySorted(parsed.IntVector, Comparer<int>.Default, ints, new List<int> { -1, -3, 0 });

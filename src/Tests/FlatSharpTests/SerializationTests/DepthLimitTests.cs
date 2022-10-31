@@ -24,7 +24,7 @@ public class DepthLimitTests
         Assert.Throws<ArgumentException>(() => 
             FlatBufferSerializer.Default
                 .Compile<LinkedListNode>()
-                .WithSettings(new SerializerSettings { ObjectDepthLimit = -1 }));
+                .WithSettings(s => s.WithObjectDepthLimit(-1)));
     }
 
     [Theory]
@@ -34,8 +34,9 @@ public class DepthLimitTests
     [InlineData(FlatBufferDeserializationOption.Lazy, 1000, 1000, true)]
     public void LinkedListDepth(FlatBufferDeserializationOption option, short limit, int nodes, bool expectException)
     {
-        FlatBufferSerializer fbs = new FlatBufferSerializer(option);
-        ISerializer<LinkedListNode> serializer = fbs.Compile<LinkedListNode>().WithSettings(new SerializerSettings { ObjectDepthLimit = limit });
+        ISerializer<LinkedListNode> serializer = FlatBufferSerializer.Default
+            .Compile<LinkedListNode>()
+            .WithSettings(s => s.WithObjectDepthLimit(limit).UseDeserializationMode(option));
 
         LinkedListNode head = new LinkedListNode();
         LinkedListNode current = head;

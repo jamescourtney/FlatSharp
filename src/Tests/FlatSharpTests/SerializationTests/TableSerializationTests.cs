@@ -166,8 +166,7 @@ public class TableSerializationTests
     [Fact]
     public void TableParse_NotMutable()
     {
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy);
-        var table = this.SerializeAndParse(options, out _);
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out _);
 
         Assert.Throws<NotMutableException>(() => table.String = null);
         Assert.Throws<NotMutableException>(() => table.Struct = null);
@@ -180,8 +179,7 @@ public class TableSerializationTests
     [Fact]
     public void TableParse_Progressive()
     {
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive);
-        var table = this.SerializeAndParse(options, out _);
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out _);
 
         Assert.Throws<NotMutableException>(() => table.String = string.Empty);
         Assert.Throws<NotMutableException>(() => table.Struct.Long = 0);
@@ -193,8 +191,7 @@ public class TableSerializationTests
     [Fact]
     public void TableParse_GreedyImmutable()
     {
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
-        var table = this.SerializeAndParse(options, out var buffer);
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var buffer);
 
         bool reaped = false;
         for (int i = 0; i < 5; ++i)
@@ -227,7 +224,7 @@ public class TableSerializationTests
         Assert.Equal(6u, table.StructVector[0].Uint);
     }
 
-    private SimpleTable SerializeAndParse(FlatBufferSerializerOptions options, out WeakReference<byte[]> buffer)
+    private SimpleTable SerializeAndParse(FlatBufferDeserializationOption option, out WeakReference<byte[]> buffer)
     {
         SimpleTable table = new SimpleTable
         {
@@ -236,13 +233,12 @@ public class TableSerializationTests
             StructVector = new List<SimpleStruct> { new SimpleStruct { Byte = 4, Long = 5, Uint = 6 } },
         };
 
-        var serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(table).WithSettings(s => s.UseDeserializationMode(option));
 
         var rawBuffer = new byte[1024];
-        serializer.Serialize(table, rawBuffer);
+        serializer.Write(rawBuffer, table);
         buffer = new WeakReference<byte[]>(rawBuffer);
 
-        string csharp = serializer.Compile<SimpleTable>().GetCSharp();
         return serializer.Parse<SimpleTable>(rawBuffer);
     }
 

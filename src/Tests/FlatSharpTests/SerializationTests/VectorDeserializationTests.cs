@@ -257,11 +257,10 @@ public class VectorDeserializationTests
             Vector = new List<string> { "one", "two", "three" }
         };
 
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.GreedyMutable);
-        FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseGreedyMutableDeserialization());
 
         byte[] buffer = new byte[100];
-        serializer.Serialize(root, buffer);
+        serializer.Write(buffer, root);
 
         var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
@@ -280,11 +279,10 @@ public class VectorDeserializationTests
             Vector = new List<string> { "one", "two", "three" }
         };
 
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
-        FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseGreedyDeserialization());
 
         byte[] buffer = new byte[100];
-        serializer.Serialize(root, buffer);
+        serializer.Write(buffer, root);
 
         var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
@@ -305,10 +303,10 @@ public class VectorDeserializationTests
         root.Vector.Span.Fill(1);
 
         byte[] buffer = new byte[1024];
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
-        var serializer = new FlatBufferSerializer(options);
 
-        serializer.Serialize(root, buffer.AsSpan());
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseGreedyDeserialization());
+
+        serializer.Write(buffer, root);
 
         var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
         var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
@@ -337,10 +335,40 @@ public class VectorDeserializationTests
         root.Vector.Span.Fill(1);
 
         byte[] buffer = new byte[1024];
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy);
-        var serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseLazyDeserialization());
 
-        serializer.Serialize(root, buffer.AsSpan());
+        serializer.Write(buffer.AsSpan(), root);
+
+        var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+        var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+
+        Assert.Equal((byte)1, parsed1.Vector.Span[0]);
+        Assert.Equal((byte)1, parsed2.Vector.Span[0]);
+
+        // Asser that this change affects both objects.
+        parsed1.Vector.Span[0] = 2;
+
+        Assert.Equal((byte)2, parsed1.Vector.Span[0]);
+        Assert.Equal((byte)2, parsed2.Vector.Span[0]);
+    }
+
+    /// <summary>
+    /// Asserts that when greedy parsing is off, a change to the memory of the parsed object represents a change in the buffer.
+    /// </summary>
+    [Fact]
+    public void MemoryVector_ProgressiveDeserialize()
+    {
+        RootTable<Memory<byte>> root = new RootTable<Memory<byte>>()
+        {
+            Vector = new Memory<byte>(new byte[100])
+        };
+
+        root.Vector.Span.Fill(1);
+
+        byte[] buffer = new byte[1024];
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseProgressiveDeserialization());
+
+        serializer.Write(buffer.AsSpan(), root);
 
         var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
         var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
@@ -436,7 +464,7 @@ public class VectorDeserializationTests
             4, 0,
         };
 
-        var serializer = new FlatBufferSerializer(option);
+        var serializer = FlatBufferSerializer.Default.Compile<V>().WithSettings(s => s.UseDeserializationMode(option));
         V parsed = serializer.Parse<V>(data);
         var items = getItems(parsed);
 

@@ -27,17 +27,6 @@ namespace FlatSharpTests;
 
 public class VectorSerializationTests
 {
-    private static readonly Dictionary<FlatBufferDeserializationOption, FlatBufferSerializer> SerializerLookup;
-
-    static VectorSerializationTests()
-    {
-        SerializerLookup = new();
-        foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-        {
-            SerializerLookup[option] = new FlatBufferSerializer(option);
-        }
-    }
-
     public class SimpleTests
     {
         [Fact]
@@ -538,14 +527,14 @@ public class VectorSerializationTests
             {
                 // Serialize succeeds here because the "root" is unsorted.
                 FlatBufferSerializer.Default.Serialize(root, data);
-                var lazyCopy = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IList<TableWithKey<string>>>>(data);
+                var lazyCopy = FlatBufferSerializer.Default.Compile<RootTable<IList<TableWithKey<string>>>>().WithSettings(s => s.UseLazyDeserialization()).Parse(data);
 
                 Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, "AAA"));
                 Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, (string)null));
             }
 
             {
-                var parsed = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IReadOnlyList<TableWithNoKey<string>>>>(data);
+                var parsed = FlatBufferSerializer.Default.Compile<RootTable<IReadOnlyList<TableWithNoKey<string>>>>().WithSettings(s => s.UseLazyDeserialization()).Parse(data);
                 var ex = Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed.Vector, "foo"));
             }
         }
@@ -693,12 +682,13 @@ public class VectorSerializationTests
                 }
             };
 
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
+            var serializer = FlatBufferSerializer.Default.Compile<RootTableSorted<IIndexedVector<string, TableWithKey<string>>>>()
+                .WithSettings(s => s.UseLazyDeserialization());
 
             byte[] data = new byte[1024 * 1024];
-            serializer.Serialize(table, data);
+            serializer.Write(data, table);
 
-            var parsed = serializer.Parse<RootTableSorted<IIndexedVector<string, TableWithKey<string>>>>(data);
+            var parsed = serializer.Parse(data);
 
             Assert.Equal("AAA", parsed.Vector["a"].Value);
             Assert.Equal("BBB", parsed.Vector["b"].Value);
@@ -727,11 +717,10 @@ public class VectorSerializationTests
             }
 
             byte[] data = new byte[10 * 1024 * 1024];
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
-            serializer.Compile<RootTable<IIndexedVector<string, TableWithKey<string>>>>();
-            int bytesWritten = serializer.Serialize(table, data);
+            var serializer = FlatBufferSerializer.Default.Compile<RootTable<IIndexedVector<string, TableWithKey<string>>>>().WithSettings(s => s.UseLazyDeserialization());
+            int bytesWritten = serializer.Write(data, table);
 
-            var parsed = serializer.Parse<RootTable<IIndexedVector<string, TableWithKey<string>>>>(data);
+            var parsed = serializer.Parse(data);
 
             foreach (var key in keys)
             {
@@ -784,8 +773,8 @@ public class VectorSerializationTests
                 }
 
                 byte[] data = new byte[1024 * 1024];
-                var serializer = new FlatBufferSerializer(option);
-                int bytesWritten = serializer.Serialize(table, data);
+                var serializer = FlatBufferSerializer.Default.Compile<RootTable<IIndexedVector<T, TableWithKey<T>>>>().WithSettings(s => s.UseDeserializationMode(option));
+                int bytesWritten = serializer.Write(data, table);
 
                 var parsed = serializer.Parse<RootTable<IIndexedVector<T, TableWithKey<T>>>>(data);
 
@@ -795,7 +784,8 @@ public class VectorSerializationTests
                 }
 
                 // verify sorted and that we can read it when it's from a normal vector.
-                var parsedList = serializer.Parse<RootTable<IList<TableWithKey<T>>>>(data);
+                var listSerializer = FlatBufferSerializer.Default.Compile<RootTable<IList<TableWithKey<T>>>>().WithSettings(s => s.UseDeserializationMode(option));
+                var parsedList = listSerializer.Parse(data);
                 Assert.Equal(parsed.Vector.Count, parsedList.Vector.Count);
                 var previous = parsedList.Vector[0];
                 for (int i = 1; i < parsedList.Vector.Count; ++i)
@@ -856,12 +846,12 @@ public class VectorSerializationTests
         FlatBufferSerializer.Default.Serialize(root, data);
 
         void RunTest<TVector>(
-            FlatBufferSerializer serializer,
+            FlatBufferDeserializationOption option,
             Func<TVector, int> getLength,
             Func<TVector, int, TableWithKey<TKey>> indexer,
             Func<TVector, TKey, TableWithKey<TKey>?> find)
         {
-            var parsed = serializer.Parse<RootTableSorted<TVector>>(data);
+            var parsed = FlatBufferSerializer.Default.Compile<RootTableSorted<TVector>>().WithSettings(s => s.UseDeserializationMode(option)).Parse(data);
             var vector = parsed.Vector;
             int length = getLength(vector);
 
@@ -891,17 +881,11 @@ public class VectorSerializationTests
             }
         }
 
-        foreach (var kvp in SerializerLookup)
+        foreach (FlatBufferDeserializationOption mode in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
         {
-            // Arrays only supported in greedy mode.
-            if (kvp.Key == FlatBufferDeserializationOption.Greedy
-             || kvp.Key == FlatBufferDeserializationOption.GreedyMutable)
-            {
-                RunTest<TableWithKey<TKey>[]>(kvp.Value, x => x.Length, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
-            }
-
-            RunTest<IList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
-            RunTest<IReadOnlyList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
+            RunTest<TableWithKey<TKey>[]>(mode, x => x.Length, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
+            RunTest<IList<TableWithKey<TKey>>>(mode, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
+            RunTest<IReadOnlyList<TableWithKey<TKey>>>(mode, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
         }
     }
 
