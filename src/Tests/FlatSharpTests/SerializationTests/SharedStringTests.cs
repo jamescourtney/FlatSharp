@@ -172,12 +172,12 @@ public class SharedStringTests
         Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
 
         // Set SharedStringWriter to null. Shared strings remain turned on.
-        serializer = serializer.WithSettings(new SerializerSettings { SharedStringWriterFactory = null });
+        serializer = serializer.WithSettings(s => s.UseDefaultSharedStringWriter());
         bytesWritten = serializer.Write(default(SpanWriter), destination, t);
         Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
 
         // Set SharedStringWriter to return null. Shared strings turn off.
-        serializer = serializer.WithSettings(new SerializerSettings { SharedStringWriterFactory = () => null });
+        serializer = serializer.WithSettings(s => s.WithoutSharedStrings());
         int bytesWrittenBig = serializer.Write(default(SpanWriter), destination, t);
         Assert.True(bytesWrittenBig > bytesWritten);
     }
@@ -260,10 +260,7 @@ public class SharedStringTests
 
         byte[] destination = new byte[1024];
         var serializer = FlatBufferSerializer.Default.Compile<SharedStringsTable>()
-            .WithSettings(new SerializerSettings
-            {
-                SharedStringWriterFactory = () => new SharedStringWriter(1)
-            });
+            .WithSettings(s => s.UseDefaultSharedStringWriter(1));
 
         int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 

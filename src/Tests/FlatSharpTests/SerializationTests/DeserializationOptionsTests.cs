@@ -380,8 +380,6 @@ public class DeserializationOptionsTests
 
     private InnerTable<T> SerializeAndParse<T>(FlatBufferDeserializationOption option, T item)
     {
-        FlatBufferSerializer serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(option));
-
         InnerTable<T> value = new InnerTable<T>
         {
             First = new FirstStruct { First = 1 },
@@ -391,8 +389,10 @@ public class DeserializationOptionsTests
             Vector = item,
         };
 
-        serializer.Serialize(value, InputBuffer);
-        InnerTable<T> parsed = serializer.Parse<InnerTable<T>>(InputBuffer);
+        var serializer = FlatBufferSerializer.CompileFor(value).WithSettings(s => s.UseDeserializationMode(option));
+
+        serializer.Write(InputBuffer, value);
+        InnerTable<T> parsed = serializer.Parse(InputBuffer);
 
         Assert.Equal(1, parsed.First.First);
         Assert.Equal(2, parsed.Second.Second);

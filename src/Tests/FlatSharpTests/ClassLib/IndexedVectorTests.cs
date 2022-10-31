@@ -51,8 +51,8 @@ public class IndexedVectorTests
 
         Span<byte> buffer = new byte[1024];
 
-        ISerializer<TableVector<string>> stringSerializer = FlatBufferSerializer.Default.Compile<TableVector<string>>().WithSettings(new() { DeserializationMode = FlatBufferDeserializationOption.Lazy });
-        ISerializer<TableVector<int>> intSerializer = FlatBufferSerializer.Default.Compile<TableVector<int>>().WithSettings(new() { DeserializationMode = FlatBufferDeserializationOption.Lazy });
+        ISerializer<TableVector<string>> stringSerializer = FlatBufferSerializer.Default.Compile<TableVector<string>>().WithSettings(s => s.UseLazyDeserialization());
+        ISerializer<TableVector<int>> intSerializer = FlatBufferSerializer.Default.Compile<TableVector<int>>().WithSettings(s => s.UseLazyDeserialization());
 
         int bytesWritten = stringSerializer.Write(buffer, this.stringVectorSource);
         this.stringVectorLazy = stringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Lazy);

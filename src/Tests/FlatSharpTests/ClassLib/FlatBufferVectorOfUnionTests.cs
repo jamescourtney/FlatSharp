@@ -32,17 +32,17 @@ public class FlatBufferVectorOfUnionTests
         {
             Vector = new[]
             {
-                    new Union("foobar"),
-                    new Union(new Struct { Value = 6 }),
-                    new Union(new Table { Value = 5 }),
-                }
+                new Union("foobar"),
+                new Union(new Struct { Value = 6 }),
+                new Union(new Table { Value = 5 }),
+            }
         };
 
         Span<byte> buffer = new byte[1024];
 
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
-        int bytesWritten = serializer.Serialize(original, buffer);
-        this.vector = serializer.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
+        var serializer = FlatBufferSerializer.CompileFor(original).WithSettings(s => s.UseLazyDeserialization());
+        int bytesWritten = serializer.Write(buffer, original);
+        this.vector = serializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
     }
 
     [Fact]

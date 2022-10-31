@@ -51,8 +51,10 @@ public class RequiredTests
             var item = new Table<T>() { Item = default };
             byte[] data = new byte[1024];
 
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
-            serializer.Serialize(item, data);
+            var nonRequired = FlatBufferSerializer.Default.Compile<Table<T>>();
+            nonRequired.Write(data, item);
+
+            var serializer = FlatBufferSerializer.Default.Compile<RequiredTable<T>>().WithSettings(s => s.UseGreedyDeserialization());
             var ex = Assert.Throws<System.IO.InvalidDataException>(() => serializer.Parse<RequiredTable<T>>(data));
 
             Assert.Equal(

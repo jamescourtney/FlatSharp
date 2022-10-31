@@ -44,16 +44,19 @@ public class FlatBufferVectorTests
 
         Span<byte> buffer = new byte[1024 * 1024];
 
-        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
-        var progressiveSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive));
+        var lazyStringSerializer = FlatBufferSerializer.CompileFor(originalVector).WithSettings(s => s.UseLazyDeserialization());
+        var progressiveStringSerializer = FlatBufferSerializer.CompileFor(originalVector).WithSettings(s => s.UseProgressiveDeserialization());
 
-        int bytesWritten = serializer.Serialize(originalVector, buffer);
-        this.stringVector = serializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
-        this.progressiveStringVector = progressiveSerializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
+        var lazyIntSerializer = FlatBufferSerializer.CompileFor(originalIntVector).WithSettings(s => s.UseLazyDeserialization());
+        var progressiveIntSerializer = FlatBufferSerializer.CompileFor(originalIntVector).WithSettings(s => s.UseProgressiveDeserialization());
 
-        bytesWritten = serializer.Serialize(originalIntVector, buffer);
-        this.intVector = serializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
-        this.progressiveIntVector = progressiveSerializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
+        int bytesWritten = lazyStringSerializer.Write(buffer, originalVector);
+        this.stringVector = lazyStringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
+        this.progressiveStringVector = progressiveStringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
+
+        bytesWritten = lazyIntSerializer.Write(buffer, originalIntVector);
+        this.intVector = lazyIntSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
+        this.progressiveIntVector = progressiveIntSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
     }
 
     [Fact]

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using FlatSharp;
+
 namespace FlatSharpTests;
 
 /// <summary>
@@ -33,8 +35,7 @@ public class MemCopySerializeTests
             }
         };
 
-        FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.GreedyMutable);
-        var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
+        var compiled = FlatBufferSerializer.Default.Compile<TestTable<Struct>>().WithSettings(s => s.UseMemoryCopySerialization());
 
         byte[] data = new byte[1024];
         Assert.Equal(70, compiled.GetMaxSize(t));
@@ -63,8 +64,8 @@ public class MemCopySerializeTests
             }
         };
 
-        FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
-        var compiled = serializer.Compile<TestTable<WriteThroughStruct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
+        FlatBufferSerializer serializer = FlatBufferSerializer.Default;
+        var compiled = serializer.Compile<TestTable<WriteThroughStruct>>().WithSettings(s => s.UseMemoryCopySerialization().UseLazyDeserialization());
 
         byte[] data = new byte[1024];
         Assert.Equal(70, compiled.GetMaxSize(t));
@@ -104,8 +105,8 @@ public class MemCopySerializeTests
             }
         };
 
-        FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Progressive);
-        var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
+        FlatBufferSerializer serializer = FlatBufferSerializer.Default;
+        var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(s => s.UseMemoryCopySerialization().UseProgressiveDeserialization());
 
         byte[] data = new byte[1024];
         Assert.Equal(70, compiled.GetMaxSize(t));

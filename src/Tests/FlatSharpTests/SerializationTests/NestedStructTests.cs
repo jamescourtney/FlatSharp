@@ -45,9 +45,9 @@ public class NestedStructTests
             }
         };
 
-        FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+        ISerializer<Table> serializer = FlatBufferSerializer.Default.Compile<Table>().WithSettings(s => s.UseDeserializationMode(option));
         byte[] data = new byte[1024];
-        serializer.Serialize(table, data);
+        serializer.Write(data, table);
 
         var parsed = serializer.Parse<Table>(data);
         Assert.Equal(3, parsed.Outer.InnerVirtual.A);

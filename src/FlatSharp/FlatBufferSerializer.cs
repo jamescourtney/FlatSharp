@@ -194,6 +194,11 @@ public sealed class FlatBufferSerializer
         return this.GetOrCreateUntypedSerializer(typeof(T)).GetMaxSize(item);
     }
 
+    public static ISerializer<T> CompileFor<T>(T item) where T : class
+    {
+        return FlatBufferSerializer.Default.Compile<T>();
+    }
+
     private ISerializer<TRoot> GetOrCreateTypedSerializer<TRoot>() where TRoot : class
     {
         if (!this.serializerCache.TryGetValue(typeof(TRoot), out object? serializer))
@@ -202,7 +207,7 @@ public sealed class FlatBufferSerializer
             {
                 if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                 {
-                    serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>().WithSettings(new SerializerSettings { DeserializationMode = this.Options.DeserializationOption });
+                    serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>().WithSettings(s => s.UseDeserializationMode(this.Options.DeserializationOption));
                     this.serializerCache[typeof(TRoot)] = serializer;
                 }
             }

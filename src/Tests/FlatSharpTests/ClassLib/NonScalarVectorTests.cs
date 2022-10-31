@@ -75,17 +75,16 @@ public class NonScalarVectorTests
 
     private void TestType<T>(FlatBufferDeserializationOption option, Func<T> generator) where T : IEquatable<T>
     {
-        var options = new FlatBufferSerializerOptions(option);
-        FlatBufferSerializer serializer = new FlatBufferSerializer(options);
-
         {
             var memoryTable = new RootTable<IList<T>>
             {
                 Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
             };
 
+            var serializer = FlatBufferSerializer.CompileFor(memoryTable).WithSettings(s => s.UseDeserializationMode(option));
+
             Span<byte> memory = new byte[10240];
-            int offset = serializer.Serialize(memoryTable, memory);
+            int offset = serializer.Write(memory, memoryTable);
             var memoryTableResult = serializer.Parse<RootTable<IList<T>>>(memory.Slice(0, offset).ToArray());
 
             var resultVector = memoryTableResult.Vector;
@@ -104,8 +103,10 @@ public class NonScalarVectorTests
                 Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
             };
 
+            var serializer = FlatBufferSerializer.CompileFor(memoryTable).WithSettings(s => s.UseDeserializationMode(option));
+
             Span<byte> memory = new byte[10240];
-            int offset = serializer.Serialize(memoryTable, memory);
+            int offset = serializer.Write(memory, memoryTable);
             var memoryTableResult = serializer.Parse<RootTable<IReadOnlyList<T>>>(memory.Slice(0, offset).ToArray());
             var resultVector = memoryTableResult.Vector;
             for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
@@ -124,8 +125,10 @@ public class NonScalarVectorTests
                 Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
             };
 
+            var serializer = FlatBufferSerializer.CompileFor(memoryTable).WithSettings(s => s.UseDeserializationMode(option));
+
             Span<byte> memory = new byte[10240];
-            int offset = serializer.Serialize(memoryTable, memory);
+            int offset = serializer.Write(memory, memoryTable);
             var memoryTableResult = serializer.Parse<RootTable<T[]>>(memory.Slice(0, offset).ToArray());
             var resultVector = memoryTableResult.Vector;
             for (int i = 0; i < memoryTableResult.Vector.Length; ++i)

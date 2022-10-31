@@ -27,11 +27,8 @@ public class EchoServiceTestCases
     [Fact]
     public async Task GrpcSerializersOverridable_EnableSharedStrings()
     {
-        EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
-            new SerializerSettings
-            {
-                SharedStringWriterFactory = () => new SharedStringWriter()
-            });
+        EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer
+            .WithSettings(s => s.UseDefaultSharedStringWriter());
 
         int length = await this.SharedStringsTest_Common();
         Assert.True(length <= 2048);
@@ -46,10 +43,7 @@ public class EchoServiceTestCases
                 () => EchoService.Serializer<StringMessage>.Value = null);
 
             EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
-                new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => null,
-                });
+                s => s.WithoutSharedStrings());
 
             int length = await this.SharedStringsTest_Common();
             Assert.True(length >= 100_000);

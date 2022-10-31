@@ -27,10 +27,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     private readonly IGeneratedSerializer<T> innerSerializer;
     private readonly Lazy<string?> lazyCSharp;
-    private readonly ThreadLocal<ISharedStringWriter?>? sharedStringWriter;
-    private readonly bool enableMemoryCopySerialization;
-    private readonly short remainingDepthLimit;
-    private readonly FlatBufferDeserializationOption option;
+
+    private ThreadLocal<ISharedStringWriter?> sharedStringWriter;
+    private bool enableMemoryCopySerialization;
+    private short remainingDepthLimit;
+    private FlatBufferDeserializationOption option;
 
     public GeneratedSerializerWrapper(
         FlatBufferDeserializationOption option,
@@ -44,43 +45,14 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         this.option = option;
     }
 
-    private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
+    private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template)
     {
         this.innerSerializer = template.innerSerializer;
         this.remainingDepthLimit = template.remainingDepthLimit;
         this.option = template.option;
         this.sharedStringWriter = template.sharedStringWriter;
-        this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
+        this.enableMemoryCopySerialization = template.enableMemoryCopySerialization;
         this.lazyCSharp = template.lazyCSharp;
-
-        Func<ISharedStringWriter?>? writerFactory = settings.SharedStringWriterFactory;
-        if (writerFactory is not null)
-        {
-            ISharedStringWriter? writer = writerFactory();
-            if (writer is not null)
-            {
-                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(writerFactory);
-            }
-            else
-            {
-                this.sharedStringWriter = null;
-            }
-        }
-
-        if (settings.ObjectDepthLimit is not null)
-        {
-            if (settings.ObjectDepthLimit <= 0)
-            {
-                throw new ArgumentException("ObjectDepthLimit must be nonnegative.");
-            }
-
-            this.remainingDepthLimit = settings.ObjectDepthLimit.Value;
-        }
-
-        if (settings.DeserializationMode is not null)
-        {
-            this.option = settings.DeserializationMode.Value;
-        }
     }
 
     public Type RootType => typeof(T);
@@ -201,7 +173,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         var serializationContext = SerializationContext.ThreadLocalContext.Value!;
         serializationContext.Reset(destination.Length);
 
-        ISharedStringWriter? sharedStringWriter = this.sharedStringWriter?.Value;
+        ISharedStringWriter? sharedStringWriter = this.sharedStringWriter.Value;
         serializationContext.SharedStringWriter = sharedStringWriter;
 
         try
@@ -246,8 +218,43 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         };
     }
 
-    public ISerializer<T> WithSettings(SerializerSettings settings)
+    public ISerializer<T> WithSettings(Action<SerializerSettings> settingsCallback)
     {
-        return new GeneratedSerializerWrapper<T>(this, settings);
+        return this.WithSettingsCore(settingsCallback);
+    }
+
+    ISerializer ISerializer.WithSettings(Action<SerializerSettings> settingsCallback)
+    {
+        return this.WithSettingsCore(settingsCallback);
+    }
+
+    private GeneratedSerializerWrapper<T> WithSettingsCore(Action<SerializerSettings> settingsCallback)
+    {
+        var settings = new SerializerSettings();
+        settingsCallback(settings);
+
+        GeneratedSerializerWrapper<T> wrapper = new GeneratedSerializerWrapper<T>(this);
+
+        if (settings.DeserializationMode is not null)
+        {
+            wrapper.option = settings.DeserializationMode.Value;
+        }
+
+        if (settings.EnableMemoryCopySerialization is not null)
+        {
+            wrapper.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization.Value;
+        }
+
+        if (settings.ObjectDepthLimit is not null)
+        {
+            wrapper.remainingDepthLimit = settings.ObjectDepthLimit.Value;
+        }
+
+        if (settings.SharedStringWriterFactory is not null)
+        {
+            wrapper.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(settings.SharedStringWriterFactory);
+        }
+
+        return wrapper;
     }
 }
