@@ -25,6 +25,13 @@ public class SharedStringWriter : ISharedStringWriter
     private readonly WriteCacheEntry[] sharedStringOffsetCache;
 
     /// <summary>
+    /// Initializes a new shared string writer with the default capacity.
+    /// </summary>
+    public SharedStringWriter() : this(null)
+    {
+    }
+
+    /// <summary>
     /// Initializes a new shared string writer with the given capacity.
     /// </summary>
     /// <param name="hashTableCapacity">The size of the hash table.</param>

@@ -172,12 +172,12 @@ public class SharedStringTests
         Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
 
         // Set SharedStringWriter to null. Shared strings remain turned on.
-        serializer = serializer.WithSettings(s => s.UseDefaultSharedStringWriter());
+        serializer = serializer.WithSettings(s => s.UseSharedStringWriter<SharedStringWriter>());
         bytesWritten = serializer.Write(default(SpanWriter), destination, t);
         Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
 
         // Set SharedStringWriter to return null. Shared strings turn off.
-        serializer = serializer.WithSettings(s => s.WithoutSharedStrings());
+        serializer = serializer.WithSettings(s => s.DisableSharedStrings());
         int bytesWrittenBig = serializer.Write(default(SpanWriter), destination, t);
         Assert.True(bytesWrittenBig > bytesWritten);
     }

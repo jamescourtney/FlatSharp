@@ -43,7 +43,7 @@ public class EchoServiceTestCases
                 () => EchoService.Serializer<StringMessage>.Value = null);
 
             EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
-                s => s.WithoutSharedStrings());
+                s => s.DisableSharedStrings());
 
             int length = await this.SharedStringsTest_Common();
             Assert.True(length >= 100_000);
