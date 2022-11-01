@@ -286,10 +286,10 @@ public class VectorDeserializationTests
 
         var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
-        Assert.Equal(typeof(ReadOnlyCollection<string>), parsed.Vector.GetType());
+        Assert.Equal(typeof(ImmutableList<string>), parsed.Vector.GetType());
         Assert.True(parsed.Vector.IsReadOnly);
 
-        Assert.Throws<NotSupportedException>(() => parsed.Vector.Add("four"));
+        Assert.Throws<NotMutableException>(() => parsed.Vector.Add("four"));
     }
 
     [Fact]

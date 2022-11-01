@@ -452,8 +452,8 @@ public class WriteThroughTests
             serializer.Write(buffer, item);
             var parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<ValueStruct>>>(buffer);
 
-            Assert.IsType<ReadOnlyCollection<ValueStruct>>(parsed.Item);
-            Assert.Throws<NotSupportedException>(() => parsed.Item[0] = new ValueStruct { Value = 4 });
+            Assert.IsType<ImmutableList<ValueStruct>>(parsed.Item);
+            Assert.Throws<NotMutableException>(() => parsed.Item[0] = new ValueStruct { Value = 4 });
         }
     }
 
