@@ -199,7 +199,7 @@ public class DeserializationOptionsTests
         var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Greedy, Strings);
         InputBuffer.AsSpan().Fill(0);
 
-        Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+        Assert.Equal(typeof(ImmutableList<string>), table.Vector.GetType());
         Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
         var vector = table.Vector;
@@ -208,8 +208,8 @@ public class DeserializationOptionsTests
         Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
         Assert.Equal(Strings.Length, table.Vector.Count);
-        Assert.Throws<NotSupportedException>(() => table.Vector[0] = "foobar");
-        Assert.Throws<NotSupportedException>(() => table.Vector.Clear());
+        Assert.Throws<NotMutableException>(() => table.Vector[0] = "foobar");
+        Assert.Throws<NotMutableException>(() => table.Vector.Clear());
         Assert.Throws<NotMutableException>(() => table.First.First = 3);
         Assert.Throws<NotMutableException>(() => table.First = null);
     }
@@ -220,12 +220,13 @@ public class DeserializationOptionsTests
         var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.Greedy, Strings);
         InputBuffer.AsSpan().Fill(0);
 
-        Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+        Assert.Equal(typeof(ImmutableList<string>), table.Vector.GetType());
         Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
         Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
         Assert.True(object.ReferenceEquals(table.First, table.First));
         Assert.True(object.ReferenceEquals(table.Second, table.Second));
         Assert.Equal(Strings.Length, table.Vector.Count);
+
         Assert.Throws<NotMutableException>(() => table.First.First = 3);
         Assert.Throws<NotMutableException>(() => table.First = null);
     }

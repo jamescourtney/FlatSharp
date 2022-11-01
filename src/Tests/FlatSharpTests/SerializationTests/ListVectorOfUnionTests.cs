@@ -26,7 +26,7 @@ public class ListVectorOfUnionTests
     [Theory]
     [InlineData(FlatBufferDeserializationOption.Lazy, 1023, "FlatBufferVectorBase")]
     [InlineData(FlatBufferDeserializationOption.Progressive, 1023, "FlatBufferProgressiveVector")]
-    [InlineData(FlatBufferDeserializationOption.Greedy, 1023, "ReadOnlyCollection")]
+    [InlineData(FlatBufferDeserializationOption.Greedy, 1023, "ImmutableList")]
     [InlineData(FlatBufferDeserializationOption.GreedyMutable, 1023, "List")]
     public void Table_PreallocationLimit_Null(
         FlatBufferDeserializationOption option,

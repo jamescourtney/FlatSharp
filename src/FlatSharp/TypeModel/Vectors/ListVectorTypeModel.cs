@@ -134,28 +134,30 @@ public class ListVectorTypeModel : BaseVectorTypeModel
 
         if (context.Options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable && isEverWriteThrough)
         {
-            string body = $@"
-                var result = ({createFlatBufferVector}).FlatBufferVectorToList();
-                if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.WriteThrough)})
-                {{
-                    // WriteThrough vectors are not mutable in greedy mode.
-                    return result.AsReadOnly();
-                }}
-
-                return result;
-            ";
+            string body = $$"""
+                var result = {{createFlatBufferVector}};
+                if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
+                {
+                    // WriteThrough vectors are not mutable in greedymutable mode.
+                    return result.ToImmutableList();
+                }
+                else
+                {
+                    return result.FlatBufferVectorToList();
+                }
+            """;
 
             return body;
         }
         else if (context.Options.GreedyDeserialize)
         {
-            string readOnly = ".AsReadOnly()";
+            string transform = "ToImmutableList()";
             if (context.Options.GenerateMutableObjects)
             {
-                readOnly = string.Empty;
+                transform = "FlatBufferVectorToList()";
             }
 
-            return $"return ({createFlatBufferVector}).FlatBufferVectorToList(){readOnly};";
+            return $"return ({createFlatBufferVector}).{transform};";
         }
         else if (context.Options.Lazy)
         {
