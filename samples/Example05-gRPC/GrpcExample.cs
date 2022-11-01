@@ -54,7 +54,7 @@ public class GrpcExample
         GrpcOperations(client).GetAwaiter().GetResult();
 
         // 2) As an async interface with Channel<T>
-        InterfaceOperations((IEchoService)client).GetAwaiter().GetResult();
+        InterfaceOperations(client).GetAwaiter().GetResult();
 
         Thread.Sleep(1000);
 

@@ -16,7 +16,7 @@
 
 using System.Security.Cryptography;
 
-namespace Samples.SerializerOptions;
+namespace Samples.DeserializationModes;
 
 /// <summary>
 /// This sample shows some of the different serializer options in FlatSharp and discusses the tradeoffs with them.
@@ -54,7 +54,7 @@ namespace Samples.SerializerOptions;
 /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns. Objectively,
 /// all of these configurations are quite fast.
 /// </remarks>
-public class SerializerOptionsExample
+public class DeserializationModes
 {
     public static void Run()
     {

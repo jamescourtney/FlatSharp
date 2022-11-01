@@ -20,7 +20,7 @@ attribute "fs_vector";
 attribute "fs_serializer";
 attribute "fs_valueStruct";
 
-namespace Samples.SerializerOptions;
+namespace Samples.DeserializationModes;
 
 // tell FlatSharp that you want a lazy serializer generated for this type.
 // If you don't specify, FlatSharp will generate a GreedyMutable serializer by default

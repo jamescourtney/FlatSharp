@@ -45,7 +45,7 @@ public class Basics
         };
 
         // Ask the serializer what the max size necessary to write this particular monster. Different
-        // monsters will need different amounts of space.        
+        // monsters will need different amounts of space.
         int maxSize = Monster.Serializer.GetMaxSize(monster);
 
         byte[] buffer = new byte[maxSize];

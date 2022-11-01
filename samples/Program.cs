@@ -21,7 +21,7 @@ public static class Program
     public static void Main(string[] args)
     {
         Basics.Basics.Run();
-        SerializerOptions.SerializerOptionsExample.Run();
+        DeserializationModes.DeserializationModes.Run();
         GrpcExample.GrpcExample.Run();
         CopyConstructorsExample.CopyConstructorsExample.Run();
         IncludesExample.IncludesExample.Run();

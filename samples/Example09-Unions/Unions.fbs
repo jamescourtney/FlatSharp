@@ -20,7 +20,7 @@ namespace Samples.Unions;
 
 enum DogBreed : byte { Golden, Lab, Corgi }
 enum CatBreed : byte { Calico, Shorthair, Bengal }
-enum FishKind : byte { Coelacanth, Dorado, Piranha }
+enum FishKind : byte { Coelacanth, Dorado, Piranha, Puffer }
 
 // FlatSharp generates a "Pet" union.
 // In this example, the "Doggo" label is applied, so all of the union's properties in C# will

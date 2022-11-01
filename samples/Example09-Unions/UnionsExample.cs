@@ -28,7 +28,7 @@ public class UnionsExample
     {
         Cat simon = new Cat { Breed = CatBreed.Bengal, Name = "Simon" };
         Dog george = new Dog { Breed = DogBreed.Corgi, Name = "George" };
-        Fish brick = new Fish { Kind = FishKind.Coelacanth, Name = "Brick" };
+        Fish brick = new Fish { Kind = FishKind.Puffer, Name = "Brick" };
 
         // A person can only have one pet. It can be a cat, dog, or fish.
         // This person has a fish named brick. You could model a person with multiple
@@ -46,7 +46,23 @@ public class UnionsExample
             Dog dog = pet.Doggo;
             string? lowerName = dog.Name?.ToLowerInvariant();
         }
-         
+
+        // We can also use .TryGet:
+        if (pet.TryGet(out Cat? cat))
+        {
+            // this was a cat.
+        }
+
+        // Accessing .Cat directly will throw because this is a Fish.
+        try
+        {
+            Console.WriteLine(pet.Cat.Name);
+            Debug.Assert(false);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
         // Finally, each union can accept a visitor. Using structs as visitors
         // will allow you to benefit from devirtualization if performance is a concern.
         string? name = pet.Accept<PetNameVisitor, string?>(new PetNameVisitor());

@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <FlatSharpSchema Include="Example00-Basics\Basics.fbs" />
-    <FlatSharpSchema Include="Example01-SerializerOptions\SerializerOptionsExample.fbs" />
+    <FlatSharpSchema Include="Example01-DeserializationModes\DeserializationModes.fbs" />
     <FlatSharpSchema Include="Example04-IOOptions\IOOptionsExample.fbs" />
     <FlatSharpSchema Include="Example05-gRPC\GrpcExample.fbs" />
     <FlatSharpSchema Include="Example06-CopyConstructors\CopyConstructorsExample.fbs" />
