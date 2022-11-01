@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using global::Google.FlatBuffers;
+
 namespace FlatSharpTests;
 
 public class AlignmentTests
@@ -21,7 +23,7 @@ public class AlignmentTests
     [Fact]
     public void NestedStructWithOddAlignment_Parse()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var offset = Oracle.AlignmentTestOuter.CreateAlignmentTestOuter(builder, 1, 2, 3, 4, 5, 6, 7, 8, 9);
         Oracle.AlignmentTestOuterHoder.StartAlignmentTestOuterHoder(builder);
         Oracle.AlignmentTestOuterHoder.AddValue(builder, offset);
@@ -74,7 +76,7 @@ public class AlignmentTests
         Span<byte> memory = new byte[10240];
         int offset = FlatBufferSerializer.Default.Serialize(holder, memory);
 
-        var parsed = Oracle.AlignmentTestOuterHoder.GetRootAsAlignmentTestOuterHoder(new FlatBuffers.ByteBuffer(memory.Slice(0, offset).ToArray()));
+        var parsed = Oracle.AlignmentTestOuterHoder.GetRootAsAlignmentTestOuterHoder(new ByteBuffer(memory.Slice(0, offset).ToArray()));
 
         var outer = parsed.Value.Value;
         Assert.Equal(1, outer.A);
@@ -107,7 +109,7 @@ public class AlignmentTests
             }
         };
 
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var offset = Oracle.StructVectorsTable.Pack(builder, table);
         builder.Finish(offset.Value);
 
@@ -150,7 +152,7 @@ public class AlignmentTests
         byte[] data = new byte[1024];
         FlatBufferSerializer.Default.Serialize(table, data);
 
-        var parsed = Oracle.StructVectorsTable.GetRootAsStructVectorsTable(new FlatBuffers.ByteBuffer(data)).UnPack();
+        var parsed = Oracle.StructVectorsTable.GetRootAsStructVectorsTable(new ByteBuffer(data)).UnPack();
 
         Assert.Equal<ulong>(1, parsed.Vec.HashVec[0]);
         Assert.Equal<ulong>(2, parsed.Vec.HashVec[1]);

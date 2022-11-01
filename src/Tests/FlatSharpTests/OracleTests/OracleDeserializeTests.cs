@@ -15,6 +15,7 @@
  */
 
 using System.Runtime.InteropServices;
+using global::Google.FlatBuffers;
 
 namespace FlatSharpTests;
 
@@ -27,7 +28,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void SimpleTypes()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var fbOffset = Oracle.BasicTypes.CreateBasicTypes(
             builder,
             Bool: true,
@@ -46,7 +47,7 @@ public partial class OracleDeserializeTests
         builder.Finish(fbOffset.Value);
         byte[] realBuffer = builder.DataBuffer.ToSizedArray();
 
-        var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(new FlatBuffers.ByteBuffer(realBuffer));
+        var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(new ByteBuffer(realBuffer));
 
         var simple = FlatBufferSerializer.Default.Parse<BasicTypes>(realBuffer);
 
@@ -78,7 +79,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void LinkedList()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var testData = Oracle.LinkedListNode.CreateLinkedListNode(
             builder,
             builder.CreateString("node 1"),
@@ -103,7 +104,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void ScalarVectors()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var testData = Oracle.Vectors.CreateVectors(
             builder,
             Oracle.Vectors.CreateIntVectorVector(builder, new[] { 1, 2, 3, 4, 5, 6, }),
@@ -144,7 +145,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void LocationStruct()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var fakeString = builder.CreateString("foobar");
         Oracle.LocationHolder.StartLocationVectorVector(builder, 3);
         Oracle.Location.CreateLocation(builder, 7f, 8f, 9f);
@@ -180,7 +181,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void FiveByteStructVector()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         Oracle.FiveByteStructTable.StartVectorVector(builder, 3);
         Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 3, 3);
         Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 2, 2);
@@ -210,7 +211,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void Union_Table_BasicTypes()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var basicTypesOffset = Oracle.BasicTypes.CreateBasicTypes(
             builder,
             Bool: true,
@@ -234,7 +235,7 @@ public partial class OracleDeserializeTests
         builder.Finish(offset.Value);
         byte[] realBuffer = builder.DataBuffer.ToSizedArray();
 
-        var oracle = Oracle.UnionTable.GetRootAsUnionTable(new FlatBuffers.ByteBuffer(realBuffer)).Value<Oracle.BasicTypes>().Value;
+        var oracle = Oracle.UnionTable.GetRootAsUnionTable(new ByteBuffer(realBuffer)).Value<Oracle.BasicTypes>().Value;
         var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
         Assert.Equal(1, unionTable.Union.Value.Discriminator);
@@ -262,7 +263,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void Union_Struct_Location()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var locationOffset = Oracle.Location.CreateLocation(
             builder,
             1.0f,
@@ -290,7 +291,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void Union_String()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var stringOffset = builder.CreateString("foobar");
 
         var offset = Oracle.UnionTable.CreateUnionTable(
@@ -310,7 +311,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void Union_NotSet()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
 
         var offset = Oracle.UnionTable.CreateUnionTable(builder);
 
@@ -324,7 +325,7 @@ public partial class OracleDeserializeTests
     [Fact]
     public void NestedStruct()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var outerOffset = Oracle.OuterStruct.CreateOuterStruct(builder, 401, 100);
         Oracle.NestedStructs.StartNestedStructs(builder);
         Oracle.NestedStructs.AddOuter(builder, outerOffset);
@@ -355,7 +356,7 @@ public partial class OracleDeserializeTests
                 }
         };
 
-        var builder = new FlatBuffers.FlatBufferBuilder(1024);
+        var builder = new FlatBufferBuilder(1024);
         var offset = Oracle.VectorOfUnionTable.Pack(builder, table);
         builder.Finish(offset.Value);
         byte[] data = builder.SizedByteArray();
@@ -385,16 +386,16 @@ public partial class OracleDeserializeTests
     [InlineData(FlatBufferDeserializationOption.Lazy)]
     public void SortedVectors(FlatBufferDeserializationOption option)
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
+        var builder = new FlatBufferBuilder(1024 * 1024);
 
         var strings = new List<string>();
-        var stringOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorStringTable>>();
+        var stringOffsets = new List<Offset<Oracle.SortedVectorStringTable>>();
 
         List<int> ints = new List<int>();
-        var intOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorInt32Table>>();
+        var intOffsets = new List<Offset<Oracle.SortedVectorInt32Table>>();
 
         List<double> doubles = new List<double>();
-        var doubleOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorDoubleTable>>();
+        var doubleOffsets = new List<Offset<Oracle.SortedVectorDoubleTable>>();
 
         const int Iterations = 1000;
         Random random = new Random();
@@ -440,15 +441,15 @@ public partial class OracleDeserializeTests
     [Fact]
     public void SortedVectors_NullKey_NotAllowed()
     {
-        var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
+        var builder = new FlatBufferBuilder(1024 * 1024);
 
         var strings = new List<string>();
-        var stringOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorStringTable>>();
+        var stringOffsets = new List<Offset<Oracle.SortedVectorStringTable>>();
 
         foreach (string s in new[] { Guid.NewGuid().ToString(), null, Guid.NewGuid().ToString() })
         {
             strings.Add(s);
-            FlatBuffers.StringOffset strOffset = default;
+            StringOffset strOffset = default;
             if (s != null)
             {
                 strOffset = builder.CreateString(s);
