@@ -24,7 +24,7 @@ namespace FlatSharp.Internal;
 /// However, it is superior for two reasons:
 /// - First, it throws the FlatSharp NotMutableException, which is consistent with Lazy and Progressive Deserialization modes
 /// - Second, it does not reference <see cref="IList{T}"/> internally, which means it is able to skip a level of virtual indirection
-///   by using <see cref="T[]"/> directly.
+///   by using <c><typeparamref name="T"/>[]</c> directly.
 /// </remarks>
 public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>
 {
