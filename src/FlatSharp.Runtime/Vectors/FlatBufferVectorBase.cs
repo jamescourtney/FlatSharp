@@ -186,6 +186,24 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         return list;
     }
 
+    public ImmutableList<T> ToImmutableList()
+    {
+        int count = this.Count;
+        var list = new T[count];
+
+        var context = this.fieldContext;
+        var remainingDepth = this.remainingDepth;
+        var buffer = this.memory;
+
+        for (int i = 0; i < count; ++i)
+        {
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out T item);
+            list[i] = item;
+        }
+
+        return new ImmutableList<T>(list);
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CheckIndex(int index)
     {

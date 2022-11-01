@@ -120,8 +120,8 @@ public abstract class BaseVectorOfUnionTypeModel : RuntimeTypeModel
 
             for (int i = 0; i < count; ++i)
             {{
-                    var {itemContext.ValueVariableName} = {context.ValueVariableName}{this.Indexer("i")};
-                    length += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
+                var {itemContext.ValueVariableName} = {context.ValueVariableName}{this.Indexer("i")};
+                length += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
             }}
 
             return length;";
