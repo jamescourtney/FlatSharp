@@ -7,7 +7,7 @@ namespace Benchmark.FBBench.Google
 
 using global::System;
 using global::System.Collections.Generic;
-using global::FlatBuffers;
+using global::Google.FlatBuffers;
 
 public struct Foo : IFlatbufferObject
 {
@@ -141,7 +141,7 @@ public struct FooBar : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
   public static FooBar GetRootAsFooBar(ByteBuffer _bb) { return GetRootAsFooBar(_bb, new FooBar()); }
   public static FooBar GetRootAsFooBar(ByteBuffer _bb, FooBar obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -222,7 +222,7 @@ public struct FooBarContainer : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
   public static FooBarContainer GetRootAsFooBarContainer(ByteBuffer _bb) { return GetRootAsFooBarContainer(_bb, new FooBarContainer()); }
   public static FooBarContainer GetRootAsFooBarContainer(ByteBuffer _bb, FooBarContainer obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -257,6 +257,8 @@ public struct FooBarContainer : IFlatbufferObject
   public static void AddList(FlatBufferBuilder builder, VectorOffset listOffset) { builder.AddOffset(0, listOffset.Value, 0); }
   public static VectorOffset CreateListVector(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.FooBar>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateListVectorBlock(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.FooBar>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateListVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<Benchmark.FBBench.Google.FooBar>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateListVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<Benchmark.FBBench.Google.FooBar>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartListVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddInitialized(FlatBufferBuilder builder, bool initialized) { builder.AddBool(1, initialized, false); }
   public static void AddFruit(FlatBufferBuilder builder, short fruit) { builder.AddShort(2, fruit, 0); }
@@ -314,7 +316,7 @@ public struct SortedVectorContainer : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
   public static SortedVectorContainer GetRootAsSortedVectorContainer(ByteBuffer _bb) { return GetRootAsSortedVectorContainer(_bb, new SortedVectorContainer()); }
   public static SortedVectorContainer GetRootAsSortedVectorContainer(ByteBuffer _bb, SortedVectorContainer obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -340,10 +342,14 @@ public struct SortedVectorContainer : IFlatbufferObject
   public static void AddStringVector(FlatBufferBuilder builder, VectorOffset StringVectorOffset) { builder.AddOffset(0, StringVectorOffset.Value, 0); }
   public static VectorOffset CreateStringVectorVector(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorStringKey>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateStringVectorVectorBlock(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorStringKey>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateStringVectorVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<Benchmark.FBBench.Google.SortedVectorStringKey>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateStringVectorVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<Benchmark.FBBench.Google.SortedVectorStringKey>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartStringVectorVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddIntVector(FlatBufferBuilder builder, VectorOffset IntVectorOffset) { builder.AddOffset(1, IntVectorOffset.Value, 0); }
   public static VectorOffset CreateIntVectorVector(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorIntKey>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateIntVectorVectorBlock(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorIntKey>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateIntVectorVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<Benchmark.FBBench.Google.SortedVectorIntKey>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateIntVectorVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<Benchmark.FBBench.Google.SortedVectorIntKey>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartIntVectorVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<Benchmark.FBBench.Google.SortedVectorContainer> EndSortedVectorContainer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -396,7 +402,7 @@ public struct SortedVectorStringKey : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
   public static SortedVectorStringKey GetRootAsSortedVectorStringKey(ByteBuffer _bb) { return GetRootAsSortedVectorStringKey(_bb, new SortedVectorStringKey()); }
   public static SortedVectorStringKey GetRootAsSortedVectorStringKey(ByteBuffer _bb, SortedVectorStringKey obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -426,18 +432,21 @@ public struct SortedVectorStringKey : IFlatbufferObject
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorStringKey(FlatBufferBuilder builder, Offset<SortedVectorStringKey>[] offsets) {
-    Array.Sort(offsets, (Offset<SortedVectorStringKey> o1, Offset<SortedVectorStringKey> o2) => Table.CompareStrings(Table.__offset(4, o1.Value, builder.DataBuffer), Table.__offset(4, o2.Value, builder.DataBuffer), builder.DataBuffer));
+    Array.Sort(offsets,
+      (Offset<SortedVectorStringKey> o1, Offset<SortedVectorStringKey> o2) =>
+        new SortedVectorStringKey().__assign(builder.DataBuffer.Length - o1.Value, builder.DataBuffer).Key.CompareTo(new SortedVectorStringKey().__assign(builder.DataBuffer.Length - o2.Value, builder.DataBuffer).Key));
     return builder.CreateVectorOfTables(offsets);
   }
 
   public static SortedVectorStringKey? __lookup_by_key(int vectorLocation, string key, ByteBuffer bb) {
-    byte[] byteKey = System.Text.Encoding.UTF8.GetBytes(key);
+    SortedVectorStringKey obj_ = new SortedVectorStringKey();
     int span = bb.GetInt(vectorLocation - 4);
     int start = 0;
     while (span != 0) {
       int middle = span / 2;
       int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
-      int comp = Table.CompareStrings(Table.__offset(4, bb.Length - tableOffset, bb), byteKey, bb);
+      obj_.__assign(tableOffset, bb);
+      int comp = obj_.Key.CompareTo(key);
       if (comp > 0) {
         span = middle;
       } else if (comp < 0) {
@@ -445,7 +454,7 @@ public struct SortedVectorStringKey : IFlatbufferObject
         start += middle;
         span -= middle;
       } else {
-        return new SortedVectorStringKey().__assign(tableOffset, bb);
+        return obj_;
       }
     }
     return null;
@@ -480,7 +489,7 @@ public struct SortedVectorIntKey : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
   public static SortedVectorIntKey GetRootAsSortedVectorIntKey(ByteBuffer _bb) { return GetRootAsSortedVectorIntKey(_bb, new SortedVectorIntKey()); }
   public static SortedVectorIntKey GetRootAsSortedVectorIntKey(ByteBuffer _bb, SortedVectorIntKey obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -503,17 +512,21 @@ public struct SortedVectorIntKey : IFlatbufferObject
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorIntKey(FlatBufferBuilder builder, Offset<SortedVectorIntKey>[] offsets) {
-    Array.Sort(offsets, (Offset<SortedVectorIntKey> o1, Offset<SortedVectorIntKey> o2) => builder.DataBuffer.GetInt(Table.__offset(4, o1.Value, builder.DataBuffer)).CompareTo(builder.DataBuffer.GetInt(Table.__offset(4, o2.Value, builder.DataBuffer))));
+    Array.Sort(offsets,
+      (Offset<SortedVectorIntKey> o1, Offset<SortedVectorIntKey> o2) =>
+        new SortedVectorIntKey().__assign(builder.DataBuffer.Length - o1.Value, builder.DataBuffer).Key.CompareTo(new SortedVectorIntKey().__assign(builder.DataBuffer.Length - o2.Value, builder.DataBuffer).Key));
     return builder.CreateVectorOfTables(offsets);
   }
 
   public static SortedVectorIntKey? __lookup_by_key(int vectorLocation, int key, ByteBuffer bb) {
+    SortedVectorIntKey obj_ = new SortedVectorIntKey();
     int span = bb.GetInt(vectorLocation - 4);
     int start = 0;
     while (span != 0) {
       int middle = span / 2;
       int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
-      int comp = bb.GetInt(Table.__offset(4, bb.Length - tableOffset, bb)).CompareTo(key);
+      obj_.__assign(tableOffset, bb);
+      int comp = obj_.Key.CompareTo(key);
       if (comp > 0) {
         span = middle;
       } else if (comp < 0) {
@@ -521,7 +534,7 @@ public struct SortedVectorIntKey : IFlatbufferObject
         start += middle;
         span -= middle;
       } else {
-        return new SortedVectorIntKey().__assign(tableOffset, bb);
+        return obj_;
       }
     }
     return null;

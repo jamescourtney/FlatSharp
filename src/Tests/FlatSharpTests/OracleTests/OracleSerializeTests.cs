@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using global::Google.FlatBuffers;
 using System.Runtime.InteropServices;
 
 namespace FlatSharpTests;
@@ -52,7 +53,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(simple, memory);
 
         var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(oracle.Byte, simple.Byte);
         Assert.Equal(oracle.SByte, simple.SByte);
@@ -97,7 +98,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(simple, memory, writer);
 
         var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.True(oracle.Bool);
         Assert.Equal(oracle.Byte, simple.Byte);
@@ -134,7 +135,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(simple, memory);
 
         var oracle = Oracle.LinkedListNode.GetRootAsLinkedListNode(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(oracle.Value, simple.Value);
         Assert.Equal(oracle.Next?.Value, simple.Next.Value);
@@ -160,7 +161,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(holder, memory);
 
         var oracle = Oracle.LocationHolder.GetRootAsLocationHolder(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(holder.Fake, oracle.Fake);
 
@@ -196,7 +197,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(table, memory);
 
         var oracle = Oracle.Vectors.GetRootAsVectors(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(table.IntVector.Count, oracle.IntVectorLength);
         Assert.Equal(table.LongVector.Count, oracle.LongVectorLength);
@@ -242,7 +243,7 @@ public partial class OracleSerializeTests
         buffer = buffer.Slice(0, bytecount);
 
         var oracle = Oracle.FiveByteStructTable.GetRootAsFiveByteStructTable(
-            new FlatBuffers.ByteBuffer(buffer.ToArray()));
+            new ByteBuffer(buffer.ToArray()));
 
         Assert.Equal(3, oracle.VectorLength);
 
@@ -284,7 +285,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(table, memory);
 
         var oracle = Oracle.UnionTable.GetRootAsUnionTable(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(1, (int)oracle.ValueType);
         var bt = oracle.Value<Oracle.BasicTypes>().Value;
@@ -319,7 +320,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(table, memory);
 
         var oracle = Oracle.UnionTable.GetRootAsUnionTable(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         // There is nothing to assert here, since the google C# SDK does not support reading strings
         // out of a union. All indications are that we are doing it right, but there's no way to test
@@ -339,7 +340,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(table, memory);
 
         var oracle = Oracle.UnionTable.GetRootAsUnionTable(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(0, (int)oracle.ValueType);
     }
@@ -363,7 +364,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(table, memory);
 
         var oracle = Oracle.UnionTable.GetRootAsUnionTable(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(2, (int)oracle.ValueType);
         var bt = oracle.Value<Oracle.Location>().Value;
@@ -389,7 +390,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(nested, memory);
 
         var oracle = Oracle.NestedStructs.GetRootAsNestedStructs(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.NotNull(oracle.Outer);
 
@@ -414,7 +415,7 @@ public partial class OracleSerializeTests
         int size = FlatBufferSerializer.Default.Serialize(nested, memory);
 
         var oracle = Oracle.NestedStructs.GetRootAsNestedStructs(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.NotNull(oracle.Outer);
 
@@ -430,17 +431,17 @@ public partial class OracleSerializeTests
         {
             Union = new[]
             {
-                    new FlatBufferUnion<BasicTypes, Location, string>(new BasicTypes { Int = 7 }),
-                    new FlatBufferUnion<BasicTypes, Location, string>(new Location { X = 1, Y = 2, Z = 3 }),
-                    new FlatBufferUnion<BasicTypes, Location, string>("foobar"),
-                }
+                new FlatBufferUnion<BasicTypes, Location, string>(new BasicTypes { Int = 7 }),
+                new FlatBufferUnion<BasicTypes, Location, string>(new Location { X = 1, Y = 2, Z = 3 }),
+                new FlatBufferUnion<BasicTypes, Location, string>("foobar"),
+            }
         };
 
         Span<byte> memory = new byte[10240];
         int size = FlatBufferSerializer.Default.Serialize(table, memory);
 
         var oracle = Oracle.UnionVectorTable.GetRootAsUnionVectorTable(
-            new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+            new ByteBuffer(memory.Slice(0, size).ToArray()));
 
         Assert.Equal(3, oracle.ValueLength);
 
@@ -485,7 +486,7 @@ public partial class OracleSerializeTests
         int bytesWritten = FlatBufferSerializer.Default.Serialize(test, data);
 
         var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(data);
-        var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new FlatBuffers.ByteBuffer(data));
+        var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new ByteBuffer(data));
 
         VerifySorted<IList<SortedVectorItem<string>>, SortedVectorItem<string>, string>(parsed.StringVector, i => i.Value, i => table.String(i)?.Value, t => table.StringByKey(t) != null, new Utf8StringComparer());
         VerifySorted<IList<SortedVectorItem<int>>, SortedVectorItem<int>, int>(parsed.IntVector, i => i.Value, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
@@ -520,7 +521,7 @@ public partial class OracleSerializeTests
         bytesWritten = FlatBufferSerializer.Default.Serialize(test, data);
 
         var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorDefaultValueItem>>(data);
-        var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new FlatBuffers.ByteBuffer(data));
+        var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new ByteBuffer(data));
 
         VerifySorted<IList<SortedVectorDefaultValueItem>, SortedVectorDefaultValueItem, int>(parsed.IntVector, i => i.Value, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
     }

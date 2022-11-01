@@ -348,8 +348,17 @@ public class FlatSharpCompiler
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                os = "macos";
-                name = "flatc";
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    Console.WriteLine("Warning: Flatsharp.Compiler is invoking ARM64 version of flatc. This is not tested.");
+                    os = "macos_arm";
+                    name = "flatc";
+                }
+                else
+                {
+                    os = "macos_intel";
+                    name = "flatc";
+                }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

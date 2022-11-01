@@ -25,11 +25,11 @@ namespace Benchmark.FBBench
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using BenchmarkDotNet.Attributes;
-    using FlatBuffers;
     using FlatSharp;
     using FlatSharp.Attributes;
     using ProtoBuf;
     using InputBufferKind = FlatSharp.ArrayInputBuffer;
+    using global::Google.FlatBuffers;
 
     public abstract class FBBenchCore
     {
@@ -240,7 +240,7 @@ namespace Benchmark.FBBench
 
             int googleLength = 0;
             {
-                this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.fs_readMemory.ToArray());
+                this.google_ByteBuffer = new ByteBuffer(this.fs_readMemory.ToArray());
                 this.google_defaultContainer = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
                 googleLength = this.Google_FlatBuffers_Serialize_ObjectApi();
             }
@@ -632,11 +632,7 @@ namespace Benchmark.FBBench
             where TInputBuffer : IInputBuffer
             where T : class
         {
-#if FLATSHARP_6_0_0_OR_GREATER
             return this.fs_serializer.Parse<T>(buffer);
-#else
-            return this.fs_serializer.Parse<T>(buffer);
-#endif
         }
 
         #endregion
@@ -995,9 +991,7 @@ namespace Benchmark.FBBench
     }
 
     [ProtoContract]
-#if FLATSHARP_5_7_1_OR_GREATER
     [FlatBufferStruct]
-#endif
     [StructLayout(LayoutKind.Explicit, Size = 16)]
     public struct Foo_ValueType
     {
@@ -1032,9 +1026,7 @@ namespace Benchmark.FBBench
     }
 
     [ProtoContract]
-#if FLATSHARP_5_7_1_OR_GREATER
     [FlatBufferStruct]
-#endif
     [StructLayout(LayoutKind.Explicit, Size = 26)]
     public struct Bar_ValueType
     {

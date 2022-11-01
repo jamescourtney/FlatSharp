@@ -49,7 +49,7 @@ public class FileIdentifierTests
             ";
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-        Assert.Contains("error: root type must be a table", ex.Errors[0]);
+        Assert.Contains("error: root type must be a table", ex.Errors[1]);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class FileIdentifierTests
             ";
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-        Assert.Contains("error: unknown root type: Enum", ex.Errors[0]);
+        Assert.Contains("error: unknown root type: Enum", ex.Errors[1]);
     }
 
     [Fact]
