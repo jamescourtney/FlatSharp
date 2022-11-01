@@ -89,9 +89,10 @@ which has properties defined in such a way as to index into the buffer, accordin
 ### Security
 Serializers are a common vector for security issues. FlatSharp takes the following approach to security:
 - All operations are overflow-checked
-- No unsafe code
+- No unsafe code; all operations bounds-checked
 - No IL generation
 - Use standard .NET libraries for reading and writing from memory
+- Depth tracking enabled for recursive schemas to prevent stack overflows.
 
 FlatSharp *does* use some techniques such as `MemoryMarshal.Read` on certain hot paths, but these usages are narrowly scoped.
 
