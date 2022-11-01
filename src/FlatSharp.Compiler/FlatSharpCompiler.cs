@@ -338,38 +338,7 @@ public class FlatSharpCompiler
 
         if (options.FlatcPath is null)
         {
-            string os;
-            string name;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                os = "windows";
-                name = "flatc.exe";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                {
-                    Console.WriteLine("Warning: Flatsharp.Compiler is invoking ARM64 version of flatc. This is not tested.");
-                    os = "macos_arm";
-                    name = "flatc";
-                }
-                else
-                {
-                    os = "macos_intel";
-                    name = "flatc";
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                os = "linux";
-                name = "flatc";
-            }
-            else
-            {
-                throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
-            }
-
+            (string os, string name) = GetFlatcPath();
             string currentProcess = typeof(ISchemaMutator).Assembly.Location;
             string currentDirectory = Path.GetDirectoryName(currentProcess)!;
             flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
@@ -480,6 +449,44 @@ public class FlatSharpCompiler
         {
             Directory.Delete(outputDir, recursive: true);
         }
+    }
+
+    [ExcludeFromCodeCoverage]
+    private static (string os, string name) GetFlatcPath()
+    {
+        string os;
+        string name;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            os = "windows";
+            name = "flatc.exe";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                Console.WriteLine("Warning: Flatsharp.Compiler is invoking ARM64 version of flatc. This is not tested.");
+                os = "macos_arm";
+                name = "flatc";
+            }
+            else
+            {
+                os = "macos_intel";
+                name = "flatc";
+            }
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            os = "linux";
+            name = "flatc";
+        }
+        else
+        {
+            throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
+        }
+
+        return (os, name);
     }
 
     private static void CreateCSharp(
