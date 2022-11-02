@@ -767,6 +767,14 @@ public class TypeModelTests
     }
 
     [Fact]
+    public void TypeModel_SortedVector_OfNotATable_NotAllowed()
+    {
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
+               RuntimeTypeModel.CreateFrom(typeof(SortedVector<string>)));
+        Assert.Equal("Property 'Vector' declares the sortedVector option, but the underlying type was not a vector.", ex.Message);
+    }
+
+    [Fact]
     public void TypeModel_SortedVector_OfNullableEnum_NotAllowed()
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
