@@ -314,22 +314,6 @@ public static class SortedVectorHelpers
         TKey KeyAt(int index);
     }
 
-    private struct ArrayIndexable<T, TKey> : IIndexable<T, TKey>
-    {
-        private readonly T[] items;
-
-        public ArrayIndexable(T[] items)
-        {
-            this.items = items;
-        }
-
-        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
-
-        public T this[int index] => this.items[index];
-
-        public int Count => this.items.Length;
-    }
-
     private struct LazyVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
         where TInputBuffer : IInputBuffer
         where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>

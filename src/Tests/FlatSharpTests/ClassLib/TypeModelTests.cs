@@ -668,6 +668,15 @@ public class TypeModelTests
     }
 
     [Fact]
+    public void TypeModel_Vector_Array_NotAllowed()
+    {
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(int[])));
+        Assert.Equal(
+            "Failed to create or find type model for type 'System.Int32[]'.",
+            ex.Message);
+    }
+
+    [Fact]
     public void TypeModel_Vector_ListVectorOfStruct()
     {
         var model = this.VectorTest(typeof(IList<>), typeof(GenericStruct<bool>));

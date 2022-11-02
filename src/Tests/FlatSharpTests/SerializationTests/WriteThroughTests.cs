@@ -75,6 +75,18 @@ public class WriteThroughTests
         }
 
         [Theory]
+        [InlineData(typeof(WriteThroughTable_NotRequired<IReadOnlyList<ValueStruct>>))]
+        public void WriteThrough_Table_VectorReadOnly(Type type)
+        {
+            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+                () => FlatBufferSerializer.Default.Compile(type));
+
+            Assert.Equal(
+                $"Field '{type.GetCompilableTypeName()}.Item' declares the WriteThrough option. WriteThrough is only supported for IList vectors.",
+                ex.Message);
+        }
+
+        [Theory]
         [InlineData(typeof(WriteThroughTable_Required<string>))]
         [InlineData(typeof(WriteThroughTable_Required<Table<int>>))]
         [InlineData(typeof(WriteThroughTable_Required<FlatBufferUnion<string>?>))]
