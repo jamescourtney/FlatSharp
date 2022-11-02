@@ -30,9 +30,8 @@ enum Color : byte
 }
 
 // Structs are fixed-size objects whose schema may not change. Structs 
-// are highly efficient to read and write, at the cost of versioning the 
-// struct. Consider a table with a union of structs to get the best of both 
-// worlds.
+// are highly efficient to read and write, though they cannot be versioned.
+// Unions of structs can help with versioning.
 struct Vec3 (fs_valueStruct) // fs_valueStruct tells FlatSharp to generate a C# struct (value type) instead of a class
 {
     x : float;
@@ -40,19 +39,23 @@ struct Vec3 (fs_valueStruct) // fs_valueStruct tells FlatSharp to generate a C# 
     z : float;
 }
 
+// Tables are extensible objects that can be extended and have their schema evolved over time.
+// Unlike structs, they are not read all at once and not all fields have to be present.
 table Weapon
 {
     name : string;
     damage : short;
 }
 
+// Unions (Discriminated Unions) are equivalent to Protobuf's oneof.
+// A union will only have one of the items set.
 union Equipped
 {
     Weapon,
     Item : string
 }
 
-table Monster (fs_serializer)
+table Monster (fs_serializer) // Tell FlatSharp to generate a serializer for this type.
 {
     color : Color;
     pos : Vec3;

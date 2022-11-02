@@ -10,6 +10,7 @@
   <ItemGroup>
     <FlatSharpSchema Include="Example00-Basics\Basics.fbs" />
     <FlatSharpSchema Include="Example01-DeserializationModes\DeserializationModes.fbs" />
+    <FlatSharpSchema Include="Example02-Vectors\Vectors.fbs" />
     <FlatSharpSchema Include="Example04-IOOptions\IOOptionsExample.fbs" />
     <FlatSharpSchema Include="Example05-gRPC\GrpcExample.fbs" />
     <FlatSharpSchema Include="Example06-CopyConstructors\CopyConstructorsExample.fbs" />
@@ -33,5 +34,5 @@
     <PackageReference Include="FlatSharp.Runtime" Version="7.0.0" />
     <PackageReference Include="Grpc" Version="2.38.1" />
   </ItemGroup>
-
 </Project>
+

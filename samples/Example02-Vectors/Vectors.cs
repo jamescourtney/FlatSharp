@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-// Declare FlatSharp attributes.
+namespace Samples.Vectors;
 
-attribute "fs_vector";
-attribute "fs_serializer";
-attribute "fs_valueStruct";
-
-namespace Samples.DeserializationModes;
-
-// tell FlatSharp that you want a lazy serializer generated for this type.
-// If you don't specify, FlatSharp will generate a GreedyMutable serializer by default
-// though this can be changed at runtime using ISerializer.WithSettings or by passing a mode to ISerializer.Serialize.
-
-table Person (fs_serializer:"Lazy") 
+public class DeserializationModes
 {
-    name : string;
-    favorite_fruits : [ Fruit ];
-}
+    public static void Run()
+    {
+        LotsOfLists table = new()
+        {
+            ArrayVectorOfInt = new[] { 1, 2, 3, 4 };
+        };
+    }
 
-table Fruit
-{
-    name : string;
-    reason : string;
 }

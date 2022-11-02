@@ -18,22 +18,23 @@
 
 attribute "fs_vector";
 attribute "fs_serializer";
-attribute "fs_valueStruct";
 
-namespace Samples.DeserializationModes;
+namespace Samples.Vectors;
 
-// tell FlatSharp that you want a lazy serializer generated for this type.
-// If you don't specify, FlatSharp will generate a GreedyMutable serializer by default
-// though this can be changed at runtime using ISerializer.WithSettings or by passing a mode to ISerializer.Serialize.
-
-table Person (fs_serializer:"Lazy") 
+table LotsOfLists
 {
-    name : string;
-    favorite_fruits : [ Fruit ];
-}
+    // Vectors are IList<T> by default. You can make this explicity with fs_vector:"IList"
+    list_vector_of_string : [ string ]; 
 
-table Fruit
-{
-    name : string;
-    reason : string;
+    // They can also be IReadOnlyList.
+    read_only_list_vector_of_string : [ string ] (fs_vector:"IReadOnlyList");
+
+    // ...Or Arrays (though you probably shouldn't do this.)
+    array_vector_of_int : [ int ] (fs_vector:"Array");
+
+    // Or even Memory<byte>
+    vector_of_ubyte : [ ubyte ] (fs_vector:"Memory");
+
+    // And finally ReadOnlyMemory<byte>
+    read_only_vector_of_ubyte : [ ubyte ] (fs_vector:"ReadOnlyMemory");
 }
