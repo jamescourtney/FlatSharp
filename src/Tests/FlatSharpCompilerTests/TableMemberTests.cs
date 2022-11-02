@@ -98,7 +98,6 @@ public class TableMemberTests
         this.RunSingleTest<T>($"{fbsType} ({MetadataKeys.Deprecated})", deprecated: true);
         this.RunSingleTest<IList<T>>($"[{fbsType}]");
         this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"IList\")");
-        this.RunSingleTest<T[]>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Array\")");
         this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"IReadOnlyList\")");
 
         if (typeof(T) == typeof(byte))

@@ -28,10 +28,10 @@ public class UnionTable
 }
 
 [FlatBufferTable]
-public class ArrayVectorOfUnionTable
+public class ListVectorOfUnionTable
 {
     [FlatBufferItem(0)]
-    public virtual FlatBufferUnion<BasicTypes, Location, string>[]? Union
+    public virtual IList<FlatBufferUnion<BasicTypes, Location, string>>? Union
     {
         get;
         set;

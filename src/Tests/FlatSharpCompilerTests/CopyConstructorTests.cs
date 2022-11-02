@@ -45,12 +45,12 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   
   IntVector_List:[int] ({MetadataKeys.VectorKind}:""IList"", id: 9);
   IntVector_RoList:[int] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 10);
-  IntVector_Array:[int] ({MetadataKeys.VectorKind}:""Array"", id: 11);
+  IntVector_Array:[int] ({MetadataKeys.VectorKind}:""IList"", id: 11);
   
   TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 12);
   TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 13);
   TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"", id: 14);
-  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKind}:""Array"", id: 15);
+  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 15);
 
   ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 16);
   ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 17);
@@ -58,7 +58,7 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
 
   VectorOfUnion : [Union] (id: 21);
   VectorOfUnion_RoList : [Union] (id: 23, {MetadataKeys.VectorKind}:""IReadOnlyList"");
-  VectorOfUnion_Array : [Union] (id: 25, {MetadataKeys.VectorKind}:""Array"");
+  VectorOfUnion_Array : [Union] (id: 25, {MetadataKeys.VectorKind}:""IList"");
 }}
 
 struct InnerStruct {{
@@ -209,7 +209,7 @@ table InnerTable {{
 
         // array of table
         {
-            int count = original.TableVector_Array.Length;
+            int count = original.TableVector_Array.Count;
             Assert.NotSame(parsed.TableVector_Array, copied.TableVector_Array);
             for (int i = 0; i < count; ++i)
             {
@@ -367,7 +367,7 @@ table InnerTable {{
         public IReadOnlyList<int>? IntVector_RoList { get; set; }
 
         [FlatBufferItem(11)]
-        public int[]? IntVector_Array { get; set; }
+        public IList<int>? IntVector_Array { get; set; }
 
         [FlatBufferItem(12)]
         public IList<InnerTable>? TableVector_List { get; set; }
@@ -379,7 +379,7 @@ table InnerTable {{
         public IIndexedVector<string, InnerTable>? TableVector_Indexed { get; set; }
 
         [FlatBufferItem(15)]
-        public InnerTable[]? TableVector_Array { get; set; }
+        public IList<InnerTable>? TableVector_Array { get; set; }
 
         [FlatBufferItem(16)]
         public Memory<byte>? ByteVector { get; set; }
@@ -397,7 +397,7 @@ table InnerTable {{
         public IReadOnlyList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_RoList { get; set; }
 
         [FlatBufferItem(24)]
-        public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>[]? VectorOfUnion_Array { get; set; }
+        public IList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_Array { get; set; }
     }
 
     [FlatBufferTable]

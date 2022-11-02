@@ -41,10 +41,14 @@ table TableThatStartsItAll {{
     }
 
     [Theory]
-    [InlineData(FlatBufferDeserializationOption.Greedy, "Array", typeof(string[]))]
-    [InlineData(FlatBufferDeserializationOption.GreedyMutable, "Array", typeof(string[]))]
+    [InlineData(FlatBufferDeserializationOption.Greedy, "IList", typeof(IList<string>))]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable, "IList", typeof(IList<string>))]
     [InlineData(FlatBufferDeserializationOption.Progressive, "IList", typeof(IList<string>))]
     [InlineData(FlatBufferDeserializationOption.Lazy, "IList", typeof(IList<string>))]
+    [InlineData(FlatBufferDeserializationOption.Greedy, "IReadOnlyList", typeof(IReadOnlyList<string>))]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable, "IReadOnlyList", typeof(IReadOnlyList<string>))]
+    [InlineData(FlatBufferDeserializationOption.Progressive, "IReadOnlyList", typeof(IReadOnlyList<string>))]
+    [InlineData(FlatBufferDeserializationOption.Lazy, "IReadOnlyList", typeof(IReadOnlyList<string>))]
     public void MonsterTest(FlatBufferDeserializationOption option, string arrayVectorKind, Type arrayVectorType)
     {
         // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs

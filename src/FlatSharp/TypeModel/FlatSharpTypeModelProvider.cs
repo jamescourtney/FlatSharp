@@ -34,20 +34,6 @@ public class FlatSharpTypeModelProvider : ITypeModelProvider
             return true;
         }
 
-        if (type.IsArray)
-        {
-            if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetElementType()))
-            {
-                typeModel = new ArrayVectorOfUnionTypeModel(type, container);
-            }
-            else
-            {
-                typeModel = new ArrayVectorTypeModel(type, container);
-            }
-
-            return true;
-        }
-
         if (type.IsGenericType)
         {
             var genericDef = type.GetGenericTypeDefinition();

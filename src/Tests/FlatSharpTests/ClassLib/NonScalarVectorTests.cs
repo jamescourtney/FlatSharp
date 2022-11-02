@@ -117,25 +117,6 @@ public class NonScalarVectorTests
                 Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
             }
         }
-
-        if (option != FlatBufferDeserializationOption.Lazy && option != FlatBufferDeserializationOption.Progressive)
-        {
-            var memoryTable = new RootTable<T[]>
-            {
-                Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
-            };
-
-            var serializer = FlatBufferSerializer.CompileFor(memoryTable).WithSettings(s => s.UseDeserializationMode(option));
-
-            Span<byte> memory = new byte[10240];
-            int offset = serializer.Write(memory, memoryTable);
-            var memoryTableResult = serializer.Parse<RootTable<T[]>>(memory.Slice(0, offset).ToArray());
-            var resultVector = memoryTableResult.Vector;
-            for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
-            {
-                Assert.Equal(memoryTable.Vector[i], resultVector[i]);
-            }
-        }
     }
 
     [FlatBufferTable]
