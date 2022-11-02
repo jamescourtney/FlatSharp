@@ -322,11 +322,17 @@ public record PropertyFieldModel
     {
         return this.Attributes.VectorKind switch
         {
-            VectorType.IList or null => $"IList<{innerType}>",
+            VectorType.IList => $"IList<{innerType}>",
             VectorType.IReadOnlyList => $"IReadOnlyList<{innerType}>",
             VectorType.Memory => $"Memory<{innerType}>",
             VectorType.ReadOnlyMemory => $"ReadOnlyMemory<{innerType}>",
             VectorType.IIndexedVector => $"IIndexedVector<{keyType ?? "string"}, {innerType}>",
+
+            // Unqualified ubyte vectors default to Memory.
+            null => this.Field.Type.ElementType == BaseType.UByte 
+                  ? $"Memory<{innerType}>"
+                  : $"IList<{innerType}>",
+
             _ => throw new FlatSharpInternalException("Unknown vector kind: " + this.Attributes.VectorKind),
         };
     }

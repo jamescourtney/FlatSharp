@@ -115,7 +115,7 @@ table TableThatStartsItAll {{
         Assert.Equal("Blue", dMonster.Color.ToString());
         Assert.Null(dMonster.Pos);
 
-        Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("Inventory").PropertyType);
+        Assert.Equal(typeof(Memory<byte>?), monsterType.GetProperty("Inventory").PropertyType);
         Assert.Equal(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("Path").PropertyType);
         Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("Weapons").PropertyType);
         Assert.True(typeof(IFlatBufferUnion<,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("Equipped").PropertyType)));
