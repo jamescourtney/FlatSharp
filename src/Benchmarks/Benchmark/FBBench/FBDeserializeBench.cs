@@ -27,13 +27,7 @@ namespace Benchmark.FBBench
 
         [Params(
             FlatBufferDeserializationOption.Lazy,
-#if FLATSHARP_6_0_0_OR_GREATER
             FlatBufferDeserializationOption.Progressive,
-#else
-            FlatBufferDeserializationOption.PropertyCache,
-            FlatBufferDeserializationOption.VectorCache,
-            FlatBufferDeserializationOption.VectorCacheMutable,
-#endif
             FlatBufferDeserializationOption.Greedy,
             FlatBufferDeserializationOption.GreedyMutable
         )]
@@ -52,7 +46,6 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial_NonVirtual() => base.FlatSharp_ParseAndTraversePartial_NonVirtual();
 
-#if FLATSHARP_5_7_1_OR_GREATER
         [Benchmark]
         public override void FlatSharp_ParseAndTraverse_ValueStructs() => base.FlatSharp_ParseAndTraverse_ValueStructs();
 
@@ -64,6 +57,5 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial_ValueStructs_NonVirtual() => base.FlatSharp_ParseAndTraversePartial_ValueStructs_NonVirtual();
-#endif
     }
 }

@@ -7,13 +7,13 @@ namespace FlatSharpTests.Oracle
 
 using global::System;
 using global::System.Collections.Generic;
-using global::FlatBuffers;
+using global::Google.FlatBuffers;
 
 public struct SortedVectorInt32Table : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
   public static SortedVectorInt32Table GetRootAsSortedVectorInt32Table(ByteBuffer _bb) { return GetRootAsSortedVectorInt32Table(_bb, new SortedVectorInt32Table()); }
   public static SortedVectorInt32Table GetRootAsSortedVectorInt32Table(ByteBuffer _bb, SortedVectorInt32Table obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -36,17 +36,21 @@ public struct SortedVectorInt32Table : IFlatbufferObject
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorInt32Table(FlatBufferBuilder builder, Offset<SortedVectorInt32Table>[] offsets) {
-    Array.Sort(offsets, (Offset<SortedVectorInt32Table> o1, Offset<SortedVectorInt32Table> o2) => builder.DataBuffer.GetInt(Table.__offset(4, o1.Value, builder.DataBuffer)).CompareTo(builder.DataBuffer.GetInt(Table.__offset(4, o2.Value, builder.DataBuffer))));
+    Array.Sort(offsets,
+      (Offset<SortedVectorInt32Table> o1, Offset<SortedVectorInt32Table> o2) =>
+        new SortedVectorInt32Table().__assign(builder.DataBuffer.Length - o1.Value, builder.DataBuffer).Value.CompareTo(new SortedVectorInt32Table().__assign(builder.DataBuffer.Length - o2.Value, builder.DataBuffer).Value));
     return builder.CreateVectorOfTables(offsets);
   }
 
   public static SortedVectorInt32Table? __lookup_by_key(int vectorLocation, int key, ByteBuffer bb) {
+    SortedVectorInt32Table obj_ = new SortedVectorInt32Table();
     int span = bb.GetInt(vectorLocation - 4);
     int start = 0;
     while (span != 0) {
       int middle = span / 2;
       int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
-      int comp = bb.GetInt(Table.__offset(4, bb.Length - tableOffset, bb)).CompareTo(key);
+      obj_.__assign(tableOffset, bb);
+      int comp = obj_.Value.CompareTo(key);
       if (comp > 0) {
         span = middle;
       } else if (comp < 0) {
@@ -54,7 +58,7 @@ public struct SortedVectorInt32Table : IFlatbufferObject
         start += middle;
         span -= middle;
       } else {
-        return new SortedVectorInt32Table().__assign(tableOffset, bb);
+        return obj_;
       }
     }
     return null;

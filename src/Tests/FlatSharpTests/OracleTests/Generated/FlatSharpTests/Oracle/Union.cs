@@ -30,7 +30,7 @@ public class UnionUnion {
   public string AsstringValue() { return this.As<string>(); }
   public static UnionUnion FromstringValue(string _stringvalue) { return new UnionUnion{ Type = Union.stringValue, Value = _stringvalue }; }
 
-  public static int Pack(FlatBuffers.FlatBufferBuilder builder, UnionUnion _o) {
+  public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, UnionUnion _o) {
     switch (_o.Type) {
       default: return 0;
       case Union.BasicTypes: return FlatSharpTests.Oracle.BasicTypes.Pack(builder, _o.AsBasicTypes()).Value;

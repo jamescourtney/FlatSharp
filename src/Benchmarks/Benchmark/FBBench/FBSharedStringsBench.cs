@@ -26,8 +26,6 @@ namespace Benchmark.FBBench
 
     public class FBSharedStringBench : FBBenchCore
     {
-#if FLATSHARP_6_0_0_OR_GREATER
-
         public NonSharedVectorTable nonSharedStringVector;
         public SharedVectorTable randomSharedStringVector;
         public SharedVectorTable nonRandomSharedStringVector;
@@ -138,7 +136,5 @@ namespace Benchmark.FBBench
 
             return rand_normal;
         }
-
-#endif
     }
-    }
+}
