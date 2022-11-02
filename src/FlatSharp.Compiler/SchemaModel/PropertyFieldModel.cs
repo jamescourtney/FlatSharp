@@ -324,7 +324,6 @@ public record PropertyFieldModel
         {
             VectorType.IList or null => $"IList<{innerType}>",
             VectorType.IReadOnlyList => $"IReadOnlyList<{innerType}>",
-            VectorType.Array => $"{innerType}[]",
             VectorType.Memory => $"Memory<{innerType}>",
             VectorType.ReadOnlyMemory => $"ReadOnlyMemory<{innerType}>",
             VectorType.IIndexedVector => $"IIndexedVector<{keyType ?? "string"}, {innerType}>",

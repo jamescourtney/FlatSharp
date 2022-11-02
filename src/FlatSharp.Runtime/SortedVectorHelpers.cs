@@ -135,34 +135,6 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
-        where TTable : class, ISortableTable<TKey>
-        where TKey : notnull
-    {
-        CheckKeyNotNull(key);
-
-        if (key is string str)
-        {
-            using SimpleStringComparer cmp = new SimpleStringComparer(str);
-
-            return BinarySearchByFlatBufferKey<ArrayIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
-                new ArrayIndexable<TTable, string?>(sortedVector),
-                sortedVector,
-                cmp);
-        }
-        else
-        {
-            return BinarySearchByFlatBufferKey<ArrayIndexable<TTable, TKey>, TTable, TKey, NaiveComparer<TKey>>(
-                new ArrayIndexable<TTable, TKey>(sortedVector),
-                sortedVector,
-                new NaiveComparer<TKey>(key));
-        }
-    }
-
-    /// <summary>
-    /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-    /// </summary>
-    /// <returns>A value if found, null otherwise.</returns>
     public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
        where TTable : class, ISortableTable<TKey>
        where TKey : notnull

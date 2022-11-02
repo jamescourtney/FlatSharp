@@ -231,15 +231,7 @@ public sealed class FlatBufferSerializer
                         BindingFlags.NonPublic | BindingFlags.Instance)!
                     .MakeGenericMethod(itemType);
 
-            try
-            {
-                serializer = method.Invoke(this, new object[0]);
-            }
-            catch (TargetInvocationException ex)
-            {
-                var edi = ExceptionDispatchInfo.Capture(ex.InnerException!);
-                edi.Throw();
-            }
+            serializer = method.Invoke(this, new object[0]);
         }
 
         return (ISerializer)serializer!;
