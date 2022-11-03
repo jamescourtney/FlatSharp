@@ -114,21 +114,6 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    public T[] ToArray()
-    {
-        T[] array = new T[this.Count];
-        var context = this.fieldContext;
-        var remainingDepth = this.remainingDepth;
-        var buffer = this.memory;
-
-        for (int i = 0; i < array.Length; ++i)
-        {
-            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out array[i]);
-        }
-
-        return array;
-    }
-
     public IEnumerator<T> GetEnumerator()
     {
         int count = this.Count;

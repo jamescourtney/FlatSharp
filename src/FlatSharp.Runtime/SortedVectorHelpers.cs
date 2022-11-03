@@ -135,34 +135,6 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
-        where TTable : class, ISortableTable<TKey>
-        where TKey : notnull
-    {
-        CheckKeyNotNull(key);
-
-        if (key is string str)
-        {
-            using SimpleStringComparer cmp = new SimpleStringComparer(str);
-
-            return BinarySearchByFlatBufferKey<ArrayIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
-                new ArrayIndexable<TTable, string?>(sortedVector),
-                sortedVector,
-                cmp);
-        }
-        else
-        {
-            return BinarySearchByFlatBufferKey<ArrayIndexable<TTable, TKey>, TTable, TKey, NaiveComparer<TKey>>(
-                new ArrayIndexable<TTable, TKey>(sortedVector),
-                sortedVector,
-                new NaiveComparer<TKey>(key));
-        }
-    }
-
-    /// <summary>
-    /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-    /// </summary>
-    /// <returns>A value if found, null otherwise.</returns>
     public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
        where TTable : class, ISortableTable<TKey>
        where TKey : notnull
@@ -340,22 +312,6 @@ public static class SortedVectorHelpers
         T this[int index] { get; }
 
         TKey KeyAt(int index);
-    }
-
-    private struct ArrayIndexable<T, TKey> : IIndexable<T, TKey>
-    {
-        private readonly T[] items;
-
-        public ArrayIndexable(T[] items)
-        {
-            this.items = items;
-        }
-
-        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
-
-        public T this[int index] => this.items[index];
-
-        public int Count => this.items.Length;
     }
 
     private struct LazyVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>

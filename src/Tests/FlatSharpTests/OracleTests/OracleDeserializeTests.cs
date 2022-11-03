@@ -197,7 +197,7 @@ public partial class OracleDeserializeTests
         byte[] realBuffer = builder.SizedByteArray();
         var parsed = FlatBufferSerializer.Default.Parse<FiveByteStructTable>(realBuffer);
 
-        Assert.Equal(3, parsed.Vector.Length);
+        Assert.Equal(3, parsed.Vector.Count);
 
         Assert.Equal(1, parsed.Vector[0].Int);
         Assert.Equal(2, parsed.Vector[1].Int);
@@ -349,11 +349,11 @@ public partial class OracleDeserializeTests
         Oracle.VectorOfUnionTableT table = new Oracle.VectorOfUnionTableT
         {
             Value = new List<Oracle.UnionUnion>
-                {
-                    new Oracle.UnionUnion { Value = new Oracle.BasicTypesT { Int = 7 }, Type = Oracle.Union.BasicTypes },
-                    new Oracle.UnionUnion { Value = new Oracle.LocationT { X = 1, Y = 2, Z = 3 }, Type = Oracle.Union.Location },
-                    new Oracle.UnionUnion { Value = "foobar", Type = Oracle.Union.stringValue },
-                }
+            {
+                new Oracle.UnionUnion { Value = new Oracle.BasicTypesT { Int = 7 }, Type = Oracle.Union.BasicTypes },
+                new Oracle.UnionUnion { Value = new Oracle.LocationT { X = 1, Y = 2, Z = 3 }, Type = Oracle.Union.Location },
+                new Oracle.UnionUnion { Value = "foobar", Type = Oracle.Union.stringValue },
+            }
         };
 
         var builder = new FlatBufferBuilder(1024);
@@ -361,9 +361,9 @@ public partial class OracleDeserializeTests
         builder.Finish(offset.Value);
         byte[] data = builder.SizedByteArray();
 
-        var parsed = FlatBufferSerializer.Default.Parse<ArrayVectorOfUnionTable>(data);
+        var parsed = FlatBufferSerializer.Default.Parse<ListVectorOfUnionTable>(data);
 
-        Assert.Equal(3, parsed.Union.Length);
+        Assert.Equal(3, parsed.Union.Count);
 
         Assert.Equal(1, parsed.Union[0].Discriminator);
         Assert.Equal(2, parsed.Union[1].Discriminator);

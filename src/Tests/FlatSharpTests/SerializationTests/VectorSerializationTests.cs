@@ -121,7 +121,6 @@ public class VectorSerializationTests
 
             Test<IList<byte>>(a => a.ToList());
             Test<IReadOnlyList<byte>>(a => a.ToList());
-            Test<byte[]>(a => a);
             Test<Memory<byte>>(a => a.AsMemory());
             Test<ReadOnlyMemory<byte>>(a => a.AsMemory());
             Test<Memory<byte>?>(a => a.AsMemory());
@@ -161,7 +160,6 @@ public class VectorSerializationTests
 
             Test<IList<int>>(new List<int>());
             Test<IReadOnlyList<int>>(new List<int>());
-            Test<int[]>(new int[0]);
             Test<Memory<byte>>(new Memory<byte>(new byte[0]));
             Test<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(new byte[0]));
             Test<Memory<byte>?>(new Memory<byte>(new byte[0]));
@@ -198,12 +196,10 @@ public class VectorSerializationTests
 
             Test<IList<int>>();
             Test<IReadOnlyList<int>>();
-            Test<int[]>();
             Test<Memory<byte>?>();
             Test<ReadOnlyMemory<byte>?>();
             Test<IIndexedVector<string, TableWithKey<string>>>();
 
-            Test<FlatBufferUnion<string>[]>();
             Test<IList<FlatBufferUnion<string>>>();
             Test<IReadOnlyList<FlatBufferUnion<string>>>();
 
@@ -213,7 +209,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_5Byte()
         {
-            var root = new RootTable<FiveByteStruct[]>
+            var root = new RootTable<IList<FiveByteStruct>>
             {
                 Vector = new[]
                 {
@@ -254,7 +250,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_Value5Byte()
         {
-            var root = new RootTable<ValueFiveByteStruct[]>
+            var root = new RootTable<IList<ValueFiveByteStruct>>
             {
                 Vector = new[]
                 {
@@ -295,7 +291,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_9Byte()
         {
-            var root = new RootTable2<NineByteStruct[]>
+            var root = new RootTable2<IReadOnlyList<NineByteStruct>>
             {
                 Vector = new[]
                 {
@@ -336,7 +332,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_Value9Byte()
         {
-            var root = new RootTable2<ValueNineByteStruct[]>
+            var root = new RootTable2<IReadOnlyList<ValueNineByteStruct>>
             {
                 Vector = new[]
                 {
@@ -504,7 +500,7 @@ public class VectorSerializationTests
                     Vector = testList
                 };
 
-                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<string>[]>>(data);
+                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<IReadOnlyList<TableWithKey<string>>>>(data);
                 Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
                 Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, "AAA"));
                 Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
@@ -837,7 +833,7 @@ public class VectorSerializationTests
         TableWithKey<TKey>[] values,
         IComparer<TKey> comparer)
     {
-        RootTableSorted<TableWithKey<TKey>[]> root = new RootTableSorted<TableWithKey<TKey>[]>
+        RootTableSorted<IList<TableWithKey<TKey>>> root = new()
         {
             Vector = values
         };
@@ -855,7 +851,7 @@ public class VectorSerializationTests
             var vector = parsed.Vector;
             int length = getLength(vector);
 
-            Assert.Equal(root.Vector.Length, length);
+            Assert.Equal(root.Vector.Count, length);
 
             if (length > 0)
             {
@@ -883,7 +879,6 @@ public class VectorSerializationTests
 
         foreach (FlatBufferDeserializationOption mode in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
         {
-            RunTest<TableWithKey<TKey>[]>(mode, x => x.Length, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
             RunTest<IList<TableWithKey<TKey>>>(mode, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
             RunTest<IReadOnlyList<TableWithKey<TKey>>>(mode, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
         }
@@ -898,10 +893,6 @@ public class VectorSerializationTests
         [Fact]
         public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             (l, v) => v.Vector = l.ToList());
-
-        [Fact]
-        public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
-            (l, v) => v.Vector = l);
 
         private void VectorOfUnionTest<V>(Action<FlatBufferUnion<string, Struct, TableWithKey<int>>[], V> setValue)
             where V : class, new()

@@ -23,7 +23,6 @@ public enum VectorType
 {
     IList,
     IReadOnlyList,
-    Array,
     Memory,
     ReadOnlyMemory,
     IIndexedVector,
