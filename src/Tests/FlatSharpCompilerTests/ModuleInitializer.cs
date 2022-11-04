@@ -25,6 +25,7 @@ namespace FlatSharpTests.Compiler
         public static void AssemblyInitialize()
         {
             RoslynSerializerGenerator.EnableStrictValidation = true;
+            RoslynSerializerGenerator.AllowUnsafeBlocks = true;
         }
     }
 }

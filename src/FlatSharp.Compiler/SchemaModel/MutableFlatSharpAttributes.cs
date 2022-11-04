@@ -44,6 +44,7 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.WriteThrough = other.WriteThrough;
             this.StreamingType = other.StreamingType;
             this.ExternalTypeName = other.ExternalTypeName;
+            this.UnsafeUnion = other.UnsafeUnion;
         }
     }
 
@@ -78,4 +79,6 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
     public RpcStreamingType? StreamingType { get; set; }
 
     public string? ExternalTypeName { get; set; }
+
+    public bool? UnsafeUnion { get; set; }
 }

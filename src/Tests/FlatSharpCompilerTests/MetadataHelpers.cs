@@ -40,8 +40,9 @@ public class MetadataHelpers
         names.Add(MetadataKeys.ForceWrite);
         names.Add(MetadataKeys.WriteThrough);
         names.Add(MetadataKeys.RpcInterface);
-        names.Add(MetadataKeys.External);
+        names.Add(MetadataKeys.UnsafeExternal);
         names.Add(MetadataKeys.LiteralName);
+        names.Add(MetadataKeys.UnsafeUnion);
         names.Add(string.Empty);
 
         AllAttributes = string.Join("\r\n", names.Select(x => $"attribute \"{x}\";"));

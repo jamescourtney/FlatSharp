@@ -116,7 +116,13 @@ public static class MetadataKeys
     /// Indicates that a flatsharp table, struct, or enum is externally defined. FlatSharp will assume
     /// that the signature matches what is in the FlatBuffer definition.
     /// </summary>
-    public const string External = "fs_unsafeExternal";
+    public const string UnsafeExternal = "fs_unsafeExternal";
+
+    /// <summary>
+    /// Indicates that a union should be generated with a fixed byte vector for value-type structs. Avoids boxing allocations.
+    /// </summary>
+
+    public const string UnsafeUnion = "fs_unsafeUnion";
 
     /// <summary>
     /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.

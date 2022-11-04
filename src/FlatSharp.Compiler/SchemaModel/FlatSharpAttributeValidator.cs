@@ -107,7 +107,12 @@ public class FlatSharpAttributeValidator
 
         if (attributes.ExternalTypeName is not null)
         {
-            RegisterError(MetadataKeys.External, this.ExternValidator(attributes.ExternalTypeName), attributes.ExternalTypeName);
+            RegisterError(MetadataKeys.UnsafeExternal, this.ExternValidator(attributes.ExternalTypeName), attributes.ExternalTypeName);
+        }
+
+        if (attributes.UnsafeUnion is not null)
+        {
+            RegisterError(MetadataKeys.UnsafeUnion, this.UnsafeUnionValidator(attributes.UnsafeUnion.Value), attributes.UnsafeUnion);
         }
     }
 
@@ -138,4 +143,6 @@ public class FlatSharpAttributeValidator
     public Func<RpcStreamingType, AttributeValidationResult> StreamingTypeValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
 
     public Func<string, AttributeValidationResult> ExternValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
+
+    public Func<bool, AttributeValidationResult> UnsafeUnionValidator { get; set; } = b => AttributeValidationResult.NeverValid;
 }

@@ -101,6 +101,8 @@ internal class RoslynSerializerGenerator
     /// </summary>
     internal static bool EnableStrictValidation { get; set; }
 
+    internal static bool AllowUnsafeBlocks { get; set; }
+
     public RoslynSerializerGenerator(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
     {
         this.options = options;
@@ -212,7 +214,7 @@ $@"
         string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
             .WithModuleName(name)
-            .WithAllowUnsafe(false)
+            .WithAllowUnsafe(AllowUnsafeBlocks)
             .WithOptimizationLevel(OptimizationLevel.Release)
             .WithNullableContextOptions(NullableContextOptions.Enable);
 
