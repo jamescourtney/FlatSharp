@@ -7,6 +7,7 @@ attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
 attribute "fs_writeThrough";
 attribute "fs_vector";
+attribute "fs_unsafeUnion";
 
 namespace Microbench;
 
@@ -48,4 +49,20 @@ table SortedTable (fs_serializer:"Lazy")
 {
     Strings : [StringKey] (fs_vector:"IIndexedVector");
     Ints : [IntKey] (fs_vector:"IIndexedVector");
+}
+
+
+struct ValueStructA (fs_valueStruct) { x : int; }
+struct ValueStructB (fs_valueStruct) { y : long; }
+struct ValueStructC (fs_valueStruct) { a : ValueStructA; b : ValueStructB; }
+
+union UnsafeUnion (fs_unsafeUnion) { ValueStructA, ValueStructB, ValueStructC }
+union SafeUnion { ValueStructA, ValueStructB, ValueStructC }
+union MixedUnion { ValueStructA, ValueStructB, ValueStructC, Something : string }
+
+table UnionTable (fs_serializer:"Lazy")
+{
+    Unsafe : [ UnsafeUnion ];
+    Safe : [ SafeUnion ];
+    Mixed : [ MixedUnion ];
 }

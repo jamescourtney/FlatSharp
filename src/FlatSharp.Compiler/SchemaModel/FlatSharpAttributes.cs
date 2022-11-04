@@ -67,11 +67,13 @@ public class FlatSharpAttributes : IFlatSharpAttributes
 
     public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
+    public bool? UnsafeUnion => this.TryParseBoolean(MetadataKeys.UnsafeUnion);
+
     public string? ExternalTypeName
     {
         get
         {
-            if (this.rawAttributes.TryGetValue(MetadataKeys.External, out var obj))
+            if (this.rawAttributes.TryGetValue(MetadataKeys.UnsafeExternal, out var obj))
             {
                 if (obj.Value == null || obj.Value == "0")
                 {

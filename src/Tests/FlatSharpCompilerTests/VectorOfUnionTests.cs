@@ -25,11 +25,6 @@ public class VectorOfUnionTests
         {
             foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                if (vectorKind == "Array" && option != FlatBufferDeserializationOption.Greedy && option != FlatBufferDeserializationOption.GreedyMutable)
-                {
-                    continue;
-                }
-
                 this.RunTest(vectorKind, option);
             }
         }

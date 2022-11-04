@@ -91,6 +91,58 @@ namespace Microbench
             public static readonly byte[] Buffer_IntKey = AllocateAndSerialize(SortedInts);
         }
 
+        public static class UnionTables
+        {
+            public static readonly UnionTable Safe = new()
+            {
+                Safe = Enumerable.Range(1, VectorLength).Select(x =>
+                {
+                    int random = Random.Next() % 3;
+                    switch (random)
+                    {
+                        case 0: return new SafeUnion(new ValueStructA());
+                        case 1: return new SafeUnion(new ValueStructB());
+                        case 2: return new SafeUnion(new ValueStructC());
+                    }
+
+                    throw new Exception();
+                }).ToList()
+            };
+
+            public static readonly UnionTable Unsafe = new()
+            {
+                Unsafe = Enumerable.Range(1, VectorLength).Select(x =>
+                {
+                    int random = Random.Next() % 3;
+                    switch (random)
+                    {
+                        case 0: return new UnsafeUnion(new ValueStructA());
+                        case 1: return new UnsafeUnion(new ValueStructB());
+                        case 2: return new UnsafeUnion(new ValueStructC());
+                    }
+
+                    throw new Exception();
+                }).ToList()
+            };
+
+
+            public static readonly UnionTable Mixed = new()
+            {
+                Mixed = Enumerable.Range(1, VectorLength).Select(x =>
+                {
+                    int random = Random.Next() % 3;
+                    switch (random)
+                    {
+                        case 0: return new MixedUnion(new ValueStructA());
+                        case 1: return new MixedUnion(new ValueStructB());
+                        case 2: return new MixedUnion(new ValueStructC());
+                    }
+
+                    throw new Exception();
+                }).ToList()
+            };
+        }
+
         public static class Buffers
         {
             public static readonly byte[] Stringtable_Empty = AllocateAndSerialize(StringTables.Empty);
@@ -104,6 +156,10 @@ namespace Microbench
             public static readonly byte[] StructTable_SingleValue = AllocateAndSerialize(StructTables.SingleValue);
             public static readonly byte[] StructTable_VecRef = AllocateAndSerialize(StructTables.VectorRef);
             public static readonly byte[] StructTable_VecValue = AllocateAndSerialize(StructTables.VectorValue);
+
+            public static readonly byte[] UnionTable_Safe = AllocateAndSerialize(UnionTables.Safe);
+            public static readonly byte[] UnionTable_Unsafe = AllocateAndSerialize(UnionTables.Unsafe);
+            public static readonly byte[] UnionTable_Mixed = AllocateAndSerialize(UnionTables.Mixed);
         }
 
         private static byte[] AllocateAndSerialize<T>(T value) where T : class, IFlatBufferSerializable<T>

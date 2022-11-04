@@ -29,8 +29,8 @@ namespace FlatSharpTests.Compiler
 
                 namespace ExternalTests;
 
-                enum ExternalEnum : ubyte ({MetadataKeys.External}) {{ A, B, C }}
-                struct ExternalStruct ({MetadataKeys.External}, {MetadataKeys.ValueStruct}) {{ X : float32; Y : float32; Z : float32; }}
+                enum ExternalEnum : ubyte ({MetadataKeys.UnsafeExternal}) {{ A, B, C }}
+                struct ExternalStruct ({MetadataKeys.UnsafeExternal}, {MetadataKeys.ValueStruct}) {{ X : float32; Y : float32; Z : float32; }}
         
                 table Table {{ E : ExternalEnum; S : ExternalStruct;  }}
             ";
@@ -62,8 +62,8 @@ namespace FlatSharpTests.Compiler
 
                 namespace Something;
 
-                enum ExternalEnum : ubyte ({MetadataKeys.External}:""ExternalTests.ExternalEnum"") {{ A, B, C }}
-                struct ExternalStruct ({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct}) {{ X : float32; Y : float32; Z : float32; }}
+                enum ExternalEnum : ubyte ({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalEnum"") {{ A, B, C }}
+                struct ExternalStruct ({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct}) {{ X : float32; Y : float32; Z : float32; }}
         
                 table Table {{ E : ExternalEnum; S : ExternalStruct;  }}
             ";
@@ -95,7 +95,7 @@ namespace FlatSharpTests.Compiler
 
                 namespace Something;
 
-                struct ExternalStruct ({MetadataKeys.External}:""ExternalTests.ExternalGenericStruct<System.Single>"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
+                struct ExternalStruct ({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalGenericStruct<System.Single>"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
         
                 table Table {{ S : ExternalStruct;  }}
             ";
@@ -121,7 +121,7 @@ namespace FlatSharpTests.Compiler
 
                 namespace Something;
 
-                struct ExternalStruct ({MetadataKeys.External}:""float"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
+                struct ExternalStruct ({MetadataKeys.UnsafeExternal}:""float"", {MetadataKeys.ValueStruct}) {{ X : float32; }}
         
                 table Table {{ S : ExternalStruct;  }}
             ";
@@ -141,7 +141,7 @@ namespace FlatSharpTests.Compiler
                 {MetadataHelpers.AllAttributes}
 
                 namespace ExternalTests;
-                table ExternalTable ({MetadataKeys.External}) {{ A : int; }}
+                table ExternalTable ({MetadataKeys.UnsafeExternal}) {{ A : int; }}
             ";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
@@ -158,7 +158,7 @@ namespace FlatSharpTests.Compiler
                 {MetadataHelpers.AllAttributes}
 
                 namespace ExternalTests;
-                struct ExternalTable ({MetadataKeys.External}) {{ A : int; }}
+                struct ExternalTable ({MetadataKeys.UnsafeExternal}) {{ A : int; }}
             ";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
@@ -179,7 +179,7 @@ namespace FlatSharpTests.Compiler
                 table A {{}}
                 table B {{}}
 
-                union Test ({MetadataKeys.External}) {{ A, B }}
+                union Test ({MetadataKeys.UnsafeExternal}) {{ A, B }}
             ";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
@@ -206,7 +206,7 @@ namespace FlatSharpTests.Compiler
                 namespace AAAA;
 
                 // AAAA.BBBB -> ExternalTests.ExternalStruct
-                struct BBBB({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                struct BBBB({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
                 {{
                     X : float32;
                     Y : float32;
@@ -242,12 +242,12 @@ namespace FlatSharpTests.Compiler
 
                 namespace Test;
 
-                struct First({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                struct First({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
                 {{
                     Data : [ float32 : 3 ];
                 }}
 
-                struct Second({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                struct Second({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
                 {{
                     Data : [ float32 : 3 ];
                 }}
@@ -292,7 +292,7 @@ namespace FlatSharpTests.Compiler
                 {MetadataHelpers.AllAttributes}
                 namespace Test;
 
-                struct StructB({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                struct StructB({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
                 {{
                     Data : [ float32 : 3 ];
                 }}
@@ -302,7 +302,7 @@ namespace FlatSharpTests.Compiler
                 {MetadataHelpers.AllAttributes}
                 namespace Test;
 
-                struct StructC({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                struct StructC({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
                 {{
                     Data : [ float32 : 3 ];
                 }}
@@ -312,7 +312,7 @@ namespace FlatSharpTests.Compiler
                 {MetadataHelpers.AllAttributes}
                 namespace D;
 
-                struct StructD({MetadataKeys.External}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
+                struct StructD({MetadataKeys.UnsafeExternal}:""ExternalTests.ExternalStruct"", {MetadataKeys.ValueStruct})
                 {{
                     Data : [ float32 : 3 ];
                 }}

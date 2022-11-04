@@ -76,5 +76,23 @@ namespace Microbench
         {
             return StructsTable.Serializer.Write(Constants.Buffers.StructTable_VecValue, Constants.StructTables.VectorValue);
         }
+
+        [Benchmark]
+        public int Serialize_SafeUnion()
+        {
+            return UnionTable.Serializer.Write(Constants.Buffers.UnionTable_Safe, Constants.UnionTables.Safe);
+        }
+
+        [Benchmark]
+        public int Serialize_UnsafeUnion()
+        {
+            return UnionTable.Serializer.Write(Constants.Buffers.UnionTable_Unsafe, Constants.UnionTables.Unsafe);
+        }
+
+        [Benchmark]
+        public int Serialize_MixedUnion()
+        {
+            return UnionTable.Serializer.Write(Constants.Buffers.UnionTable_Mixed, Constants.UnionTables.Mixed);
+        }
     }
 }
