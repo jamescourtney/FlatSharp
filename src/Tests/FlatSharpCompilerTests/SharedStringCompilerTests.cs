@@ -26,7 +26,7 @@ public class SharedStringCompilerTests
             namespace SharedStringTests;
             table Table {{
                 foo:string ({MetadataKeys.SharedString});
-                bar:[string] ({MetadataKeys.VectorKind}:""array"", {MetadataKeys.SharedString});
+                bar:[string] ({MetadataKeys.VectorKind}:""ireadonlylist"", {MetadataKeys.SharedString});
                 baz:[string] ({MetadataKeys.VectorKind}:""ilist"", {MetadataKeys.SharedString});
             }}";
 
@@ -38,7 +38,7 @@ public class SharedStringCompilerTests
         Assert.Equal(typeof(string), property.PropertyType);
         Assert.True(property.GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
 
-        Assert.Equal(typeof(string[]), tableType.GetProperty("Bar").PropertyType);
+        Assert.Equal(typeof(IReadOnlyList<string>), tableType.GetProperty("Bar").PropertyType);
         Assert.True(tableType.GetProperty("Bar").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
 
         Assert.Equal(typeof(IList<string>), tableType.GetProperty("Baz").PropertyType);

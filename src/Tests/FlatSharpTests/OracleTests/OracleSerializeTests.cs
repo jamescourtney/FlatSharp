@@ -232,10 +232,10 @@ public partial class OracleSerializeTests
         {
             Vector = new[]
             {
-                    new FiveByteStruct { Byte = 1, Int = 1 },
-                    new FiveByteStruct { Byte = 2, Int = 2 },
-                    new FiveByteStruct { Byte = 3, Int = 3 },
-                }
+                new FiveByteStruct { Byte = 1, Int = 1 },
+                new FiveByteStruct { Byte = 2, Int = 2 },
+                new FiveByteStruct { Byte = 3, Int = 3 },
+            }
         };
 
         Span<byte> buffer = new byte[1024];
@@ -427,7 +427,7 @@ public partial class OracleSerializeTests
     [Fact]
     public void VectorOfUnion()
     {
-        ArrayVectorOfUnionTable table = new ArrayVectorOfUnionTable
+        ListVectorOfUnionTable table = new ListVectorOfUnionTable
         {
             Union = new[]
             {

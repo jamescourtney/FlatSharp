@@ -21,15 +21,10 @@ public class VectorOfUnionTests
     [Fact]
     public void VectorOfUnion_CompilerTests()
     {
-        foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array" })
+        foreach (var vectorKind in new[] { "IList", "IReadOnlyList" })
         {
             foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                if (vectorKind == "Array" && option != FlatBufferDeserializationOption.Greedy && option != FlatBufferDeserializationOption.GreedyMutable)
-                {
-                    continue;
-                }
-
                 this.RunTest(vectorKind, option);
             }
         }

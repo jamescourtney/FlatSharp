@@ -162,6 +162,80 @@ namespace Microbench
             }
         }
 
+        [Benchmark]
+        public int ParseAndTraverse_SafeUnionVector()
+        {
+            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Safe);
+            var vector = st.Safe;
+            int count = vector!.Count;
+
+            var visitor = new UnionVisitor();
+            int sum = 0;
+            for (int i = 0; i < count; ++i)
+            {
+                sum += vector[i].Accept<UnionVisitor, int>(visitor);
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public int ParseAndTraverse_UnsafeUnionVector()
+        {
+            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Unsafe);
+            var vector = st.Unsafe;
+            int count = vector!.Count;
+
+            var visitor = new UnionVisitor();
+            int sum = 0;
+            for (int i = 0; i < count; ++i)
+            {
+                sum += vector[i].Accept<UnionVisitor, int>(visitor);
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public int ParseAndTraverse_MixedUnionVector()
+        {
+            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Mixed);
+            var vector = st.Mixed;
+            int count = vector!.Count;
+
+            var visitor = new UnionVisitor();
+            int sum = 0;
+            for (int i = 0; i < count; ++i)
+            {
+                sum += vector[i].Accept<UnionVisitor, int>(visitor);
+            }
+
+            return sum;
+        }
+
+        private struct UnionVisitor : UnsafeUnion.Visitor<int>, SafeUnion.Visitor<int>, MixedUnion.Visitor<int>
+        {
+            public int Visit(ValueStructA item)
+            {
+                return 0;
+            }
+
+            public int Visit(ValueStructB item)
+            {
+                return 1;
+            }
+
+            public int Visit(ValueStructC item)
+            {
+                return 2;
+            }
+
+            public int Visit(string item)
+            {
+                return 10;
+            }
+        }
+
         private static int ParseAndTraverse(PrimitivesTable table)
         {
             int sum = 0;

@@ -30,8 +30,9 @@ public class NullableAnnotationTests
                 defaultInt:int32 = 3;
                 str:string;
                 nullableInt:int32 = null;
-                arrayVector:[int32] ({MetadataKeys.VectorKind}:""Array"");
+                arrayVector:[int32] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
                 memoryVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"");
+                roMemoryVector:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
                 listVector:[int32] ({MetadataKeys.VectorKind}:""IList"");
                 nestedTable:InnerTable;
             }}

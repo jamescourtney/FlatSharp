@@ -29,7 +29,4 @@ table Root (fs_serializer)
 
     readonly_list_vector_string : [ StringKey ] (fs_vector:"IReadOnlyList");
     readonly_list_vector_int : [ IntKey ] (fs_vector:"IReadOnlyList");
-
-    array_vector_string : [ StringKey ] (fs_vector:"Array");
-    array_vector_int : [ IntKey ] (fs_vector:"Array");
 }

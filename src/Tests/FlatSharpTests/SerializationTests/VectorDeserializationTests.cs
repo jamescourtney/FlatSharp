@@ -195,7 +195,7 @@ public class VectorDeserializationTests
             4, 0, 0, 0  // soffset to vtable
         };
 
-        var item = FlatBufferSerializer.Default.Parse<RootTable<int[]>>(data);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<int>>>(data);
         Assert.Null(item.Vector);
     }
 
@@ -215,10 +215,10 @@ public class VectorDeserializationTests
         };
 
         // we parse non-scalar array and scalar arrays differently, so test for both.
-        var item = FlatBufferSerializer.Default.Parse<RootTable<int[]>>(data);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<int>>>(data);
         Assert.Empty(item.Vector);
 
-        var stringItem = FlatBufferSerializer.Default.Parse<RootTable<string[]>>(data);
+        var stringItem = FlatBufferSerializer.Default.Parse<RootTable<IReadOnlyList<string>>>(data);
         Assert.Empty(stringItem.Vector);
     }
 
@@ -242,11 +242,17 @@ public class VectorDeserializationTests
             3, 0, 0, 0, 0, 0, 0, 0,
         };
 
-        var item = FlatBufferSerializer.Default.Parse<RootTable<long[]>>(data);
-        Assert.Equal(3, item.Vector.Length);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<long>>>(data);
+        Assert.Equal(3, item.Vector.Count);
         Assert.Equal(1L, item.Vector[0]);
         Assert.Equal(2L, item.Vector[1]);
         Assert.Equal(3L, item.Vector[2]);
+
+        var item2 = FlatBufferSerializer.Default.Parse<RootTable<IReadOnlyList<long>>>(data);
+        Assert.Equal(3, item2.Vector.Count);
+        Assert.Equal(1L, item2.Vector[0]);
+        Assert.Equal(2L, item2.Vector[1]);
+        Assert.Equal(3L, item2.Vector[2]);
     }
 
     [Fact]
@@ -407,9 +413,9 @@ public class VectorDeserializationTests
             0, 0, 0,             // padding
         };
 
-        var item = FlatBufferSerializer.Default.Parse<RootTable<ValueFiveByteStruct[]>>(data);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<ValueFiveByteStruct>>>(data);
 
-        Assert.Equal(3, item.Vector.Length);
+        Assert.Equal(3, item.Vector.Count);
         for (int i = 0; i < 3; ++i)
         {
             Assert.Equal(i + 1, item.Vector[i].Int);
@@ -426,11 +432,6 @@ public class VectorDeserializationTests
     public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
         FlatBufferDeserializationOption.Lazy,
         v => v.Vector.ToArray());
-
-    [Fact]
-    public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
-        FlatBufferDeserializationOption.Greedy,
-        v => v.Vector);
 
     private void VectorOfUnionTest<V>(
         FlatBufferDeserializationOption option,

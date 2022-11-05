@@ -65,20 +65,6 @@ public class DeserializationOptionsTests
     }
 
     [Fact]
-    public void DeserializationOption_Lazy_Array()
-    {
-        var result = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Lazy, Strings);
-        Assert.Equal(Strings, result.Vector);
-    }
-
-    [Fact]
-    public void DeserializationOption_Progressive_Array()
-    {
-        var result = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Progressive, Strings);
-        Assert.Equal(Strings, result.Vector);
-    }
-
-    [Fact]
     public void DeserializationOption_Lazy_Memory()
     {
         var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Lazy, Bytes);
@@ -232,21 +218,6 @@ public class DeserializationOptionsTests
     }
 
     [Fact]
-    public void DeserializationOption_Greedy_Array()
-    {
-        var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Greedy, Strings);
-        InputBuffer.AsSpan().Fill(0);
-
-        Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-        Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-        Assert.True(object.ReferenceEquals(table.First, table.First));
-        Assert.True(object.ReferenceEquals(table.Second, table.Second));
-        Assert.Equal(Strings.Length, table.Vector.Length);
-        Assert.Throws<NotMutableException>(() => table.First.First = 3);
-        Assert.Throws<NotMutableException>(() => table.First = null);
-    }
-
-    [Fact]
     public void DeserializationOption_Greedy_Memory()
     {
         var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Greedy, Bytes);
@@ -315,23 +286,6 @@ public class DeserializationOptionsTests
 
         table.First = new FirstStruct { First = 10 };
         table.Second.Second = 3;
-    }
-
-    [Fact]
-    public void DeserializationOption_GreedyMutable_Array()
-    {
-        var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.GreedyMutable, Strings);
-        InputBuffer.AsSpan().Fill(0);
-
-        Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-        Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-        Assert.True(object.ReferenceEquals(table.First, table.First));
-        Assert.True(object.ReferenceEquals(table.Second, table.Second));
-        Assert.Equal(Strings.Length, table.Vector.Length);
-
-        table.First = new FirstStruct { First = 10 };
-        table.Second.Second = 3;
-        table.Union = new FlatBufferUnion<FirstStruct, SecondStruct, string>("banana");
     }
 
     [Fact]

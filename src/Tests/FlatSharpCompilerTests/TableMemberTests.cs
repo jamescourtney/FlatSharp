@@ -96,18 +96,22 @@ public class TableMemberTests
     {
         this.RunSingleTest<T>(fbsType);
         this.RunSingleTest<T>($"{fbsType} ({MetadataKeys.Deprecated})", deprecated: true);
-        this.RunSingleTest<IList<T>>($"[{fbsType}]");
         this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"IList\")");
-        this.RunSingleTest<T[]>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Array\")");
         this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"IReadOnlyList\")");
 
         if (typeof(T) == typeof(byte))
         {
+            // Unqualified ubyte vectors default to Memory<T>
+            this.RunSingleTest<Memory<T>?>($"[{fbsType}]");
+
             this.RunSingleTest<Memory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Memory\")");
             this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"ReadOnlyMemory\")");
         }
         else
         {
+            // Unqualified other vectors default to IList<T>
+            this.RunSingleTest<IList<T>>($"[{fbsType}]");
+
             var ex1 = Assert.Throws<InvalidFlatBufferDefinitionException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Memory\")"));
             var ex2 = Assert.Throws<InvalidFlatBufferDefinitionException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"ReadOnlyMemory\")"));
 

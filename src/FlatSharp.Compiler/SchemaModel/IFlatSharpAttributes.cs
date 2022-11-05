@@ -50,4 +50,6 @@ public interface IFlatSharpAttributes
     RpcStreamingType? StreamingType { get; }
 
     string? ExternalTypeName { get; }
+
+    bool? UnsafeUnion { get; }
 }

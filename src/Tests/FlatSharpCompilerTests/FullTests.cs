@@ -33,12 +33,6 @@ public class FullTests
 
     private void Test(FlatBufferDeserializationOption option)
     {
-        string arrayVectorKind = "Array";
-        if (option == FlatBufferDeserializationOption.Lazy || option == FlatBufferDeserializationOption.Progressive)
-        {
-            arrayVectorKind = "IList";
-        }
-
         string schema = $@"
         {MetadataHelpers.AllAttributes}
 
@@ -71,20 +65,20 @@ public class FullTests
             OuterVirtual : OuterStruct;
 
             StructVectorList : [OuterStruct] ({MetadataKeys.VectorKind}:""IList"");
-            StructVectorArray : [OuterStruct] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"", {MetadataKeys.NonVirtualProperty});
+            StructVectorArray : [OuterStruct] ({MetadataKeys.VectorKind}:""IReadOnlyList"", {MetadataKeys.NonVirtualProperty});
 
             TableVectorList : [InnerTable] ({MetadataKeys.VectorKind}:""IList"", {MetadataKeys.SortedVector});
-            TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"", {MetadataKeys.NonVirtualProperty});
+            TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", {MetadataKeys.NonVirtualProperty});
             TableVectorIndexed : [InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"");
 
             MemVector : [ubyte] ({MetadataKeys.VectorKind}:""Memory"");
             RoMemVector : [ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
                 
             ScalarVector : [uint] ({MetadataKeys.VectorKind}:""IList"");
-            ScalarArray : [uint] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
+            ScalarArray : [uint] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
 
             UnionVector : [Any] ({MetadataKeys.VectorKind}:""IList"");
-            UnionArray : [Any] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
+            UnionArray : [Any] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
         }}
 
         table InnerTable

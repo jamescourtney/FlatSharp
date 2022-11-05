@@ -62,11 +62,11 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         string expectedVariableName,
         string body)
     {
-        string ListBody(string variable)
+        string ListBody(string variable, string length)
         {
             return $@"
                 int i;
-                for (i = 0; i < {numberofItemsVariableName}; i = unchecked(i + 1))
+                for (i = 0; i < {length}; i = unchecked(i + 1))
                 {{
                     var {expectedVariableName} = {variable}[i];
                     {body}
@@ -78,20 +78,21 @@ public class ListVectorTypeModel : BaseVectorTypeModel
             return $@"
                 if ({vectorVariableName} is {typeModel.GetCompilableTypeName()}[] array)
                 {{
-                    {ArrayVectorTypeModel.CreateLoopStatic(options, "array", "current", body)}
+                    int length = array.Length;
+                    {ListBody("array", "array.Length")}
                 }}
                 else if ({vectorVariableName} is List<{typeModel.GetCompilableTypeName()}> realList)
                 {{
-                    {ListBody("realList")}
+                    {ListBody("realList", "realList.Count")}
                 }}
                 else
                 {{
-                    {ListBody(vectorVariableName)}
+                    {ListBody(vectorVariableName, numberofItemsVariableName)}
                 }}";
         }
         else
         {
-            return ListBody(vectorVariableName);
+            return ListBody(vectorVariableName, numberofItemsVariableName);
         }
     }
 

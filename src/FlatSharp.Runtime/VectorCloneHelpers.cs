@@ -145,60 +145,6 @@ public static class VectorCloneHelpers
     }
 
     [return: NotNullIfNotNull("source")]
-    public static T[]? Clone<T>(T[]? source)
-        where T : struct
-    {
-        if (source is null)
-        {
-            return null;
-        }
-
-        int count = source.Length;
-        T[] clone = new T[count];
-
-        source.CopyTo(clone, 0);
-        return clone;
-    }
-
-    [return: NotNullIfNotNull("source")]
-    public static T[]? CloneVectorOfUnion<T>(T[]? source, CloneCallback<T> cloneItem)
-        where T : struct, IFlatBufferUnion
-    {
-        if (source is null)
-        {
-            return null;
-        }
-
-        int count = source.Length;
-        T[] clone = new T[count];
-        for (int i = 0; i < count; ++i)
-        {
-            clone[i] = cloneItem(source[i]);
-        }
-
-        return clone;
-    }
-
-    [return: NotNullIfNotNull("source")]
-    public static T[]? Clone<T>(T[]? source, CloneCallback<T> cloneItem)
-        where T : class
-    {
-        if (source is null)
-        {
-            return null;
-        }
-
-        int count = source.Length;
-        T[] clone = new T[count];
-        for (int i = 0; i < count; ++i)
-        {
-            clone[i] = cloneItem(source[i]);
-        }
-
-        return clone;
-    }
-
-    [return: NotNullIfNotNull("source")]
     public static IIndexedVector<TKey, TValue>? Clone<TKey, TValue>(IIndexedVector<TKey, TValue>? source, Func<TValue, TValue> cloneItem)
         where TKey : notnull
         where TValue : class, ISortableTable<TKey>

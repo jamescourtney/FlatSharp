@@ -90,7 +90,7 @@ public class DepthLimitTests
             namespace Foo.Bar;
             table A {{ Next : B; }}
             table B {{ Next : C; }}
-            table C {{ Next : [A] (fs_vector:""Array""); }}
+            table C {{ Next : [A] (fs_vector:""IReadOnlyList""); }}
         ";
 
         CompileAndVerify(fbs, "Foo.Bar.A", true);
