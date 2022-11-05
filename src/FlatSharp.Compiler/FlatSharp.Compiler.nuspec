@@ -18,6 +18,5 @@
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
     <file src="$OutDir$\net6.0\**" target="tools/net6.0" />
-	<file src="$OutDir$\net7.0\**" target="tools/net7.0" />
   </files>
 </package>
