@@ -54,9 +54,11 @@ namespace Samples.DeserializationModes;
 /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns. Objectively,
 /// all of these configurations are quite fast.
 /// </remarks>
-public class DeserializationModes
+public class DeserializationModes : IFlatSharpSample
 {
-    public static void Run()
+    public bool HasConsoleOutput => false;
+
+    public void Run()
     {
         Person person = new Person
         {

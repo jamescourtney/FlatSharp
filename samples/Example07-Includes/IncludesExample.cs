@@ -22,9 +22,9 @@ namespace Samples.IncludesExample;
 /// We can create a complete serializer package and gRPC service just from the declarations in IncludesExample.cs.
 /// There is no code sample here -- just FBS files.
 /// </summary>
-public class IncludesExample
+public class IncludesExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
     }
 }

@@ -32,9 +32,9 @@ namespace Samples.ValueStructs;
 /// 
 /// The Struct Vectors sample has examples of using struct vectors with value-type structs.
 /// </summary>
-public class ValueStructsSample
+public class ValueStructsSample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         Path path = new Path()
         {

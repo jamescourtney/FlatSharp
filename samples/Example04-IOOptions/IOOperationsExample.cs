@@ -19,9 +19,9 @@ namespace Samples.IOOptionsExample;
 /// <summary>
 /// This sample shows some different IO Options when using FlatSharp.
 /// </summary>
-public class IOOperationsExample
+public class IOOperationsExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         Dog tony = new Dog
         {

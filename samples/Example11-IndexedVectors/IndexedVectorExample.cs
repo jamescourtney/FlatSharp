@@ -36,9 +36,9 @@ namespace Samples.IndexedVectors;
 /// 
 /// Indexed Vectors have all of the limitations of sorted vectors (only strings and scalars supported as keys).
 /// </summary>
-public class IndexedVectorsExample
+public class IndexedVectorsExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         IndexedVectorTable table = new IndexedVectorTable
         {

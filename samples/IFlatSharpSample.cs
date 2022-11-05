@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-namespace Samples.Vectors;
+namespace Samples;
 
-public class DeserializationModes
+public interface IFlatSharpSample
 {
-    public static void Run()
-    {
-        LotsOfLists table = new()
-        {
-            ArrayVectorOfInt = new[] { 1, 2, 3, 4 };
-        };
-    }
+    public bool HasConsoleOutput => true;
 
+    void Run();
 }

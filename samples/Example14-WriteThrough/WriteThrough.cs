@@ -36,9 +36,9 @@ namespace Samples.WriteThrough;
 /// - The containing table field is required and enabled for write through.
 /// - The containing vector field is enabled for write through.
 /// </summary>
-public class WriteThroughSample
+public class WriteThroughSample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         ReferenceStructWriteThrough();
         ValueStructWriteThrough();

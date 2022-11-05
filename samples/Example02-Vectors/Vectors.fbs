@@ -18,23 +18,45 @@
 
 attribute "fs_vector";
 attribute "fs_serializer";
+attribute "fs_setter";
+attribute "fs_sortedVector";
 
 namespace Samples.Vectors;
 
-table LotsOfLists
+// FlatSharp supports lots of different options for using Vectors.
+// One type of vector that is not included here is the FlatSharp Indexed Vector, which
+// has its own sample later.
+
+union Animal { Eagle, Dog, Fish }
+
+table Eagle { wingspan_cm : int; age: int; }
+table Dog { name : string; favorite_food: string; }
+table Fish { flipper_count: int; }
+
+table LotsOfLists (fs_serializer:"Progressive")
 {
     // Vectors are IList<T> by default. You can make this explicity with fs_vector:"IList"
     list_vector_of_string : [ string ]; 
 
     // They can also be IReadOnlyList.
-    read_only_list_vector_of_string : [ string ] (fs_vector:"IReadOnlyList");
+    read_only_list_vector_of_string : [ int ] (fs_vector:"IReadOnlyList");
 
-    // ...Or Arrays (though you probably shouldn't do this.)
-    array_vector_of_int : [ int ] (fs_vector:"Array");
+    // They can also be sorted:
+    // Sorted Vectors may only be tables and must have a 'key' element.
+    sorted_list_of_table: [ KeyValuePair ] (fs_sortedVector);
 
-    // Or even Memory<byte>
-    vector_of_ubyte : [ ubyte ] (fs_vector:"Memory");
+    // Unions can also be in vectors!
+    list_of_union: [ Animal ];
 
-    // And finally ReadOnlyMemory<byte>
+    // UByte vectors default to being Memory<byte>
+    vector_of_ubyte : [ ubyte ];
+
+    // They can also be ReadOnlyMemory.
     read_only_vector_of_ubyte : [ ubyte ] (fs_vector:"ReadOnlyMemory");
+}
+
+table KeyValuePair
+{
+    key : string (key, required);
+    value : string;
 }

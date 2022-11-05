@@ -22,9 +22,9 @@ namespace Samples.Unions;
 /// 
 /// FlatSharp suppo
 /// </summary>
-public class UnionsExample
+public class UnionsExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         Cat simon = new Cat { Breed = CatBreed.Bengal, Name = "Simon" };
         Dog george = new Dog { Breed = DogBreed.Corgi, Name = "George" };

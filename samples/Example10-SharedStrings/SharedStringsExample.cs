@@ -23,9 +23,9 @@ namespace Samples.SharedStrings;
 /// we define a collection of rows where each value is a (Key, Value) pair. We use string deduplication
 /// to share the column names so that we don't serialize the column name for each cell.
 /// </summary>
-public class SharedStringsExample
+public class SharedStringsExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         // Create a matrix of 10000 rows.
         Matrix matrix = new Matrix()

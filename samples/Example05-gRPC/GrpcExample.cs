@@ -23,9 +23,9 @@ namespace Samples.GrpcExample;
 /// <summary>
 /// This sample shows the implementation and usage of a simple FlatBuffers gRPC service.
 /// </summary>
-public class GrpcExample
+public class GrpcExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         {
             // The echo service often returns back the same item that it received. We should configure it to enable shared strings

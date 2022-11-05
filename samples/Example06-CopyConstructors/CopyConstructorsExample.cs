@@ -19,9 +19,9 @@ namespace Samples.CopyConstructorsExample;
 /// <summary>
 /// This sample shows the use cases for FlatSharp's auto-generated copy constructors.
 /// </summary>
-public class CopyConstructorsExample
+public class CopyConstructorsExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         FooBarContainer container = new FooBarContainer
         {

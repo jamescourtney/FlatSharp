@@ -23,9 +23,9 @@ namespace Samples.SortedVectors;
 /// specified. This example uses C# Attributes to define everything, but there is an equivalent example in this 
 /// directory using an FBS file.
 /// </summary>
-public class SortedVectorsExample
+public class SortedVectorsExample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         UserList userList = new UserList
         {

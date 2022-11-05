@@ -20,17 +20,36 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        Basics.Basics.Run();
-        DeserializationModes.DeserializationModes.Run();
-        GrpcExample.GrpcExample.Run();
-        CopyConstructorsExample.CopyConstructorsExample.Run();
-        IncludesExample.IncludesExample.Run();
-        SortedVectors.SortedVectorsExample.Run();
-        Unions.UnionsExample.Run();
-        SharedStrings.SharedStringsExample.Run();
-        IndexedVectors.IndexedVectorsExample.Run();
-        StructVectors.StructVectorsSample.Run();
-        WriteThrough.WriteThroughSample.Run();
-        ValueStructs.ValueStructsSample.Run();
+        List<IFlatSharpSample> samples = new()
+        {
+            new Basics.Basics(),
+            new DeserializationModes.DeserializationModes(),
+            new GrpcExample.GrpcExample(),
+            new CopyConstructorsExample.CopyConstructorsExample(),
+            new IncludesExample.IncludesExample(),
+            new SortedVectors.SortedVectorsExample(),
+            new Unions.UnionsExample(),
+            new SharedStrings.SharedStringsExample(),
+            new IndexedVectors.IndexedVectorsExample(),
+            new StructVectors.StructVectorsSample(),
+            new WriteThrough.WriteThroughSample(),
+            new ValueStructs.ValueStructsSample(),
+        };
+
+        foreach (var sample in samples)
+        {
+            if (sample.HasConsoleOutput)
+            {
+                Console.WriteLine($"Beginning Sample: {sample.GetType().Name}:");
+
+                sample.Run();
+
+                Console.WriteLine($"Done with Sample: {sample.GetType().Name}");
+            }
+            else
+            {
+                sample.Run();
+            }
+        }
     }
 }

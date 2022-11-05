@@ -40,9 +40,9 @@ namespace Samples.StructVectors;
 /// and value (struct-based) flatbuffer structs. For more information on value-type structs,
 /// see Example15-ValueStructs.
 /// </summary>
-public class StructVectorsSample
+public class StructVectorsSample : IFlatSharpSample
 {
-    public static void Run()
+    public void Run()
     {
         Transaction transaction = new()
         {
