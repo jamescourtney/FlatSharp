@@ -99,28 +99,13 @@
             <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
         </PropertyGroup>
 
-        <!-- Query the installed SDKs. -->
-        <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="true">
-            <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
-        </Exec>
-
-        <!-- try .net6.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
+        <PropertyGroup>
             <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
-        </PropertyGroup>
-
-        <!-- try .net7.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net7.0\FlatSharp.Compiler.dll'))</CompilerPath>
         </PropertyGroup>
 
         <PropertyGroup Condition=" '$(FlatSharpCompilerPath)' != '' ">
             <CompilerPath>$(FlatSharpCompilerPath)</CompilerPath>
         </PropertyGroup>
-
-        <Error
-            Condition=" '$(CompilerPath)' == '' "
-            Text="FlatSharp.Compiler requires .NET 6.0 or .NET 7.0 to be installed and available on the PATH." />
 
         <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
             <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
