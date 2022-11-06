@@ -24,7 +24,10 @@ namespace Samples.IncludesExample;
 /// </summary>
 public class IncludesExample : IFlatSharpSample
 {
+    public bool HasConsoleOutput => false;
+    
     public void Run()
     {
+        // No code here. Take a look at the FBS file!
     }
 }

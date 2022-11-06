@@ -21,6 +21,8 @@ namespace Samples.IOOptionsExample;
 /// </summary>
 public class IOOperationsExample : IFlatSharpSample
 {
+    public bool HasConsoleOutput => false;
+
     public void Run()
     {
         Dog tony = new Dog
@@ -58,19 +60,24 @@ public class IOOperationsExample : IFlatSharpSample
 
         // ISpanWriter is the core code that writes data to a span. Flatsharp provides one: SpanWriter
         // However, you can always implement ISpanWriter yourself.
-        SpanWriter spanWriter = default(SpanWriter);
+        SpanWriter spanWriter = new SpanWriter();
 
+        // Allocate a new buffer that can hold this person.
         byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
 
+        // Write the person into the buffer using the given spanwriter.
         int bytesWritten = Person.Serializer.Write(spanWriter, buffer, person);
 
         // For reading data, we use InputBuffer. There are more options here:
+        // - ArrayInputBuffer for regular arrays
+        // - ArraySegmentInputBuffer for ArraySegment<byte>
+        // - MemoryInputBuffer for Memory<byte>
+        // - ReadOnlyMemoryInputBuffer for ReadOnlyMemory<byte>. This one won't work for WriteThrough
+        //   or objects that have a Memory<byte> vector in them.
 
-        // Array and Memory input buffers are general purpose and support all scenarios.
         var p1 = Person.Serializer.Parse(new ArrayInputBuffer(buffer));
-        var p2 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
-
-        // ReadOnlyMemory input buffer will fail to Parse any objects that have Memory<T> in them (that is -- non read only memory).
-        var p3 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
+        var p2 = Person.Serializer.Parse(new ArraySegmentInputBuffer(new ArraySegment<byte>(buffer)));
+        var p3 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
+        var p4 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
     }
 }

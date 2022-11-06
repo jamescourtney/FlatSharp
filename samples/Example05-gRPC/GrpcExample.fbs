@@ -27,7 +27,7 @@ table SingleMessage (fs_serializer:"Lazy")
 
 table MultiMessage (fs_serializer:"Lazy")
 {
-    Message : [string] (fs_sharedString, required);
+    Message : [ string ] (fs_sharedString, required);
 }
 
 // Specify the fs_rpcInterface attribute to generate an interface for this service.

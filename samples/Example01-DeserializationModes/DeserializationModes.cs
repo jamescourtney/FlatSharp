@@ -91,39 +91,30 @@ public class DeserializationModes : IFlatSharpSample
         // Lazy deserialization reads objects from vectors each time you ask for them.
         Fruit index0_1 = parsed.FavoriteFruits![0];
         Fruit index0_2 = parsed.FavoriteFruits[0];
-        Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
+
+        Assert.SameObject(
+            index0_1,
+            index0_2,
+            "A different instance is returned each time from lazy vectors");
 
         // Lazy mode is immutable. Writes will never succeed unless using write through.
-        try
-        {
-            parsed.Name = "Bob";
-            Debug.Assert(false); // the above will throw.
-        }
-        catch (NotMutableException)
-        {
-        }
+        Assert.Throws<NotMutableException>(() => parsed.Name = "bob");
 
         // Properties from tables and reference structs are different instances each time. Lazy consults the
         // buffer each time.
         string? name = parsed.Name;
         string? name2 = parsed.Name;
 
-        Debug.Assert(
-            !object.ReferenceEquals(name, name2),
+        Assert.NotSameObject(
+            name,
+            name2,
             "When reading table/struct properties Lazy parsing returns a different instance each time.");
-
+       
         // Invalidate the whole buffer. Undefined behavior past here!
         buffer.AsSpan().Fill(0);
 
-        try
-        {
-            var whoKnows = parsed.FavoriteFruits[1];
-            Debug.Assert(false);
-        }
-        catch
-        {
-            // This can be any sort of exception. This behavior is undefined.
-        }
+        // This can be any sort of exception. This behavior is undefined.
+        Assert.Throws<Exception>(() => { var x = parsed.FavoriteFruits[1]; });
     }
 
     /// <summary>
@@ -136,43 +127,35 @@ public class DeserializationModes : IFlatSharpSample
         Person.Serializer.Write(buffer, person);
         Person parsed = Person.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
 
-        try
-        {
-            parsed.Name = "Bob";
-            Debug.Assert(false); // the above will throw.
-        }
-        catch (NotMutableException)
-        {
-            // Progressive mode is immutable. Writes will never succeed, unless using writethrough.
-        }
+        // Progressive mode is immutable. Writes will never succeed, unless using writethrough.
+        Assert.Throws<NotMutableException>(() => parsed.Name = "Bob");
 
         // Properties from tables and structs are cached after they are read.
         string? name = parsed.Name;
         string? name2 = parsed.Name;
 
-        Debug.Assert(
-            object.ReferenceEquals(name, name2),
+        Assert.SameObject(
+            name, 
+            name2,
             "When reading table/struct properties, Progressive mode returns the same instance.");
 
-        // PropertyCache deserialization doesn't cache the results of vector lookups.
+        // PropertyCache caches the results of vector lookups.
         Fruit index0_1 = parsed.FavoriteFruits![0];
         Fruit index0_2 = parsed.FavoriteFruits[0];
 
-        Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "The same instance is also returned from vectors.");
+        Assert.SameObject(
+            index0_1,
+            index0_2,
+            "The same instance is also returned from vectors.");
 
         // Invalidate the whole buffer. Undefined behavior past here!
         buffer.AsSpan().Fill(0);
 
-        try
-        {
-            var whoKnows = parsed.FavoriteFruits[1]; // we haven't accessed element 1 before, so this will lead to issues since Progressive still reads
-                                                     // from the underlying buffer for things it hasn't read before.
-            Debug.Assert(false);
-        }
-        catch
-        {
-            // This can be any sort of exception. This behavior is undefined.
-        }
+        // we haven't accessed element 1 before, so this will lead to issues since Progressive still reads
+        // from the underlying buffer for things it hasn't read before.
+        // Since the buffer has been invalidated, this can be any sort of exception.
+        // This behavior is undefined.
+        Assert.Throws<Exception>(() => { var x = parsed.FavoriteFruits[1]; });
     }
 
     /// <summary>
@@ -192,29 +175,19 @@ public class DeserializationModes : IFlatSharpSample
 
         Fruit index0_1 = parsed.FavoriteFruits![0];
         Fruit index0_2 = parsed.FavoriteFruits[0];
-        Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "Greedy deserialization returns you the same instance each time");
+
+        Assert.SameObject(
+            index0_1,
+            index0_2,
+            "Greedy deserialization should return the same instance each time");
 
         // We cleared the data, but can still read the name. Greedy deserialization is easy!
         string? name = parsed.Name;
 
-        // By default, Flatsharp will not allow mutations to properties. You can learn more about this in the mutable example below.
-        try
-        {
-            parsed.Name = "George Washington";
-            Debug.Assert(false);
-        }
-        catch (NotMutableException)
-        {
-        }
-
-        try
-        {
-            parsed.FavoriteFruits.Clear();
-            Debug.Assert(false);
-        }
-        catch (NotSupportedException)
-        {
-        }
+        // By default, Flatsharp will not allow mutations to properties.
+        // You can learn more about this in the mutable example below.
+        Assert.Throws<NotMutableException>(() => parsed.Name = "George Washington");
+        Assert.Throws<NotMutableException>(() => parsed.FavoriteFruits.Clear());
     }
 
     /// <summary>
@@ -240,7 +213,7 @@ public class DeserializationModes : IFlatSharpSample
         byte[] hash2 = sha.ComputeHash(buffer);
 
         // They are the same -- greedy and greedymutable don't store a reference to the buffer.
-        Debug.Assert(
+        Assert.True(
             hash.AsSpan().SequenceEqual(hash2),
             "Changes to the deserialized objects are not written back to the buffer. You'll need to re-serialize it to a new buffer for that.");
     }

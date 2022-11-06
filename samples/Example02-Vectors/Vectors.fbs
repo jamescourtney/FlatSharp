@@ -18,45 +18,43 @@
 
 attribute "fs_vector";
 attribute "fs_serializer";
-attribute "fs_setter";
-attribute "fs_sortedVector";
 
 namespace Samples.Vectors;
 
-// FlatSharp supports lots of different options for using Vectors.
-// One type of vector that is not included here is the FlatSharp Indexed Vector, which
-// has its own sample later.
+// Vectors (or, Lists in C# terminology) are indexed-based collections
+// of items sequentially laid out in the underlying buffer.
+// Vectors can be:
+// - primitives
+// - strings
+// - enums
+// - tables
+// - structs
+// - unions
 
-union Animal { Eagle, Dog, Fish }
+// There are a few Vector topics that get their own samples that aren't covered here:
+// Indexed Vectors (key/value lookups)
+// Sorted Vectors and Binary Search
+// Write Through Vectors (update the underlying buffer in-place)
 
-table Eagle { wingspan_cm : int; age: int; }
-table Dog { name : string; favorite_food: string; }
-table Fish { flipper_count: int; }
+struct SimpleStruct { A : int; B : float; }
+table SimpleTable { A : int; InnerVector : [ string ]; }
 
-table LotsOfLists (fs_serializer:"Progressive")
+union SimpleUnion { SimpleStruct, SimpleTable }
+
+table LotsOfLists (fs_serializer)
 {
     // Vectors are IList<T> by default. You can make this explicity with fs_vector:"IList"
-    list_vector_of_string : [ string ]; 
+    list_vector_of_table : [ SimpleTable ]; 
 
     // They can also be IReadOnlyList.
-    read_only_list_vector_of_string : [ int ] (fs_vector:"IReadOnlyList");
+    read_only_list_vector_of_struct : [ SimpleStruct ] (fs_vector:"IReadOnlyList");
 
-    // They can also be sorted:
-    // Sorted Vectors may only be tables and must have a 'key' element.
-    sorted_list_of_table: [ KeyValuePair ] (fs_sortedVector);
+    // Or even unions!
+    list_vector_of_union : [ SimpleUnion ];
 
-    // Unions can also be in vectors!
-    list_of_union: [ Animal ];
-
-    // UByte vectors default to being Memory<byte>
+    // Or even Memory<byte>
     vector_of_ubyte : [ ubyte ];
 
-    // They can also be ReadOnlyMemory.
+    // And finally ReadOnlyMemory<byte>
     read_only_vector_of_ubyte : [ ubyte ] (fs_vector:"ReadOnlyMemory");
-}
-
-table KeyValuePair
-{
-    key : string (key, required);
-    value : string;
 }

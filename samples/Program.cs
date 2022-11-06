@@ -24,6 +24,7 @@ public static class Program
         {
             new Basics.Basics(),
             new DeserializationModes.DeserializationModes(),
+            new Vectors.VectorsSample(),
             new GrpcExample.GrpcExample(),
             new CopyConstructorsExample.CopyConstructorsExample(),
             new IncludesExample.IncludesExample(),
@@ -40,11 +41,15 @@ public static class Program
         {
             if (sample.HasConsoleOutput)
             {
+                Console.WriteLine();
                 Console.WriteLine($"Beginning Sample: {sample.GetType().Name}:");
+                Console.WriteLine();
 
                 sample.Run();
 
+                Console.WriteLine();
                 Console.WriteLine($"Done with Sample: {sample.GetType().Name}");
+                Console.WriteLine();
             }
             else
             {

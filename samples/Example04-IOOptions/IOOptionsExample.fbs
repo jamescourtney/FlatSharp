@@ -25,28 +25,28 @@ enum CatBreed : ubyte { Persian, Calico, GrumpyCat }
 union FavoritePet { Dog, Cat }
 
 table Dog {
-	Breed:DogBreed;
-	Vitals:AnimalVitals;
+    Breed:DogBreed;
+    Vitals:AnimalVitals;
 }
 
 table Cat {
-	Breed:CatBreed;
-	Vitals:AnimalVitals;
+    Breed:CatBreed;
+    Vitals:AnimalVitals;
 }
 
 table AnimalVitals {
-	Gender:Gender;
-	Age:short;
-	Name:string;
+    Gender:Gender;
+    Age:short;
+    Name:string;
 }
 
 table Person (fs_serializer) {
-	Name:string;
-	Age:int;
+    Name:string;
+    Age:int;
 
-	FavoritePet:FavoritePet;
-	Cats:[Cat];
-	Dogs:[Dog];
+    FavoritePet:FavoritePet;
+    Cats:[Cat];
+    Dogs:[Dog];
 
-	Signature:[ubyte] (fs_vector:"ReadOnlyMemory");
+    Signature:[ubyte] (fs_vector:"ReadOnlyMemory");
 }

@@ -27,29 +27,29 @@ public class SharedStringsExample : IFlatSharpSample
 {
     public void Run()
     {
-        // Create a matrix of 10000 rows.
-        Matrix matrix = new Matrix()
+        // Create a Database of 10000 rows.
+        Database Database = new Database()
         {
             Rows = Enumerable.Range(0, 10000).Select(CreateRow).ToArray(),
         };
 
         // Shared strings are enabled by default.
-        ISerializer<Matrix> defaultSerializer = Matrix.Serializer;
+        ISerializer<Database> defaultSerializer = Database.Serializer;
 
         // We can create a new serializer based on the current one with shared strings turned off.
         // These factory delegates configure the writer.
-        ISerializer<Matrix> noSharedStringsSerializer = Matrix.Serializer.WithSettings(s => s.DisableSharedStrings());
+        ISerializer<Database> noSharedStringsSerializer = Database.Serializer.WithSettings(s => s.DisableSharedStrings());
 
         // We can also create our own shared string providers (defined at the bottom of this file).
-        ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(s => s.UseSharedStringWriter(() => new PerfectSharedStringWriter()));
+        ISerializer<Database> customSharedStringSerializer = Database.Serializer.WithSettings(s => s.UseSharedStringWriter(() => new PerfectSharedStringWriter()));
 
-        byte[] unsharedBuffer = new byte[noSharedStringsSerializer.GetMaxSize(matrix)];
-        byte[] sharedBuffer = new byte[defaultSerializer.GetMaxSize(matrix)];
-        byte[] customBuffer = new byte[customSharedStringSerializer.GetMaxSize(matrix)];
+        byte[] unsharedBuffer = new byte[noSharedStringsSerializer.GetMaxSize(Database)];
+        byte[] sharedBuffer = new byte[defaultSerializer.GetMaxSize(Database)];
+        byte[] customBuffer = new byte[customSharedStringSerializer.GetMaxSize(Database)];
 
-        int unsharedBytesWritten = noSharedStringsSerializer.Write(unsharedBuffer, matrix);
-        int defaultSharedBytesWritten = defaultSerializer.Write(sharedBuffer, matrix);
-        int customSharedBytesWritten = customSharedStringSerializer.Write(customBuffer, matrix);
+        int unsharedBytesWritten = noSharedStringsSerializer.Write(unsharedBuffer, Database);
+        int defaultSharedBytesWritten = defaultSerializer.Write(sharedBuffer, Database);
+        int customSharedBytesWritten = customSharedStringSerializer.Write(customBuffer, Database);
 
         Console.WriteLine($"Serialized size without shared strings: {unsharedBytesWritten}");
 
@@ -66,11 +66,11 @@ public class SharedStringsExample : IFlatSharpSample
     {
         return new Row()
         {
-            Values = new Cell[]
+            Values = new Column[]
             {
-                new Cell { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
-                new Cell { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
-                new Cell { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
+                new Column { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
+                new Column { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
+                new Column { ColumnName = "Column" + (row++ % 500), Value = Guid.NewGuid().ToString() },
             }
         };
     }

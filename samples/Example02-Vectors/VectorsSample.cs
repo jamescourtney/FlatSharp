@@ -18,50 +18,178 @@ namespace Samples.Vectors;
 
 public class VectorsSample : IFlatSharpSample
 {
+    public bool HasConsoleOutput => false;
+
     public void Run()
     {
-        LotsOfLists lists = new()
+        LotsOfLists table = new()
         {
-            // IList<string>
-            ListVectorOfString = new List<string>
+            // IList<T>. You can use anything implementing IList, even arrays!
+            // This vector contains other tables. Those tables contain a vector themselves.
+            ListVectorOfTable = new[]
             {
-                "Pig",
-                "Cow",
-                "Goat",
+                new SimpleTable { A = 0, InnerVector = new[] { "A", "B", "C" } },
+                new SimpleTable { A = 1, InnerVector = new[] { "D", "E", "F" } },
             },
 
-            // IReadOnlyList<int>
-            ReadOnlyListVectorOfString = new int[1] { 42 },
-
-            // IList<Animal>
-            ListOfUnion = new List<Animal>
+            // Vectors can also contain unions. Vectors of unions
+            // are a newer FlatBuffers feature.
+            ListVectorOfUnion = new List<SimpleUnion>()
             {
-                new Animal(new Eagle { Age = 12, WingspanCm = 157 }),
-                new Animal(new Dog { Name = "Rocket" }),
-                new Animal(new Fish { FlipperCount = 4 })
+                new SimpleUnion(new SimpleTable { A = 2, InnerVector = new[] { "G", "H", "I", } }),
+                new SimpleUnion(new SimpleStruct { A = 3, B = 3.14f, }),
             },
 
-            // Memory<byte>?
-            VectorOfUbyte = Guid.NewGuid().ToByteArray().AsMemory(),
-
-            // ReadOnlyMemory<byte>?
-            ReadOnlyVectorOfUbyte = Guid.NewGuid().ToByteArray().AsMemory(),
-
-            // IList<KeyValuePair>
-            // Sorted vectors are sorted when the buffer is serialized. There is no need to sort them yourself.
-            // Sorted vectors are sorted by their key and can be binary searched after deserializing.
-            SortedListOfTable = new KeyValuePair[]
+            // This vector is IReadOnlyList<T>.
+            ReadOnlyListVectorOfStruct = new[]
             {
-                new() { Key = "Pig", Value = "Wilbur" },
-                new() { Key = "Deer", Value = "Bambi" },
-                new() { Key = "Lion", Value = "Simba" },
-                new() { Key = "Snowman", Value = "Olaf" },
+                new SimpleStruct { A = 4, B = (float)Math.E },
             },
+
+            /// Memory<byte>. Memory<byte> Vectors are special because when you use lazy
+            /// or progressive parsing, they reference a literal chunk of the underlying
+            /// <see cref="IInputBuffer"/>.
+            VectorOfUbyte = new byte[] { 1, 2, 3, 4, 5, },
+
+            /// ReadOnlyMemory<byte> is also supported if you want to prevent
+            /// changes to the underlying <see cref="IInputBuffer"/>.
+            ReadOnlyVectorOfUbyte = new byte[] { 6, 7, 8, 9, 10 },
         };
 
-        byte[] buffer = new byte[LotsOfLists.Serializer.GetMaxSize(lists)];
-        int bytesWritten = LotsOfLists.Serializer.Write(buffer, lists);
+        Memory<byte> buffer = new byte[LotsOfLists.Serializer.GetMaxSize(table)];
+        int bytesWritten = LotsOfLists.Serializer.Write(buffer, table);
 
-        LotsOfLists parsedValue = LotsOfLists.Serializer.Parse(buffer);
+        // Trim the buffer before we try parsing.
+        buffer = buffer[..bytesWritten];
+
+        this.UseLazy(buffer);
+        this.UseProgressive(buffer);
+        this.UseGreedy(buffer);
+        this.UseGreedyMutable(buffer);
     }
+
+    private void UseLazy(Memory<byte> serialized)
+    {
+        // Parse the buffer lazily
+        LotsOfLists lazyParsed = LotsOfLists.Serializer.Parse(serialized, FlatBufferDeserializationOption.Lazy);
+
+        {
+            IList<SimpleTable>? vectorOfTable = lazyParsed.ListVectorOfTable;
+            Debug.Assert(vectorOfTable is not null);
+
+            Type actualType = vectorOfTable.GetType();
+
+            /// Lazy Vectors are <see cref="FlatBufferVectorBase{T, TInputBuffer, TItemAccessor}" />.
+            Assert.True(
+                actualType.GetGenericTypeDefinition() == typeof(FlatSharp.Internal.FlatBufferVectorBase<,,>),
+                "LazyVectors are of type FlatBufferVectorBase<>");
+
+            // Lazy Vectors return a different instance each time:
+            SimpleTable? first = vectorOfTable[0];
+            SimpleTable? second = vectorOfTable[0];
+            Assert.NotSameObject(first, second, "Lazy vectors return a different object each time.");
+        }
+
+        {
+            Memory<byte> vectorOfByte = lazyParsed.VectorOfUbyte!.Value;
+
+            // The vector overlaps the original memory. No copies are made.
+            Assert.True(vectorOfByte.Span.Overlaps(serialized.Span), "The parsed memory vector overlaps the original data.");
+        }
+    }
+
+    private void UseProgressive(Memory<byte> serialized)
+    {
+        // Parse the buffer using progressive mode
+        LotsOfLists progressiveParsed = LotsOfLists.Serializer.Parse(serialized, FlatBufferDeserializationOption.Progressive);
+
+        {
+            IList<SimpleTable>? vectorOfTable = progressiveParsed.ListVectorOfTable;
+            Debug.Assert(vectorOfTable is not null);
+
+            Type actualType = vectorOfTable.GetType();
+
+            /// Lazy Vectors are <see cref="FlatBufferProgressiveVector{T, TInputBuffer, TVectorItemAccessor}{T, TInputBuffer, TItemAccessor}" />.
+            Assert.True(
+                actualType.GetGenericTypeDefinition() == typeof(FlatSharp.Internal.FlatBufferProgressiveVector<,,>),
+                "Progressive Vectors are of type FlatBufferProgressiveVector<>");
+
+            // Progressive vectors return the same instance each time.
+            SimpleTable? first = vectorOfTable[0];
+            SimpleTable? second = vectorOfTable[0];
+            Assert.SameObject(first, second, "First and second are the same reference.");
+        }
+
+        {
+            Memory<byte> vectorOfByte = progressiveParsed.VectorOfUbyte!.Value;
+
+            // The vector overlaps the original memory. No copies are made.
+            Assert.True(
+                vectorOfByte.Span.Overlaps(serialized.Span),
+                "The parsed memory vector overlaps the original data.");
+        }
+    }
+
+    private void UseGreedy(Memory<byte> serialized)
+    {
+        // Parse the buffer greedily
+        LotsOfLists greedyParsed = LotsOfLists.Serializer.Parse(serialized, FlatBufferDeserializationOption.Greedy);
+
+        {
+            IList<SimpleTable>? vectorOfTable = greedyParsed.ListVectorOfTable!;
+
+            Type actualType = vectorOfTable.GetType();
+
+            /// Greedy Vectors are <see cref="ImmutableList{T}" />.
+            Assert.True(
+                actualType == typeof(FlatSharp.Internal.ImmutableList<SimpleTable>),
+                "Greedy vectors are implemented as ImmutableList.");
+
+            // Greedy Vectors return a different instance each time:
+            SimpleTable? first = vectorOfTable[0];
+            SimpleTable? second = vectorOfTable[0];
+            Assert.SameObject(first, second, "First and second are the same reference.");
+        }
+
+        {
+            Memory<byte> vectorOfByte = greedyParsed.VectorOfUbyte!.Value;
+
+            // The vector does not overlap the original memory, meaning a copy is made.
+            Assert.True(
+                !vectorOfByte.Span.Overlaps(serialized.Span),
+                "The memory vector does not overlap the original data.");
+        }
+    }
+
+    private void UseGreedyMutable(Memory<byte> serialized)
+    {
+        // Parse the buffer using GreedyMutable mode
+        LotsOfLists greedyParsed = LotsOfLists.Serializer.Parse(serialized, FlatBufferDeserializationOption.GreedyMutable);
+
+        {
+            IList<SimpleTable>? vectorOfTable = greedyParsed.ListVectorOfTable!;
+
+            Type actualType = vectorOfTable.GetType();
+
+            /// GreedyMutable Vectors are <see cref="List{T}" />.
+            Assert.True(
+                actualType == typeof(List<SimpleTable>),
+                "GreedyMutable vectors are regular lists");
+
+            // GreedyMutable Vectors return the same instance each time:
+            SimpleTable? first = vectorOfTable[0];
+            SimpleTable? second = vectorOfTable[0];
+            Assert.SameObject(first, second, "First and second are the same reference.");
+        }
+
+        {
+            Memory<byte> vectorOfByte = greedyParsed.VectorOfUbyte!.Value;
+
+            // The vector does not overlap the original memory, meaning a copy is made.
+            Assert.True(
+                !vectorOfByte.Span.Overlaps(serialized.Span),
+                "The memory vector does not overlap the original data.");
+        }
+    }
+
 }

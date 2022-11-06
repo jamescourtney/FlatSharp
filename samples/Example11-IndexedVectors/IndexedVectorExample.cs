@@ -54,23 +54,21 @@ public class IndexedVectorsExample : IFlatSharpSample
 
         // Indexed vectors look and act like dictionaries. The main difference
         // is that adding arbitrary keys is not supported.
-        Debug.Assert(table.Users.TryGetValue("5", out var bird));
-        Debug.Assert(bird.Id == "5");
-        Debug.Assert(table.Users["5"].FirstName == "Deeandra");
+        Assert.True(table.Users.TryGetValue("5", out var bird), "Found the bird!");
+        Assert.True(bird.Id == "5", "The ID matches");
+        Assert.True(table.Users["5"].FirstName == "Deeandra", "We can also use an indexer.");
 
         byte[] data = new byte[1024];
         int bytesWritten = IndexedVectorTable.Serializer.Write(data, table);
 
         IndexedVectorTable parsedTable = IndexedVectorTable.Serializer.Parse(data);
 
-        Debug.Assert(parsedTable.Users is not null);
-
         // Performs binary search
-        Debug.Assert(parsedTable.Users.TryGetValue("2", out var dennis));
-        Debug.Assert(parsedTable.Users.TryGetValue("3", out var mac));
-        Debug.Assert(parsedTable.Users.TryGetValue("1", out var charlie));
-        Debug.Assert(parsedTable.Users.TryGetValue("5", out bird));
-        Debug.Assert(parsedTable.Users.TryGetValue("4", out var frank));
+        Assert.True(parsedTable.Users!.TryGetValue("2", out var dennis), "We can use an indexed vector like a dictionary");
+        Assert.True(parsedTable.Users.TryGetValue("3", out var mac), "We can use an indexed vector like a dictionary");
+        Assert.True(parsedTable.Users.TryGetValue("1", out var charlie), "We can use an indexed vector like a dictionary");
+        Assert.True(parsedTable.Users.TryGetValue("5", out bird), "We can use an indexed vector like a dictionary");
+        Assert.True(parsedTable.Users.TryGetValue("4", out var frank), "We can use an indexed vector like a dictionary");
     }
 }
 

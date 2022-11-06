@@ -36,4 +36,7 @@ table Person
 { 
     // A person can have one pet. Either a dog, cat, or fish.
     Pet : Pet;
+
+    // We can also store unions in a vector.
+    PreviousPets : [ Pet ];
 }

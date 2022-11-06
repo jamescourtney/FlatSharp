@@ -24,6 +24,8 @@ namespace Samples.Unions;
 /// </summary>
 public class UnionsExample : IFlatSharpSample
 {
+    public bool HasConsoleOutput => false;
+
     public void Run()
     {
         Cat simon = new Cat { Breed = CatBreed.Bengal, Name = "Simon" };
@@ -31,11 +33,12 @@ public class UnionsExample : IFlatSharpSample
         Fish brick = new Fish { Kind = FishKind.Puffer, Name = "Brick" };
 
         // A person can only have one pet. It can be a cat, dog, or fish.
-        // This person has a fish named brick. You could model a person with multiple
-        // pets as a vector of unions.
+        // This person has a dog named George. They've also known Simon the cat
+        // and Brick the fish
         Person person = new Person
         {
-            Pet = new Pet(brick)
+            Pet = new Pet(george),
+            PreviousPets = new[] { new Pet(simon), new Pet(brick) }
         };
 
         Pet pet = person.Pet.Value;
@@ -47,25 +50,15 @@ public class UnionsExample : IFlatSharpSample
             string? lowerName = dog.Name?.ToLowerInvariant();
         }
 
-        // We can also use .TryGet:
-        if (pet.TryGet(out Cat? cat))
-        {
-            // this was a cat.
-        }
+        Assert.True(!pet.TryGet(out Cat? cat), "This pet is a dog, so this method will return false");
 
-        // Accessing .Cat directly will throw because this is a Fish.
-        try
-        {
-            Console.WriteLine(pet.Cat.Name);
-            Debug.Assert(false);
-        }
-        catch (InvalidOperationException)
-        {
-        }
+        // Accessing .Cat directly will throw because this is a Dog.
+        Assert.Throws<InvalidOperationException>(() => Console.WriteLine(pet.Cat.Name));
 
         // Finally, each union can accept a visitor. Using structs as visitors
         // will allow you to benefit from devirtualization if performance is a concern.
         string? name = pet.Accept<PetNameVisitor, string?>(new PetNameVisitor());
+        Console.WriteLine($"Pet name: {name}");
     }
 
     // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish, string>

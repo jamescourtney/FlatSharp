@@ -41,7 +41,7 @@ public class SortedVectorsExample : IFlatSharpSample
         int bytesWritten = UserList.Serializer.Write(data, userList);
         UserList parsedList = UserList.Serializer.Parse(data);
 
-        Debug.Assert(parsedList.Users is not null);
+        Assert.True(parsedList.Users is not null, "");
 
         foreach (var u in parsedList.Users)
         {
@@ -52,7 +52,6 @@ public class SortedVectorsExample : IFlatSharpSample
         // since FlatBuffers uses a different string sorting algorithm than .NET does by default. If you must use
         // your own binary search, use FlatBufferStringComparer.
         User? user = parsedList.Users.BinarySearchByFlatBufferKey("234-56-7890");
-        Debug.Assert(user is not null);
-        Debug.Assert(user.LastName == "Bourne");
+        Assert.True(user?.LastName == "Bourne", "Binary search works!");
     }
 }
