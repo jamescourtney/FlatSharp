@@ -33,34 +33,34 @@ attribute "fs_valueStruct";
 
 table BloomFilter (fs_serializer:"Lazy", fs_defaultCtor:"None")
 {
-	Blocks : [Block] (required);
+    blocks : [ Block ] (required);
 }
 
 // We define a block as 128 bytes.
 struct Block
 {
     // For reference structs, write through happens within the struct.
-    Data : [ulong : 16]  (fs_writeThrough);
+    data : [ulong : 16]  (fs_writeThrough);
 }
 
 // Defines a path, which is a set of points.
 table Path (fs_serializer:"Progressive")
 {
     // For value structs, write through happens through the containing table field or vector.
-    Points : [ Point ] (fs_writeThrough);
+    points : [ Point ] (fs_writeThrough);
 
     // The number of items in the "points" vector.
-    NumPoints : MutableInt (fs_writeThrough, required);
+    num_points : MutableInt (fs_writeThrough, required);
 }
 
 struct MutableInt (fs_valueStruct)
 {
-    Value : int;
+    value : int;
 }
 
 struct Point (fs_valueStruct)
 {
-    X : float;
-    Y : float;
-    Z : float;
+    x : float;
+    y : float;
+    z : float;
 }

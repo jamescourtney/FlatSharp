@@ -26,9 +26,9 @@ table Transaction (fs_serializer) {
    sender : string;
    receiver : string;
 
-   hash_reference : Sha256_Reference;
-   hash_value : Sha256_Value;
-   hash_fast_value : Sha256_FastValue;
+   hash_reference : Sha256_Reference (required);
+   hash_value : Sha256_Value (required);
+   hash_fast_value : Sha256_FastValue (required);
 }
 
 // A reference (class-based) struct representing a SHA256 value.

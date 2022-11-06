@@ -42,7 +42,7 @@ public class ValueStructsSample : IFlatSharpSample
         };
 
         // Value type struct!
-        Debug.Assert(typeof(Point).IsValueType);
+        Assert.True(typeof(Point).IsValueType, "Point is definitely a value type");
 
         // Add some points to our path.
         for (int i = 0; i < 1000; ++i)
@@ -76,15 +76,15 @@ public class ValueStructsSample : IFlatSharpSample
         // Points[4] will not be read until that index is accessed.
         // This is one of the major differences between FlatSharp's value and reference type struct implementations.
         // If this were a reference type with virtual properties, X, Y, and Z would be deserialized individually
-        // instead of in bulk.
+        // instead of in bulk. This may be good or bad, depending on your use case (and the size of the struct).
         Path parsed = Path.Serializer.Parse(data);
 
-        Debug.Assert(parsed.Points is not null);
-        Debug.Assert(parsed.Points.Count == 1000);
+        Assert.True(parsed.Points!.Count == 1000, "The count is as expected");
     }
 
     private static void PrintPoint(IList<Point> points, int index)
     {
-        Console.WriteLine($"Points[{index}]: ({points[index].X}, {points[index].Y}, {points[index].Z})");
+        var point = points[index];
+        Console.WriteLine($"Points[{index}]: ({point.X}, {point.Y}, {point.Z})");
     }
 }

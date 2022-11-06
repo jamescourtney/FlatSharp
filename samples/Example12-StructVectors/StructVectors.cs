@@ -42,6 +42,8 @@ namespace Samples.StructVectors;
 /// </summary>
 public class StructVectorsSample : IFlatSharpSample
 {
+    public bool HasConsoleOutput => false;
+
     public void Run()
     {
         Transaction transaction = new()
@@ -53,16 +55,16 @@ public class StructVectorsSample : IFlatSharpSample
             HashReference = new Sha256_Reference(),
         };
 
-        byte[] hash;
+        byte[] originalHash;
         using (var sha256 = SHA256.Create())
         {
             byte[] data = new byte[1024];
             new Random().NextBytes(data);
 
-            hash = sha256.ComputeHash(data);
+            originalHash = sha256.ComputeHash(data);
 
             // Bulk-load the reference struct vector.
-            transaction.HashReference.Value.CopyFrom(hash.AsSpan());
+            transaction.HashReference.Value.CopyFrom(originalHash.AsSpan());
 
             // Create value-type structs to represent the same.
             // These two types have the same API and behave the same,
@@ -72,14 +74,14 @@ public class StructVectorsSample : IFlatSharpSample
             Sha256_FastValue sha256FastStruct = default;
             Sha256_Reference refStruct = new();
 
-            for (int i = 0; i < hash.Length; ++i)
+            for (int i = 0; i < originalHash.Length; ++i)
             {
-                Debug.Assert(i < sha256Struct.Value_Length);
-                Debug.Assert(i < sha256FastStruct.Value_Length);
+                Assert.True(i < sha256Struct.Value_Length, "i is in bounds.");
+                Assert.True(i < sha256FastStruct.Value_Length, "i is in bounds.");
 
                 // Value struct vectors supply an extension method that acts like an indexer.
-                sha256Struct.Value(i) = hash[i];
-                sha256FastStruct.Value(i) = hash[i];
+                sha256Struct.Value(i) = originalHash[i];
+                sha256FastStruct.Value(i) = originalHash[i];
             }
 
             // Assign these later due to value type semantics.
@@ -91,22 +93,18 @@ public class StructVectorsSample : IFlatSharpSample
         Transaction.Serializer.Write(serialized, transaction);
         var parsed = Transaction.Serializer.Parse(serialized);
 
-        Debug.Assert(parsed.HashReference is not null);
-        Debug.Assert(parsed.HashValue is not null);
-        Debug.Assert(parsed.HashFastValue is not null);
+        Assert.True(parsed.HashReference!.Value.Count == 32, "Sha256_reference has expected number of items");
+        Assert.True(parsed.HashValue.Value_Length == 32, "Sha256_Value has expected number of items");
+        Assert.True(parsed.HashFastValue.Value_Length == 32, "Sha256_FastValue has expected number of items");
 
-        Debug.Assert(parsed.HashReference.Value.Count == 32);
-        Debug.Assert(default(Sha256_Value).Value_Length == 32);
-        Debug.Assert(default(Sha256_FastValue).Value_Length == 32);
-
-        Sha256_Value valueStruct = parsed.HashValue.Value;
-        Sha256_FastValue fastValueStruct = parsed.HashFastValue.Value;
+        Sha256_Value valueStruct = parsed.HashValue;
+        Sha256_FastValue fastValueStruct = parsed.HashFastValue;
 
         for (int i = 0; i < 32; ++i)
         {
-            Debug.Assert(parsed.HashReference.Value[i] == hash[i]);
-            Debug.Assert(valueStruct.Value(i) == hash[i]);
-            Debug.Assert(fastValueStruct.Value(i) == hash[i]);
+            Assert.True(parsed.HashReference.Value[i] == originalHash[i], "Reference hash matches at index: " + i);
+            Assert.True(valueStruct.Value(i) == originalHash[i], "Value hash matches at index: " + i);
+            Assert.True(fastValueStruct.Value(i) == originalHash[i], "FastValue hash matches at index: " + i);
         }
     }
 }

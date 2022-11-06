@@ -61,14 +61,22 @@ public class IndexedVectorsExample : IFlatSharpSample
         byte[] data = new byte[1024];
         int bytesWritten = IndexedVectorTable.Serializer.Write(data, table);
 
-        IndexedVectorTable parsedTable = IndexedVectorTable.Serializer.Parse(data);
+        IndexedVectorTable parsedTable = IndexedVectorTable.Serializer.Parse(data, FlatBufferDeserializationOption.Lazy);
 
-        // Performs binary search
-        Assert.True(parsedTable.Users!.TryGetValue("2", out var dennis), "We can use an indexed vector like a dictionary");
-        Assert.True(parsedTable.Users.TryGetValue("3", out var mac), "We can use an indexed vector like a dictionary");
-        Assert.True(parsedTable.Users.TryGetValue("1", out var charlie), "We can use an indexed vector like a dictionary");
-        Assert.True(parsedTable.Users.TryGetValue("5", out bird), "We can use an indexed vector like a dictionary");
-        Assert.True(parsedTable.Users.TryGetValue("4", out var frank), "We can use an indexed vector like a dictionary");
+        // After parsing, the API of indexed vectors is the same, but the underlying class is different.
+        // Note that Progressive, Lazy, and Greedy will all parse IndexedVectors to different
+        // concrete types.
+        Assert.True(
+            parsedTable.Users.GetType().GetGenericTypeDefinition() == typeof(FlatSharp.Internal.FlatBufferIndexedVector<,,,>).GetGenericTypeDefinition(),
+            "Parsed indexed vectors have a different implementation");
+
+        foreach (string key in new[] { "1", "2", "3", "4", "5" })
+        {
+            // Performs binary search
+            Assert.True(
+                parsedTable.Users!.TryGetValue(key, out var person),
+                "We can use an indexed vector like a dictionary");
+        }
     }
 }
 

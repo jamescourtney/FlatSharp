@@ -15,14 +15,17 @@
  */
 
 using System.Buffers.Binary;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Samples.WriteThrough;
 
 /// <summary>
-/// Write Through allows you to make updates to an already-serialized FlatBuffer in-place without a full parse or re-serialize.
-/// This is extremely performant, especially for large buffers as it avoids copies and allows in-place updates.
+/// Write Through allows you to make updates to an already-serialized FlatBuffer in-place without a full 
+/// parse or re-serialize. This is extremely performant, especially for large buffers as it avoids 
+/// copies and allows in-place updates.
 /// 
 /// FlatSharp supports Write-Through in limited cases:
 /// 
@@ -33,8 +36,8 @@ namespace Samples.WriteThrough;
 /// 
 /// For value structs, Write-Through is supported when:
 /// - Serialization method is Progressive or Lazy.
-/// - The containing table field is required and enabled for write through.
-/// - The containing vector field is enabled for write through.
+/// - When in a table: The containing table field is required and enabled for write through.
+/// - When in a vector: The containing vector is enabled for write through.
 /// </summary>
 public class WriteThroughSample : IFlatSharpSample
 {
@@ -45,10 +48,13 @@ public class WriteThroughSample : IFlatSharpSample
     }
 
     /// <summary>
-    /// Write through using reference structs. In this case, we use a Bloom Filter.
+    /// Write through using reference structs. In this case, we use a Bloom Filter. Note that this can also be done
+    /// using value structs.
     /// </summary>
     public static void ReferenceStructWriteThrough()
     {
+        using SHA256 sha256 = SHA256.Create();
+
         byte[] rawData;
 
         {
@@ -57,7 +63,12 @@ public class WriteThroughSample : IFlatSharpSample
 
             // Write our bloom filter out to an array. It should be about 1MB in size.
             rawData = new byte[BloomFilter.Serializer.GetMaxSize(filter)];
+
+            // write our empty bloom filter into the rawData buffer.
             BloomFilter.Serializer.Write(rawData, filter);
+
+            byte[] sha = sha256.ComputeHash(rawData);
+            Console.WriteLine($"Original Hash: {Convert.ToBase64String(sha)}");
         }
 
         // This bloom filter will let us do in-place updates to the 'rawData' array,
@@ -74,23 +85,29 @@ public class WriteThroughSample : IFlatSharpSample
             string key = Guid.NewGuid().ToString();
             keysInFilter.Add(key);
 
-            Debug.Assert(!writeThroughFilter.MightContain(key), "Filter shouldn't contain any keys yet");
+            Assert.True(!writeThroughFilter.MightContain(key), "Filter shouldn't contain any keys yet");
             writeThroughFilter.Add(key);
-            Debug.Assert(writeThroughFilter.MightContain(key), "Filter should contain that key now.");
+            Assert.True(writeThroughFilter.MightContain(key), "Filter should contain that key now.");
         }
+
+        Console.WriteLine($"Final Hash: {Convert.ToBase64String(sha256.ComputeHash(rawData))}");
 
         // Let's prove the writethrough worked now. Let's re-parse the data and verify that our keys
         // are still there!
         writeThroughFilter = BloomFilter.Serializer.Parse(rawData);
         foreach (var key in keysInFilter)
         {
-            Debug.Assert(writeThroughFilter.MightContain(key), "Filter still contains the key! WriteThrough worked :)");
+            Assert.True(
+                writeThroughFilter.MightContain(key),
+                "Filter still contains the key! WriteThrough worked :)");
         }
 
         // For some fun, we can also test some keys that aren't in there.
         for (int i = 0; i < 1000; ++i)
         {
-            Debug.Assert(!writeThroughFilter.MightContain(Guid.NewGuid().ToString()));
+            Assert.True(
+                !writeThroughFilter.MightContain(Guid.NewGuid().ToString()),
+                "Filter doesn't contain what we don't expect.");
         }
     }
 
@@ -123,26 +140,26 @@ public class WriteThroughSample : IFlatSharpSample
             Path.Serializer.Write(data, path);
         }
 
-        Path parsed = Path.Serializer.Parse(data);
+        Path parsed = Path.Serializer.Parse(data, FlatBufferDeserializationOption.Progressive);
 
         // Add 100 points.
+        MutableInt length = parsed.NumPoints;
+
         for (int i = 0; i < 100; ++i)
         {
-            int next = parsed.NumPoints.Value;
-
-            // Update the vector and the length. Both of these write through to the underlying buffer.
-            parsed.Points![next] = new Point { X = i, Y = i, Z = i };
-
-            // This is inefficient -- it would be better to write the new length once after the end of the loop.
-            parsed.NumPoints = new MutableInt { Value = next + 1 };
+            // Update the vector. This operation writes through to the underlying buffer.
+            parsed.Points![length.Value++] = new Point { X = i, Y = i, Z = i };
         }
 
+        // After the loop, update the length:
+        parsed.NumPoints = length;
+
         // Reparse the buffer to show that we actually wrote some points.
-        parsed = Path.Serializer.Parse(data);
-        Debug.Assert(parsed.NumPoints.Value == 100, "100 points, right?");
+        parsed = Path.Serializer.Parse(data, FlatBufferDeserializationOption.Lazy);
+        Assert.True(parsed.NumPoints.Value == 100, "100 points, right?");
 
         // Print the last point we wrote, followed by the next empty slot in the vector.
-        for (int i = 99; i <= 100; ++i)
+        for (int i = 97; i <= 103; ++i)
         {
             Point point = parsed.Points![i];
             Console.WriteLine($"Point {i}: ({point.X}, {point.Y}, {point.Z})");
@@ -203,6 +220,7 @@ public partial class BloomFilter
 
     private byte[] GetKeyBytes(string key)
     {
+        // Not efficient. But hey, this is sample code!
         return Encoding.UTF8.GetBytes(key);
     }
 

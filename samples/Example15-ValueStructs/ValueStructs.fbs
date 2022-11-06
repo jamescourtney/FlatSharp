@@ -21,13 +21,13 @@ attribute "fs_valueStruct";
 
 table Path (fs_serializer:"Lazy")
 {
-    Points : [Point];
+    points : [ Point ];
 }
 
 // Beginning in FlatSharp version 5.7.0, FlatBuffer Structs can be declared as value types.
 struct Point (fs_valueStruct)
 {
-    X : float;
-    Y : float;
-    Z : float;
+    x : float;
+    y : float;
+    z : float;
 }

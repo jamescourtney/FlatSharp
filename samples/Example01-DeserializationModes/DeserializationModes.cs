@@ -92,7 +92,7 @@ public class DeserializationModes : IFlatSharpSample
         Fruit index0_1 = parsed.FavoriteFruits![0];
         Fruit index0_2 = parsed.FavoriteFruits[0];
 
-        Assert.SameObject(
+        Assert.NotSameObject(
             index0_1,
             index0_2,
             "A different instance is returned each time from lazy vectors");
