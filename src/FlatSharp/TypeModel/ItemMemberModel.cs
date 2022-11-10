@@ -117,18 +117,6 @@ public abstract class ItemMemberModel
         return method.IsVirtual && !method.IsFinal;
     }
 
-    private static bool ValidateNonVirtualMethod(MethodInfo? method)
-    {
-        if (method is null
-            || method.IsAbstract
-            || CanBeOverridden(method))
-        {
-            return false;
-        }
-
-        return method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly;
-    }
-
     private static bool ValidateVirtualPropertyMethod(MethodInfo? method, bool allowNull)
     {
         if (method is null)

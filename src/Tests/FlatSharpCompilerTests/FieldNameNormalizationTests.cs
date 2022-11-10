@@ -99,6 +99,28 @@ public class FieldNameNormalizationTests
     }
 
     [Fact]
+    public void LiteralName_NonSense()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace FieldNameNormalizationTests;
+
+            table Table {{
+                item_one : int32;
+                item_two : int32 ({MetadataKeys.LiteralName}:""banana"");
+            }}";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new CompilerOptions
+            {
+                NormalizeFieldNames = true,
+            }));
+
+        Assert.Contains("Unable to parse 'fs_literalName' value 'banana' as a boolean. Expecting 'true' or 'false'.", ex.Errors);
+    }
+
+    [Fact]
     public void PreserveFieldCasingOnField()
     {
         string schema = $@"
@@ -136,8 +158,9 @@ public class FieldNameNormalizationTests
     public void PreserveFieldCasingOnParent()
     {
         string schema = $@"
-            {MetadataHelpers.AllAttributes}
-            namespace FieldNameNormalizationTests;
+            {MetadataHelpers.AllAttributes}\
+            namespace FieldNameNormalizatio
+nTests;
 
             table Table ({MetadataKeys.LiteralName}) {{
                 item_one : int32 ({MetadataKeys.LiteralName}:""false"");
