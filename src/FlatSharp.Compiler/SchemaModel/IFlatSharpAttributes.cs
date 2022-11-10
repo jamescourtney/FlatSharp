@@ -27,8 +27,6 @@ public interface IFlatSharpAttributes
 
     MemoryMarshalBehavior? MemoryMarshalBehavior { get; }
 
-    bool? NonVirtual { get; }
-
     bool? PreserveFieldName { get; }
 
     bool? RpcInterface { get; }

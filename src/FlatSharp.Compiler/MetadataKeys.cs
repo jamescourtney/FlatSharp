@@ -29,15 +29,6 @@ public static class MetadataKeys
     public const string SerializerKind = "fs_serializer";
 
     /// <summary>
-    /// Controls whether fields are virtual or non-virtual. They are virtual by default.
-    /// Valid On:
-    /// - Table (as a default for all fields in the table, overridden by the setting on a field)
-    /// - Struct (as a default for all fields in the struct, overridden by the setting on a field)
-    /// - Field 
-    /// </summary>
-    public const string NonVirtualProperty = "fs_nonVirtual";
-
-    /// <summary>
     /// Controls whether a vector field should be sorted or not. The field must be a vector.
     /// Valid On:
     /// - Field 

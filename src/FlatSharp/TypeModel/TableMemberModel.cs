@@ -71,11 +71,6 @@ public class TableMemberModel : ItemMemberModel
                     throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute, but the field is not marked as required. WriteThrough fields must also be required.");
                 }
 
-                if (!this.IsVirtual)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
-                }
-
                 FlatSharpInternal.Assert(
                     !this.ItemTypeModel.SerializeMethodRequiresContext,
                     "write through struct expected serialization context");

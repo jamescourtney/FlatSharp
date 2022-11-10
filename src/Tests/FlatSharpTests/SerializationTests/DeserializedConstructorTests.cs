@@ -138,10 +138,10 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
@@ -157,7 +157,7 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 
 
@@ -175,10 +175,10 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
@@ -194,7 +194,7 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 
     [FlatBufferTable]
@@ -211,10 +211,10 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
@@ -230,7 +230,7 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 
 
@@ -248,10 +248,10 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
@@ -267,6 +267,6 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 }

@@ -32,7 +32,6 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.DeserializationOption = other.DeserializationOption;
             this.ForceWrite = other.ForceWrite;
             this.MemoryMarshalBehavior = other.MemoryMarshalBehavior;
-            this.NonVirtual = other.NonVirtual;
             this.PreserveFieldName = other.PreserveFieldName;
             this.RpcInterface = other.RpcInterface;
             this.SetterKind = other.SetterKind;
@@ -55,8 +54,6 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
     public bool? ForceWrite { get; set; }
 
     public MemoryMarshalBehavior? MemoryMarshalBehavior { get; set; }
-
-    public bool? NonVirtual { get; set; }
 
     public bool? PreserveFieldName { get; set; }
 

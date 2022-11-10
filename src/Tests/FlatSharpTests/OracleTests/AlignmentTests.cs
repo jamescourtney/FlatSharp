@@ -173,7 +173,7 @@ public class AlignmentTests
     public class StructVectorsTable
     {
         [FlatBufferItem(0)]
-        public StructVectors? Vectors { get; set; }
+        public virtual StructVectors? Vectors { get; set; }
     }
 
     /*
@@ -186,25 +186,25 @@ public class AlignmentTests
     public class StructVectors
     {
         [FlatBufferItem(0)]
-        public FiveByteStruct AlignmentVec_0 { get; set; }
+        public virtual FiveByteStruct AlignmentVec_0 { get; set; }
 
         [FlatBufferItem(1)]
-        public ValueFiveByteStruct AlignmentVec_1 { get; set; }
+        public virtual ValueFiveByteStruct AlignmentVec_1 { get; set; }
 
         [FlatBufferItem(2)]
-        public FiveByteStruct AlignmentVec_2 { get; set; }
+        public virtual FiveByteStruct AlignmentVec_2 { get; set; }
 
         [FlatBufferItem(3)]
-        public ulong Hash_0 { get; set; }
+        public virtual ulong Hash_0 { get; set; }
 
         [FlatBufferItem(4)]
-        public ulong Hash_1 { get; set; }
+        public virtual ulong Hash_1 { get; set; }
 
         [FlatBufferItem(5)]
-        public ulong Hash_2 { get; set; }
+        public virtual ulong Hash_2 { get; set; }
 
         [FlatBufferItem(6)]
-        public ulong Hash_3 { get; set; }
+        public virtual ulong Hash_3 { get; set; }
     }
 
     [FlatBufferTable]

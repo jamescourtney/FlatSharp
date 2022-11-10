@@ -40,7 +40,7 @@ public class EnumVal : ISortableTable<long>
     public virtual long Value { get; set; }
 
     [FlatBufferItem(2, Deprecated = true)]
-    public bool Object { get; set; }
+    public virtual bool Object { get; set; }
 
     [FlatBufferItem(3)]
     public virtual FlatBufferType? UnionType { get; set; }

@@ -29,7 +29,7 @@ public class NestedStructTests
     public void NestedStructs_GreedyMutable() => this.RunTest(FlatBufferDeserializationOption.GreedyMutable);
 
     [Fact]
-    public void NestedStructs_VectorCache() => this.RunTest(FlatBufferDeserializationOption.Progressive);
+    public void NestedStructs_Progressive() => this.RunTest(FlatBufferDeserializationOption.Progressive);
 
     [Fact]
     public void NestedStructs_Lazy() => this.RunTest(FlatBufferDeserializationOption.Lazy);
@@ -41,7 +41,6 @@ public class NestedStructTests
             Outer = new OuterStruct
             {
                 InnerVirtual = new InnerStruct { A = 3 },
-                NonVirtualInner = new InnerStruct { A = 30 }
             }
         };
 
@@ -51,7 +50,6 @@ public class NestedStructTests
 
         var parsed = serializer.Parse<Table>(data);
         Assert.Equal(3, parsed.Outer.InnerVirtual.A);
-        Assert.Equal(30, parsed.Outer.NonVirtualInner.A);
     }
 
     [FlatBufferTable]
@@ -66,8 +64,5 @@ public class NestedStructTests
     {
         [FlatBufferItem(0)]
         public virtual InnerStruct InnerVirtual { get; set; }
-
-        [FlatBufferItem(1)]
-        public InnerStruct NonVirtualInner { get; set; }
     }
 }

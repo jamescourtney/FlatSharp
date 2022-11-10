@@ -60,7 +60,7 @@ public class OnDeserializedMethodTests
     public class OnDeserializedStruct
     {
         [FlatBufferItem(0)]
-        public int Foo { get; set; }
+        public virtual int Foo { get; set; }
 
         protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
         {
