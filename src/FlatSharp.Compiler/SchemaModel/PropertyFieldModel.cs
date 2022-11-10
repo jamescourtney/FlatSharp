@@ -41,7 +41,6 @@ public record PropertyFieldModel
 
         new FlatSharpAttributeValidator(elementType, $"{this.Parent.FullName}.{this.FieldName}")
         {
-            NonVirtualValidator = _ => AttributeValidationResult.Valid,
             VectorTypeValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             SortedVectorValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             SharedStringValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
@@ -143,21 +142,15 @@ public record PropertyFieldModel
             SetterKind.Public or _ => "set;",
         };
 
-        string @virtual = (this.Attributes.NonVirtual ?? this.Parent.Attributes.NonVirtual) switch
-        {
-            false or null => "virtual",
-            true => string.Empty,
-        };
-
         string typeName = this.GetTypeName();
 
-        string access = "public ";
+        string access = "public";
         if (this.ProtectedGetter)
         {
-            access = "protected ";
+            access = "protected";
         }
 
-        string property = $"{access}{@virtual} {typeName} {this.FieldName} {{ get; {setter} }}";
+        string property = $"{access} virtual {typeName} {this.FieldName} {{ get; {setter} }}";
         if (this.Field.Required == true)
         {
             writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, $"required {property}")

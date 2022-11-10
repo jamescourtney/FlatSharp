@@ -24,26 +24,26 @@ public class MetadataHelpers
 
     static MetadataHelpers()
     {
-        List<string> names = new List<string>();
-
-        names.Add(string.Empty);
-        names.Add(MetadataKeys.SerializerKind);
-        names.Add(MetadataKeys.NonVirtualProperty);
-        names.Add(MetadataKeys.SortedVector);
-        names.Add(MetadataKeys.SharedString);
-        names.Add(MetadataKeys.DefaultConstructorKind);
-        names.Add(MetadataKeys.VectorKind);
-        names.Add(MetadataKeys.Setter);
-        names.Add(MetadataKeys.ValueStruct);
-        names.Add(MetadataKeys.UnsafeValueStructVector);
-        names.Add(MetadataKeys.MemoryMarshalBehavior);
-        names.Add(MetadataKeys.ForceWrite);
-        names.Add(MetadataKeys.WriteThrough);
-        names.Add(MetadataKeys.RpcInterface);
-        names.Add(MetadataKeys.UnsafeExternal);
-        names.Add(MetadataKeys.LiteralName);
-        names.Add(MetadataKeys.UnsafeUnion);
-        names.Add(string.Empty);
+        List<string> names = new List<string>
+        {
+            string.Empty,
+            MetadataKeys.SerializerKind,
+            MetadataKeys.SortedVector,
+            MetadataKeys.SharedString,
+            MetadataKeys.DefaultConstructorKind,
+            MetadataKeys.VectorKind,
+            MetadataKeys.Setter,
+            MetadataKeys.ValueStruct,
+            MetadataKeys.UnsafeValueStructVector,
+            MetadataKeys.MemoryMarshalBehavior,
+            MetadataKeys.ForceWrite,
+            MetadataKeys.WriteThrough,
+            MetadataKeys.RpcInterface,
+            MetadataKeys.UnsafeExternal,
+            MetadataKeys.LiteralName,
+            MetadataKeys.UnsafeUnion,
+            string.Empty
+        };
 
         AllAttributes = string.Join("\r\n", names.Select(x => $"attribute \"{x}\";"));
     }

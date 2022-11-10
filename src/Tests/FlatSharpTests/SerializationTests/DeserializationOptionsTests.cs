@@ -389,7 +389,7 @@ public class DeserializationOptionsTests
         public virtual ulong NoSetter { get; }
 
         [FlatBufferItem(2)]
-        public SecondStruct SecondStruct { get; set; }
+        public virtual SecondStruct SecondStruct { get; set; }
     }
 
     [FlatBufferStruct]

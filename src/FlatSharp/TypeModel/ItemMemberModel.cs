@@ -61,8 +61,6 @@ public abstract class ItemMemberModel
                 this.SetterKind = SetMethodKind.Init;
             }
         }
-
-        this.IsVirtual = CanBeOverridden(getMethod);
     }
 
     internal virtual void Validate()
@@ -75,29 +73,14 @@ public abstract class ItemMemberModel
             throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} must declare a public getter.");
         }
 
-        if (this.IsVirtual)
+        if (!ValidateVirtualPropertyMethod(getMethod, false))
         {
-            if (!ValidateVirtualPropertyMethod(getMethod, false))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} did not declare a public/protected virtual getter.");
-            }
-
-            if (!ValidateVirtualPropertyMethod(setMethod, true))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} declared a set method, but it was not public/protected and virtual.");
-            }
+            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} did not declare a public/protected virtual getter.");
         }
-        else
-        {
-            if (!ValidateNonVirtualMethod(getMethod))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Non-virtual property {this.DeclaringType} must declare a public and non-abstract getter.");
-            }
 
-            if (!ValidateNonVirtualMethod(setMethod))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Non-virtual property {this.DeclaringType} must declare a public/protected and non-abstract setter.");
-            }
+        if (!ValidateVirtualPropertyMethod(setMethod, true))
+        {
+            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} declared a set method, but it was not public/protected and virtual.");
         }
     }
 
@@ -134,18 +117,6 @@ public abstract class ItemMemberModel
         return method.IsVirtual && !method.IsFinal;
     }
 
-    private static bool ValidateNonVirtualMethod(MethodInfo? method)
-    {
-        if (method is null
-            || method.IsAbstract
-            || CanBeOverridden(method))
-        {
-            return false;
-        }
-
-        return method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly;
-    }
-
     private static bool ValidateVirtualPropertyMethod(MethodInfo? method, bool allowNull)
     {
         if (method is null)
@@ -180,11 +151,6 @@ public abstract class ItemMemberModel
     /// The type model of the item.
     /// </summary>
     public ITypeModel ItemTypeModel { get; }
-
-    /// <summary>
-    /// The property is virtual (ie, FlatSharp will override it when generating code).
-    /// </summary>
-    public bool IsVirtual { get; }
 
     /// <summary>
     /// Indicates if this member writes through to the underlying buffer.

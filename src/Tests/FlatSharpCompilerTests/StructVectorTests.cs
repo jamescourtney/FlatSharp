@@ -73,7 +73,7 @@ public class StructVectorTests
                 foo:Foo;
             }}
             struct Foo {{
-              V:[Bar:7] ({MetadataKeys.NonVirtualProperty});
+              V:[Bar:7];
             }}";
 
         var ex = Assert.Throws<InvalidFbsFileException>(
@@ -117,7 +117,7 @@ public class StructVectorTests
             }}
             struct Bar {{ A:ubyte; B:ulong; }}
             struct Foo {{
-              V:[Bar:{length}] ({MetadataKeys.NonVirtualProperty});
+              V:[Bar:{length}];
             }}";
 
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
@@ -128,8 +128,8 @@ public class StructVectorTests
         Type fooType = asm.GetType("StructVectorTests.Foo");
 
         var property = fooType.GetProperty("__flatsharp__V_0", BindingFlags.Instance | BindingFlags.NonPublic);
-        Assert.False(property.GetMethod.IsVirtual);
-        Assert.False(property.SetMethod.IsVirtual);
+        Assert.True(property.GetMethod.IsVirtual);
+        Assert.True(property.SetMethod.IsVirtual);
 
         Type barType = asm.GetType("StructVectorTests.Bar");
 

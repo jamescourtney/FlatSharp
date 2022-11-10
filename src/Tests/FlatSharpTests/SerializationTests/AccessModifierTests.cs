@@ -27,12 +27,6 @@ public class AccessModifierTests
         FlatBufferSerializer.Default.GetMaxSize(new TestClass());
     }
 
-    [Fact]
-    public void BuildSerializer_AccessMethods_NonVirtual()
-    {
-        FlatBufferSerializer.Default.GetMaxSize(new TestClassNonVirtual());
-    }
-
     [FlatBufferTable]
     public class TestClass
     {
@@ -81,56 +75,6 @@ public class AccessModifierTests
 
         [FlatBufferItem(5)]
         public virtual int PublicGetterProtectedInit { get; protected init; }
-#endif
-    }
-
-
-    [FlatBufferTable]
-    public class TestClassNonVirtual
-    {
-        [FlatBufferItem(0)]
-        public int BothPublic { get; set; }
-
-        [FlatBufferItem(1)]
-        public int PublicGetterProtectedInternalSetter { get; protected internal set; }
-
-        [FlatBufferItem(2)]
-        public int PublicGetterProtectedSetter { get; protected set; }
-
-        [FlatBufferItem(3)]
-        public TestStructNonVirtual? Struct { get; protected set; }
-
-#if NET5_0_OR_GREATER
-        [FlatBufferItem(4)]
-        public int BothPublicInit { get; init; }
-
-        [FlatBufferItem(5)]
-        public int PublicGetterProtectedInternalInit { get; protected internal init; }
-
-        [FlatBufferItem(6)]
-        public int PublicGetterProtectedInit { get; protected init; }
-#endif
-
-    }
-
-    [FlatBufferStruct]
-    public class TestStructNonVirtual
-    {
-        [FlatBufferItem(0)]
-        public int BothPublic { get; set; }
-
-        [FlatBufferItem(1)]
-        public int PublicGetterProtectedInternalSetter { get; protected internal set; }
-
-        [FlatBufferItem(2)]
-        public int PublicGetterProtectedSetter { get; protected set; }
-
-#if NET5_0_OR_GREATER
-        [FlatBufferItem(3)]
-        public int PublicGetterProtectedInternalInit { get; protected internal init; }
-
-        [FlatBufferItem(4)]
-        public int PublicGetterProtectedInit { get; protected init; }
 #endif
     }
 }

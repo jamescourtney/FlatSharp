@@ -334,70 +334,70 @@ table InnerTable {{
     public class OuterTable
     {
         [FlatBufferItem(0)]
-        public string? A { get; set; }
+        public virtual string? A { get; set; }
 
         [FlatBufferItem(1)]
-        public sbyte B { get; set; }
+        public virtual sbyte B { get; set; }
 
         [FlatBufferItem(2)]
-        public byte C { get; set; }
+        public virtual byte C { get; set; }
 
         [FlatBufferItem(3)]
-        public short D { get; set; }
+        public virtual short D { get; set; }
 
         [FlatBufferItem(4)]
-        public ushort E { get; set; }
+        public virtual ushort E { get; set; }
 
         [FlatBufferItem(5)]
-        public int F { get; set; }
+        public virtual int F { get; set; }
 
         [FlatBufferItem(6)]
-        public uint G { get; set; }
+        public virtual uint G { get; set; }
 
         [FlatBufferItem(7)]
-        public long H { get; set; }
+        public virtual long H { get; set; }
 
         [FlatBufferItem(8)]
-        public ulong I { get; set; }
+        public virtual ulong I { get; set; }
 
         [FlatBufferItem(9)]
-        public IList<int>? IntVector_List { get; set; }
+        public virtual IList<int>? IntVector_List { get; set; }
 
         [FlatBufferItem(10)]
-        public IReadOnlyList<int>? IntVector_RoList { get; set; }
+        public virtual IReadOnlyList<int>? IntVector_RoList { get; set; }
 
         [FlatBufferItem(11)]
-        public IList<int>? IntVector_Array { get; set; }
+        public virtual IList<int>? IntVector_Array { get; set; }
 
         [FlatBufferItem(12)]
-        public IList<InnerTable>? TableVector_List { get; set; }
+        public virtual IList<InnerTable>? TableVector_List { get; set; }
 
         [FlatBufferItem(13)]
-        public IReadOnlyList<InnerTable>? TableVector_RoList { get; set; }
+        public virtual IReadOnlyList<InnerTable>? TableVector_RoList { get; set; }
 
         [FlatBufferItem(14)]
-        public IIndexedVector<string, InnerTable>? TableVector_Indexed { get; set; }
+        public virtual IIndexedVector<string, InnerTable>? TableVector_Indexed { get; set; }
 
         [FlatBufferItem(15)]
-        public IList<InnerTable>? TableVector_Array { get; set; }
+        public virtual IList<InnerTable>? TableVector_Array { get; set; }
 
         [FlatBufferItem(16)]
-        public Memory<byte>? ByteVector { get; set; }
+        public virtual Memory<byte>? ByteVector { get; set; }
 
         [FlatBufferItem(17)]
-        public ReadOnlyMemory<byte>? ByteVector_RO { get; set; }
+        public virtual ReadOnlyMemory<byte>? ByteVector_RO { get; set; }
 
         [FlatBufferItem(18)]
-        public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>? UnionVal { get; set; }
+        public virtual FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>? UnionVal { get; set; }
 
         [FlatBufferItem(20)]
-        public IList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion { get; set; }
+        public virtual IList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion { get; set; }
 
         [FlatBufferItem(22)]
-        public IReadOnlyList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_RoList { get; set; }
+        public virtual IReadOnlyList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_RoList { get; set; }
 
         [FlatBufferItem(24)]
-        public IList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_Array { get; set; }
+        public virtual IList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_Array { get; set; }
     }
 
     [FlatBufferTable]
@@ -406,27 +406,27 @@ table InnerTable {{
         static InnerTable() => SortedVectorHelpers.RegisterKeyLookup<InnerTable, string>(it => it.Name, 0);
 
         [FlatBufferItem(0, Key = true, Required = true)]
-        public string Name { get; set; } = "Foo";
+        public virtual string Name { get; set; } = "Foo";
 
         [FlatBufferItem(1)]
-        public OuterStruct? OuterStruct { get; set; }
+        public virtual OuterStruct? OuterStruct { get; set; }
     }
 
     [FlatBufferStruct]
     public class OuterStruct
     {
         [FlatBufferItem(0)]
-        public int Value { get; set; }
+        public virtual int Value { get; set; }
 
         [FlatBufferItem(1)]
-        public InnerStruct InnerStruct { get; set; }
+        public virtual InnerStruct InnerStruct { get; set; }
     }
 
     [FlatBufferStruct]
     public class InnerStruct
     {
         [FlatBufferItem(0)]
-        public long LongValue { get; set; }
+        public virtual long LongValue { get; set; }
     }
 
     private static IEnumerable<object> AsObjectEnumerable(dynamic d)
