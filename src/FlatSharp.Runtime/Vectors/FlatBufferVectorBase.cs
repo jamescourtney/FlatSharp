@@ -14,31 +14,58 @@
  * limitations under the License.
  */
 
+using System.Threading;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
 public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
-    : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
+    : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector, IPoolableObject
     where TInputBuffer : IInputBuffer
     where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
 {
-    private readonly TInputBuffer memory;
-    private readonly TableFieldContext fieldContext;
-    private readonly short remainingDepth;
-    private readonly TItemAccessor itemAccessor;
+    private TInputBuffer memory;
+    private TableFieldContext fieldContext;
+    private short remainingDepth;
+    private TItemAccessor itemAccessor;
 
-    public FlatBufferVectorBase(
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private FlatBufferVectorBase()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    {
+    }
+
+    private void Initialize(
         TInputBuffer memory,
         TItemAccessor itemAccessor,
         short remainingDepth,
-        TableFieldContext fieldContext)
+        TableFieldContext fieldContext,
+        FlatBufferDeserializationOption option)
     {
         this.memory = memory;
         this.remainingDepth = remainingDepth;
         this.fieldContext = fieldContext;
         this.itemAccessor = itemAccessor;
+        this.DeserializationOption = option;
+    }
+
+    public static FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> GetOrCreate(
+        TInputBuffer memory,
+        TItemAccessor itemAccessor,
+        short remainingDepth,
+        TableFieldContext fieldContext,
+        FlatBufferDeserializationOption option)
+    {
+        if (!ObjectPool.TryGet<FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>>(out var item))
+        {
+            item = new FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>();
+        }
+
+        item.Initialize(memory, itemAccessor, remainingDepth, fieldContext, option);
+
+        return item;
     }
 
     /// <summary>
@@ -58,6 +85,8 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
             this.itemAccessor.WriteThrough(index, value, this.memory, this.fieldContext);
         }
     }
+
+    public FlatBufferDeserializationOption DeserializationOption { get; private set; }
 
     public int Count => this.itemAccessor.Count;
 
@@ -232,4 +261,19 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     int IFlatBufferDeserializedVector.OffsetOf(int index) => this.itemAccessor.OffsetOf(index);
 
     object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
+
+    public void ReturnToPool(bool force = false)
+    {
+        if (this.DeserializationOption.ShouldReturnToPool(force))
+        {
+            var context = Interlocked.Exchange(ref this.fieldContext!, null);
+            if (context is not null)
+            {
+                this.memory = default!;
+                this.remainingDepth = default;
+                this.itemAccessor = default!;
+                ObjectPool.Return(this);
+            }
+        }
+    }
 }

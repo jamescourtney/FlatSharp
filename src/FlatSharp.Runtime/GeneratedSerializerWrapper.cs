@@ -114,22 +114,36 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         var parseArgs = new GeneratedSerializerParseArguments(0, this.remainingDepthLimit);
         var inner = this.innerSerializer;
 
+        T item;
+
         switch (option ?? this.option)
         {
             case FlatBufferDeserializationOption.Lazy:
-                return buffer.InvokeLazyParse(inner, in parseArgs);
+                item = buffer.InvokeLazyParse(inner, in parseArgs);
+                break;
 
             case FlatBufferDeserializationOption.Greedy:
-                return buffer.InvokeGreedyParse(inner, in parseArgs);
+                item = buffer.InvokeGreedyParse(inner, in parseArgs);
+                break;
 
             case FlatBufferDeserializationOption.GreedyMutable:
-                return buffer.InvokeGreedyMutableParse(inner, in parseArgs);
+                item = buffer.InvokeGreedyMutableParse(inner, in parseArgs);
+                break;
 
             case FlatBufferDeserializationOption.Progressive:
-                return buffer.InvokeProgressiveParse(inner, in parseArgs);
+                item = buffer.InvokeProgressiveParse(inner, in parseArgs);
+                break;
+
+            default:
+                throw new InvalidOperationException("Unexpected deserialization mode: " + this.option);
         }
 
-        throw new InvalidOperationException("Unexpected deserialization mode: " + this.option);
+        if (item is IFlatBufferDeserializedObject deserializedObject)
+        {
+            deserializedObject.IsRoot = true;
+        }
+
+        return item;
     }
 
     object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option) => this.Parse(buffer, option);

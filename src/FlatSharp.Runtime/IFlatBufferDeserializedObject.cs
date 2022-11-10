@@ -46,4 +46,9 @@ public interface IFlatBufferDeserializedObject
     /// implemented as memcopy instead of a full serialize flow.
     /// </summary>
     bool CanSerializeWithMemoryCopy { get; }
+
+    /// <summary>
+    /// Indicates if this is the root object in the parse tree.
+    /// </summary>
+    bool IsRoot { get; set; }
 }

@@ -166,4 +166,8 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
 
         return this.backingDictionary.Remove(key);
     }
+
+    public void ReturnToPool(bool unsafeForce = false)
+    {
+    }
 }

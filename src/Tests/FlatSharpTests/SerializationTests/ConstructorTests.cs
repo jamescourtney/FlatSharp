@@ -112,7 +112,7 @@ public class ConstructorTests
             this.Context = context;
         }
 
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         [FlatBufferItem(0)]
         public virtual OuterStruct? Struct { get; set; }
@@ -147,7 +147,7 @@ public class ConstructorTests
         {
         }
 
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         [FlatBufferItem(0)]
         public virtual int Item { get; set; }
@@ -170,7 +170,7 @@ public class ConstructorTests
             this.Context = context;
         }
 
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         [FlatBufferItem(0)]
         public virtual int Item { get; set; }

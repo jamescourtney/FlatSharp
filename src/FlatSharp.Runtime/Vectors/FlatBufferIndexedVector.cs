@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Threading;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
@@ -26,11 +28,31 @@ public class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAcce
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
 {
-    private readonly FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector;
+    private FlatBufferDeserializationOption deserializationOption;
+    private FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector;
 
-    public FlatBufferIndexedVector(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private FlatBufferIndexedVector()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    {
+    }
+
+    private void Initialize(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector)
     {
         this.vector = vector;
+        this.deserializationOption = vector.DeserializationOption;
+    }
+
+    public static FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> GetOrCreate(
+        FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector)
+    {
+        if (!ObjectPool.TryGet<FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor>>(out var item))
+        {
+            item = new();
+        }
+
+        item.Initialize(vector);
+        return item;
     }
 
     public TValue this[TKey key]
@@ -102,5 +124,19 @@ public class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAcce
     public bool Remove(TKey key)
     {
         throw new NotMutableException();
+    }
+
+    public void ReturnToPool(bool force = false)
+    {
+        if (this.deserializationOption.ShouldReturnToPool(force))
+        {
+            var vec = Interlocked.Exchange(ref this.vector!, null);
+            if (vec is not null)
+            {
+                vec.ReturnToPool(true);
+                this.vector = null!;
+                ObjectPool.Return(this);
+            }
+        }
     }
 }

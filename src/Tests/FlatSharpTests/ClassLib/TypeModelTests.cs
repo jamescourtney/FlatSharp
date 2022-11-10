@@ -268,10 +268,6 @@ public class TypeModelTests
         Assert.Equal(CreateError<TableOnDeserialized_RefParameter>(), ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-            () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_OptionalParameter)));
-        Assert.Equal(CreateError<TableOnDeserialized_OptionalParameter>(), ex.Message);
-
-        ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
             () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_NotProtected)));
         Assert.Equal(CreateError<TableOnDeserialized_NotProtected>(), ex.Message);
 
@@ -1497,7 +1493,7 @@ public class TypeModelTests
     {
         protected void OnFlatSharpDeserialized(out FlatBufferDeserializationContext context)
         {
-            context = null;
+            context = default;
         }
     }
 
@@ -1513,14 +1509,6 @@ public class TypeModelTests
     public class TableOnDeserialized_RefParameter
     {
         protected void OnFlatSharpDeserialized(ref FlatBufferDeserializationContext context)
-        {
-        }
-    }
-
-    [FlatBufferTable]
-    public class TableOnDeserialized_OptionalParameter
-    {
-        protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context = null)
         {
         }
     }

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
+using System.Buffers;
+using System.Threading;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
 /// A vector implementation that is filled on demand. Optimized
 /// for data locality, random access, and reasonably low memory overhead.
 /// </summary>
-public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> : IList<T>, IReadOnlyList<T>
+public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> : IList<T>, IReadOnlyList<T>, IPoolableObject
     where T : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
@@ -31,15 +34,35 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     // A semi-sparse array. Each row contains ChunkSize items.
     // This approach allows fast access while not broadly over allocating.
     // Using "mini arrays" also ensures good sequential access performance.
-    private readonly T?[]?[] items;
-    private readonly FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector;
+    private T?[]?[] items;
+    private FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector;
 
-    public FlatBufferProgressiveVector(
-        FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private FlatBufferProgressiveVector()
+    {
+    }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    private void Initialize(FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector)
     {
         this.Count = innerVector.Count;
         this.innerVector = innerVector;
-        this.items = new T[(innerVector.Count / ChunkSize) + 1][];
+
+        int minLength = (int)(innerVector.Count / ChunkSize + 1);
+        this.items = ArrayPool<T?[]?>.Shared.Rent(minLength);
+        this.DeserializationOption = innerVector.DeserializationOption;
+    }
+
+    public static FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> GetOrCreate(FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector)
+    {
+        if (!ObjectPool.TryGet<FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor>>(out var item))
+        {
+            item = new FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor>();
+        }
+
+        item.Initialize(innerVector);
+
+        return item;
     }
 
     /// <summary>
@@ -86,9 +109,11 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
         }
     }
 
-    public int Count { get; }
+    public int Count { get; private set; }
 
     public bool IsReadOnly => true;
+
+    internal FlatBufferDeserializationOption DeserializationOption { get; private set; }
 
     public void Add(T item)
     {
@@ -182,7 +207,7 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
 
         if (row is null)
         {
-            row = new T[ChunkSize];
+            row = ArrayPool<T>.Shared.Rent((int)ChunkSize);
             items[rowIndex] = row;
 
             // For value types -- we can't rely on null to tell
@@ -198,5 +223,56 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
         }
 
         return row;
+    }
+
+    public void ReturnToPool(bool force = false)
+    {
+        if (this.DeserializationOption.ShouldReturnToPool(force))
+        {
+            T?[]?[]? items = Interlocked.Exchange(ref this.items!, null);
+
+            if (items is null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < items.Length; ++i)
+            {
+                T?[]? block = items[i];
+
+                if (block is not null)
+                {
+                    // For reference types, we should try to return them.
+                    if (!typeof(T).IsValueType && typeof(IPoolableObject).IsAssignableFrom(typeof(T)))
+                    {
+                        for (int j = 0; j < block.Length; ++j)
+                        {
+                            if (block[j] is IPoolableObject poolable)
+                            {
+                                poolable.ReturnToPool(true);
+                            }
+
+                            block[j] = default;
+                        }
+
+                        ArrayPool<T?>.Shared.Return(block);
+                    }
+                    else
+                    {
+                        ArrayPool<T?>.Shared.Return(block, true);
+                    }
+
+                    items[i] = null;
+                }
+            }
+
+            ArrayPool<T?[]?>.Shared.Return(items);
+
+            this.Count = 0;
+            this.innerVector.ReturnToPool(true);
+            this.innerVector = default!;
+
+            ObjectPool.Return(this);
+        }
     }
 }

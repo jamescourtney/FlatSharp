@@ -99,6 +99,8 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
         using (writer.IncreaseIndent())
         {
             writer.AppendLine(": object");
+            writer.AppendLine(", IPoolableObject");
+
             if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
             {
                 writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");

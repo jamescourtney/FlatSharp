@@ -114,7 +114,7 @@ public interface ITypeModel
 
     /// <summary>
     /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
-    /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
+    /// that accepts an instance of <see cref="FlatSharp.FlatBufferDeserializationContext"/>.
     /// </summary>
     ConstructorInfo? PreferredSubclassConstructor { get; }
 
