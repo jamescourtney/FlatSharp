@@ -103,7 +103,7 @@ public class FlatBufferSerializerNonGenericTests
     public class SomeTable
     {
         [FlatBufferItem(0)]
-        public int A { get; set; }
+        public virtual int A { get; set; }
     }
 
 
@@ -111,6 +111,6 @@ public class FlatBufferSerializerNonGenericTests
     public class SomeOtherTable
     {
         [FlatBufferItem(0)]
-        public int A { get; set; }
+        public virtual int A { get; set; }
     }
 }

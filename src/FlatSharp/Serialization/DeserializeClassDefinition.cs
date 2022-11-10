@@ -141,7 +141,7 @@ internal class DeserializeClassDefinition
 
     protected virtual void AddFieldDefinitions(ItemMemberModel itemModel)
     {
-        if (!itemModel.IsVirtual || this.options.Lazy)
+        if (this.options.Lazy)
         {
             return;
         }
@@ -205,11 +205,6 @@ internal class DeserializeClassDefinition
 
     private void AddPropertyDefinitions(ItemMemberModel itemModel)
     {
-        if (!itemModel.IsVirtual)
-        {
-            return;
-        }
-
         string setter = string.Empty;
         var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo, this.options.ConvertProtectedInternalToProtected);
 
@@ -256,13 +251,9 @@ internal class DeserializeClassDefinition
     {
         var classification = itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType);
 
-        string assignment = $"base.{itemModel.PropertyInfo.Name}";
-        if (itemModel.IsVirtual)
-        {
-            assignment = $"this.{GetFieldName(itemModel)}";
-        }
+        string assignment = $"this.{GetFieldName(itemModel)}";
 
-        if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
+        if (this.options.GreedyDeserialize)
         {
             this.initializeStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableAccessor}, {this.remainingDepthAccessor});");
         }

@@ -57,7 +57,7 @@ public class Field
     public virtual double DefaultDouble { get; set; }
 
     [FlatBufferItem(6, DefaultValue = false)]
-    public bool Deprecated { get; set; } = false;
+    public virtual bool Deprecated { get; set; } = false;
 
     [FlatBufferItem(7, DefaultValue = false)]
     public virtual bool Required { get; set; } = false;

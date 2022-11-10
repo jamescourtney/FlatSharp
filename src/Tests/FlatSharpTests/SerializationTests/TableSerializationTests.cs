@@ -132,38 +132,6 @@ public class TableSerializationTests
     }
 
     [Fact]
-    public void TableWithStructAndStringNonVirtual()
-    {
-        SimpleTableNonVirtual table = new SimpleTableNonVirtual
-        {
-            String = "hi",
-            Struct = new SimpleStructNonVirtual { Byte = 1, Long = 2, Uint = 3 }
-        };
-
-        byte[] buffer = new byte[1024];
-
-        byte[] expectedData =
-        {
-            4, 0, 0, 0,             // uoffset to table start
-            232, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
-            2, 0, 0, 0, 0, 0, 0, 0, // struct.long
-            1, 0, 0, 0,             // struct.byte + padding
-            3, 0, 0, 0,             // struct.uint
-            12, 0, 0, 0,            // uoffset to string
-            8, 0,                   // vtable length
-            24, 0,                  // table length
-            20, 0,                  // index 0 offset
-            4, 0,                   // Index 1 offset
-            2, 0, 0, 0,             // string length
-            104, 105, 0,            // hi + null terminator
-        };
-
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-        var parsed = FlatBufferSerializer.Default.Parse<SimpleTableNonVirtual>(buffer);
-    }
-
-    [Fact]
     public void TableParse_NotMutable()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out _);
@@ -272,35 +240,6 @@ public class TableSerializationTests
 
         [FlatBufferItem(2)]
         public virtual uint Uint { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class SimpleTableNonVirtual
-    {
-        [FlatBufferItem(0)]
-        public string? String { get; set; }
-
-        [FlatBufferItem(1)]
-        public SimpleStructNonVirtual? Struct { get; set; }
-
-        [FlatBufferItem(2)]
-        public IList<SimpleStructNonVirtual>? StructVector { get; set; }
-
-        [FlatBufferItem(4)]
-        public SimpleTableNonVirtual? InnerTable { get; set; }
-    }
-
-    [FlatBufferStruct]
-    public class SimpleStructNonVirtual
-    {
-        [FlatBufferItem(0)]
-        public long Long { get; set; }
-
-        [FlatBufferItem(1)]
-        public byte Byte { get; set; }
-
-        [FlatBufferItem(2)]
-        public uint Uint { get; set; }
     }
 
     [FlatBufferTable]

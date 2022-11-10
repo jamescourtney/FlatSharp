@@ -100,13 +100,13 @@ public class FlatBufferVectorOfUnionTests
     public class Table
     {
         [FlatBufferItem(0)]
-        public int Value { get; set; }
+        public virtual int Value { get; set; }
     }
 
     [FlatBufferStruct]
     public class Struct
     {
         [FlatBufferItem(0)]
-        public int Value { get; set; }
+        public virtual int Value { get; set; }
     }
 }

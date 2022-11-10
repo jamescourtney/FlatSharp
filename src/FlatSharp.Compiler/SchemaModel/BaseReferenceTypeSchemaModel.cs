@@ -56,8 +56,6 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
                 this.structVectors.Add(svModel);
             }
         }
-
-        this.AttributeValidator.NonVirtualValidator = (b) => AttributeValidationResult.Valid;
     }
 
     public abstract bool OptionalFieldsSupported { get; }
