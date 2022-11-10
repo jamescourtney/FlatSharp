@@ -158,9 +158,8 @@ public class FieldNameNormalizationTests
     public void PreserveFieldCasingOnParent()
     {
         string schema = $@"
-            {MetadataHelpers.AllAttributes}\
-            namespace FieldNameNormalizatio
-nTests;
+            {MetadataHelpers.AllAttributes}
+            namespace FieldNameNormalizationTests;
 
             table Table ({MetadataKeys.LiteralName}) {{
                 item_one : int32 ({MetadataKeys.LiteralName}:""false"");
