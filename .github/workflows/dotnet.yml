@@ -15,11 +15,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Setup .NET 7 Preview
+    - name: Setup .NET 7
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 7.0.x
-        include-prerelease: true
         
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
@@ -29,17 +28,13 @@ jobs:
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
-      
-    - name: Build Compiler
-      working-directory: src/FlatSharp.Compiler
-      run: dotnet build -c Release /p:SignAssembly=true
-      
+            
     - name: Build
       working-directory: src
       run: dotnet build -c Release /p:SignAssembly=true
       
     - name: Test
-      working-directory: src
+      working-directory: src/Tests/FlatSharpEndToEndTests
       run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
       
     - name: Upload Packages
