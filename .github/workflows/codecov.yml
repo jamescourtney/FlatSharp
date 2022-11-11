@@ -52,7 +52,13 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/tests/FlatsharpEndToEndTests/*.fbs) -join ";"
-          coverlet --skipautoprops --use-source-link --format opencover --target "dotnet" --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"Documentation\Documentation.fbs;Grpc\Grpc.fbs;PoolingTests\PoolingTests.fbs;SortedVectors\SortedVectors.fbs;Unions\Unions.fbs;ValueStructs\ValueStructs.fbs`" --includes `"`" --output `"src\Tests`" " .\FlatSharp.Compiler\bin\Debug\net7.0\
+          coverlet `
+            .\src\FlatSharp.Compiler\bin\Debug\net7.0 `
+            --skipautoprops `
+            --use-source-link `
+            --format opencover `
+            --target "dotnet" `
+            --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
       
     - name: Test
       working-directory: src/Tests/FlatSharpEndToEndTests
