@@ -28,7 +28,21 @@ jobs:
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
-            
+      
+    - name: Build FlatSharp.Compiler
+      working-directory: src/FlatSharp.Compiler
+      run: dotnet build -c Release /p:SignAssembly=true
+      
+    - name: Run FlatSharp.Compiler
+      # You may pin to the exact commit or the version.
+      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
+      uses: Amadevus/pwsh-script@v2.0.3
+      with:
+        # PowerShell script to execute in Actions-hydrated context
+        script: |
+          $fbs = (gci -r src/tests/FlatsharpEndToEndTests/*.fbs) -join ";"
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests
+    
     - name: Build
       working-directory: src
       run: dotnet build -c Release /p:SignAssembly=true
