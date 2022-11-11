@@ -2,7 +2,9 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>net7.0;net6.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">net47;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(CoverageBuild)' == 'true' ">net7.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
@@ -42,5 +44,5 @@
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
 
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(CoverageBuild)' != 'true' "/>
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(CoverageBuild)' != 'true' " />
 </Project>
