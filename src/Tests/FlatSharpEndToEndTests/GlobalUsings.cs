@@ -28,7 +28,4 @@ global using System.Reflection;
 global using System.Runtime.CompilerServices;
 global using FlatSharp;
 global using FlatSharp.Attributes;
-global using FlatSharp.Compiler;
-global using FlatSharp.Compiler.Schema;
-global using FlatSharp.Compiler.SchemaModel;
 global using Xunit;
