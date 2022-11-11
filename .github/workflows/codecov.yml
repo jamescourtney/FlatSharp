@@ -12,15 +12,15 @@ jobs:
     runs-on: windows-2019
     env:
       AppVeyorBuild: true
+      CoverageBuild: true
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
     - uses: actions/checkout@v2
     
-    - name: Setup .NET 7 Preview
+    - name: Setup .NET 7
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 7.0.x
-        include-prerelease: true
         
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
@@ -36,14 +36,27 @@ jobs:
       working-directory: src
       run: dotnet tool install --global Codecov.Tool
       
-    - name: Build
-      working-directory: src/Tests/Coverage
+    - name: Install Coverlet
+      working-directory: src
+      run: dotnet tool install --global coverlet.console
+      
+    - name: Build FlatSharp.Compiler
+      working-directory: src/FlatSharp.Compiler
       run: dotnet build -c Debug /p:SignAssembly=false
       
+    - name: Run FlatSharp.Compiler
+      # You may pin to the exact commit or the version.
+      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
+      uses: Amadevus/pwsh-script@v2.0.3
+      with:
+        # PowerShell script to execute in Actions-hydrated context
+        script: |
+          $fbs = (gci -r src/tests/FlatsharpEndToEndTests/*.fbs) -join ";"
+          coverlet --skipautoprops --use-source-link --format opencover --target "dotnet" --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"Documentation\Documentation.fbs;Grpc\Grpc.fbs;PoolingTests\PoolingTests.fbs;SortedVectors\SortedVectors.fbs;Unions\Unions.fbs;ValueStructs\ValueStructs.fbs`" --includes `"`" --output `"src\Tests`" " .\FlatSharp.Compiler\bin\Debug\net7.0\
+      
     - name: Test
-      working-directory: src/Tests/Coverage
+      working-directory: src/Tests/FlatSharpEndToEndTests
       run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       
     - name: Upload
-      working-directory: src/Tests/Coverage
       run: codecov -f **/*coverage*.xml
