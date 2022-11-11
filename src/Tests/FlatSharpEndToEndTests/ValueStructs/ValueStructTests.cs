@@ -325,9 +325,9 @@ public class ValueStructTestCases
         span[0] = item;
         Span<byte> bytes = MemoryMarshal.Cast<T, byte>(span);
 
-        Span<byte> guardLow = bytes[..sizeof(ulong)];
-        Span<byte> mid = bytes[sizeof(ulong)..^sizeof(ulong)];
-        Span<byte> guardHigh = bytes[^sizeof(ulong)..];
+        Span<byte> guardLow = bytes.Slice(0, sizeof(ulong));
+        Span<byte> mid = bytes.Slice(sizeof(ulong), bytes.Length - (2 * sizeof(ulong)));
+        Span<byte> guardHigh = bytes.Slice(bytes.Length - sizeof(ulong));
 
         int count = 0;
         for (int i = 0; i < guardLow.Length; ++i)
