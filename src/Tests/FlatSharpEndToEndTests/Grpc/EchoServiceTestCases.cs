@@ -15,7 +15,6 @@
  */
 
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Other.Namespace.Foobar;
@@ -320,7 +319,7 @@ public class EchoServiceTestCases
             sourceChannel.Writer.Complete();
             await duplexCall;
             
-            Assert.False(channel.Reader.Completion.IsFaulted);
+            Assert.False(duplexCall.IsFaulted);
         });
     }
 
@@ -351,7 +350,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.False(channel.Reader.Completion.IsFaulted);
+            Assert.True(destChannel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -401,7 +400,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.False(channel.Reader.Completion.IsFaulted);
+            Assert.True(destChannel.Reader.Completion.IsFaulted);
         });
     }
 
