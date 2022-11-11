@@ -18,6 +18,7 @@ namespace FlatSharpEndToEndTests.ClassLib.FlatBufferSerializerNonGenericTests;
 
 public class FlatBufferSerializerNonGenericTests
 {
+#if NET6_0_OR_GREATER
     [Fact]
     public void NonGenericSerializer_FromInstance()
     {
@@ -48,4 +49,5 @@ public class FlatBufferSerializerNonGenericTests
         Assert.Equal(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
         Assert.Equal(FlatBufferDeserializationOption.Lazy, serializer.DeserializationOption);
     }
+#endif
 }
