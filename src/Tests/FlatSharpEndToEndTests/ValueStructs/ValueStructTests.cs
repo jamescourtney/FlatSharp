@@ -131,7 +131,7 @@ public class ValueStructTestCases
         int maxBytes = serializer.GetMaxSize(table);
         byte[] buffer = new byte[maxBytes];
         int written = serializer.Write(buffer, table);
-        RootTable parsed = serializer.Parse(buffer[..written]);
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written));
 
         Assert.NotNull(parsed.refStruct);
         Assert.NotNull(parsed.valueStruct);
@@ -365,7 +365,7 @@ public class ValueStructTestCases
         int maxBytes = serializer.GetMaxSize(t);
         byte[] buffer = new byte[maxBytes];
         int written = serializer.Write(buffer, t);
-        RootTable parsed = serializer.Parse(buffer[..written]);
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written));
 
         Assert.Null(parsed.refStruct);
         Assert.Null(parsed.valueStruct);

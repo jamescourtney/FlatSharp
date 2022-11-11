@@ -15,6 +15,7 @@
  */
 
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Other.Namespace.Foobar;
@@ -236,7 +237,7 @@ public class EchoServiceTestCases
             await task;
 
             Assert.True(channel.Reader.Completion.IsCompleted);
-            Assert.True(channel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -275,7 +276,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => task);
 
             Assert.True(channel.Reader.Completion.IsCompleted);
-            Assert.False(channel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -318,8 +319,8 @@ public class EchoServiceTestCases
 
             sourceChannel.Writer.Complete();
             await duplexCall;
-
-            Assert.True(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -350,7 +351,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.False(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -400,7 +401,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.False(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
 
