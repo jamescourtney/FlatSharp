@@ -29,14 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(CoverageBuild)' != 'true' " />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(CoverageBuild)' != 'true' " />
   </ItemGroup>
 
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
 
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(CoverageBuild)' != 'true' "/>
 </Project>
