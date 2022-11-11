@@ -45,6 +45,7 @@
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
-
+    
   <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(PipelineBuild)' != 'true' " />
 </Project>
+
