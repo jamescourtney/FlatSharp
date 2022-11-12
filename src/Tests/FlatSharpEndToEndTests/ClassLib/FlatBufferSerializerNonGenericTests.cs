@@ -18,7 +18,6 @@ namespace FlatSharpEndToEndTests.ClassLib.FlatBufferSerializerNonGenericTests;
 
 public class FlatBufferSerializerNonGenericTests
 {
-#if NET6_0_OR_GREATER
     [Fact]
     public void NonGenericSerializer_FromInstance()
     {
@@ -31,23 +30,47 @@ public class FlatBufferSerializerNonGenericTests
         Assert.Throws<ArgumentNullException>(() => serializer.GetMaxSize(null));
         Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
 
-        var bw = new ArrayBufferWriter<byte>();
-        Assert.Throws<ArgumentNullException>(() => serializer.Write(bw, null));
-        Assert.Throws<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable()));
-        int written = serializer.Write(bw, new SomeTable { A = 3 });
-        Assert.True(written > 0);
-        Assert.Equal(written, bw.WrittenCount);
+#if NET6_0_OR_GREATER
+        {
+            var bw = new ArrayBufferWriter<byte>();
+            Assert.Throws<ArgumentNullException>(() => serializer.Write(bw, null));
+            Assert.Throws<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable()));
 
-        object parsed = serializer.Parse(bw.WrittenMemory);
-        Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
-        Assert.NotEqual(typeof(SomeTable), parsed.GetType());
-        Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
+            int written = serializer.Write(bw, new SomeTable { A = 3 });
+            Assert.True(written > 0);
+            Assert.Equal(written, bw.WrittenCount);
 
-        var deserialized = (IFlatBufferDeserializedObject)parsed;
-        Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
-        Assert.NotNull(deserialized.InputBuffer); // lazy
-        Assert.Equal(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
-        Assert.Equal(FlatBufferDeserializationOption.Lazy, serializer.DeserializationOption);
-    }
+            object parsed = serializer.Parse(bw.WrittenMemory);
+            Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
+            Assert.NotEqual(typeof(SomeTable), parsed.GetType());
+            Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
+
+            var deserialized = (IFlatBufferDeserializedObject)parsed;
+            Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
+            Assert.NotNull(deserialized.InputBuffer); // lazy
+            Assert.Equal(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
+            Assert.Equal(FlatBufferDeserializationOption.Lazy, serializer.DeserializationOption);
+        }
 #endif
+
+        {
+            var bw = new byte[1024];
+            Assert.Throws<ArgumentNullException>(() => serializer.Write(bw, null));
+            Assert.Throws<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable()));
+
+            int written = serializer.Write(bw, new SomeTable { A = 3 });
+            Assert.True(written > 0);
+
+            object parsed = serializer.Parse(bw);
+            Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
+            Assert.NotEqual(typeof(SomeTable), parsed.GetType());
+            Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
+
+            var deserialized = (IFlatBufferDeserializedObject)parsed;
+            Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
+            Assert.NotNull(deserialized.InputBuffer); // lazy
+            Assert.Equal(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
+            Assert.Equal(FlatBufferDeserializationOption.Lazy, serializer.DeserializationOption);
+        }
+    }
 }
