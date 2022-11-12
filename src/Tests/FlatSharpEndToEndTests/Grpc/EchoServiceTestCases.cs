@@ -22,6 +22,7 @@ using SChannel = System.Threading.Channels.Channel;
 
 namespace FlatSharpEndToEndTests.GrpcTests;
 
+#if NET7_0
 public class EchoServiceTestCases
 {
     [Fact]
@@ -484,3 +485,4 @@ public class EchoServiceTestCases
         }
     }
 }
+#endif
