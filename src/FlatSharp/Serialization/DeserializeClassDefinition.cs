@@ -60,11 +60,8 @@ internal class DeserializeClassDefinition
 
         this.vtableAccessor = "default";
 
-        if (typeof(IPoolableObject).IsAssignableFrom(this.typeModel.ClrType))
-        {
-            this.instanceFieldDefinitions[IsAliveVariableName] = $"private int {IsAliveVariableName};";
-            this.initializeStatements.Add($"this.{IsAliveVariableName} = 1;");
-        }
+        this.instanceFieldDefinitions[IsAliveVariableName] = $"private int {IsAliveVariableName};";
+        this.initializeStatements.Add($"this.{IsAliveVariableName} = 1;");
         this.instanceFieldDefinitions[IsRootVariableName] = $"private bool {IsRootVariableName};";
 
         if (this.options.GreedyDeserialize)
@@ -291,6 +288,8 @@ internal class DeserializeClassDefinition
                 : {typeModel.GetGlobalCompilableTypeName()}
                 , {interfaceGlobalName}
                 , {typeof(IPoolableObject).GetGlobalCompilableTypeName()}
+                , {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}
+
                 where TInputBuffer : IInputBuffer
             {{
                 private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {CtorContextVariableName} 
@@ -313,8 +312,17 @@ internal class DeserializeClassDefinition
                 {typeof(Type).GetGlobalCompilableTypeName()} {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
                 {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                 {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
+
                 bool {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
-                bool {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.IsRoot)} {{ get => this.{IsRootVariableName}; set => this.{IsRootVariableName} = value; }}
+
+                bool {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.IsInPool => this.{IsAliveVariableName} == 0;
+                int? {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.GetPoolSize() => {typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.GetCount)}(this);
+                bool {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.IsRoot 
+                {{
+                    get => this.{IsRootVariableName};
+                    set => this.{IsRootVariableName} = value;
+                }}
+
 
                 {string.Join("\r\n", this.propertyOverrides)}
                 {string.Join("\r\n", this.readMethods)}
@@ -521,7 +529,6 @@ internal class DeserializeClassDefinition
                         {string.Join("\r\n", disposeFields)}
 
                         this.{IsRootVariableName} = false;
-                        this.{IsAliveVariableName} = 0;
                         {typeof(ObjectPool).GetGlobalCompilableTypeName()}.Return(this);
                     }}
                 }}

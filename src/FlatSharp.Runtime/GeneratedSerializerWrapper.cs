@@ -138,7 +138,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 throw new InvalidOperationException("Unexpected deserialization mode: " + this.option);
         }
 
-        if (item is IFlatBufferDeserializedObject deserializedObject)
+        if (item is IPoolableObjectDebug deserializedObject)
         {
             deserializedObject.IsRoot = true;
         }

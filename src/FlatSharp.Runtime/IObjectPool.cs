@@ -51,3 +51,27 @@ namespace FlatSharp
         void ReturnToPool(bool unsafeForce = false);
     }
 }
+
+namespace FlatSharp.Internal
+{
+    /// <summary>
+    /// Debug information for poolable objects.
+    /// </summary>
+    public interface IPoolableObjectDebug
+    {
+        /// <summary>
+        /// Retreives the number of items currently in the pool.
+        /// </summary>
+        int? GetPoolSize();
+
+        /// <summary>
+        /// Indicates if the given item is in the pool or not.
+        /// </summary>
+        bool IsInPool { get; }
+
+        /// <summary>
+        /// Indicates if this object is the root of the parse tree.
+        /// </summary>
+        bool IsRoot { get; set; }
+    }
+}

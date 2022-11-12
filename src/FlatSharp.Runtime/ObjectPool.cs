@@ -33,10 +33,7 @@ namespace FlatSharp.Internal
             return ObjectPool.Instance is not null && (force || option == FlatBufferDeserializationOption.Lazy);
         }
     }
-}
 
-namespace FlatSharp
-{
     /// <summary>
     /// A static singleton that defines the FlatSharp object pool to use.
     /// </summary>
@@ -66,6 +63,12 @@ namespace FlatSharp
         {
             Instance?.Return(item);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int? GetCount<T>(T item)
+        {
+            return Instance?.GetCount<T>();
+        }
     }
 
     /// <summary>
@@ -94,6 +97,14 @@ namespace FlatSharp
             return Pool<T>.TryGet(out value);
         }
 
+        /// <summary>
+        /// Returns the number of items in the pool for the given type.
+        /// </summary>
+        public int GetCount<T>()
+        {
+            return Pool<T>.FastCount;
+        }
+
         private static class Pool<T>
         {
             private static readonly ConcurrentQueue<T> pool = new();
@@ -101,7 +112,7 @@ namespace FlatSharp
             /// <summary>
             /// ConcurrentQueue's Count property is quite slow. FastCount just uses interlocked operations.
             /// </summary>
-            private static int FastCount = 0;
+            internal static int FastCount = 0;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool TryGet([NotNullWhen(true)] out T? item)

@@ -17,9 +17,6 @@
 using System.Linq;
 using FlatSharp.Compiler.Schema;
 using FlatSharp.CodeGen;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
 
 namespace FlatSharp.Compiler.SchemaModel;
 

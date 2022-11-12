@@ -22,7 +22,12 @@ namespace FlatSharp.Internal;
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
 public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
-    : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector, IPoolableObject
+    : IList<T>
+    , IReadOnlyList<T>
+    , IFlatBufferDeserializedVector
+    , IPoolableObject
+    , IPoolableObjectDebug
+
     where TInputBuffer : IInputBuffer
     where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
 {
@@ -46,9 +51,9 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     {
         this.memory = memory;
         this.remainingDepth = remainingDepth;
-        this.fieldContext = fieldContext;
         this.itemAccessor = itemAccessor;
         this.DeserializationOption = option;
+        this.fieldContext = fieldContext;
     }
 
     public static FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> GetOrCreate(
@@ -97,6 +102,15 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     int IFlatBufferDeserializedVector.ItemSize => this.itemAccessor.ItemSize;
 
     int IFlatBufferDeserializedVector.Count => this.Count;
+
+    bool IPoolableObjectDebug.IsInPool => this.fieldContext is null;
+
+    bool IPoolableObjectDebug.IsRoot { get => false; set => throw new InvalidOperationException(); }
+
+    int? IPoolableObjectDebug.GetPoolSize()
+    {
+        return ObjectPool.GetCount(this);
+    }
 
     public bool Contains(T? item)
     {

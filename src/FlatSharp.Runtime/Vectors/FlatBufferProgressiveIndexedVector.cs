@@ -21,13 +21,16 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation that loads data progressively.
 /// </summary>
-public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> : IIndexedVector<TKey, TValue>, IPoolableObject
+public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> 
+    : IIndexedVector<TKey, TValue>
+    , IPoolableObjectDebug
+
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
 {
-    private Dictionary<TKey, TValue?> backingDictionary;
+    private readonly Dictionary<TKey, TValue?> backingDictionary = new();
     private FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor> backingVector;
 
     private FlatBufferDeserializationOption deserializationOption;
@@ -40,16 +43,6 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
 
     private void Initialize(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> items)
     {
-        if (ObjectPool.TryGet<Dictionary<TKey, TValue?>>(out var dictionary))
-        {
-            dictionary.Clear();
-            this.backingDictionary = dictionary;
-        }
-        else
-        {
-            this.backingDictionary = new();
-        }
-
         this.deserializationOption = items.DeserializationOption;
         this.backingVector = FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor>.GetOrCreate(items);
     }
@@ -90,6 +83,12 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
     /// Gets the count of items.
     /// </summary>
     public int Count => this.backingVector.Count;
+
+    bool IPoolableObjectDebug.IsInPool => this.backingVector is null;
+
+    int? IPoolableObjectDebug.GetPoolSize() => ObjectPool.GetCount(this);
+
+    bool IPoolableObjectDebug.IsRoot { get => false; set => throw new InvalidOperationException(); }
 
     /// <summary>
     /// Freezes an Indexed vector, preventing further modifications.
@@ -175,10 +174,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
             if (backingVector is not null)
             {
                 backingVector.ReturnToPool();
-
                 this.backingDictionary.Clear();
-                ObjectPool.Return(this.backingDictionary);
-                this.backingDictionary = null!;
 
                 ObjectPool.Return(this);
             }

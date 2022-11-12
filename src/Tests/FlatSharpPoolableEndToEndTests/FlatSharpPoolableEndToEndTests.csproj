@@ -8,14 +8,14 @@
     <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">net472;net6.0;net7.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(CoverageBuild)' == 'true' ">net7.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
+    <AssemblyName>PoolingTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>annotations</Nullable>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
     <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
+    <FlatSharpPoolable>true</FlatSharpPoolable>
   </PropertyGroup>
   
   <ItemGroup>

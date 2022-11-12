@@ -23,7 +23,12 @@ namespace FlatSharp.Internal;
 /// A vector implementation that is filled on demand. Optimized
 /// for data locality, random access, and reasonably low memory overhead.
 /// </summary>
-public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> : IList<T>, IReadOnlyList<T>, IPoolableObject
+public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> 
+    : IList<T>
+    , IReadOnlyList<T>
+    , IPoolableObject
+    , IPoolableObjectDebug
+
     where T : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
@@ -47,10 +52,9 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     {
         this.Count = innerVector.Count;
         this.innerVector = innerVector;
-
+        this.DeserializationOption = innerVector.DeserializationOption;
         int minLength = (int)(innerVector.Count / ChunkSize + 1);
         this.items = ArrayPool<T?[]?>.Shared.Rent(minLength);
-        this.DeserializationOption = innerVector.DeserializationOption;
     }
 
     public static FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAccessor> GetOrCreate(FlatBufferVectorBase<T, TInputBuffer, TVectorItemAccessor> innerVector)
@@ -114,6 +118,15 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     public bool IsReadOnly => true;
 
     internal FlatBufferDeserializationOption DeserializationOption { get; private set; }
+
+    bool IPoolableObjectDebug.IsInPool => this.items is null;
+
+    bool IPoolableObjectDebug.IsRoot { get => false; set => throw new InvalidOperationException(); }
+
+    int? IPoolableObjectDebug.GetPoolSize()
+    {
+        return ObjectPool.GetCount(this);
+    }
 
     public void Add(T item)
     {
