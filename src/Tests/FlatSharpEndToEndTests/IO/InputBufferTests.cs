@@ -15,10 +15,8 @@
  */
 
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using FlatSharp;
 using FlatSharp.Internal;
 
 namespace FlatSharpEndToEndTests.IO.InputBufferTests;

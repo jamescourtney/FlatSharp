@@ -41,21 +41,11 @@ public class FlatBufferVectorTests
 
         var originalIntVector = new IntVector { Vector = ExpectedIntContents.ToList() };
 
-        Span<byte> buffer = new byte[1024 * 1024];
+        this.stringVector = originalVector.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
+        this.progressiveStringVector = originalVector.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
 
-        var lazyStringSerializer = StringVector.Serializer.WithSettings(s => s.UseLazyDeserialization());
-        var progressiveStringSerializer = StringVector.Serializer.WithSettings(s => s.UseProgressiveDeserialization());
-
-        var lazyIntSerializer = IntVector.Serializer.WithSettings(s => s.UseLazyDeserialization());
-        var progressiveIntSerializer = IntVector.Serializer.WithSettings(s => s.UseProgressiveDeserialization());
-
-        int bytesWritten = lazyStringSerializer.Write(buffer, originalVector);
-        this.stringVector = lazyStringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
-        this.progressiveStringVector = progressiveStringSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
-
-        bytesWritten = lazyIntSerializer.Write(buffer, originalIntVector);
-        this.intVector = lazyIntSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
-        this.progressiveIntVector = progressiveIntSerializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
+        this.intVector = originalIntVector.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
+        this.progressiveIntVector = originalIntVector.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
     }
 
     [Fact]

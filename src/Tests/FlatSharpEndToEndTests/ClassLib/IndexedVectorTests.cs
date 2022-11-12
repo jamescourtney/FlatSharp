@@ -49,17 +49,11 @@ public class IndexedVectorTests
         this.stringVectorSource.StringVector.Freeze();
         this.intVectorSource.IntVector.Freeze();
 
-        Span<byte> buffer = new byte[1024];
+        this.stringVectorLazy = stringVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
+        this.stringVectorProgressive = stringVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
 
-        ISerializer<Container> serializer = Container.Serializer.WithSettings(s => s.UseLazyDeserialization());
-
-        int bytesWritten = serializer.Write(buffer, this.stringVectorSource);
-        this.stringVectorLazy = serializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Lazy);
-        this.stringVectorProgressive = serializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Progressive);
-
-        bytesWritten = serializer.Write(buffer, this.intVectorSource);
-        this.intVectorParsed = serializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Lazy);
-        this.intVectorProgressive = serializer.Parse(buffer.Slice(0, bytesWritten).ToArray(), FlatBufferDeserializationOption.Progressive);
+        this.intVectorParsed = intVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
+        this.intVectorProgressive = intVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
     }
 
     [Fact]

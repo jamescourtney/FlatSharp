@@ -73,10 +73,7 @@ public class CopyConstructorTests
             }
         };
 
-        byte[] data = new byte[OuterTable.Serializer.GetMaxSize(original)];
-        int bytesWritten = OuterTable.Serializer.Write(data, original);
-
-        var parsed = OuterTable.Serializer.Parse(data, option);
+        var parsed = original.SerializeAndParse(option);
         OuterTable copied = new OuterTable(parsed);
 
         // Strings can be copied by reference since they are immutable.

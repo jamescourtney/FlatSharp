@@ -36,11 +36,7 @@ public class FlatBufferVectorOfUnionTests
             }
         };
 
-        Span<byte> buffer = new byte[1024];
-
-        var serializer = TableVector.Serializer.WithSettings(s => s.UseLazyDeserialization());
-        int bytesWritten = serializer.Write(buffer, original);
-        this.vector = serializer.Parse(buffer.Slice(0, bytesWritten).ToArray());
+        this.vector = original.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
     }
 
     [Fact]
