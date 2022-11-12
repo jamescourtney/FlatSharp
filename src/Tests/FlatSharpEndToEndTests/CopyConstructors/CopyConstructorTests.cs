@@ -38,16 +38,16 @@ public class CopyConstructorTests
             I = 8,
 
             ByteVector = new byte[] { 1, 2, 3, }.AsMemory(),
-            ByteVector_RO = new byte[] { 4, 5, 6, }.AsMemory(),
+            ByteVectorRO = new byte[] { 4, 5, 6, }.AsMemory(),
 
-            IntVector_Array = new[] { 7, 8, 9, },
-            IntVector_List = new[] { 10, 11, 12, }.ToList(),
-            IntVector_RoList = new[] { 13, 14, 15 }.ToList(),
+            IntVectorArray = new[] { 7, 8, 9, },
+            IntVectorList = new[] { 10, 11, 12, }.ToList(),
+            IntVectorRoList = new[] { 13, 14, 15 }.ToList(),
 
-            TableVector_Array = CreateInner("Rocket", "Molly", "Clementine"),
-            TableVector_Indexed = new IndexedVector<string, InnerTable>(CreateInner("Pudge", "Sunshine", "Gypsy"), false),
-            TableVector_List = CreateInner("Finnegan", "Daisy"),
-            TableVector_RoList = CreateInner("Gordita", "Lunchbox"),
+            TableVectorArray = CreateInner("Rocket", "Molly", "Clementine"),
+            TableVectorIndexed = new IndexedVector<string, InnerTable>(CreateInner("Pudge", "Sunshine", "Gypsy"), false),
+            TableVectorList = CreateInner("Finnegan", "Daisy"),
+            TableVectorRoList = CreateInner("Gordita", "Lunchbox"),
 
             UnionVal = new Union(new OuterStruct()),
             VectorOfUnion = new List<Union>
@@ -57,14 +57,14 @@ public class CopyConstructorTests
                 new(new OuterStruct()),
                 new(new InnerStruct()),
             },
-            VectorOfUnion_RoList = new List<Union>
+            VectorOfUnionRoList = new List<Union>
             {
                 new(new OuterTable()),
                 new(new InnerTable() { Name = "b" }),
                 new(new OuterStruct()),
                 new(new InnerStruct()),
             },
-            VectorOfUnion_Array = new Union[]
+            VectorOfUnionArray = new Union[]
             {
                 new(new OuterTable()),
                 new(new InnerTable() { Name = "c" }),
@@ -92,9 +92,9 @@ public class CopyConstructorTests
         Assert.Equal(original.H, copied.H);
         Assert.Equal(original.I, copied.I);
 
-        DeepCompareIntVector(original.IntVector_Array, parsed.IntVector_Array, copied.IntVector_Array);
-        DeepCompareIntVector(original.IntVector_List, parsed.IntVector_List, copied.IntVector_List);
-        DeepCompareIntVector(original.IntVector_RoList, parsed.IntVector_RoList, copied.IntVector_RoList);
+        DeepCompareIntVector(original.IntVectorArray, parsed.IntVectorArray, copied.IntVectorArray);
+        DeepCompareIntVector(original.IntVectorList, parsed.IntVectorList, copied.IntVectorList);
+        DeepCompareIntVector(original.IntVectorRoList, parsed.IntVectorRoList, copied.IntVectorRoList);
 
         Assert.Equal((byte)3, original.UnionVal.Value.Discriminator);
         Assert.Equal((byte)3, parsed.UnionVal.Value.Discriminator);
@@ -120,77 +120,77 @@ public class CopyConstructorTests
 
         for (int i = 1; i <= 4; ++i)
         {
-            Assert.Equal((byte)i, original.VectorOfUnion_RoList[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)parsed.VectorOfUnion_RoList[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)copied.VectorOfUnion_RoList[i - 1].Discriminator);
+            Assert.Equal((byte)i, original.VectorOfUnionRoList[i - 1].Discriminator);
+            Assert.Equal((byte)i, (byte)parsed.VectorOfUnionRoList[i - 1].Discriminator);
+            Assert.Equal((byte)i, (byte)copied.VectorOfUnionRoList[i - 1].Discriminator);
         }
 
-        Assert.NotSame(parsed.VectorOfUnion_RoList[0].Item1, copied.VectorOfUnion_RoList[0].Item1);
-        Assert.NotSame(parsed.VectorOfUnion_RoList[1].Item2, copied.VectorOfUnion_RoList[1].Item2);
-        Assert.NotSame(parsed.VectorOfUnion_RoList[2].Item3, copied.VectorOfUnion_RoList[2].Item3);
-        Assert.NotSame(parsed.VectorOfUnion_RoList[3].Item4, copied.VectorOfUnion_RoList[3].Item4);
+        Assert.NotSame(parsed.VectorOfUnionRoList[0].Item1, copied.VectorOfUnionRoList[0].Item1);
+        Assert.NotSame(parsed.VectorOfUnionRoList[1].Item2, copied.VectorOfUnionRoList[1].Item2);
+        Assert.NotSame(parsed.VectorOfUnionRoList[2].Item3, copied.VectorOfUnionRoList[2].Item3);
+        Assert.NotSame(parsed.VectorOfUnionRoList[3].Item4, copied.VectorOfUnionRoList[3].Item4);
 
         for (int i = 1; i <= 4; ++i)
         {
-            Assert.Equal((byte)i, original.VectorOfUnion_Array[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)parsed.VectorOfUnion_Array[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)copied.VectorOfUnion_Array[i - 1].Discriminator);
+            Assert.Equal((byte)i, original.VectorOfUnionArray[i - 1].Discriminator);
+            Assert.Equal((byte)i, (byte)parsed.VectorOfUnionArray[i - 1].Discriminator);
+            Assert.Equal((byte)i, (byte)copied.VectorOfUnionArray[i - 1].Discriminator);
         }
 
-        Assert.NotSame(parsed.VectorOfUnion_Array[0].Item1, copied.VectorOfUnion_Array[0].Item1);
-        Assert.NotSame(parsed.VectorOfUnion_Array[1].Item2, copied.VectorOfUnion_Array[1].Item2);
-        Assert.NotSame(parsed.VectorOfUnion_Array[2].Item3, copied.VectorOfUnion_Array[2].Item3);
-        Assert.NotSame(parsed.VectorOfUnion_Array[3].Item4, copied.VectorOfUnion_Array[3].Item4);
+        Assert.NotSame(parsed.VectorOfUnionArray[0].Item1, copied.VectorOfUnionArray[0].Item1);
+        Assert.NotSame(parsed.VectorOfUnionArray[1].Item2, copied.VectorOfUnionArray[1].Item2);
+        Assert.NotSame(parsed.VectorOfUnionArray[2].Item3, copied.VectorOfUnionArray[2].Item3);
+        Assert.NotSame(parsed.VectorOfUnionArray[3].Item4, copied.VectorOfUnionArray[3].Item4);
 
         Memory<byte>? mem = copied.ByteVector;
         Memory<byte>? pMem = parsed.ByteVector;
         Assert.True(original.ByteVector.Value.Span.SequenceEqual(mem.Value.Span));
         Assert.False(mem.Value.Span.Overlaps(pMem.Value.Span));
 
-        ReadOnlyMemory<byte>? roMem = copied.ByteVector_RO;
-        ReadOnlyMemory<byte>? pRoMem = parsed.ByteVector_RO;
-        Assert.True(original.ByteVector_RO.Value.Span.SequenceEqual(roMem.Value.Span));
+        ReadOnlyMemory<byte>? roMem = copied.ByteVectorRO;
+        ReadOnlyMemory<byte>? pRoMem = parsed.ByteVectorRO;
+        Assert.True(original.ByteVectorRO.Value.Span.SequenceEqual(roMem.Value.Span));
         Assert.False(roMem.Value.Span.Overlaps(pRoMem.Value.Span));
 
         // array of table
         {
-            Assert.NotSame(parsed.TableVector_Array, copied.TableVector_Array);
+            Assert.NotSame(parsed.TableVectorArray, copied.TableVectorArray);
             DeepCompareInnerTableList(
-                (IReadOnlyList<InnerTable>)original.TableVector_Array,
-                (IReadOnlyList<InnerTable>)parsed.TableVector_Array,
-                (IReadOnlyList<InnerTable>)copied.TableVector_Array);
+                (IReadOnlyList<InnerTable>)original.TableVectorArray,
+                (IReadOnlyList<InnerTable>)parsed.TableVectorArray,
+                (IReadOnlyList<InnerTable>)copied.TableVectorArray);
         }
 
         // list of table.
         {
-            Assert.NotSame(parsed.TableVector_List, copied.TableVector_List);
+            Assert.NotSame(parsed.TableVectorList, copied.TableVectorList);
 
             DeepCompareInnerTableList(
-                (IReadOnlyList<InnerTable>)original.TableVector_List,
-                (IReadOnlyList<InnerTable>)parsed.TableVector_List,
-                (IReadOnlyList<InnerTable>)copied.TableVector_List);
+                (IReadOnlyList<InnerTable>)original.TableVectorList,
+                (IReadOnlyList<InnerTable>)parsed.TableVectorList,
+                (IReadOnlyList<InnerTable>)copied.TableVectorList);
         }
 
         // read only list of table.
         {
-            Assert.NotSame(parsed.TableVector_RoList, copied.TableVector_RoList);
+            Assert.NotSame(parsed.TableVectorRoList, copied.TableVectorRoList);
 
             DeepCompareInnerTableList(
-                original.TableVector_RoList,
-                parsed.TableVector_RoList,
-                copied.TableVector_RoList);
+                original.TableVectorRoList,
+                parsed.TableVectorRoList,
+                copied.TableVectorRoList);
         }
 
         // indexed vector of table.
         {
-            Assert.NotSame(parsed.TableVector_Indexed, copied.TableVector_Indexed);
-            foreach (var kvp in original.TableVector_Indexed)
+            Assert.NotSame(parsed.TableVectorIndexed, copied.TableVectorIndexed);
+            foreach (var kvp in original.TableVectorIndexed)
             {
                 string key = kvp.Key;
                 InnerTable? value = kvp.Value;
 
-                var parsedValue = parsed.TableVector_Indexed[key];
-                var copiedValue = copied.TableVector_Indexed[key];
+                var parsedValue = parsed.TableVectorIndexed[key];
+                var copiedValue = copied.TableVectorIndexed[key];
 
                 Assert.NotNull(parsedValue);
                 Assert.NotNull(copiedValue);

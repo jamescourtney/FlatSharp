@@ -18,7 +18,7 @@ using FlatSharp.Internal;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace FlatSharpTests;
+namespace FlatSharpEndToEndTests.ClassLib;
 
 public class SpanComparerTests
 {
