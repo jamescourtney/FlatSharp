@@ -30,29 +30,27 @@ public class PoolingTests
         Root parsed = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
         VerifyRoot(parsed, 1);
 
-        HashSet<IPoolableObjectDebug> seenObjects = new();
+        HashSet<object> seenObjects = new();
 
-        seenObjects.Add((IPoolableObjectDebug)parsed.InnerTable);
-        seenObjects.Add((IPoolableObjectDebug)parsed.RefStruct);
-        seenObjects.Add((IPoolableObjectDebug)parsed.VectorOfRefStruct);
-        seenObjects.Add((IPoolableObjectDebug)parsed.VectorOfTable);
-        seenObjects.Add((IPoolableObjectDebug)parsed.VectorOfRefStruct);
-        seenObjects.Add((IPoolableObjectDebug)parsed.VectorOfValueStruct);
+        seenObjects.Add(parsed.InnerTable);
+        seenObjects.Add(parsed.RefStruct);
+        seenObjects.Add(parsed.VectorOfRefStruct);
+        seenObjects.Add(parsed.VectorOfTable);
+        seenObjects.Add(parsed.VectorOfRefStruct);
+        seenObjects.Add(parsed.VectorOfValueStruct);
 
         foreach (var item in parsed.VectorOfTable)
         {
-            seenObjects.Add((IPoolableObjectDebug)item);
+            seenObjects.Add(item);
         }
 
         foreach (var item in parsed.VectorOfRefStruct)
         {
-            seenObjects.Add((IPoolableObjectDebug)item);
+            seenObjects.Add(item);
         }
 
         // Release all our stuff.
         parsed.ReturnToPool();
-
-        Assert.Equal(((IPoolableObjectDebug)parsed).GetPoolSize(), 1);
 
         buffer = CreateRoot(2);
 
@@ -60,20 +58,20 @@ public class PoolingTests
         parsed = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
         VerifyRoot(parsed, 2);
 
-        Assert.Contains((IPoolableObjectDebug)parsed.InnerTable, seenObjects);
-        Assert.Contains((IPoolableObjectDebug)parsed.RefStruct, seenObjects);
-        Assert.Contains((IPoolableObjectDebug)parsed.VectorOfRefStruct, seenObjects);
-        Assert.Contains((IPoolableObjectDebug)parsed.VectorOfTable, seenObjects);
-        Assert.Contains((IPoolableObjectDebug)parsed.VectorOfValueStruct, seenObjects);
+        Assert.Contains(parsed.InnerTable, seenObjects);
+        Assert.Contains(parsed.RefStruct, seenObjects);
+        Assert.Contains(parsed.VectorOfRefStruct, seenObjects);
+        Assert.Contains(parsed.VectorOfTable, seenObjects);
+        Assert.Contains(parsed.VectorOfValueStruct, seenObjects);
 
         foreach (var item in parsed.VectorOfTable)
         {
-            Assert.Contains((IPoolableObjectDebug)item, seenObjects);
+            Assert.Contains(item, seenObjects);
         }
 
         foreach (var item in parsed.VectorOfRefStruct)
         {
-            Assert.Contains((IPoolableObjectDebug)item, seenObjects);
+            Assert.Contains(item, seenObjects);
         }
     }
 

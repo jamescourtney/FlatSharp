@@ -24,7 +24,7 @@ namespace FlatSharp.Internal;
 /// </summary>
 public class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> 
     : IIndexedVector<TKey, TValue>
-    , IPoolableObjectDebug
+
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
@@ -79,12 +79,6 @@ public class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAcce
     /// Gets the count of items.
     /// </summary>
     public int Count => this.vector.Count;
-
-    bool IPoolableObjectDebug.IsInPool => this.vector is null;
-
-    int? IPoolableObjectDebug.GetPoolSize() => ObjectPool.GetCount(this);
-
-    bool IPoolableObjectDebug.IsRoot { get => false; set => throw new InvalidOperationException(); }
 
     /// <summary>
     /// No-op. We are already immutable.

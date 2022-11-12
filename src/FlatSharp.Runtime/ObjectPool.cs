@@ -63,12 +63,6 @@ namespace FlatSharp.Internal
         {
             Instance?.Return(item);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int? GetCount<T>(T item)
-        {
-            return Instance?.GetCount<T>();
-        }
     }
 
     /// <summary>
@@ -97,14 +91,6 @@ namespace FlatSharp.Internal
             return Pool<T>.TryGet(out value);
         }
 
-        /// <summary>
-        /// Returns the number of items in the pool for the given type.
-        /// </summary>
-        public int GetCount<T>()
-        {
-            return Pool<T>.FastCount;
-        }
-
         private static class Pool<T>
         {
             private static readonly ConcurrentQueue<T> pool = new();
@@ -112,7 +98,7 @@ namespace FlatSharp.Internal
             /// <summary>
             /// ConcurrentQueue's Count property is quite slow. FastCount just uses interlocked operations.
             /// </summary>
-            internal static int FastCount = 0;
+            private static int FastCount = 0;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool TryGet([NotNullWhen(true)] out T? item)

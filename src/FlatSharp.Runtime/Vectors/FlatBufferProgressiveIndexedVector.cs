@@ -23,7 +23,6 @@ namespace FlatSharp.Internal;
 /// </summary>
 public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> 
     : IIndexedVector<TKey, TValue>
-    , IPoolableObjectDebug
 
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
@@ -83,12 +82,6 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
     /// Gets the count of items.
     /// </summary>
     public int Count => this.backingVector.Count;
-
-    bool IPoolableObjectDebug.IsInPool => this.backingVector is null;
-
-    int? IPoolableObjectDebug.GetPoolSize() => ObjectPool.GetCount(this);
-
-    bool IPoolableObjectDebug.IsRoot { get => false; set => throw new InvalidOperationException(); }
 
     /// <summary>
     /// Freezes an Indexed vector, preventing further modifications.

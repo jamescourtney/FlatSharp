@@ -315,14 +315,11 @@ internal class DeserializeClassDefinition
 
                 bool {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
 
-                bool {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.IsInPool => this.{IsAliveVariableName} == 0;
-                int? {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.GetPoolSize() => {typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.GetCount)}(this);
                 bool {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.IsRoot 
                 {{
                     get => this.{IsRootVariableName};
                     set => this.{IsRootVariableName} = value;
                 }}
-
 
                 {string.Join("\r\n", this.propertyOverrides)}
                 {string.Join("\r\n", this.readMethods)}

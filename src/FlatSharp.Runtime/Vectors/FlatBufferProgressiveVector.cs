@@ -27,7 +27,6 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     : IList<T>
     , IReadOnlyList<T>
     , IPoolableObject
-    , IPoolableObjectDebug
 
     where T : notnull
     where TInputBuffer : IInputBuffer
@@ -118,15 +117,6 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
     public bool IsReadOnly => true;
 
     internal FlatBufferDeserializationOption DeserializationOption { get; private set; }
-
-    bool IPoolableObjectDebug.IsInPool => this.items is null;
-
-    bool IPoolableObjectDebug.IsRoot { get => false; set => throw new InvalidOperationException(); }
-
-    int? IPoolableObjectDebug.GetPoolSize()
-    {
-        return ObjectPool.GetCount(this);
-    }
 
     public void Add(T item)
     {

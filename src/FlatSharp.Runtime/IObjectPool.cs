@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Threading;
-
 namespace FlatSharp
 {
     /// <summary>
@@ -59,16 +57,6 @@ namespace FlatSharp.Internal
     /// </summary>
     public interface IPoolableObjectDebug
     {
-        /// <summary>
-        /// Retreives the number of items currently in the pool.
-        /// </summary>
-        int? GetPoolSize();
-
-        /// <summary>
-        /// Indicates if the given item is in the pool or not.
-        /// </summary>
-        bool IsInPool { get; }
-
         /// <summary>
         /// Indicates if this object is the root of the parse tree.
         /// </summary>
