@@ -1027,4 +1027,22 @@ public class VectorSerializationTests
 
         [FieldOffset(8)] public byte Byte;
     }
+
+    [FlatBufferStruct]
+    public class FiveByteStruct
+    {
+        [FlatBufferItem(0)]
+        public virtual int Int { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual byte Byte { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+    public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
+    }
 }
