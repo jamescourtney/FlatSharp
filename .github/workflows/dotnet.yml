@@ -48,7 +48,7 @@ jobs:
       run: dotnet build -c Release /p:SignAssembly=true
       
     - name: Test
-      working-directory: src/Tests/FlatSharpEndToEndTests
+      working-directory: src
       run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
       
     - name: Upload Packages
