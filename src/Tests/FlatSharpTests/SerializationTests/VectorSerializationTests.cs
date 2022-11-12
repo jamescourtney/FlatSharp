@@ -536,133 +536,6 @@ public class VectorSerializationTests
         }
     }
 
-    public class SortedVector_Bool : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorTest<bool>(rng => rng.Next() % 2 == 0, Comparer<bool>.Default);
-    }
-
-    public class SortedVector_Byte : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<byte>();
-    }
-
-    public class SortedVector_SByte : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<sbyte>();
-    }
-
-    public class SortedVector_UShort : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<ushort>();
-    }
-
-    public class SortedVector_Short : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<short>();
-    }
-
-    public class SortedVector_Uint : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<uint>();
-    }
-
-    public class SortedVector_Int : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<int>();
-    }
-
-    public class SortedVector_Ulong : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<ulong>();
-    }
-
-    public class SortedVector_Long : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<long>();
-    }
-
-    public class SortedVector_Double : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<double>();
-    }
-
-    public class SortedVector_Float : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<float>();
-    }
-
-    public class SortedVector_String_Base64 : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorTest<string>(
-            rng =>
-            {
-                int length = rng.Next(0, 2048);
-                byte[] data = new byte[length];
-                rng.NextBytes(data);
-                return Convert.ToBase64String(data);
-            },
-            new Utf8StringComparer());
-    }
-
-    public class SortedVector_String_RandomChars : VectorSerializationTests
-    {
-        [Fact]
-        public void Test()
-        {
-            int i = 0;
-            StringBuilder s = new StringBuilder();
-
-            this.SortedVectorTest<string>(
-                rng =>
-                {
-                    s.Clear();
-                    for (int j = 0; j < Math.Min(i, 100); ++j)
-                    {
-                        s.Append("a");
-                    }
-
-                    ++i;
-                    return s.ToString();
-                },
-                new Utf8StringComparer());
-        }
-    }
-
-    public class SortedVector_String_Empty : VectorSerializationTests
-    {
-        [Fact]
-        public void Test()
-        {
-            StringBuilder sb = new();
-            this.SortedVectorTest<string>(
-                rng =>
-                {
-                    sb.Clear();
-                    int length = rng.Next(0, 2048);
-                    for (int i = 0; i < length; ++i)
-                    {
-                        // pick unicode characters in the basic multilingual plane.
-                        sb.Append((char)rng.Next(0x0, 0xD7FF));
-                    }
-
-                    return sb.ToString();
-                },
-                new Utf8StringComparer());
-        }
-    }
-
     public class IndexedVectorTests
     {
         [Fact]
@@ -796,91 +669,6 @@ public class VectorSerializationTests
                     previous = item;
                 }
             }
-        }
-    }
-
-    protected void SortedVectorStructTest<TKey>() where TKey : struct
-    {
-        this.SortedVectorTest(
-            rng =>
-            {
-                byte[] data = new byte[8];
-                rng.NextBytes(data);
-                TKey value = MemoryMarshal.Cast<byte, TKey>(data.AsSpan())[0];
-                return value;
-            },
-            Comparer<TKey>.Default);
-    }
-
-    protected void SortedVectorTest<TKey>(
-        Func<Random, TKey> createValue,
-        IComparer<TKey> comparer)
-    {
-        Random rng = new Random();
-        foreach (int length in Enumerable.Range(0, 20).Concat(Enumerable.Range(1, 5).Select(x => x * 100)))
-        {
-            TableWithKey<TKey>[] values = new TableWithKey<TKey>[length];
-            for (int i = 0; i < values.Length; ++i)
-            {
-                values[i] = new TableWithKey<TKey> { Key = createValue(rng), Value = i.ToString() };
-            }
-
-            this.SortedVectorTest(values, comparer);
-        }
-    }
-
-    protected void SortedVectorTest<TKey>(
-        TableWithKey<TKey>[] values,
-        IComparer<TKey> comparer)
-    {
-        RootTableSorted<IList<TableWithKey<TKey>>> root = new()
-        {
-            Vector = values
-        };
-
-        byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(root)];
-        FlatBufferSerializer.Default.Serialize(root, data);
-
-        void RunTest<TVector>(
-            FlatBufferDeserializationOption option,
-            Func<TVector, int> getLength,
-            Func<TVector, int, TableWithKey<TKey>> indexer,
-            Func<TVector, TKey, TableWithKey<TKey>?> find)
-        {
-            var parsed = FlatBufferSerializer.Default.Compile<RootTableSorted<TVector>>().WithSettings(s => s.UseDeserializationMode(option)).Parse(data);
-            var vector = parsed.Vector;
-            int length = getLength(vector);
-
-            Assert.Equal(root.Vector.Count, length);
-
-            if (length > 0)
-            {
-                TableWithKey<TKey> previous = indexer(vector, 0);
-                for (int i = 0; i < length; ++i)
-                {
-                    var item = indexer(vector, i);
-                    Assert.True(comparer.Compare(previous.Key, item.Key) <= 0);
-                    previous = item;
-                }
-
-                foreach (var originalItem in root.Vector)
-                {
-                    var item = find(vector, originalItem.Key);
-                    Assert.NotNull(item);
-
-                    if (originalItem.Key.ToString() != item.Key.ToString())
-                    {
-                    }
-
-                    Assert.Equal(originalItem.Key.ToString(), item.Key.ToString());
-                }
-            }
-        }
-
-        foreach (FlatBufferDeserializationOption mode in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-        {
-            RunTest<IList<TableWithKey<TKey>>>(mode, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
-            RunTest<IReadOnlyList<TableWithKey<TKey>>>(mode, x => x.Count, (x, i) => x[i], (x, k) => SortedVectorHelpers.BinarySearchByFlatBufferKey(x, k));
         }
     }
 
@@ -1026,5 +814,23 @@ public class VectorSerializationTests
         [FieldOffset(0)] public long Long;
 
         [FieldOffset(8)] public byte Byte;
+    }
+
+    [FlatBufferStruct]
+    public class FiveByteStruct
+    {
+        [FlatBufferItem(0)]
+        public virtual int Int { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual byte Byte { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+    public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
     }
 }

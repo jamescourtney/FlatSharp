@@ -1,6 +1,5 @@
-﻿
-/*
- * Copyright 2021 James Courtney
+﻿/*
+ * Copyright 2018 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +14,15 @@
  * limitations under the License.
  */
 
-global using System;
-global using System.Buffers;
-global using System.Buffers.Binary;
-global using System.Collections;
-global using System.Collections.Generic;
-global using System.ComponentModel;
-global using System.Diagnostics;
-global using System.Diagnostics.CodeAnalysis;
-global using System.Linq;
-global using System.Reflection;
-global using System.Runtime.CompilerServices;
-global using FlatSharp;
-global using FlatSharp.Attributes;
-global using Xunit;
+using FlatSharp.Internal;
+
+namespace FlatSharpEndToEndTests;
+
+public class Utf8StringComparer : IComparer<string>
+{
+    public int Compare(string x, string y)
+    {
+        return StringSpanComparer.Instance.Compare(x != null, SerializationHelpers.Encoding.GetBytes(x), y != null, SerializationHelpers.Encoding.GetBytes(y));
+    }
+}
+

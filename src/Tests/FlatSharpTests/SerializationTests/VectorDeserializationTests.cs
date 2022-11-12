@@ -15,7 +15,9 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace FlatSharpTests;
 
@@ -502,5 +504,13 @@ public class VectorDeserializationTests
 
         [FlatBufferItem(1, Key = true)]
         public virtual TKey? Key { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+    public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
     }
 }
