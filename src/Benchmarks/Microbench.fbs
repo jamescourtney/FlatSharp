@@ -56,7 +56,7 @@ struct ValueStructA (fs_valueStruct) { x : int; }
 struct ValueStructB (fs_valueStruct) { y : long; }
 struct ValueStructC (fs_valueStruct) { a : ValueStructA; b : ValueStructB; }
 
-union UnsafeUnion (fs_unsafeUnion) { ValueStructA, ValueStructB, ValueStructC }
+union UnsafeUnion { ValueStructA, ValueStructB, ValueStructC }
 union SafeUnion { ValueStructA, ValueStructB, ValueStructC }
 union MixedUnion { ValueStructA, ValueStructB, ValueStructC, Something : string }
 

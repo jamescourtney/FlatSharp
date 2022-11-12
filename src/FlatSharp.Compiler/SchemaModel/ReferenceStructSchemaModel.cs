@@ -75,6 +75,12 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         writer.AppendSummaryComment(this.Documentation);
         writer.AppendLine(attribute);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-        writer.AppendLine($"public partial class {this.Name} : object, IPoolableObject");
+        writer.AppendLine($"public partial class {this.Name}");
+        writer.AppendLine($"    : object");
+
+        if (context.Options.GeneratePoolableObjects == true)
+        {
+            writer.AppendLine($"    , IPoolableObject");
+        }
     }
 }

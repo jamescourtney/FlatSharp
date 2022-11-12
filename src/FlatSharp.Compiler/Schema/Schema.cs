@@ -63,7 +63,7 @@ public class Schema
     [FlatBufferItem(7)]
     public virtual IIndexedVector<string, SchemaFile>? FbsFiles { get; set; }
 
-    public RootModel ToRootModel()
+    public RootModel ToRootModel(CompilerOptions options)
     {
         RootModel model = new RootModel(this.AdvancedFeatures);
 
@@ -73,7 +73,7 @@ public class Schema
             {
                 model.AddElement(enumModel);
             }
-            else if (UnionSchemaModel.TryCreate(this, @enum, out var unionModel))
+            else if (ValueUnionSchemaModel.TryCreate(this, @enum, options, out var unionModel))
             {
                 model.AddElement(unionModel);
             }

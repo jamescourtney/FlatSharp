@@ -74,7 +74,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
             this.EmitDefaultConstrutor(writer, context);
             this.EmitDeserializationConstructor(writer);
             this.EmitCopyConstructor(writer, context);
-            this.EmitPoolableObject(writer);
+            this.EmitPoolableObject(writer, context);
 
             writer.AppendLine("static partial void OnStaticInitialize();");
 
@@ -172,12 +172,15 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
         writer.AppendLine("#pragma warning restore CS8618"); // nullable
     }
 
-    private void EmitPoolableObject(CodeWriter writer)
+    private void EmitPoolableObject(CodeWriter writer, CompileContext context)
     {
-        writer.AppendLine("/// <inheritdoc />");
-        writer.AppendLine("public virtual void ReturnToPool(bool unsafeForce = false)");
-        using (writer.WithBlock())
+        if (context.Options.GeneratePoolableObjects == true)
         {
+            writer.AppendLine("/// <inheritdoc />");
+            writer.AppendLine("public virtual void ReturnToPool(bool unsafeForce = false)");
+            using (writer.WithBlock())
+            {
+            }
         }
     }
 

@@ -35,6 +35,9 @@ public record CompilerOptions
     [Option("nullable-warnings", Default = false, HelpText = "Emit full nullable annotations and enable warnings.")]
     public bool? NullableWarnings { get; set; }
 
+    [Option("gen-poolable", Hidden = false, Default = false, HelpText = "Generate extra code to enable object pooling for allocation reductions.")]
+    public bool? GeneratePoolableObjects { get; set; }
+
     [Option("flatc-path", Hidden = true)]
     public string? FlatcPath { get; set; }
 

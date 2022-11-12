@@ -19,14 +19,15 @@ using FlatSharp.Compiler.Schema;
 using FlatSharp.CodeGen;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Reflection.Metadata;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
-public class UnionSchemaModel : BaseSchemaModel
+public class ValueUnionSchemaModel : BaseSchemaModel
 {
     private readonly FlatBufferEnum union;
 
-    private UnionSchemaModel(Schema.Schema schema, FlatBufferEnum union) : base(schema, union.Name, new FlatSharpAttributes(union.Attributes))
+    private ValueUnionSchemaModel(Schema.Schema schema, FlatBufferEnum union) : base(schema, union.Name, new FlatSharpAttributes(union.Attributes))
     {
         FlatSharpInternal.Assert(union.UnderlyingType.BaseType == BaseType.UType, "Expecting utype");
 
@@ -36,7 +37,11 @@ public class UnionSchemaModel : BaseSchemaModel
         this.AttributeValidator.UnsafeUnionValidator = b => AttributeValidationResult.Valid;
     }
 
-    public static bool TryCreate(Schema.Schema schema, FlatBufferEnum union, [NotNullWhen(true)] out UnionSchemaModel? model)
+    public static bool TryCreate(
+        Schema.Schema schema,
+        FlatBufferEnum union,
+        CompilerOptions context,
+        [NotNullWhen(true)] out BaseSchemaModel? model)
     {
         if (union.UnderlyingType.BaseType != BaseType.UType)
         {
@@ -44,7 +49,15 @@ public class UnionSchemaModel : BaseSchemaModel
             return false;
         }
 
-        model = new UnionSchemaModel(schema, union);
+        if (context.GeneratePoolableObjects == true)
+        {
+            model = new ReferenceUnionSchemaModel(schema, union);
+        }
+        else
+        {
+            model = new ValueUnionSchemaModel(schema, union);
+        }
+
         return true;
     }
 

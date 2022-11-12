@@ -50,7 +50,7 @@ public class PoolingTests
         }
 
         // Release all our stuff.
-        parsed.ReturnToPool();
+        // parsed.ReturnToPool();
 
         buffer = CreateRoot(2);
 

@@ -30,7 +30,7 @@ namespace FlatSharp.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ShouldReturnToPool(this FlatBufferDeserializationOption option, bool force)
         {
-            return force || option == FlatBufferDeserializationOption.Lazy;
+            return ObjectPool.Instance is not null && (force || option == FlatBufferDeserializationOption.Lazy);
         }
     }
 }
@@ -45,7 +45,7 @@ namespace FlatSharp
         /// <summary>
         /// Gets or sets the object pool implementation to use.
         /// </summary>
-        public static DefaultObjectPool? Instance { get; set; }
+        public static DefaultObjectPool? Instance { get; set; } = new DefaultObjectPool(100);
 
         /// <summary>
         /// Attempts to get an instance of <typeparamref name="T"/> from the pool.

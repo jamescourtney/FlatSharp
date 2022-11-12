@@ -20,7 +20,7 @@ struct ValueStructVec3 (fs_valueStruct) { X : float32; Y : float32; Z : float32;
 struct ValueStructExtCorrectSize (fs_valueStruct, fs_unsafeExternal:"System.Numerics.Vector3") { Temp : [ float32 : 3 ]; }
 struct ValueStructExtWrongSize (fs_valueStruct, fs_unsafeExternal:"System.Numerics.Vector<byte>") { Temp : [ ubyte : 4 ]; }
 
-union UnsafeUnion (fs_unsafeUnion) { ValueStructInt, ValueStructVec3, ExtCorrect : ValueStructExtCorrectSize, ExtWrong : ValueStructExtWrongSize }
+union UnsafeUnion { ValueStructInt, ValueStructVec3, ExtCorrect : ValueStructExtCorrectSize, ExtWrong : ValueStructExtWrongSize }
 
 table Container (fs_serializer) {
     Value : [MyUnion];

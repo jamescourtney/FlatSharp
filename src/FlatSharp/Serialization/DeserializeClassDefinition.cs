@@ -386,17 +386,28 @@ internal class DeserializeClassDefinition
 
     protected virtual string GetGetOrCreateMethodBody()
     {
-        return $@"
-            {this.ClassName}<TInputBuffer>? item;
+        if (typeof(IPoolableObject).IsAssignableFrom(this.typeModel.ClrType))
+        {
+            return $@"
+                {this.ClassName}<TInputBuffer>? item;
 
-            if (!{typeof(ObjectPool).GetGlobalCompilableTypeName()}.TryGet<{this.ClassName}<TInputBuffer>>(out item))
-            {{
-                item = new {this.ClassName}<TInputBuffer>();
-            }}
+                if (!{typeof(ObjectPool).GetGlobalCompilableTypeName()}.TryGet<{this.ClassName}<TInputBuffer>>(out item))
+                {{
+                    item = new {this.ClassName}<TInputBuffer>();
+                }}
 
-            item.Initialize(buffer, offset, remainingDepth);
-            return item;
-        ";
+                item.Initialize(buffer, offset, remainingDepth);
+                return item;
+            ";
+        }
+        else
+        {
+            return $@"
+                {this.ClassName}<TInputBuffer>? item = new();
+                item.Initialize(buffer, offset, remainingDepth);
+                return item;
+            ";
+        }
     }
 
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
@@ -436,15 +447,31 @@ internal class DeserializeClassDefinition
             disposeFields = this.itemModels
                 .Where(
                     x => !x.ItemTypeModel.ClrType.IsValueType)
-                .Where(
-                    x => typeof(IPoolableObject).IsAssignableFrom(x.ItemTypeModel.ClrType) || x.ItemTypeModel.ClrType.IsInterface)
-                .Select(
-                    x => $@"
-                    {{
-                        var item = System.Threading.Interlocked.Exchange(ref this.{GetFieldName(x)}!, null);
-                        (item as IPoolableObject)?.ReturnToPool(true);
-                    }}
-                    ");
+                .Select(x => (model: x, isPoolable: typeof(IPoolableObject).IsAssignableFrom(x.ItemTypeModel.ClrType), isInterface: x.ItemTypeModel.ClrType.IsInterface))
+                .Where(x => x.isPoolable || x.isInterface)
+                .Select(x =>
+                {
+                    if (x.isPoolable)
+                    {
+                        return $@"
+                        {{
+                            var item = this.{GetFieldName(x.model)};
+                            this.{GetFieldName(x.model)} = null!;
+                            item?.ReturnToPool(true);
+                        }}
+                        ";
+                    }
+                    else
+                    {
+                        return $@"
+                        {{
+                            var item = this.{GetFieldName(x.model)};
+                            this.{GetFieldName(x.model)} = null!;
+                            (item as IPoolableObject)?.ReturnToPool(true);
+                        }}
+                        ";
+                    }
+                });
 
             // reset all fields to default.
             disposeFields = disposeFields.Concat(this.itemModels
@@ -485,15 +512,18 @@ internal class DeserializeClassDefinition
         
         public override void ReturnToPool(bool unsafeForce = false) 
         {{
-            {fromRootCondition}
+            if ({typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.Instance)} is not null)
             {{
-                if (System.Threading.Interlocked.Exchange(ref this.{IsAliveVariableName}, 0) != 0)
+                {fromRootCondition}
                 {{
-                    {string.Join("\r\n", disposeFields)}
+                    if (System.Threading.Interlocked.Exchange(ref this.{IsAliveVariableName}, 0) != 0)
+                    {{
+                        {string.Join("\r\n", disposeFields)}
 
-                    this.{IsRootVariableName} = false;
-                    this.{IsAliveVariableName} = 0;
-                    {typeof(ObjectPool).GetGlobalCompilableTypeName()}.Return(this);
+                        this.{IsRootVariableName} = false;
+                        this.{IsAliveVariableName} = 0;
+                        {typeof(ObjectPool).GetGlobalCompilableTypeName()}.Return(this);
+                    }}
                 }}
             }}
         }}

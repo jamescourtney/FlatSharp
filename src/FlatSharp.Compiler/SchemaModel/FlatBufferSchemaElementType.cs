@@ -31,4 +31,5 @@ public enum FlatBufferSchemaElementType
     StructVector = 10,
     ValueStructVector = 11,
     RpcCall = 12,
+    PoolableUnion = 13,
 }
