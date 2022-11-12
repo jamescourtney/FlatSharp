@@ -22,6 +22,7 @@ namespace FlatSharp;
 /// <summary>
 /// A serializer capable of reading and writing data to the FlatBuffer binary format.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class FlatBufferSerializer
 {
     public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
