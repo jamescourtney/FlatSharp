@@ -61,8 +61,8 @@ jobs:
             --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
       
     - name: Test
-      working-directory: src/Tests/FlatSharpEndToEndTests
-      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      working-directory: src
+      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings src/Tests/coverlet.runsettings
       
     - name: Upload
       run: codecov -f **/*coverage*.xml
