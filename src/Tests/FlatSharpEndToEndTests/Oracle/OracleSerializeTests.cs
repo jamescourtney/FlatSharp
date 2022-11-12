@@ -467,7 +467,7 @@ public partial class OracleSerializeTests
         var parsed = FS.SortedVectorTest.Serializer.Parse(data);
         var table = Flatc.SortedVectorTest.GetRootAsSortedVectorTest(new ByteBuffer(data));
 
-        VerifySorted<IList<FS.SortedVectorStringTable>, FS.SortedVectorStringTable, string>(parsed.String, i => i.Value, i => table.String(i)?.Value, t => table.StringByKey(t) != null, new ClassLib.Utf8StringComparer());
+        VerifySorted<IList<FS.SortedVectorStringTable>, FS.SortedVectorStringTable, string>(parsed.String, i => i.Value, i => table.String(i)?.Value, t => table.StringByKey(t) != null, new Utf8StringComparer());
         VerifySorted<IList<FS.SortedVectorInt32Table>, FS.SortedVectorInt32Table, int>(parsed.Int32, i => i.Value, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
         VerifySorted<IList<FS.SortedVectorDoubleTable>, FS.SortedVectorDoubleTable, double>(parsed.Double, i => i.Value, i => table.Double(i).Value.Value, t => table.DoubleByKey(t) != null, Comparer<double>.Default);
     }

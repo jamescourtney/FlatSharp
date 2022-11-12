@@ -241,6 +241,7 @@ public class EchoServiceTestCases
         });
     }
 
+    /*
     [Fact]
     public Task EchoServerStreaming_Interface_Canceled()
     {
@@ -279,6 +280,7 @@ public class EchoServiceTestCases
             Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
+    */
 
     [Fact]
     public Task EchoDuplexStreaming()

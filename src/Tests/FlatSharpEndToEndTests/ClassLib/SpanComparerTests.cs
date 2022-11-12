@@ -137,11 +137,3 @@ public class SpanComparerTests
         }
     }
 }
-
-public class Utf8StringComparer : IComparer<string>
-{
-    public int Compare(string x, string y)
-    {
-        return StringSpanComparer.Instance.Compare(x != null, SerializationHelpers.Encoding.GetBytes(x), y != null, SerializationHelpers.Encoding.GetBytes(y));
-    }
-}

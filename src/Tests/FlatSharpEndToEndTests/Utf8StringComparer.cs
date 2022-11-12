@@ -1,5 +1,5 @@
-/*
- * Copyright 2021 James Courtney
+﻿/*
+ * Copyright 2018 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-namespace FlatSharpEndToEndTests.SortedVectors;
+using FlatSharp.Internal;
 
-public class SortedVectorTestCases
+namespace FlatSharpEndToEndTests;
+
+public class Utf8StringComparer : IComparer<string>
 {
-    //todo
+    public int Compare(string x, string y)
+    {
+        return StringSpanComparer.Instance.Compare(x != null, SerializationHelpers.Encoding.GetBytes(x), y != null, SerializationHelpers.Encoding.GetBytes(y));
+    }
 }
+

@@ -1,0 +1,44 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sortedVector";
+
+namespace FlatSharpEndToEndTests.Vectors.Sorted;
+
+table RootTable (fs_serializer)
+{
+    list_vector_of_bool : [ BoolKey ] (fs_sortedVector);
+
+    list_vector_of_byte : [ ByteKey ] (fs_sortedVector);
+    list_vector_of_sbyte : [ SByteKey ] (fs_sortedVector);
+
+    list_vector_of_short : [ ShortKey ] (fs_sortedVector);
+    list_vector_of_ushort : [ UShortKey ]  (fs_sortedVector);
+
+    list_vector_of_int : [ IntKey ] (fs_sortedVector);
+    list_vector_of_uint : [ UIntKey ] (fs_sortedVector);
+
+    list_vector_of_long : [ LongKey ] (fs_sortedVector);
+    list_vector_of_ulong : [ ULongKey ] (fs_sortedVector);
+
+    list_vector_of_float : [ FloatKey ] (fs_sortedVector);
+    list_vector_of_double : [ DoubleKey ] (fs_sortedVector);
+
+    list_vector_of_string : [ StringKey ] (fs_sortedVector);
+}
+
+table BoolKey { Key : bool (key); }
+table ByteKey { Key : ubyte (key); }
+table SByteKey { Key : byte (key); }
+table ShortKey { Key : short (key); }
+table UShortKey { Key : ushort (key); }
+table IntKey { Key : int (key); }
+table UIntKey { Key : uint (key); }
+table LongKey { Key : long (key); }
+table ULongKey { Key : ulong (key); }
+table FloatKey { Key : float (key); }
+table DoubleKey { Key : double (key); }
+table StringKey { Key : string (key); }

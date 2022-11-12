@@ -435,7 +435,7 @@ public partial class OracleDeserializeTests
         var serializer = FS.SortedVectorTest.Serializer.WithSettings(s => s.UseDeserializationMode(option));
         var parsed = serializer.Parse(serialized);
 
-        VerifySorted<FS.SortedVectorStringTable, string>(parsed.String, s => s.Value, new ClassLib.Utf8StringComparer(), strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
+        VerifySorted<FS.SortedVectorStringTable, string>(parsed.String, s => s.Value, new Utf8StringComparer(), strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
         VerifySorted<FS.SortedVectorInt32Table, int>(parsed.Int32, s => s.Value, Comparer<int>.Default, ints, new List<int> { -1, -3, 0 });
         VerifySorted<FS.SortedVectorDoubleTable, double>(parsed.Double, s => s.Value, Comparer<double>.Default, doubles, new List<double> { Math.PI, Math.E, Math.Sqrt(2) });
     }
