@@ -62,7 +62,7 @@ jobs:
       
     - name: Test
       working-directory: src
-      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings src/Tests/coverlet.runsettings -f net7.0
+      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
       
     - name: Upload
       run: codecov -f **/*coverage*.xml
