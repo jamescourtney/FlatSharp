@@ -58,7 +58,7 @@ jobs:
             --use-source-link `
             --format opencover `
             --target "dotnet" `
-            --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
+            --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
       
     - name: Test
       working-directory: src/Tests/FlatSharpEndToEndTests
