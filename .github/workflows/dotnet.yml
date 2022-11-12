@@ -41,7 +41,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/tests/FlatsharpEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests
     
     - name: Build
       working-directory: src
