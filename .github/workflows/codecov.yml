@@ -58,11 +58,11 @@ jobs:
             --use-source-link `
             --format opencover `
             --target "dotnet" `
-            --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names false --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
+            --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
       
     - name: Test
-      working-directory: src/Tests/FlatSharpEndToEndTests
-      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      working-directory: src
+      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
       
     - name: Upload
       run: codecov -f **/*coverage*.xml
