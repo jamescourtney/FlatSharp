@@ -59,10 +59,13 @@ internal class DeserializeClassDefinition
         this.onDeserializeMethod = onDeserializeMethod;
 
         this.vtableAccessor = "default";
-
-        this.instanceFieldDefinitions[IsAliveVariableName] = $"private int {IsAliveVariableName};";
-        this.initializeStatements.Add($"this.{IsAliveVariableName} = 1;");
         this.instanceFieldDefinitions[IsRootVariableName] = $"private bool {IsRootVariableName};";
+
+        if (typeof(IPoolableObject).IsAssignableFrom(this.typeModel.ClrType))
+        {
+            this.instanceFieldDefinitions[IsAliveVariableName] = $"private int {IsAliveVariableName};";
+            this.initializeStatements.Add($"this.{IsAliveVariableName} = 1;");
+        }
 
         if (this.options.GreedyDeserialize)
         {
