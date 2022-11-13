@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-using FlatSharp.Internal;
-
 namespace FlatSharpEndToEndTests.PoolingTests;
 
 public class PoolingTests
 {
     [Fact]
-    public void Lazy_Pools()
+    public void Progressive_Pools()
     {
-        ObjectPool.Instance = new DefaultObjectPool(10);
+        var testPool = new TestObjectPool();
+        ObjectPool.Instance = testPool;
 
         byte[] buffer = CreateRoot(1);
 
@@ -52,6 +51,12 @@ public class PoolingTests
         // Release all our stuff.
         parsed.ReturnToPool();
 
+        foreach (var item in seenObjects)
+        {
+            Assert.True(testPool.IsInPool(item));
+            Assert.True(testPool.Count(item) > 0);
+        }
+
         buffer = CreateRoot(2);
 
         // Parse again, and ensure that all the things are in the hash set.
@@ -73,6 +78,137 @@ public class PoolingTests
         {
             Assert.Contains(item, seenObjects);
         }
+
+        foreach (var item in seenObjects)
+        {
+            Assert.False(testPool.IsInPool(item));
+            Assert.Equal(0, testPool.Count(item));
+        }
+    }
+
+    [Fact]
+    public void Progressive_NonRoot_NoOp()
+    {
+        var testPool = new TestObjectPool();
+        ObjectPool.Instance = testPool;
+
+        void AssertNotInPool(object item)
+        {
+            Assert.False(testPool.IsInPool(item));
+
+            IPoolableObject? obj = item as IPoolableObject;
+
+            Assert.NotNull(obj);
+
+            // Verify call is ignored for non-root objects.
+            obj.ReturnToPool();
+            Assert.False(testPool.IsInPool(item));
+        }
+
+        byte[] buffer = CreateRoot(1);
+
+        Root parsed = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
+        VerifyRoot(parsed, 1);
+
+        AssertNotInPool(parsed.InnerTable);
+        AssertNotInPool(parsed.RefStruct);
+        AssertNotInPool(parsed.VectorOfRefStruct);
+        AssertNotInPool(parsed.VectorOfValueStruct);
+        AssertNotInPool(parsed.VectorOfTable);
+
+        foreach (var item in parsed.VectorOfRefStruct)
+        {
+            AssertNotInPool(item);
+        }
+
+        foreach (var item in parsed.VectorOfTable)
+        {
+            AssertNotInPool(item);
+        }
+    }
+
+    [Fact]
+    public void Lazy_MultipleReturn()
+    {
+        var testPool = new TestObjectPool();
+        ObjectPool.Instance = testPool;
+
+        byte[] buffer = CreateRoot(1);
+        byte[] buffer2 = CreateRoot(2);
+
+        Root parsedOriginal = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
+        VerifyRoot(parsedOriginal, 1);
+
+        Assert.False(testPool.IsInPool(parsedOriginal));
+        Assert.Equal(0, testPool.Count(parsedOriginal));
+
+        parsedOriginal.ReturnToPool();
+        
+        Assert.True(testPool.IsInPool(parsedOriginal));
+        Assert.Equal(1, testPool.Count(parsedOriginal));
+
+        Root parsed2 = Root.Serializer.Parse(buffer2, FlatBufferDeserializationOption.Lazy);
+
+        Assert.Same(parsedOriginal, parsed2);
+        VerifyRoot(parsed2, 2);
+        VerifyRoot(parsedOriginal, 2);
+
+        Root parsed3 = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
+        VerifyRoot(parsed3, 1);
+
+        Assert.NotSame(parsedOriginal, parsed3);
+
+        Assert.Equal(0, testPool.Count(parsedOriginal));
+        Assert.False(testPool.IsInPool(parsedOriginal));
+        Assert.False(testPool.IsInPool(parsed2));
+        Assert.False(testPool.IsInPool(parsed3));
+
+        // Return works.
+        parsedOriginal.ReturnToPool();
+        Assert.Equal(1, testPool.Count(parsedOriginal));
+        Assert.True(testPool.IsInPool(parsedOriginal));
+        Assert.True(testPool.IsInPool(parsed2));
+        Assert.False(testPool.IsInPool(parsed3));
+
+        // Won't have any effect. 
+        parsed2.ReturnToPool();
+        Assert.Equal(1, testPool.Count(parsedOriginal));
+        Assert.True(testPool.IsInPool(parsedOriginal));
+        Assert.True(testPool.IsInPool(parsed2));
+        Assert.False(testPool.IsInPool(parsed3));
+
+        parsed3.ReturnToPool();
+        Assert.Equal(2, testPool.Count(parsedOriginal));
+        Assert.True(testPool.IsInPool(parsedOriginal));
+        Assert.True(testPool.IsInPool(parsed2));
+        Assert.True(testPool.IsInPool(parsed3));
+    }
+
+    [Fact]
+    public void Lazy_Vectors()
+    {
+        var testPool = new TestObjectPool();
+        ObjectPool.Instance = testPool;
+
+        byte[] buffer = CreateRoot(1);
+
+        Root parsedOriginal = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
+        VerifyRoot(parsedOriginal, 1);
+
+        var structVector = parsedOriginal.VectorOfRefStruct;
+
+        HashSet<RefStruct> seenInstances = new();
+
+        foreach (RefStruct refStruct in structVector)
+        {
+            seenInstances.Add(refStruct);
+            Assert.False(testPool.IsInPool(refStruct));
+
+            refStruct.ReturnToPool();
+            Assert.True(testPool.IsInPool(refStruct));
+        }
+
+        Assert.Single(seenInstances);
     }
 
     private byte[] CreateRoot(int value)

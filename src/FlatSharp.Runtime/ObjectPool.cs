@@ -33,16 +33,35 @@ namespace FlatSharp.Internal
             return ObjectPool.Instance is not null && (force || option == FlatBufferDeserializationOption.Lazy);
         }
     }
+}
 
+namespace FlatSharp
+{
     /// <summary>
     /// A static singleton that defines the FlatSharp object pool to use.
     /// </summary>
     public static class ObjectPool
     {
+        private static IObjectPool? instance;
+        private static DefaultObjectPool? fastInstance;
+
+        static ObjectPool()
+        {
+            Instance = new DefaultObjectPool(100);
+        }
+
         /// <summary>
         /// Gets or sets the object pool implementation to use.
         /// </summary>
-        public static DefaultObjectPool? Instance { get; set; } = new DefaultObjectPool(100);
+        public static IObjectPool? Instance
+        {
+            get => instance;
+            set
+            {
+                instance = value;
+                fastInstance = value as DefaultObjectPool;
+            }
+        }
 
         /// <summary>
         /// Attempts to get an instance of <typeparamref name="T"/> from the pool.
@@ -51,8 +70,7 @@ namespace FlatSharp.Internal
         public static bool TryGet<T>([NotNullWhen(true)] out T? value)
         {
             value = default;
-
-            return Instance?.TryGet(out value) == true;
+            return (fastInstance ?? instance)?.TryGet(out value) == true;
         }
 
         /// <summary>
@@ -61,7 +79,7 @@ namespace FlatSharp.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Return<T>(T item)
         {
-            Instance?.Return(item);
+            (fastInstance ?? instance)?.Return(item);
         }
     }
 
