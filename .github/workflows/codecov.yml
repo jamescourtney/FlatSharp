@@ -58,7 +58,7 @@ jobs:
             --use-source-link `
             --format opencover `
             --target "dotnet" `
-            --output e2etests.coverage.xml
+            --output e2etests.coverage.xml `
             --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
   
     - name: Run FlatSharp.Compiler (Pooling Tests)
@@ -75,7 +75,7 @@ jobs:
             --use-source-link `
             --format opencover `
             --target "dotnet" `
-            --output pooling.coverage.xml
+            --output pooling.coverage.xml `
             --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input `"$fbs`" -o src/tests/FlatSharpPoolableEndToEndTests"
       
     - name: Test
