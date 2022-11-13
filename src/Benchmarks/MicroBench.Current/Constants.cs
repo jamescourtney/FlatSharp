@@ -21,6 +21,7 @@ namespace Microbench
     using System.Diagnostics;
     using System.Linq;
     using FlatSharp;
+    using FlatSharp.Internal;
 
     public static class Constants
     {
@@ -30,7 +31,9 @@ namespace Microbench
         static Constants()
         {
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
-            FlatSharp.ObjectPool.Instance = new(VectorLength);
+#if POOLABLE
+            ObjectPool.Instance = new DefaultObjectPool(VectorLength);
+#endif
         }
 
         public static class StringTables

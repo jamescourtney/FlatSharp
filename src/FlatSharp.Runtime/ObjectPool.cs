@@ -66,20 +66,35 @@ namespace FlatSharp
         /// <summary>
         /// Attempts to get an instance of <typeparamref name="T"/> from the pool.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static bool TryGet<T>([NotNullWhen(true)] out T? value)
         {
             value = default;
-            return (fastInstance ?? instance)?.TryGet(out value) == true;
+
+            var localFast = fastInstance;
+            if (localFast is not null)
+            {
+                return localFast.TryGet(out value);
+            }
+
+            return instance?.TryGet(out value) == true;
         }
 
         /// <summary>
         /// Returns the given item to the pool.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void Return<T>(T item)
         {
-            (fastInstance ?? instance)?.Return(item);
+            var localFast = fastInstance;
+            if (localFast is not null)
+            {
+                localFast.Return(item);
+            }
+            else
+            {
+                instance?.Return(item);
+            }
         }
     }
 
@@ -99,11 +114,13 @@ namespace FlatSharp
             this.maxToRetain = maxToRetain;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Return<T>(T item)
         {
             Pool<T>.Return(item, this.maxToRetain);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGet<T>([NotNullWhen(true)] out T? value)
         {
             return Pool<T>.TryGet(out value);
