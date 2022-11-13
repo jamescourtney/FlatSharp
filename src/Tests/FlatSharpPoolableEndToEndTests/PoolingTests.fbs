@@ -11,6 +11,8 @@ struct RefStruct { x : int; }
 struct ValueStruct (fs_valueStruct) { x : int; }
 table InnerTable { x : int; }
 
+union InnerUnion { RefStruct, ValueStruct, InnerTable }
+
 table Root (fs_serializer:"Lazy")
 {
     ref_struct : RefStruct;
@@ -20,4 +22,6 @@ table Root (fs_serializer:"Lazy")
     vector_of_ref_struct : [ RefStruct ];
     vector_of_value_struct : [ ValueStruct ];
     vector_of_table : [ InnerTable ];
+
+    vector_of_union : [ InnerUnion ];
 }

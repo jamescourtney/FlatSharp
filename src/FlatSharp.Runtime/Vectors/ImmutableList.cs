@@ -30,7 +30,7 @@ namespace FlatSharp.Internal;
 /// - Second, it does not reference <see cref="IList{T}"/> internally, which means it is able to skip a level of virtual indirection
 ///   by using <see cref="T[]"/> directly.
 /// </remarks>
-public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>
+public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObject
 {
     private List<T> list;
     private int isAlive;

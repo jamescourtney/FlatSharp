@@ -22,7 +22,7 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A wrapper around a List{T}.
 /// </summary>
-public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>
+public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObject
 {
     private List<T> list;
     private int isAlive;

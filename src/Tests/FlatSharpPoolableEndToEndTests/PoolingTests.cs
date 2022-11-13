@@ -18,15 +18,18 @@ namespace FlatSharpEndToEndTests.PoolingTests;
 
 public class PoolingTests
 {
-    [Fact]
-    public void Progressive_Pools()
+    [Theory]
+    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    [InlineData(FlatBufferDeserializationOption.Greedy)]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+    public void NotLazy_Pools(FlatBufferDeserializationOption option)
     {
         var testPool = new TestObjectPool();
         ObjectPool.Instance = testPool;
 
         byte[] buffer = CreateRoot(1);
 
-        Root parsed = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
+        Root parsed = Root.Serializer.Parse(buffer, option);
         VerifyRoot(parsed, 1);
 
         HashSet<object> seenObjects = new();
@@ -37,6 +40,7 @@ public class PoolingTests
         seenObjects.Add(parsed.VectorOfTable);
         seenObjects.Add(parsed.VectorOfRefStruct);
         seenObjects.Add(parsed.VectorOfValueStruct);
+        seenObjects.Add(parsed.VectorOfUnion);
 
         foreach (var item in parsed.VectorOfTable)
         {
@@ -46,6 +50,12 @@ public class PoolingTests
         foreach (var item in parsed.VectorOfRefStruct)
         {
             seenObjects.Add(item);
+        }
+
+        foreach (var item in parsed.VectorOfUnion)
+        {
+            seenObjects.Add(item);
+            seenObjects.Add(item.Accept<Visitor, object>(new Visitor()));
         }
 
         // Release all our stuff.
@@ -60,7 +70,7 @@ public class PoolingTests
         buffer = CreateRoot(2);
 
         // Parse again, and ensure that all the things are in the hash set.
-        parsed = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
+        parsed = Root.Serializer.Parse(buffer, option);
         VerifyRoot(parsed, 2);
 
         Assert.Contains(parsed.InnerTable, seenObjects);
@@ -68,6 +78,7 @@ public class PoolingTests
         Assert.Contains(parsed.VectorOfRefStruct, seenObjects);
         Assert.Contains(parsed.VectorOfTable, seenObjects);
         Assert.Contains(parsed.VectorOfValueStruct, seenObjects);
+        Assert.Contains(parsed.VectorOfUnion, seenObjects);
 
         foreach (var item in parsed.VectorOfTable)
         {
@@ -79,6 +90,12 @@ public class PoolingTests
             Assert.Contains(item, seenObjects);
         }
 
+        foreach (var item in parsed.VectorOfUnion)
+        {
+            Assert.Contains(item, seenObjects);
+            Assert.Contains(item.Accept<Visitor, object>(new Visitor()), seenObjects);
+        }
+
         foreach (var item in seenObjects)
         {
             Assert.False(testPool.IsInPool(item));
@@ -86,8 +103,11 @@ public class PoolingTests
         }
     }
 
-    [Fact]
-    public void Progressive_NonRoot_NoOp()
+    [Theory]
+    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    [InlineData(FlatBufferDeserializationOption.Greedy)]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+    public void NotLazy_NonRoot_NoOp(FlatBufferDeserializationOption option)
     {
         var testPool = new TestObjectPool();
         ObjectPool.Instance = testPool;
@@ -107,7 +127,7 @@ public class PoolingTests
 
         byte[] buffer = CreateRoot(1);
 
-        Root parsed = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Progressive);
+        Root parsed = Root.Serializer.Parse(buffer, option);
         VerifyRoot(parsed, 1);
 
         AssertNotInPool(parsed.InnerTable);
@@ -115,6 +135,7 @@ public class PoolingTests
         AssertNotInPool(parsed.VectorOfRefStruct);
         AssertNotInPool(parsed.VectorOfValueStruct);
         AssertNotInPool(parsed.VectorOfTable);
+        AssertNotInPool(parsed.VectorOfUnion);
 
         foreach (var item in parsed.VectorOfRefStruct)
         {
@@ -124,6 +145,12 @@ public class PoolingTests
         foreach (var item in parsed.VectorOfTable)
         {
             AssertNotInPool(item);
+        }
+
+        foreach (var item in parsed.VectorOfUnion)
+        {
+            AssertNotInPool(item);
+            AssertNotInPool(item.Accept<Visitor, object>(default));
         }
     }
 
@@ -195,20 +222,45 @@ public class PoolingTests
         Root parsedOriginal = Root.Serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
         VerifyRoot(parsedOriginal, 1);
 
-        var structVector = parsedOriginal.VectorOfRefStruct;
-
-        HashSet<RefStruct> seenInstances = new();
-
-        foreach (RefStruct refStruct in structVector)
         {
-            seenInstances.Add(refStruct);
-            Assert.False(testPool.IsInPool(refStruct));
+            var structVector = parsedOriginal.VectorOfRefStruct;
 
-            refStruct.ReturnToPool();
-            Assert.True(testPool.IsInPool(refStruct));
+            HashSet<RefStruct> seenInstances = new();
+
+            foreach (RefStruct refStruct in structVector)
+            {
+                seenInstances.Add(refStruct);
+                Assert.False(testPool.IsInPool(refStruct));
+
+                refStruct.ReturnToPool();
+                Assert.True(testPool.IsInPool(refStruct));
+            }
+
+            Assert.Single(seenInstances);
         }
 
-        Assert.Single(seenInstances);
+        {
+            var unionVector = parsedOriginal.VectorOfUnion;
+            HashSet<object> seenObjects = new();
+
+            foreach (var item in unionVector)
+            {
+                seenObjects.Add(item);
+                Assert.False(testPool.IsInPool(item));
+
+                object value = item.Accept<Visitor, object>(default);
+                seenObjects.Add(value);
+                Assert.False(testPool.IsInPool(value));
+
+                // returns the underlying item, even in lazy mode.
+                item.ReturnToPool();
+
+                Assert.True(testPool.IsInPool(item));
+                Assert.True(testPool.IsInPool(value));
+            }
+
+            Assert.Equal(3, seenObjects.Count);
+        }
     }
 
     private byte[] CreateRoot(int value)
@@ -221,6 +273,7 @@ public class PoolingTests
             VectorOfRefStruct = new[] { new RefStruct() { X = value }, new() { X = value } },
             VectorOfTable = new[] { new InnerTable() { X = value }, new() { X = value } },
             VectorOfValueStruct = new[] { new ValueStruct { X = value }, new() { X = value } },
+            VectorOfUnion = new[] { new InnerUnion(new RefStruct { X = value }), new InnerUnion(new InnerTable { X = value })},
         };
 
         byte[] buffer = new byte[Root.Serializer.GetMaxSize(root)];
@@ -248,6 +301,37 @@ public class PoolingTests
         foreach (var temp in item.VectorOfValueStruct)
         {
             Assert.Equal(expectedValue, temp.X);
+        }
+
+        foreach (var temp in item.VectorOfUnion)
+        {
+            if (temp.TryGet(out InnerTable? value))
+            {
+                Assert.Equal(expectedValue, value.X);
+            }
+
+            if (temp.TryGet(out RefStruct? s))
+            {
+                Assert.Equal(expectedValue, s.X);
+            }
+        }
+    }
+
+    private struct Visitor : InnerUnion.Visitor<object>
+    {
+        public object Visit(RefStruct item)
+        {
+            return item;
+        }
+
+        public object Visit(ValueStruct item)
+        {
+            return item;
+        }
+
+        public object Visit(InnerTable item)
+        {
+            return item;
         }
     }
 }
