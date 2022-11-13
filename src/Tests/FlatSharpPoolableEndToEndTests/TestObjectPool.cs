@@ -28,7 +28,7 @@ public class TestObjectPool : IObjectPool
         this.GetPool(typeof(T)).Return(item);
     }
 
-    public bool TryGet<T>([NotNullWhen(true)] out T? value)
+    public bool TryGet<T>(out T? value)
     {
         bool result = this.GetPool(typeof(T)).TryGet(out var obj);
 
@@ -68,7 +68,7 @@ public class TestObjectPool : IObjectPool
             }
         }
 
-        public bool TryGet([NotNullWhen(true)] out object? item)
+        public bool TryGet(out object? item)
         {
             lock (syncRoot)
             {
