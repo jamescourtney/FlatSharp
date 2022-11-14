@@ -24,8 +24,12 @@ public class PoolingTests
     [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
     public void NotLazy_Pools(FlatBufferDeserializationOption option)
     {
+#if DEBUG
         var testPool = new TestObjectPool();
         ObjectPool.Instance = testPool;
+#else
+        DefaultObjectPool.MaxToRetain = 100;
+#endif
 
         byte[] buffer = CreateRoot(1);
 
@@ -67,11 +71,13 @@ public class PoolingTests
         // Release all our stuff.
         parsed.ReturnToPool();
 
+#if DEBUG
         foreach (var item in seenObjects)
         {
             Assert.True(testPool.IsInPool(item));
             Assert.True(testPool.Count(item) > 0);
         }
+#endif
 
         buffer = CreateRoot(2);
 
@@ -108,13 +114,16 @@ public class PoolingTests
             Assert.Contains(item, seenObjects);
         }
 
+#if DEBUG
         foreach (var item in seenObjects)
         {
             Assert.False(testPool.IsInPool(item));
             Assert.Equal(0, testPool.Count(item));
         }
+#endif
     }
 
+#if DEBUG
     [Theory]
     [InlineData(FlatBufferDeserializationOption.Progressive)]
     [InlineData(FlatBufferDeserializationOption.Greedy)]
@@ -297,6 +306,7 @@ public class PoolingTests
             }
         }
     }
+#endif
 
     private byte[] CreateRoot(int value)
     {

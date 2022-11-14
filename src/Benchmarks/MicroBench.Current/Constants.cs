@@ -32,7 +32,7 @@ namespace Microbench
         {
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
 #if POOLABLE
-            ObjectPool.Instance = new DefaultObjectPool(VectorLength);
+            DefaultObjectPool.MaxToRetain = VectorLength;
 #endif
         }
 

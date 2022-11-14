@@ -520,7 +520,6 @@ internal class DeserializeClassDefinition
         
         public override void ReturnToPool(bool unsafeForce = false) 
         {{
-            if ({typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.Instance)} is not null)
             {{
                 {fromRootCondition}
                 {{

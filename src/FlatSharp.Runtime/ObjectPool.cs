@@ -30,7 +30,8 @@ namespace FlatSharp.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ShouldReturnToPool(this FlatBufferDeserializationOption option, bool force)
         {
-            return ObjectPool.Instance is not null && (force || option == FlatBufferDeserializationOption.Lazy);
+            return // ObjectPool.Instance is not null && 
+                (force || option == FlatBufferDeserializationOption.Lazy);
         }
     }
 }
@@ -42,86 +43,75 @@ namespace FlatSharp
     /// </summary>
     public static class ObjectPool
     {
-        private static IObjectPool? instance;
-        private static DefaultObjectPool? fastInstance;
 
-        static ObjectPool()
-        {
-            Instance = new DefaultObjectPool(100);
-        }
-
-        /// <summary>
-        /// Gets or sets the object pool implementation to use.
-        /// </summary>
+#if DEBUG
         public static IObjectPool? Instance
         {
-            get => instance;
-            set
-            {
-                instance = value;
-                fastInstance = value as DefaultObjectPool;
-            }
+            get; 
+            set;
         }
 
         /// <summary>
         /// Attempts to get an instance of <typeparamref name="T"/> from the pool.
         /// </summary>
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGet<T>([NotNullWhen(true)] out T? value)
         {
             value = default;
-
-            var localFast = fastInstance;
-            if (localFast is not null)
-            {
-                return localFast.TryGet(out value);
-            }
-
-            return instance?.TryGet(out value) == true;
+            return Instance?.TryGet<T>(out value) == true;
         }
 
         /// <summary>
         /// Returns the given item to the pool.
         /// </summary>
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Return<T>(T item)
         {
-            var localFast = fastInstance;
-            if (localFast is not null)
-            {
-                localFast.Return(item);
-            }
-            else
-            {
-                instance?.Return(item);
-            }
+            Instance?.Return(item);
         }
+
+#else
+
+        /// <summary>
+        /// Attempts to get an instance of <typeparamref name="T"/> from the pool.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGet<T>([NotNullWhen(true)] out T? value)
+        {
+            return DefaultObjectPool.TryGet(out value);
+        }
+
+        /// <summary>
+        /// Returns the given item to the pool.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Return<T>(T item)
+        {
+            DefaultObjectPool.Return(item);
+        }
+#endif
     }
 
     /// <summary>
     /// A default implementation of the <see cref="IObjectPool"/> interface.
     /// </summary>
-    public sealed class DefaultObjectPool : IObjectPool
+    [ExcludeFromCodeCoverage]
+    public static class DefaultObjectPool
     {
-        private readonly int maxToRetain;
-
-        /// <summary>
-        /// Initializes a new <see cref="DefaultObjectPool"/> with the given retention.
-        /// </summary>
-        /// <param name="maxToRetain">The maximum number of items of each type to retain.</param>
-        public DefaultObjectPool(int maxToRetain)
+        public static int MaxToRetain
         {
-            this.maxToRetain = maxToRetain;
+            get;
+            set;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Return<T>(T item)
+        public static void Return<T>(T item)
         {
-            Pool<T>.Return(item, this.maxToRetain);
+            Pool<T>.Return(item, MaxToRetain);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGet<T>([NotNullWhen(true)] out T? value)
+        public static bool TryGet<T>([NotNullWhen(true)] out T? value)
         {
             return Pool<T>.TryGet(out value);
         }

@@ -213,7 +213,8 @@ $@"
                     }}
 
                     union.discriminator = {unionIndex};
-                    union.value_{unionIndex} = value;
+                    union.Item{unionIndex} = value;
+                    union.isAlive = 1;
 
                     return union;
                 }}
@@ -222,14 +223,14 @@ $@"
             string recursiveReturn = string.Empty;
             if (typeof(IPoolableObject).IsAssignableFrom(this.UnionElementTypeModel[i].ClrType))
             {
-                recursiveReturn = $"this.value_{unionIndex}?.ReturnToPool(true);";
+                recursiveReturn = $"this.Item{unionIndex}?.ReturnToPool(true);";
             }
 
             returnToPoolCases.Add($@"
                     case {unionIndex}:
                     {{
                         {recursiveReturn}
-                        this.value_{unionIndex} = default({itemType})!;
+                        this.Item{unionIndex} = default({itemType})!;
                     }}
                     break;
                 ");
@@ -245,20 +246,23 @@ $@"
         string extraClass = $@"
             private sealed class {className} : {this.ClrType.GetGlobalCompilableTypeName()}
             {{
+                private int isAlive;
+
                 {string.Join("\r\n", getOrCreates)}
 
                 public override void ReturnToPool(bool unsafeForce = false)
                 {{
                     {returnCondition}
                     {{
-                        int discriminator = {typeof(Interlocked).GetGlobalCompilableTypeName()}.Exchange(ref base.discriminator, -1);
-                        if (discriminator > 0)
+                        int alive = {typeof(Interlocked).GetGlobalCompilableTypeName()}.Exchange(ref this.isAlive, 0);
+                        if (alive > 0)
                         {{
-                            switch (discriminator)
+                            switch (base.discriminator)
                             {{
                                 {string.Join("\r\n", returnToPoolCases)}
                             }}
-
+                            
+                            base.discriminator = -1;
                             {typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.Return)}(this);
                         }}
                     }}

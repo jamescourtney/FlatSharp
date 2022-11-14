@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+#if DEBUG
     /// <summary>
     /// Defines an object pool that FlatSharp may use to reduce allocations.
     /// </summary>
@@ -36,6 +37,7 @@ namespace FlatSharp
         /// <param name="item">The item to return.</param>
         void Return<T>(T item);
     }
+#endif
 
     /// <summary>
     /// A FlatSharp poolable object.

@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 
 namespace FlatSharpEndToEndTests.PoolingTests;
 
+#if DEBUG
 public class TestObjectPool : IObjectPool
 {
     private readonly ConcurrentDictionary<Type, TypedPool> pool = new();
@@ -95,3 +96,5 @@ public class TestObjectPool : IObjectPool
         }
     }
 }
+
+#endif
