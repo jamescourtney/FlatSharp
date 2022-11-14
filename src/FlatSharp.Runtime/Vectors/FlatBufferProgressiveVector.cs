@@ -254,17 +254,10 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
                             {
                                 poolable.ReturnToPool(true);
                             }
-
-                            block[j] = default;
                         }
-
-                        ArrayPool<T?>.Shared.Return(block);
-                    }
-                    else
-                    {
-                        ArrayPool<T?>.Shared.Return(block, true);
                     }
 
+                    ArrayPool<T?>.Shared.Return(block, true);
                     items[i] = null;
                 }
             }

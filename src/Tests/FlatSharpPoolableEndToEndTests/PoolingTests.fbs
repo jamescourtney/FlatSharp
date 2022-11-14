@@ -13,6 +13,12 @@ table InnerTable { x : int; }
 
 union InnerUnion { RefStruct, ValueStruct, InnerTable }
 
+table KeyValue
+{
+    key : int (key);
+    value : int;
+}
+
 table Root (fs_serializer:"Lazy")
 {
     ref_struct : RefStruct;
@@ -24,4 +30,6 @@ table Root (fs_serializer:"Lazy")
     vector_of_table : [ InnerTable ];
 
     vector_of_union : [ InnerUnion ];
+
+    indexed_vector : [ KeyValue ] (fs_vector:"IIndexedVector");
 }

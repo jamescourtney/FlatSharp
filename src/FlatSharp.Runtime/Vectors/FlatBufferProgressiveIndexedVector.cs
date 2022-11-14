@@ -166,7 +166,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
             var backingVector = Interlocked.Exchange(ref this.backingVector!, null);
             if (backingVector is not null)
             {
-                backingVector.ReturnToPool();
+                backingVector.ReturnToPool(true);
                 this.backingDictionary.Clear();
 
                 ObjectPool.Return(this);

@@ -124,7 +124,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         if (context.Options.GreedyDeserialize)
         {
             // Eager indexed vector.
-            body = $@"return new IndexedVector<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
+            body = $@"return GreedyIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate<{context.InputBufferTypeName}, {accessorClassName}>({createFlatBufferVector}, {mutable});";
         }
         else if (context.Options.Lazy)
         {

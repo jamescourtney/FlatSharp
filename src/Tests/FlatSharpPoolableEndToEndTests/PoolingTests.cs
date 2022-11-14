@@ -41,6 +41,7 @@ public class PoolingTests
         seenObjects.Add(parsed.VectorOfRefStruct);
         seenObjects.Add(parsed.VectorOfValueStruct);
         seenObjects.Add(parsed.VectorOfUnion);
+        seenObjects.Add(parsed.IndexedVector);
 
         foreach (var item in parsed.VectorOfTable)
         {
@@ -56,6 +57,11 @@ public class PoolingTests
         {
             seenObjects.Add(item);
             seenObjects.Add(item.Accept<Visitor, object>(new Visitor()));
+        }
+
+        foreach (var item in parsed.IndexedVector.Select(x => x.Value))
+        {
+            seenObjects.Add(item);
         }
 
         // Release all our stuff.
@@ -79,6 +85,7 @@ public class PoolingTests
         Assert.Contains(parsed.VectorOfTable, seenObjects);
         Assert.Contains(parsed.VectorOfValueStruct, seenObjects);
         Assert.Contains(parsed.VectorOfUnion, seenObjects);
+        Assert.Contains(parsed.IndexedVector, seenObjects);
 
         foreach (var item in parsed.VectorOfTable)
         {
@@ -94,6 +101,11 @@ public class PoolingTests
         {
             Assert.Contains(item, seenObjects);
             Assert.Contains(item.Accept<Visitor, object>(new Visitor()), seenObjects);
+        }
+
+        foreach (var item in parsed.IndexedVector.Select(x => x.Value))
+        {
+            Assert.Contains(item, seenObjects);
         }
 
         foreach (var item in seenObjects)
@@ -136,6 +148,7 @@ public class PoolingTests
         AssertNotInPool(parsed.VectorOfValueStruct);
         AssertNotInPool(parsed.VectorOfTable);
         AssertNotInPool(parsed.VectorOfUnion);
+        AssertNotInPool(parsed.IndexedVector);
 
         foreach (var item in parsed.VectorOfRefStruct)
         {
@@ -151,6 +164,11 @@ public class PoolingTests
         {
             AssertNotInPool(item);
             AssertNotInPool(item.Accept<Visitor, object>(default));
+        }
+
+        foreach (var value in parsed.IndexedVector.Select(x => x.Value))
+        {
+            AssertNotInPool(value);
         }
     }
 
@@ -261,6 +279,23 @@ public class PoolingTests
 
             Assert.Equal(3, seenObjects.Count);
         }
+
+        {
+            var indexedVector = parsedOriginal.IndexedVector;
+            HashSet<object> seenObjects = new();
+
+            foreach (var item in indexedVector)
+            {
+                KeyValue value = item.Value;
+
+                Assert.False(testPool.IsInPool(value));
+                seenObjects.Add(value);
+
+                // returns the underlying item, even in lazy mode.
+                value.ReturnToPool();
+                Assert.True(testPool.IsInPool(value));
+            }
+        }
     }
 
     private byte[] CreateRoot(int value)
@@ -274,6 +309,12 @@ public class PoolingTests
             VectorOfTable = new[] { new InnerTable() { X = value }, new() { X = value } },
             VectorOfValueStruct = new[] { new ValueStruct { X = value }, new() { X = value } },
             VectorOfUnion = new[] { new InnerUnion(new RefStruct { X = value }), new InnerUnion(new InnerTable { X = value })},
+            IndexedVector = new IndexedVector<int, KeyValue>
+            {
+                new KeyValue { Key = value, Value = value, },
+                new KeyValue { Key = value + 1, Value = value + 1, },
+                new KeyValue { Key = value + 2, Value = value + 2, },
+            }
         };
 
         byte[] buffer = new byte[Root.Serializer.GetMaxSize(root)];
@@ -314,6 +355,14 @@ public class PoolingTests
             {
                 Assert.Equal(expectedValue, s.X);
             }
+        }
+
+        for (int i = 0; i < 3; ++i)
+        {
+            int expected = expectedValue + i;
+            Assert.True(item.IndexedVector.TryGetValue(expected, out KeyValue? value));
+            Assert.Equal(expected, value.Key);
+            Assert.Equal(expected, value.Value);
         }
     }
 
