@@ -10,9 +10,12 @@
         <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
-        <FlatSharpPoolable>true</FlatSharpPoolable>
-        <DefineConstants>$(DefineConstants);POOLABLE</DefineConstants>
+        <FlatSharpPoolable>false</FlatSharpPoolable>
         <FlatSharpNullable>false</FlatSharpNullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
+        <DefineConstants>$(DefineConstants);POOLABLE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
