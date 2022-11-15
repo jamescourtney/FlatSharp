@@ -17,12 +17,9 @@
 namespace Microbench
 {
     using BenchmarkDotNet.Attributes;
-    using System;
     using FlatSharp;
-    using System.Linq;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
-    using FlatSharp.Internal;
 
     public class ParseBenchmarks
     {
@@ -333,15 +330,17 @@ namespace Microbench
 
     public static class Extensions
     {
+#if POOLABLE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void TryReturnToPool<T>(this T obj) where T : IPoolableObject
+        {
+            obj.ReturnToPool();
+        }
+#else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void TryReturnToPool<T>(this T obj)
         {
-#if POOLABLE
-            if (obj is IPoolableObject poolable)
-            {
-                poolable.ReturnToPool();
-            }
-#endif
         }
+#endif
     }
 }
