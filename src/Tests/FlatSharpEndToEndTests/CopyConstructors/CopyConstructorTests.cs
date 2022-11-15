@@ -19,10 +19,7 @@ namespace FlatSharpEndToEndTests.CopyConstructors;
 public class CopyConstructorTests
 {
     [Theory]
-    [InlineData(FlatBufferDeserializationOption.Greedy)]
-    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
-    [InlineData(FlatBufferDeserializationOption.Lazy)]
-    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    [ClassData(typeof(DeserializationOptionClassData))]
     public void CopyConstructorsTest(FlatBufferDeserializationOption option)
     {
         OuterTable original = new OuterTable

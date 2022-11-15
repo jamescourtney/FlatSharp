@@ -75,7 +75,13 @@ public class PoolingTests
         foreach (var item in seenObjects)
         {
             Assert.True(testPool.IsInPool(item));
-            Assert.True(testPool.Count(item) > 0);
+
+            int count = testPool.Count(item);
+            Assert.True(count > 0);
+
+            // return again -- verify that we don't double return.
+            ((IPoolableObject)item).ReturnToPool(true);
+            Assert.Equal(count, testPool.Count(item));
         }
 #endif
 
@@ -304,6 +310,9 @@ public class PoolingTests
                 value.ReturnToPool();
                 Assert.True(testPool.IsInPool(value));
             }
+
+            indexedVector.ReturnToPool();
+            Assert.True(testPool.IsInPool(indexedVector));
         }
     }
 #endif

@@ -46,10 +46,7 @@ public class InputBufferTests
     }
 
     [Theory]
-    [InlineData(FlatBufferDeserializationOption.Greedy)]
-    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
-    [InlineData(FlatBufferDeserializationOption.Lazy)]
-    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    [ClassData(typeof(DeserializationOptionClassData))]
     public void SerializationInvocations(FlatBufferDeserializationOption option)
     {
         var serializer = PrimitiveTypesTable.Serializer.WithSettings(settings => settings.UseDeserializationMode(option));
