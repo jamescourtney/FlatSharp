@@ -55,7 +55,12 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         foreach (TValue value in backing)
         {
             TKey key = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter(value);
-            dict.Add(key, value);
+            if (dict.TryGetValue(key, out var existingValue))
+            {
+                (existingValue as IPoolableObject)?.ReturnToPool();
+            }
+
+            dict[key] = value;
         }
 
         // we don't need "backing" any longer
