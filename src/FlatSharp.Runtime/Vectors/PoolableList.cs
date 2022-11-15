@@ -41,17 +41,17 @@ public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObjec
         if (ObjectPool.TryGet(out PoolableList<T>? list))
         {
 #if NET6_0_OR_GREATER
-            list.list.EnsureCapacity(item.Count);
+            list.list.EnsureCapacity(count);
 #endif
         }
         else
         {
-            list = new(item.Count);
+            list = new(count);
         }
 
         list.isAlive = 1;
 
-        for (int i = 0; i < item.Count; ++i)
+        for (int i = 0; i < count; ++i)
         {
             list.Add(item[i]);
         }
@@ -97,11 +97,14 @@ public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObjec
             var isAlive = Interlocked.Exchange(ref this.isAlive, 0);
             if (isAlive != 0)
             {
-                foreach (var item in this.list)
+                if (!typeof(T).IsValueType)
                 {
-                    if (item is IPoolableObject poolable)
+                    foreach (var item in this.list)
                     {
-                        poolable.ReturnToPool(true);
+                        if (item is IPoolableObject poolable)
+                        {
+                            poolable.ReturnToPool(true);
+                        }
                     }
                 }
 

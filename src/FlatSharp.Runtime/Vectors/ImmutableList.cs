@@ -54,17 +54,17 @@ public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObje
         if (ObjectPool.TryGet(out ImmutableList<T>? list))
         {
 #if NET6_0_OR_GREATER
-            list.list.EnsureCapacity(vector.Count);
+            list.list.EnsureCapacity(count);
 #endif
         }
         else
         {
-            list = new(vector.Count);
+            list = new(count);
         }
 
         list.isAlive = 1;
 
-        for (int i = 0; i < vector.Count; ++i)
+        for (int i = 0; i < count; ++i)
         {
             list.list.Add(vector[i]);
         }
@@ -127,11 +127,14 @@ public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObje
         {
             if (Interlocked.Exchange(ref this.isAlive, 0) != 0)
             {
-                foreach (var item in this.list)
+                if (!typeof(T).IsValueType)
                 {
-                    if (item is IPoolableObject poolable)
+                    foreach (var item in this.list)
                     {
-                        poolable.ReturnToPool(true);
+                        if (item is IPoolableObject poolable)
+                        {
+                            poolable.ReturnToPool(true);
+                        }
                     }
                 }
 
