@@ -83,7 +83,6 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
             writer.AppendLine($"protected void {TableTypeModel.OnDeserializedMethodName}({nameof(FlatBufferDeserializationContext)} context)");
             using (writer.WithBlock())
             {
-                writer.AppendLine("GC.ReRegisterForFinalize(this);");
                 writer.AppendLine("this.OnInitialized(context);");
             }
 
