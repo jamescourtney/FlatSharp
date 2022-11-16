@@ -4,11 +4,10 @@
 
 FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#. FlatBuffers is a zero-copy binary serialization format intended for high-performance scenarios. 
 FlatSharp leverages the latest and greatest from .NET in the form of `Memory<T>` and `Span<T>`.
-As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 4 core priorities:
+As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 3 core priorities:
 
-- Safety
-- Speed
-- FlatBuffers schema correctness
+- Usability
+- Safety & Speed
 - Compatibility with other C#-focused projects like Unity, Blazor, and Xamarin.
 
 All FlatSharp packages are published on nuget.org:
@@ -66,20 +65,22 @@ Person p = Person.Serializer.Parse(data);
 ```
 
 #### Samples & Documentation
-FlatSharp supports some interesting features not covered here. Detailed documentation is in the [wiki](https://github.com/jamescourtney/FlatSharp/wiki). The [samples solution](samples/) has full examples of:
-- [Build-time serializer code generation](samples/Example03-SchemaFiles2/)
-- [Deserialization options (Lazy, Greedy, and everything in between)](samples/Example01-SerializerOptions/SerializerOptionsExample.cs)
-- [IO Options](samples/Example04-IOOptions/)
-- [gRPC](samples/Example05-gRPC/)
-- [Copy Constructors](samples/Example06-CopyConstructors/)
-- [FBS Includes](samples/Example07-Includes/)
-- [Sorted Vectors](samples/Example08-SortedVectors/)
+FlatSharp supports some interesting features not covered here. Detailed documentation is in the [wiki](https://github.com/jamescourtney/FlatSharp/wiki). The [samples solution](samples/) is a good tutorial and has full examples of:
+- [Basic Usage](samples/Example00-Basics/)
+- [Deserialization Modes (Lazy, Greedy, and everything in between)](samples/Example01-DeserializationModes/)
+- [Vectors (Lists)](samples/Example02-Vectors/)
+- [IO Options](samples/Example03-IOOptions/)
+- [gRPC](samples/Example04-gRPC/)
+- [Copy Constructors](samples/Example05-CopyConstructors/)
+- [FBS Includes](samples/Example06-Includes/)
+- [Sorted Vectors](samples/Example07-SortedVectors/)
+- [Indexed Vectors](samples/Example08-IndexedVectors/)
 - [Unions](samples/Example09-Unions/)
 - [String deduplication](samples/Example10-SharedStrings/)
-- [Indexed Vectors (Dictionary-like functionality)](samples/Example11-IndexedVectors/)
-- [Type Facades](samples/Example12-TypeFacades/)
-- [Fixed-Length Vectors](samples/Example13-StructVectors/)
-- [Write-Through -- update buffers in place](samples/Example14-WriteThrough/)
+- [Fixed-Length Struct Vectors](samples/Example11-StructVectors/)
+- [Write-Through (update buffers in place)](samples/Example12-WriteThrough/)
+- [Value Type Structs](samples/Example13-ValueStructs/)
+- [Unsafe Options](samples/Example14-UnsafeOptions/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. 
@@ -94,7 +95,7 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 - Use standard .NET libraries for reading and writing from memory
 - Depth tracking enabled for recursive schemas to prevent stack overflows.
 
-FlatSharp *does* use some techniques such as `MemoryMarshal.Read` on certain hot paths, but these usages are narrowly scoped.
+FlatSharp *does* use some techniques such as `MemoryMarshal.Read` on certain hot paths, but these usages are narrowly scoped and well tested.
 
 ### Performance & Benchmarks
 FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 7.0, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).
