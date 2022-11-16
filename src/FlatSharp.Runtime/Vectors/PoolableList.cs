@@ -14,44 +14,36 @@
  * limitations under the License.
  */
 
-using System.Buffers;
 using System.Linq;
 using System.Threading;
 
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// An immutable wrapper around a List{T}.
+/// A wrapper around a List{T}.
 /// </summary>
-/// <remarks>
-/// This class serves broadly the same purpose as <see cref="System.Collections.ObjectModel.ReadOnlyCollection{T}"/>.
-/// However, it is superior for two reasons:
-/// - First, it throws the FlatSharp NotMutableException, which is consistent with Lazy and Progressive Deserialization modes
-/// - Second, it does not reference <see cref="IList{T}"/> internally, which means it is able to skip a level of virtual indirection
-///   by using <see cref="T[]"/> directly.
-/// </remarks>
-public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObject
+public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObject
 {
     private List<T> list;
     private int isAlive;
 
-    public ImmutableList(IList<T> template)
+    public PoolableList(IList<T> template)
     {
         this.list = template.ToList();
     }
 
-    public ImmutableList(int capacity)
+    public PoolableList(int capacity)
     {
-        this.list = new List<T>(capacity);
+        this.list = new(capacity);
     }
 
-    public static ImmutableList<T> GetOrCreate<TInputBuffer, TItemAccessor>(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> vector)
+    public static PoolableList<T> GetOrCreate<TInputBuffer, TItemAccessor>(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> item)
         where TInputBuffer : IInputBuffer
         where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
     {
-        int count = vector.Count;
+        int count = item.Count;
 
-        if (ObjectPool.TryGet(out ImmutableList<T>? list))
+        if (ObjectPool.TryGet(out PoolableList<T>? list))
         {
 #if NET6_0_OR_GREATER
             list.list.EnsureCapacity(count);
@@ -66,11 +58,11 @@ public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObje
 
         for (int i = 0; i < count; ++i)
         {
-            list.list.Add(vector[i]);
+            list.Add(item[i]);
         }
 
         // We've copied our stuff -- send the base vector back to where it came from!
-        vector.ReturnToPool(true);
+        item.ReturnToPool(true);
 
         return list;
     }
@@ -78,54 +70,37 @@ public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObje
     public T this[int index] 
     {
         get => this.list[index];
-        set => throw new NotMutableException();
+        set => this.list[index] = value;
     }
 
     public int Count => this.list.Count;
 
-    public bool IsReadOnly => true;
+    public bool IsReadOnly => false;
 
-    public void Add(T item)
-    {
-        throw new NotMutableException();
-    }
+    public void Add(T item) => this.list.Add(item);
 
-    public void Clear()
-    {
-        throw new NotMutableException();
-    }
+    public void Clear() => this.list.Clear();
 
     public bool Contains(T item) => this.list.Contains(item);
 
     public void CopyTo(T[] array, int arrayIndex) => this.list.CopyTo(array, arrayIndex);
 
-    public IEnumerator<T> GetEnumerator()
-    {
-        return this.list.GetEnumerator();
-    }
+    public IEnumerator<T> GetEnumerator() => this.list.GetEnumerator();
 
     public int IndexOf(T item) => this.list.IndexOf(item);
 
-    public void Insert(int index, T item)
-    {
-        throw new NotMutableException();
-    }
+    public void Insert(int index, T item) => this.list.Insert(index, item);
 
-    public bool Remove(T item)
-    {
-        throw new NotMutableException();
-    }
+    public bool Remove(T item) => this.list.Remove(item);
 
-    public void RemoveAt(int index)
-    {
-        throw new NotMutableException();
-    }
+    public void RemoveAt(int index) => this.list.RemoveAt(index);
 
     public void ReturnToPool(bool force)
     {
         if (force)
         {
-            if (Interlocked.Exchange(ref this.isAlive, 0) != 0)
+            var isAlive = Interlocked.Exchange(ref this.isAlive, 0);
+            if (isAlive != 0)
             {
                 if (!typeof(T).IsValueType)
                 {

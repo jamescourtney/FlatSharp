@@ -24,12 +24,7 @@ public class IndexedVectorTests
     private List<string> stringKeys;
 
     private Container stringVectorSource;
-    private Container stringVectorLazy;
-    private Container stringVectorProgressive;
-
     private Container intVectorSource;
-    private Container intVectorParsed;
-    private Container intVectorProgressive;
 
     public IndexedVectorTests()
     {
@@ -48,60 +43,73 @@ public class IndexedVectorTests
 
         this.stringVectorSource.StringVector.Freeze();
         this.intVectorSource.IntVector.Freeze();
-
-        this.stringVectorLazy = stringVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
-        this.stringVectorProgressive = stringVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
-
-        this.intVectorParsed = intVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
-        this.intVectorProgressive = intVectorSource.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
     }
 
-    [Fact]
-    public void IndexedVector_KeyNotFound()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void IndexedVector_KeyNotFound(FlatBufferDeserializationOption option)
     {
+        Container stringValue = this.stringVectorSource.SerializeAndParse(option);
+        Container intValue = this.intVectorSource.SerializeAndParse(option);
+
         Assert.Throws<ArgumentNullException>(() => this.stringVectorSource.StringVector[null]);
         Assert.Throws<KeyNotFoundException>(() => this.stringVectorSource.StringVector[string.Empty]);
-        Assert.Throws<ArgumentNullException>(() => this.stringVectorLazy.StringVector[null]);
-        Assert.Throws<KeyNotFoundException>(() => this.stringVectorLazy.StringVector[string.Empty]);
-        Assert.Throws<ArgumentNullException>(() => this.stringVectorProgressive.StringVector[null]);
-        Assert.Throws<KeyNotFoundException>(() => this.stringVectorProgressive.StringVector[string.Empty]);
+        Assert.Throws<ArgumentNullException>(() => stringValue.StringVector[null]);
+        Assert.Throws<KeyNotFoundException>(() => stringValue.StringVector[string.Empty]);
 
         Assert.Throws<KeyNotFoundException>(() => this.intVectorSource.IntVector[int.MinValue]);
         Assert.Throws<KeyNotFoundException>(() => this.intVectorSource.IntVector[int.MaxValue]);
-        Assert.Throws<KeyNotFoundException>(() => this.intVectorParsed.IntVector[int.MinValue]);
-        Assert.Throws<KeyNotFoundException>(() => this.intVectorParsed.IntVector[int.MaxValue]);
-        Assert.Throws<KeyNotFoundException>(() => this.intVectorProgressive.IntVector[int.MinValue]);
-        Assert.Throws<KeyNotFoundException>(() => this.intVectorProgressive.IntVector[int.MaxValue]);
+        Assert.Throws<KeyNotFoundException>(() => intValue.IntVector[int.MinValue]);
+        Assert.Throws<KeyNotFoundException>(() => intValue.IntVector[int.MaxValue]);
     }
 
-    [Fact]
-    public void IndexedVector_NotMutable()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void IndexedVector_NotMutable(FlatBufferDeserializationOption option)
     {
-        Assert.True(this.stringVectorLazy.StringVector.IsReadOnly);
+        Container stringValue = this.stringVectorSource.SerializeAndParse(option);
+
+        Assert.Equal(
+            FlatBufferDeserializationOption.GreedyMutable != option,
+            stringValue.StringVector.IsReadOnly);
+
         Assert.True(this.stringVectorSource.StringVector.IsReadOnly);
 
+        // root is frozen.
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.StringVector.AddOrReplace(null));
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.StringVector.Clear());
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.StringVector.Remove(null));
         Assert.Throws<NotMutableException>(() => this.stringVectorSource.StringVector.Add(null));
 
-        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.StringVector.AddOrReplace(null));
-        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.StringVector.Clear());
-        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.StringVector.Remove(null));
-        Assert.Throws<NotMutableException>(() => this.stringVectorLazy.StringVector.Add(null));
+        Action[] actions = new Action[]
+        {
+            () => stringValue.StringVector.AddOrReplace(new StringKey { Key = "foo" }),
+            () => stringValue.StringVector.Clear(),
+            () => stringValue.StringVector.Remove("foo"),
+            () => stringValue.StringVector.Add(new StringKey { Key = "foo" }),
+        };
 
-        Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.StringVector.AddOrReplace(null));
-        Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.StringVector.Clear());
-        Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.StringVector.Remove(null));
-        Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.StringVector.Add(null));
+        foreach (var item in actions)
+        {
+            if (option == FlatBufferDeserializationOption.GreedyMutable)
+            {
+                item();
+            }
+            else
+            {
+                Assert.Throws<NotMutableException>(item);
+            }
+        }
     }
 
-    [Fact]
-    public void IndexedVector_GetEnumerator()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void IndexedVector_GetEnumerator(FlatBufferDeserializationOption option)
     {
-        EnumeratorTest(this.stringVectorLazy.StringVector);
+        Container stringValue = this.stringVectorSource.SerializeAndParse(option);
+
+        EnumeratorTest(stringValue.StringVector);
         EnumeratorTest(this.stringVectorSource.StringVector);
-        EnumeratorTest(this.stringVectorProgressive.StringVector);
     }
 
     private void EnumeratorTest(IIndexedVector<string, StringKey> vector)
@@ -133,37 +141,36 @@ public class IndexedVectorTests
         Assert.Empty(keys);
     }
 
-    [Fact]
-    public void IndexedVector_ContainsKey()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void IndexedVector_ContainsKey(FlatBufferDeserializationOption option)
     {
+        Container stringValue = this.stringVectorSource.SerializeAndParse(option);
+
         Assert.True(this.stringVectorSource.StringVector.ContainsKey("1"));
         Assert.True(this.stringVectorSource.StringVector.ContainsKey("5"));
         Assert.False(this.stringVectorSource.StringVector.ContainsKey("20"));
         Assert.Throws<ArgumentNullException>(() => this.stringVectorSource.StringVector.ContainsKey(null));
 
-        Assert.True(this.stringVectorLazy.StringVector.ContainsKey("1"));
-        Assert.True(this.stringVectorLazy.StringVector.ContainsKey("5"));
-        Assert.False(this.stringVectorLazy.StringVector.ContainsKey("20"));
-        Assert.Throws<ArgumentNullException>(() => this.stringVectorLazy.StringVector.ContainsKey(null));
-
-        Assert.True(this.stringVectorProgressive.StringVector.ContainsKey("1"));
-        Assert.True(this.stringVectorProgressive.StringVector.ContainsKey("5"));
-        Assert.False(this.stringVectorProgressive.StringVector.ContainsKey("20"));
-        Assert.Throws<ArgumentNullException>(() => this.stringVectorProgressive.StringVector.ContainsKey(null));
+        Assert.True(stringValue.StringVector.ContainsKey("1"));
+        Assert.True(stringValue.StringVector.ContainsKey("5"));
+        Assert.False(stringValue.StringVector.ContainsKey("20"));
+        Assert.Throws<ArgumentNullException>(() => stringValue.StringVector.ContainsKey(null));
     }
 
-    [Fact]
-    public void IndexedVector_Caching()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void IndexedVector_Caching(FlatBufferDeserializationOption option)
     {
+        Container stringValue = this.stringVectorSource.SerializeAndParse(option);
+
         foreach (var key in this.stringKeys)
         {
-            Assert.True(this.stringVectorLazy.StringVector.TryGetValue(key, out var value));
-            Assert.True(this.stringVectorLazy.StringVector.TryGetValue(key, out var value2));
-            Assert.NotSame(value, value2);
-
-            Assert.True(this.stringVectorProgressive.StringVector.TryGetValue(key, out value));
-            Assert.True(this.stringVectorProgressive.StringVector.TryGetValue(key, out value2));
-            Assert.Same(value, value2);
+            Assert.True(stringValue.StringVector.TryGetValue(key, out var value));
+            Assert.True(stringValue.StringVector.TryGetValue(key, out var value2));
+            Assert.Equal(
+                option != FlatBufferDeserializationOption.Lazy,
+                object.ReferenceEquals(value, value2));
         }
     }
 

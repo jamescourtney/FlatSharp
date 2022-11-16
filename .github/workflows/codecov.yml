@@ -44,7 +44,7 @@ jobs:
       working-directory: src/FlatSharp.Compiler
       run: dotnet build -c Debug /p:SignAssembly=false
       
-    - name: Run FlatSharp.Compiler
+    - name: Run FlatSharp.Compiler (E2E Tests)
       # You may pin to the exact commit or the version.
       # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
       uses: Amadevus/pwsh-script@v2.0.3
@@ -58,7 +58,25 @@ jobs:
             --use-source-link `
             --format opencover `
             --target "dotnet" `
+            --output e2etests.coverage.xml `
             --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/FlatSharpEndToEndTests"
+  
+    - name: Run FlatSharp.Compiler (Pooling Tests)
+      # You may pin to the exact commit or the version.
+      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
+      uses: Amadevus/pwsh-script@v2.0.3
+      with:
+        # PowerShell script to execute in Actions-hydrated context
+        script: |
+          $fbs = (gci -r src/tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
+          coverlet `
+            .\src\FlatSharp.Compiler\bin\Debug\net7.0 `
+            --skipautoprops `
+            --use-source-link `
+            --format opencover `
+            --target "dotnet" `
+            --output pooling.coverage.xml `
+            --targetargs "src\FlatSharp.Compiler\bin\Debug\net7.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input `"$fbs`" -o src/tests/FlatSharpPoolableEndToEndTests"
       
     - name: Test
       working-directory: src

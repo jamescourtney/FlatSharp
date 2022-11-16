@@ -20,7 +20,7 @@ namespace FlatSharp;
 /// A context that FlatSharp-deserialized classes will pass to their parent 
 /// object on construction, if the parent object defines a constructor that accepts this object.
 /// </summary>
-public class FlatBufferDeserializationContext
+public struct FlatBufferDeserializationContext
 {
     /// <summary>
     /// Initializes a new FlatSharpConstructorContext with the given deserialization option.

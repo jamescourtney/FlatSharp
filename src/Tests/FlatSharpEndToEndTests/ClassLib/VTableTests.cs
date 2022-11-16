@@ -16,7 +16,7 @@
 
 using FlatSharp.Internal;
 
-namespace FlatSharpTests;
+namespace FlatSharpEndToEndTests.VTables;
 
 public class VTableTests
 {

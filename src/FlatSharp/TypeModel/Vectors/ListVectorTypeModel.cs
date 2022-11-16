@@ -113,13 +113,14 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
 
         string createFlatBufferVector =
-            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}> (
+            $@"FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate(
                     {context.InputBufferVariableName}, 
                     new {accessorClassName}(
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
                         {context.InputBufferVariableName}),
                     {context.RemainingDepthVariableName},
-                    {context.TableFieldContextVariableName})";
+                    {context.TableFieldContextVariableName},
+                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
 
         return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, accessorClassName, context, isEverWriteThrough)) { ClassDefinition = vectorClassDef };
     }
@@ -136,15 +137,16 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         if (context.Options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable && isEverWriteThrough)
         {
             string body = $$"""
+                    
                 var result = {{createFlatBufferVector}};
                 if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
                 {
                     // WriteThrough vectors are not mutable in greedymutable mode.
-                    return result.ToImmutableList();
+                    return ImmutableList<{{itemTypeModel.ClrType.GetGlobalCompilableTypeName()}}>.GetOrCreate(result);
                 }
                 else
                 {
-                    return result.FlatBufferVectorToList();
+                    return PoolableList<{{itemTypeModel.ClrType.GetGlobalCompilableTypeName()}}>.GetOrCreate(result);
                 }
             """;
 
@@ -152,13 +154,13 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         }
         else if (context.Options.GreedyDeserialize)
         {
-            string transform = "ToImmutableList()";
+            string transform = "ImmutableList";
             if (context.Options.GenerateMutableObjects)
             {
-                transform = "FlatBufferVectorToList()";
+                transform = "PoolableList";
             }
 
-            return $"return ({createFlatBufferVector}).{transform};";
+            return $"return {transform}<{itemTypeModel.ClrType.GetGlobalCompilableTypeName()}>.GetOrCreate({createFlatBufferVector});";
         }
         else if (context.Options.Lazy)
         {
@@ -167,7 +169,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>({createFlatBufferVector});";
+            return $"return FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>.GetOrCreate({createFlatBufferVector});";
         }
     }
 }

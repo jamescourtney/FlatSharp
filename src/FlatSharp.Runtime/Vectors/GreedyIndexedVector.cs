@@ -14,44 +14,59 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+using System.Threading;
 
-/// <summary>
-/// An <see cref="IIndexedVector{TKey, TValue}"/> implementation based on a <see cref="Dictionary{TKey, TValue}"/>.
-/// </summary>
-public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
+namespace FlatSharp.Internal;
+
+public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
+    private int alive;
     private readonly Dictionary<TKey, TValue> backingDictionary;
     private bool mutable;
 
-    public IndexedVector()
+    private GreedyIndexedVector()
     {
         this.backingDictionary = new Dictionary<TKey, TValue>();
         this.mutable = true;
     }
 
-    public IndexedVector(int capacity)
+    public static GreedyIndexedVector<TKey, TValue> GetOrCreate<TInputBuffer, TItemAccessor>(
+        FlatBufferVectorBase<TValue, TInputBuffer, TItemAccessor> backing,
+        bool mutable)
+        where TInputBuffer : IInputBuffer
+        where TItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
     {
-        this.backingDictionary = new Dictionary<TKey, TValue>(capacity);
-        this.mutable = true;
-    }
-
-    public IndexedVector(IEnumerable<TValue> items, int capacity, bool mutable)
-    {
-        var dictionary = new Dictionary<TKey, TValue>(capacity);
-        foreach (var item in items)
+        if (!ObjectPool.TryGet(out GreedyIndexedVector<TKey, TValue>? vector))
         {
-            dictionary[GetKey(item)] = item;
+            vector = new();
         }
 
-        this.backingDictionary = dictionary;
-        this.mutable = mutable;
-    }
+        vector.mutable = mutable;
+        vector.alive = 1;
 
-    public IndexedVector(IReadOnlyList<TValue> items, bool mutable) : this(items, items.Count, mutable)
-    {
+        var dict = vector.backingDictionary;
+
+#if !NETSTANDARD2_0
+        dict.EnsureCapacity(backing.Count);
+#endif
+
+        foreach (TValue value in backing)
+        {
+            TKey key = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter(value);
+            if (dict.TryGetValue(key, out var existingValue))
+            {
+                (existingValue as IPoolableObject)?.ReturnToPool();
+            }
+
+            dict[key] = value;
+        }
+
+        // we don't need "backing" any longer
+        backing.ReturnToPool(true);
+
+        return vector;
     }
 
     /// <summary>
@@ -167,8 +182,27 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         return this.backingDictionary.Remove(key);
     }
 
-    [ExcludeFromCodeCoverage]
     public void ReturnToPool(bool unsafeForce = false)
     {
+        if (FlatBufferDeserializationOption.Greedy.ShouldReturnToPool(unsafeForce))
+        {
+            if (Interlocked.Exchange(ref this.alive, 0) != 0)
+            {
+                var dict = this.backingDictionary;
+
+                foreach (var item in dict)
+                {
+                    if (item.Value is IPoolableObject obj)
+                    {
+                        obj.ReturnToPool(true);
+                    }
+                }
+
+                dict.Clear();
+                this.mutable = false;
+
+                ObjectPool.Return(this);
+            }
+        }
     }
 }

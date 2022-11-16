@@ -16,7 +16,7 @@
 
 using FlatSharp.Internal;
 
-namespace FlatSharpTests;
+namespace FlatSharpEndToEndTests.ImmutableList;
 
 /// <summary>
 /// Tests for the FlatBufferVector class that implements IList.

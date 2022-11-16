@@ -17,9 +17,7 @@
 namespace Microbench
 {
     using BenchmarkDotNet.Attributes;
-    using System;
     using FlatSharp;
-    using System.Linq;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
@@ -42,6 +40,8 @@ namespace Microbench
             {
                 length += table.SingleString!.Length;
             }
+
+            table.TryReturnToPool();
 
             return length;
         }
@@ -74,21 +74,36 @@ namespace Microbench
         public int Parse_StructTable_SingleRef()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleRef);
-            return st.SingleRef!.Value;
+            var singleRef = st.SingleRef!;
+
+            int result = singleRef.Value;
+
+            //singleRef.TryReturnToPool();
+            st.TryReturnToPool();
+
+            return result;
         }
 
         [Benchmark]
         public void Parse_StructTable_SingleRef_WriteThrough()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleRef);
-            st.SingleRef!.Value = 3;
+            var singleRef = st.SingleRef!;
+            singleRef.Value = 3;
+
+            //singleRef.TryReturnToPool();
+            st.TryReturnToPool();
         }
 
         [Benchmark]
         public int Parse_StructTable_SingleValue()
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleValue);
-            return st.SingleValue.Value;
+            var value = st.SingleValue.Value;
+
+            st.TryReturnToPool();
+
+            return value;
         }
 
         [Benchmark]
@@ -96,6 +111,8 @@ namespace Microbench
         {
             var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleValue);
             st.SingleValue = new ValueStruct { Value = 3 };
+
+            st.TryReturnToPool();
         }
 
         [Benchmark]
@@ -109,8 +126,13 @@ namespace Microbench
 
             for (int i = 0; i < count; ++i)
             {
-                sum += vecRef[i].Value;
+                var item = vecRef[i];
+                sum += item.Value;
+                //item.TryReturnToPool();
             }
+
+            //vecRef.TryReturnToPool();
+            st.TryReturnToPool();
 
             return sum;
         }
@@ -125,8 +147,13 @@ namespace Microbench
 
             for (int i = 0; i < count; ++i)
             {
-                vecRef[i].Value++;
+                var item = vecRef[i];
+                item.Value++;
+                //item.TryReturnToPool();
             }
+
+            //vecRef.TryReturnToPool();
+            st.TryReturnToPool();
         }
 
         [Benchmark]
@@ -142,6 +169,9 @@ namespace Microbench
             {
                 sum += vecValue[i].Value;
             }
+
+            //vecValue.TryReturnToPool();
+            st.TryReturnToPool();
 
             return sum;
         }
@@ -160,6 +190,9 @@ namespace Microbench
                 item.Value++;
                 vecValue[i] = item;
             }
+
+            //vecValue.TryReturnToPool();
+            st.TryReturnToPool();
         }
 
         [Benchmark]
@@ -175,6 +208,9 @@ namespace Microbench
             {
                 sum += vector[i].Accept<UnionVisitor, int>(visitor);
             }
+
+            //vector.TryReturnToPool();
+            st.TryReturnToPool();
 
             return sum;
         }
@@ -193,6 +229,9 @@ namespace Microbench
                 sum += vector[i].Accept<UnionVisitor, int>(visitor);
             }
 
+            //vector.TryReturnToPool();
+            st.TryReturnToPool();
+
             return sum;
         }
 
@@ -209,6 +248,9 @@ namespace Microbench
             {
                 sum += vector[i].Accept<UnionVisitor, int>(visitor);
             }
+
+            //vector.TryReturnToPool();
+            st.TryReturnToPool();
 
             return sum;
         }
@@ -252,6 +294,7 @@ namespace Microbench
             sum += (int)table.ULong;
             sum += table.UShort;
 
+            table.TryReturnToPool();
             return sum;
         }
 
@@ -275,9 +318,29 @@ namespace Microbench
                 {
                     length += vec[i].Length;
                 }
+
+                //vec.TryReturnToPool();
             }
+
+            table.TryReturnToPool();
 
             return length;
         }
+    }
+
+    public static class Extensions
+    {
+#if POOLABLE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void TryReturnToPool<T>(this T obj) where T : IPoolableObject
+        {
+            obj.ReturnToPool();
+        }
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void TryReturnToPool<T>(this T obj)
+        {
+        }
+#endif
     }
 }

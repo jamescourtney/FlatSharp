@@ -523,7 +523,7 @@ public class FlatSharpCompiler
 
             foreach (var s in bfbs)
             {
-                rootModel.UnionWith(ParseSchema(s, options, postProcessTransforms, mutators).ToRootModel());
+                rootModel.UnionWith(ParseSchema(s, options, postProcessTransforms, mutators).ToRootModel(options));
             }
 
             ErrorContext.Current.ThrowIfHasErrors();

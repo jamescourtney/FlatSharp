@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microbench.Current", "Bench
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microbench.6.3.3", "Benchmarks\MicroBench.6.3.3\Microbench.6.3.3.csproj", "{407BD242-0902-4850-9F53-17DF48F3DD6F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharpPoolableEndToEndTests", "Tests\FlatSharpPoolableEndToEndTests\FlatSharpPoolableEndToEndTests.csproj", "{7E55A248-4BBD-48AD-B27D-A7E0E705DC89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{407BD242-0902-4850-9F53-17DF48F3DD6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{407BD242-0902-4850-9F53-17DF48F3DD6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{407BD242-0902-4850-9F53-17DF48F3DD6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E55A248-4BBD-48AD-B27D-A7E0E705DC89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E55A248-4BBD-48AD-B27D-A7E0E705DC89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E55A248-4BBD-48AD-B27D-A7E0E705DC89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E55A248-4BBD-48AD-B27D-A7E0E705DC89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +107,7 @@ Global
 		{927A2D53-B127-4297-B17A-4E4EEE7ACD0D} = {83478353-8C5A-41C2-84C2-F79488B43CB0}
 		{5A173CC8-53B4-445B-9AA2-68A61A4BE449} = {927A2D53-B127-4297-B17A-4E4EEE7ACD0D}
 		{407BD242-0902-4850-9F53-17DF48F3DD6F} = {927A2D53-B127-4297-B17A-4E4EEE7ACD0D}
+		{7E55A248-4BBD-48AD-B27D-A7E0E705DC89} = {D1E90BAE-FC51-44DB-8215-1D9BB6059886}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {726A4C0E-5760-4B35-8C73-9AC21B2E4C8B}

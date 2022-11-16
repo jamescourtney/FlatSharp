@@ -55,10 +55,10 @@ namespace Microbench
                  //.AddHardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)
                  .AddJob(job.DontEnforcePowerPlan());
 
-            summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
             summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(SortedVectorBenchmarks), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(VTableBenchmarks), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SortedVectorBenchmarks), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(VTableBenchmarks), config));
 
             foreach (var item in summaries)
             {

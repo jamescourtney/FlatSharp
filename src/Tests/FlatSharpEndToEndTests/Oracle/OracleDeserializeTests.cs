@@ -384,8 +384,7 @@ public partial class OracleDeserializeTests
     }
 
     [Theory]
-    [InlineData(FlatBufferDeserializationOption.Greedy)]
-    [InlineData(FlatBufferDeserializationOption.Lazy)]
+    [ClassData(typeof(DeserializationOptionClassData))]
     public void SortedVectors(FlatBufferDeserializationOption option)
     {
         var builder = new FlatBufferBuilder(1024 * 1024);

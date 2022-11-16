@@ -46,7 +46,7 @@ public static class VectorCloneHelpers
 
     [return: NotNullIfNotNull("source")]
     public static IList<T>? CloneVectorOfUnion<T>(IList<T>? source, CloneCallback<T> cloneItem)
-        where T : struct, IFlatBufferUnion
+        where T : IFlatBufferUnion
     {
         if (source is null)
         {
@@ -86,7 +86,7 @@ public static class VectorCloneHelpers
 
     [return: NotNullIfNotNull("source")]
     public static IReadOnlyList<T>? CloneVectorOfUnion<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
-        where T : struct, IFlatBufferUnion
+        where T : IFlatBufferUnion
     {
         if (source is null)
         {

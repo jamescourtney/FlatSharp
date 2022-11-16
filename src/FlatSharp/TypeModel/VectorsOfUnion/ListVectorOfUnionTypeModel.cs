@@ -37,14 +37,15 @@ public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
         string itemAccessorTypeName = $"{className}<{context.InputBufferTypeName}>";
 
         string createFlatBufferVector =
-            $@"new FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}> (
+            $@"FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>.GetOrCreate(
                     {context.InputBufferVariableName}, 
                     new {itemAccessorTypeName}(
                         {context.InputBufferVariableName},
                         {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
                         {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1)),
                     {context.RemainingDepthVariableName},
-                    {context.TableFieldContextVariableName})";
+                    {context.TableFieldContextVariableName},
+                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
 
         return new CodeGeneratedMethod(ListVectorTypeModel.CreateParseBody(
             this.ItemTypeModel,
