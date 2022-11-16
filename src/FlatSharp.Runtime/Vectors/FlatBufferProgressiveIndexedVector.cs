@@ -14,24 +14,47 @@
  * limitations under the License.
  */
 
+using System.Threading;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation that loads data progressively.
 /// </summary>
-public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> : IIndexedVector<TKey, TValue>
+public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> 
+    : IIndexedVector<TKey, TValue>
+
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
     where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
 {
-    private readonly Dictionary<TKey, TValue?> backingDictionary;
-    private readonly FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor> backingVector;
+    private readonly Dictionary<TKey, TValue?> backingDictionary = new();
+    private FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor> backingVector;
 
-    public FlatBufferProgressiveIndexedVector(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> items)
+    private FlatBufferDeserializationOption deserializationOption;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private FlatBufferProgressiveIndexedVector()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
-        this.backingDictionary = new Dictionary<TKey, TValue?>();
-        this.backingVector = new FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor>(items);
+    }
+
+    private void Initialize(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> items)
+    {
+        this.deserializationOption = items.DeserializationOption;
+        this.backingVector = FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor>.GetOrCreate(items);
+    }
+
+    public static FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor> GetOrCreate(FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> items)
+    {
+        if (!ObjectPool.TryGet<FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAccessor>>(out var item))
+        {
+            item = new();
+        }
+
+        item.Initialize(items);
+        return item;
     }
 
     /// <summary>
@@ -134,5 +157,20 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
     public bool Remove(TKey key)
     {
         throw new NotMutableException();
+    }
+
+    public void ReturnToPool(bool force = false)
+    {
+        if (this.deserializationOption.ShouldReturnToPool(force))
+        {
+            var backingVector = Interlocked.Exchange(ref this.backingVector!, null);
+            if (backingVector is not null)
+            {
+                backingVector.ReturnToPool(true);
+                this.backingDictionary.Clear();
+
+                ObjectPool.Return(this);
+            }
+        }
     }
 }

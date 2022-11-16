@@ -59,12 +59,6 @@ public class TypeModelTests
     }
 
     [Fact]
-    public void TypeModel_Table_InterfaceImplementationNonVirtual()
-    {
-        RuntimeTypeModel.CreateFrom(typeof(InterfaceTableNonVirtual));
-    }
-
-    [Fact]
     public void TypeModel_Table_InterfaceImplementationVirtual()
     {
         RuntimeTypeModel.CreateFrom(typeof(InterfaceTableVirtual));
@@ -90,14 +84,6 @@ public class TypeModelTests
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(Table_NonPublicGetter)));
         Assert.Equal("Property FlatSharpTests.TypeModelTests.Table_NonPublicGetter.Prop (Index 0) must declare a public getter.", ex.Message);
-    }
-
-    [Fact]
-    public void TypeModel_Table_NonVirtual_NoSetter()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-            RuntimeTypeModel.CreateFrom(typeof(Table_NonVirtual_NoSetter)));
-        Assert.Equal("Non-virtual property FlatSharpTests.TypeModelTests.Table_NonVirtual_NoSetter.Prop (Index 0) must declare a public/protected and non-abstract setter.", ex.Message);
     }
 
     [Fact]
@@ -268,10 +254,6 @@ public class TypeModelTests
         Assert.Equal(CreateError<TableOnDeserialized_RefParameter>(), ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-            () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_OptionalParameter)));
-        Assert.Equal(CreateError<TableOnDeserialized_OptionalParameter>(), ex.Message);
-
-        ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
             () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_NotProtected)));
         Assert.Equal(CreateError<TableOnDeserialized_NotProtected>(), ex.Message);
 
@@ -295,14 +277,6 @@ public class TypeModelTests
         Assert.Equal(
             "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.",
             ex.Message);
-    }
-
-    [Fact]
-    public void TypeModel_Struct_NonVirtual_NoSetter()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-            RuntimeTypeModel.CreateFrom(typeof(Struct_NonVirtual_NoSetter)));
-        Assert.Equal("Non-virtual property FlatSharpTests.TypeModelTests.Struct_NonVirtual_NoSetter.Prop (Index 0) must declare a public/protected and non-abstract setter.", ex.Message);
     }
 
     [Fact]
@@ -408,20 +382,6 @@ public class TypeModelTests
     }
 
     [Fact]
-    public void TypeModel_Struct_NonVirtualProperty()
-    {
-        RuntimeTypeModel.CreateFrom(typeof(NonVirtualPropertyStruct<byte>));
-    }
-
-    [Fact]
-    public void TypeModel_Struct_NonVirtualProperty_PrivateSetter_NotAllowed()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-            RuntimeTypeModel.CreateFrom(typeof(NonVirtualPropertyStructPrivateSetter<byte>)));
-        Assert.Equal("Non-virtual property FlatSharpTests.TypeModelTests.NonVirtualPropertyStructPrivateSetter<System.Byte>.Value (Index 0) must declare a public/protected and non-abstract setter.", ex.Message);
-    }
-
-    [Fact]
     public void TypeModel_Struct_Sealed()
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
@@ -459,12 +419,6 @@ public class TypeModelTests
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(StructWithDefaultValue)));
         Assert.Equal("FlatBuffer struct FlatSharpTests.TypeModelTests.StructWithDefaultValue declares default value on index 0. Structs may not have default values.", ex.Message);
-    }
-
-    [Fact]
-    public void TypeModel_Struct_InterfaceImplementationNonVirtual()
-    {
-        RuntimeTypeModel.CreateFrom(typeof(InterfaceStructNonVirtual));
     }
 
     [Fact]
@@ -516,17 +470,6 @@ public class TypeModelTests
         Validate<double>();
         Validate<TaggedEnum>();
         Validate<GenericStruct<int>>();
-    }
-
-    [Fact]
-    public void TypeModel_Struct_WriteThrough_NonVirtual_NotAllowed()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-            RuntimeTypeModel.CreateFrom(typeof(StructWriteThroughNonVirtual)));
-
-        Assert.Equal(
-            "Struct member 'FlatSharpTests.TypeModelTests.StructWriteThroughNonVirtual.Property' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.",
-            ex.Message);
     }
 
     [Fact]
@@ -1216,20 +1159,6 @@ public class TypeModelTests
     }
 
     [FlatBufferStruct]
-    public class NonVirtualPropertyStruct<T>
-    {
-        [FlatBufferItem(0)]
-        public T Value { get; set; }
-    }
-
-    [FlatBufferStruct]
-    public class NonVirtualPropertyStructPrivateSetter<T>
-    {
-        [FlatBufferItem(0)]
-        public T Value { get; private set; }
-    }
-
-    [FlatBufferStruct]
     public abstract class AbstractStruct<T>
     {
         [FlatBufferItem(0)]
@@ -1285,29 +1214,11 @@ public class TypeModelTests
         int Foo { get; set; }
     }
 
-    // Properties that implement interfaces are virtual according to the property info. It's possible to be both
-    // virtual and final.
-    [FlatBufferTable]
-    public class InterfaceTableNonVirtual : IInterface
-    {
-        [FlatBufferItem(0)]
-        public int Foo { get; set; }
-    }
-
     [FlatBufferTable]
     public class InterfaceTableVirtual : IInterface
     {
         [FlatBufferItem(0)]
         public virtual int Foo { get; set; }
-    }
-
-    // Properties that implement interfaces are virtual according to the property info. It's possible to be both
-    // virtual and final.
-    [FlatBufferStruct]
-    public class InterfaceStructNonVirtual : IInterface
-    {
-        [FlatBufferItem(0)]
-        public int Foo { get; set; }
     }
 
     [FlatBufferTable]
@@ -1388,13 +1299,6 @@ public class TypeModelTests
     }
 
     [FlatBufferTable]
-    public class Table_NonVirtual_NoSetter
-    {
-        [FlatBufferItem(0)]
-        public int Prop { get; }
-    }
-
-    [FlatBufferTable]
     public class Table_ForceWrite<T>
     {
         [FlatBufferItem(0, ForceWrite = true)]
@@ -1408,46 +1312,39 @@ public class TypeModelTests
         public virtual T Item { get; set; }
     }
 
-    [FlatBufferStruct]
-    public class Struct_NonVirtual_NoSetter
-    {
-        [FlatBufferItem(0)]
-        public int Prop { get; }
-    }
-
     [FlatBufferTable(FileIdentifier = "abc")]
     public class Table_FileIdentifierTooShort
     {
         [FlatBufferItem(0)]
-        public int Prop { get; set; }
+        public virtual int Prop { get; set; }
     }
 
     [FlatBufferTable(FileIdentifier = "abcd")]
     public class Table_FileIdentifierOK
     {
         [FlatBufferItem(0)]
-        public int Prop { get; set; }
+        public virtual int Prop { get; set; }
     }
 
     [FlatBufferTable(FileIdentifier = "abcde")]
     public class Table_FileIdentifierTooLong
     {
         [FlatBufferItem(0)]
-        public int Prop { get; set; }
+        public virtual int Prop { get; set; }
     }
 
     [FlatBufferTable(FileIdentifier = "😍😚😙😵‍")]
     public class Table_FileIdentifierTooFancy
     {
         [FlatBufferItem(0)]
-        public int Prop { get; set; }
+        public virtual int Prop { get; set; }
     }
 
     [FlatBufferTable(FileIdentifier = "abcµ")]
     public class Table_FileIdentifierOutOfRange
     {
         [FlatBufferItem(0)]
-        public int Prop { get; set; }
+        public virtual int Prop { get; set; }
     }
 
     [FlatBufferTable]
@@ -1497,7 +1394,7 @@ public class TypeModelTests
     {
         protected void OnFlatSharpDeserialized(out FlatBufferDeserializationContext context)
         {
-            context = null;
+            context = default;
         }
     }
 
@@ -1513,14 +1410,6 @@ public class TypeModelTests
     public class TableOnDeserialized_RefParameter
     {
         protected void OnFlatSharpDeserialized(ref FlatBufferDeserializationContext context)
-        {
-        }
-    }
-
-    [FlatBufferTable]
-    public class TableOnDeserialized_OptionalParameter
-    {
-        protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context = null)
         {
         }
     }
@@ -1554,20 +1443,13 @@ public class TypeModelTests
     }
 
     [FlatBufferStruct]
-    public class StructWriteThroughNonVirtual
-    {
-        [FlatBufferItem(0, WriteThrough = true)]
-        public int Property { get; set; }
-    }
-
-    [FlatBufferStruct]
     public class StructWriteThrough
     {
         [FlatBufferItem(0, WriteThrough = true)]
         public virtual int Property { get; set; }
 
         [FlatBufferItem(1, WriteThrough = false)]
-        public int Property2 { get; set; }
+        public virtual int Property2 { get; set; }
     }
 
     [FlatBufferTable]
@@ -1594,13 +1476,13 @@ public class TypeModelTests
     public class TableRequiredField<T>
     {
         [FlatBufferItem(0, Required = true)]
-        public T Value { get; set; }
+        public virtual T Value { get; set; }
     }
 
     [FlatBufferStruct]
     public class StructRequiredField<T>
     {
         [FlatBufferItem(0, Required = true)]
-        public T Value { get; set; }
+        public virtual T Value { get; set; }
     }
 }

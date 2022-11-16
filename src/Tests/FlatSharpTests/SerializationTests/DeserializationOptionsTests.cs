@@ -255,7 +255,7 @@ public class DeserializationOptionsTests
         var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.GreedyMutable, Strings);
         InputBuffer.AsSpan().Fill(0);
 
-        Assert.Equal(typeof(List<string>), table.Vector.GetType());
+        Assert.Equal(typeof(PoolableList<string>), table.Vector.GetType());
         Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
         var vector = table.Vector;
@@ -277,7 +277,7 @@ public class DeserializationOptionsTests
         var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.GreedyMutable, Strings);
         InputBuffer.AsSpan().Fill(0);
 
-        Assert.Equal(typeof(List<string>), table.Vector.GetType());
+        Assert.Equal(typeof(PoolableList<string>), table.Vector.GetType());
         Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
         Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
         Assert.True(object.ReferenceEquals(table.First, table.First));
@@ -389,7 +389,7 @@ public class DeserializationOptionsTests
         public virtual ulong NoSetter { get; }
 
         [FlatBufferItem(2)]
-        public SecondStruct SecondStruct { get; set; }
+        public virtual SecondStruct SecondStruct { get; set; }
     }
 
     [FlatBufferStruct]

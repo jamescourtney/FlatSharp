@@ -34,26 +34,7 @@ public class UnionsTestCases
         Assert.Equal(typeof(D), c.Value[3].Accept<UnionVisitor, Type>(visitor));
     }
 
-
-    [Fact]
-    public void Builtin_Union_Accept_Works()
-    {
-        FlatBufferUnion<A, B, C, D>[] unions = new[]
-        {
-            new FlatBufferUnion<A, B, C, D>(new A()),
-            new FlatBufferUnion<A, B, C, D>(new B()),
-            new FlatBufferUnion<A, B, C, D>(new C()),
-            new FlatBufferUnion<A, B, C, D>(new D()),
-        };
-
-        UnionVisitor visitor = new();
-
-        Assert.Equal(typeof(A), unions[0].Accept<UnionVisitor, Type>(visitor));
-        Assert.Equal(typeof(B), unions[1].Accept<UnionVisitor, Type>(visitor));
-        Assert.Equal(typeof(C), unions[2].Accept<UnionVisitor, Type>(visitor));
-        Assert.Equal(typeof(D), unions[3].Accept<UnionVisitor, Type>(visitor));
-    }
-
+#if NET6_0_OR_GREATER
     /// <summary>
     /// In this test, the FBS file lies about the size of <see cref="System.Numerics.Vector{T}"/>. Depending on the machine,
     /// the size should be 16 (SSE), 32 (AVX2), or 64 (AVX512). The FBS defines it as 4 bytes.
@@ -71,6 +52,7 @@ public class UnionsTestCases
             Assert.Contains("to have size 4. Unsafe.SizeOf reported size ", ex.Message);
         }
     }
+#endif
 
     [Fact]
     public void Unsafe_Unions_ExternalStruct_CorrectSize()
@@ -80,7 +62,6 @@ public class UnionsTestCases
         foreach (var guard in headerTrailer)
         {
             Wrapper<UnsafeUnion> wrapper = new();
-            Span<byte> wrapperBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Wrapper<UnsafeUnion>, byte>(ref wrapper), Unsafe.SizeOf<Wrapper<UnsafeUnion>>());
 
             wrapper.Header = guard;
             wrapper.Trailer = guard;
@@ -103,7 +84,6 @@ public class UnionsTestCases
         foreach (var guard in headerTrailer)
         {
             Wrapper<UnsafeUnion> wrapper = new();
-            Span<byte> wrapperBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Wrapper<UnsafeUnion>, byte>(ref wrapper), Unsafe.SizeOf<Wrapper<UnsafeUnion>>());
 
             wrapper.Header = guard;
             wrapper.Trailer = guard;

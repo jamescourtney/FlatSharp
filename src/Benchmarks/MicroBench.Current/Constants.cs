@@ -21,6 +21,7 @@ namespace Microbench
     using System.Diagnostics;
     using System.Linq;
     using FlatSharp;
+    using FlatSharp.Internal;
 
     public static class Constants
     {
@@ -30,6 +31,9 @@ namespace Microbench
         static Constants()
         {
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+#if POOLABLE
+            ObjectPool.MaxToRetain = VectorLength;
+#endif
         }
 
         public static class StringTables
@@ -63,8 +67,8 @@ namespace Microbench
         {
             public static StructsTable SingleRef = new StructsTable { SingleRef = new RefStruct { Value = 1 }, SingleValue = default, };
             public static StructsTable SingleValue = new StructsTable { SingleValue = new ValueStruct { Value = 1 } };
-            public static StructsTable VectorRef = new StructsTable { VecRef = Enumerable.Range(1, 30).Select(x => new RefStruct { Value = x }).ToList(), SingleValue = default, };
-            public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, 30).Select(x => new ValueStruct { Value = x }).ToList(), SingleValue = default, };
+            public static StructsTable VectorRef = new StructsTable { VecRef = Enumerable.Range(1, VectorLength).Select(x => new RefStruct { Value = x }).ToList(), SingleValue = default, };
+            public static StructsTable VectorValue = new StructsTable { VecValue = Enumerable.Range(1, VectorLength).Select(x => new ValueStruct { Value = x }).ToList(), SingleValue = default, };
         }
 
         public static class SortedVectorTables

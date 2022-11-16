@@ -2,7 +2,11 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <PipelineBuild>false</PipelineBuild>
+    <PipelineBuild Condition=" '$(AppVeyorBuild)' == 'true' or '$(CoverageBuild)' == 'true' ">true</PipelineBuild>
+    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">net472;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(CoverageBuild)' == 'true' ">net7.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
@@ -11,10 +15,14 @@
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
     <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
-    <FlatSharpNameNormalization>false</FlatSharpNameNormalization>
+    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Grpc.Core" Version="2.46.5" />
     <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -25,18 +33,20 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference> 
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
+    <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
-
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
+    
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(PipelineBuild)' != 'true' " />
 </Project>
+

@@ -31,10 +31,12 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
 
     private readonly MemoryPointer pointer;
 
-    public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory)
+    public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory, bool isPinned = false)
     {
-        this.pointer = new MemoryPointer { memory = memory };
+        this.pointer = new MemoryPointer { memory = memory, isPinned = isPinned };
     }
+
+    public bool IsPinned => this.pointer.isPinned;
 
     public bool IsReadOnly => true;
 
@@ -162,5 +164,6 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
     private class MemoryPointer
     {
         public ReadOnlyMemory<byte> memory;
+        public bool isPinned;
     }
 }

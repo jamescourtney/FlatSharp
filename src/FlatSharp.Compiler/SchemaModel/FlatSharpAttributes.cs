@@ -39,8 +39,6 @@ public class FlatSharpAttributes : IFlatSharpAttributes
 
     public FlatBufferDeserializationOption? DeserializationOption => this.TryParseEnum(MetadataKeys.SerializerKind, FlatBufferDeserializationOption.Default);
 
-    public bool? NonVirtual => this.TryParseBoolean(MetadataKeys.NonVirtualProperty);
-
     public bool? PreserveFieldName => this.TryParseBoolean(MetadataKeys.LiteralName);
 
     public bool? SortedVector => this.TryParseBoolean(MetadataKeys.SortedVector);

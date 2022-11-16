@@ -29,6 +29,11 @@ public interface IInputBuffer
     bool IsReadOnly { get; }
 
     /// <summary>
+    /// Indicates if this instance represents pinned (non-movable) memory.
+    /// </summary>
+    bool IsPinned { get; }
+
+    /// <summary>
     /// Gets the length of this input buffer.
     /// </summary>
     int Length { get; }

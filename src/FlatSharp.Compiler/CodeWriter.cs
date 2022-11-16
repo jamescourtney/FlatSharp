@@ -38,6 +38,11 @@ public class CodeWriter
         this.builder.AppendLine(line);
     }
 
+    public void AppendInheritDoc()
+    {
+        this.AppendLine("/// <inheritdoc />");
+    }
+
     public void AppendSummaryComment(params string[] summaryParts)
     {
         this.AppendSummaryComment((IEnumerable<string>)summaryParts);

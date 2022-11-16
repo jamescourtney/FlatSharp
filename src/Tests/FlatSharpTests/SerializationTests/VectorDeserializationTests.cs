@@ -15,7 +15,9 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace FlatSharpTests;
 
@@ -270,7 +272,7 @@ public class VectorDeserializationTests
 
         var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
-        Assert.Equal(typeof(List<string>), parsed.Vector.GetType());
+        Assert.Equal(typeof(PoolableList<string>), parsed.Vector.GetType());
         Assert.False(parsed.Vector.IsReadOnly);
 
         // Shouldn't throw.
@@ -502,5 +504,13 @@ public class VectorDeserializationTests
 
         [FlatBufferItem(1, Key = true)]
         public virtual TKey? Key { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+    public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
     }
 }

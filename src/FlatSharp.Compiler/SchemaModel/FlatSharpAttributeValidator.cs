@@ -40,11 +40,6 @@ public class FlatSharpAttributeValidator
             }
         }
 
-        if (attributes.NonVirtual is not null)
-        {
-            RegisterError(MetadataKeys.NonVirtualProperty, this.NonVirtualValidator(attributes.NonVirtual.Value), attributes.NonVirtual.Value);
-        }
-
         if (attributes.DeserializationOption is not null)
         {
             RegisterError(MetadataKeys.SerializerKind, this.DeserializationOptionValidator(attributes.DeserializationOption.Value), attributes.DeserializationOption.Value);
@@ -115,8 +110,6 @@ public class FlatSharpAttributeValidator
             RegisterError(MetadataKeys.UnsafeUnion, this.UnsafeUnionValidator(attributes.UnsafeUnion.Value), attributes.UnsafeUnion);
         }
     }
-
-    public Func<bool, AttributeValidationResult> NonVirtualValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
 
     public Func<VectorType, AttributeValidationResult> VectorTypeValidator { get; set; } = (v) => AttributeValidationResult.NeverValid;
 

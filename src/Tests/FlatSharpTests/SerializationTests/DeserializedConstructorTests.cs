@@ -107,15 +107,14 @@ public class DeserializedConstructorTests
             TTable result = serializer.Parse(data);
 
             Assert.Null(table.Context);
-            Assert.Equal(item, result.Context.DeserializationOption);
-            Assert.Equal(item, result.Struct.Context.DeserializationOption);
-            Assert.False(object.ReferenceEquals(result.Context, result.Struct.Context));
+            Assert.Equal(item, result.Context.Value.DeserializationOption);
+            Assert.Equal(item, result.Struct.Context.Value.DeserializationOption);
         }
     }
 
     public interface IContextItem
     {
-        FlatBufferDeserializationContext Context { get; }
+        FlatBufferDeserializationContext? Context { get; }
     }
 
     public interface IContextTable<TStruct>
@@ -128,7 +127,7 @@ public class DeserializedConstructorTests
     public class PublicContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
         where TStruct : IContextItem, new()
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public PublicContextConstructorTable() { }
 
@@ -138,16 +137,16 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
     public class PublicContextConstructorStruct : IContextItem
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public PublicContextConstructorStruct() { }
 
@@ -157,7 +156,7 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 
 
@@ -165,7 +164,7 @@ public class DeserializedConstructorTests
     public class ProtectedContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
         where TStruct : IContextItem, new()
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public ProtectedContextConstructorTable() { }
 
@@ -175,16 +174,16 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
     public class ProtectedContextConstructorStruct : IContextItem
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public ProtectedContextConstructorStruct() { }
 
@@ -194,14 +193,14 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 
     [FlatBufferTable]
     public class ProtectedInternalContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
         where TStruct : IContextItem, new()
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public ProtectedInternalContextConstructorTable() { }
 
@@ -211,16 +210,16 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
     public class ProtectedInternalContextConstructorStruct : IContextItem
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public ProtectedInternalContextConstructorStruct() { }
 
@@ -230,7 +229,7 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 
 
@@ -238,7 +237,7 @@ public class DeserializedConstructorTests
     public class PrivateContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
         where TStruct : IContextItem, new()
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public PrivateContextConstructorTable() { }
 
@@ -248,16 +247,16 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public string? Name { get; set; } = "Rocket";
+        public virtual string? Name { get; set; } = "Rocket";
 
         [FlatBufferItem(1)]
-        public TStruct? Struct { get; set; } = new TStruct();
+        public virtual TStruct? Struct { get; set; } = new TStruct();
     }
 
     [FlatBufferStruct]
     public class PrivateContextConstructorStruct : IContextItem
     {
-        public FlatBufferDeserializationContext Context { get; }
+        public FlatBufferDeserializationContext? Context { get; }
 
         public PrivateContextConstructorStruct() { }
 
@@ -267,6 +266,6 @@ public class DeserializedConstructorTests
         }
 
         [FlatBufferItem(0)]
-        public long Value { get; set; } = 123;
+        public virtual long Value { get; set; } = 123;
     }
 }
