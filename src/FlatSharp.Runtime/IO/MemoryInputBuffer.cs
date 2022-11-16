@@ -25,10 +25,12 @@ public struct MemoryInputBuffer : IInputBuffer
 {
     private readonly MemoryPointer pointer;
 
-    public MemoryInputBuffer(Memory<byte> memory)
+    public MemoryInputBuffer(Memory<byte> memory, bool isPinned = false)
     {
-        this.pointer = new MemoryPointer { memory = memory };
+        this.pointer = new MemoryPointer { memory = memory, isPinned = isPinned };
     }
+
+    public bool IsPinned => this.pointer.isPinned;
 
     public bool IsReadOnly => false;
 
@@ -153,10 +155,11 @@ public struct MemoryInputBuffer : IInputBuffer
         => serializer.ParseGreedyMutable(this, in arguments);
 
     // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a
-    // a reference that will be collected ephemerally in Gen0 than is is to
+    // a reference that will be collected ephemerally in Gen0 than it is to
     // copy it around.
     private class MemoryPointer
     {
         public Memory<byte> memory;
+        public bool isPinned;
     }
 }

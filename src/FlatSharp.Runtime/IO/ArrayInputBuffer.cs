@@ -30,6 +30,8 @@ public struct ArrayInputBuffer : IInputBuffer
         this.memory = buffer;
     }
 
+    public bool IsPinned => false;
+
     public bool IsReadOnly => false;
 
     public int Length => this.memory.Length;
