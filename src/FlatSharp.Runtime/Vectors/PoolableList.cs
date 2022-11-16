@@ -15,6 +15,7 @@
  */
 
 using System.Buffers;
+using System.Linq;
 using System.Threading;
 
 namespace FlatSharp.Internal;
@@ -26,6 +27,11 @@ public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObjec
 {
     private List<T> list;
     private int isAlive;
+
+    public PoolableList(IList<T> template)
+    {
+        this.list = template.ToList();
+    }
 
     public PoolableList(int capacity)
     {
