@@ -82,7 +82,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGet<T>([NotNullWhen(true)] out T? value)
         {
-            return DefaultObjectPool.TryGet(out value);
+            return Pool<T>.TryGet(out value);
         }
 
         /// <summary>
@@ -91,27 +91,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Return<T>(T item)
         {
-            DefaultObjectPool.Return(item);
-        }
-#endif
-    }
-
-    /// <summary>
-    /// A default implementation of the <see cref="IObjectPool"/> interface.
-    /// </summary>
-    [ExcludeFromCodeCoverage]
-    public static class DefaultObjectPool
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Return<T>(T item)
-        {
-            Pool<T>.Return(item, ObjectPool.MaxToRetain);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGet<T>([NotNullWhen(true)] out T? value)
-        {
-            return Pool<T>.TryGet(out value);
+            Pool<T>.Return(item, MaxToRetain);
         }
 
         private static class Pool<T>
@@ -151,5 +131,6 @@ namespace FlatSharp
                 }
             }
         }
+#endif
     }
 }
