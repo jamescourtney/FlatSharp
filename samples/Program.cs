@@ -35,6 +35,7 @@ public static class Program
             new StructVectors.StructVectorsSample(),
             new WriteThrough.WriteThroughSample(),
             new ValueStructs.ValueStructsSample(),
+            new UnsafeOptions.UnsafeOptionsExample(),
         };
 
         foreach (var sample in samples)

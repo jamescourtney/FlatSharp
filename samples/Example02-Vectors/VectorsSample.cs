@@ -171,10 +171,9 @@ public class VectorsSample : IFlatSharpSample
 
             Type actualType = vectorOfTable.GetType();
 
-            /// GreedyMutable Vectors are <see cref="List{T}" />.
             Assert.True(
-                actualType == typeof(List<SimpleTable>),
-                "GreedyMutable vectors are regular lists");
+                actualType == typeof(FlatSharp.Internal.PoolableList<SimpleTable>),
+                "GreedyMutable vectors are 'Poolable' lists");
 
             // GreedyMutable Vectors return the same instance each time:
             SimpleTable? first = vectorOfTable[0];
