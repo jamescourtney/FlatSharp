@@ -20,7 +20,7 @@ FlatSharp is a mature library and has been shipped to production at Microsoft, U
 If you're completely new to FlatBuffers, take a minute to look over [the FlatBuffer overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview). Additionally, it's worth the time to understand the different elements of [FlatBuffer schemas](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
 
 #### 1. Define a schema
-FlatSharp, like other FlatBuffers implementations, uses [FBS files](samples/Example02-SchemaFiles/SchemaFilesExample.fbs) to define schemas. Because FlatSharp runs with your build, all code is generated at build time, making FlatSharp compatible with .NET AOT, Blazor, and Unity.
+FlatSharp, like other FlatBuffers implementations, uses [FBS files](samples/Example00-Basics/Basics.fbs) to define schemas. Because FlatSharp runs with your build, all code is generated at build time, making FlatSharp compatible with .NET AOT, Blazor, and Unity.
 
 ``` fbs
 // all FlatSharp FBS attributes start with the 'fs_' prefix.
