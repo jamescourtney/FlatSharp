@@ -71,6 +71,11 @@ namespace FlatSharp
         }
 
 #else
+        /// <summary>
+        /// Gets or sets the soft limit on the maximum number of objects FlatSharp should retain. Note that this
+        /// limit applies per-type and is a soft limit, meaning it may be exceeded temporarily.
+        /// </summary>
+        public static int MaxToRetain { get; set; }
 
         /// <summary>
         /// Attempts to get an instance of <typeparamref name="T"/> from the pool.
@@ -98,16 +103,10 @@ namespace FlatSharp
     [ExcludeFromCodeCoverage]
     public static class DefaultObjectPool
     {
-        public static int MaxToRetain
-        {
-            get;
-            set;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Return<T>(T item)
         {
-            Pool<T>.Return(item, MaxToRetain);
+            Pool<T>.Return(item, ObjectPool.MaxToRetain);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

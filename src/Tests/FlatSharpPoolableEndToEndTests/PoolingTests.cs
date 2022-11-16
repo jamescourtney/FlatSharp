@@ -28,7 +28,7 @@ public class PoolingTests
         var testPool = new TestObjectPool();
         ObjectPool.Instance = testPool;
 #else
-        DefaultObjectPool.MaxToRetain = 100;
+        ObjectPool.MaxToRetain = 100;
 #endif
 
         byte[] buffer = CreateRoot(1);
