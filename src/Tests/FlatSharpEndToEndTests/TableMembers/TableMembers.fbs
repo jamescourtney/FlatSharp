@@ -1,0 +1,148 @@
+﻿/*
+ * Copyright 2018 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+attribute "fs_vector";
+attribute "fs_serializer";
+attribute "fs_sortedVector";
+
+namespace FlatSharpEndToEndTests.TableMembers;
+
+table BoolTable (fs_serializer)
+{
+    item_standard : bool;
+    item_optional : bool = null;
+    item_with_default : bool = true;
+    item_deprecated : bool (deprecated);
+    item_vector_implicit : [ bool ];
+    item_list : [ bool ] (fs_vector:"IList");
+    item_readonly_list : [ bool ] (fs_vector:"IReadOnlyList");
+}
+
+table ByteTable (fs_serializer)
+{
+    item_standard : ubyte;
+    item_optional : ubyte = null;
+    item_with_default : ubyte = 1;
+    item_deprecated : ubyte (deprecated);
+    item_vector_implicit : [ ubyte ];
+    item_list : [ ubyte ] (fs_vector:"IList");
+    item_readonly_list : [ ubyte ] (fs_vector:"IReadOnlyList");
+    item_memory : [ ubyte ] (fs_vector:"Memory");
+    item_readonly_memory : [ ubyte ] (fs_vector:"ReadOnlyMemory");
+}
+
+table SByteTable (fs_serializer)
+{
+    item_standard : byte;
+    item_optional : byte = null;
+    item_with_default : byte = 1;
+    item_deprecated : byte (deprecated);
+    item_vector_implicit : [ byte ];
+    item_list : [ byte ] (fs_vector:"IList");
+    item_readonly_list : [ byte ] (fs_vector:"IReadOnlyList");
+}
+
+table ShortTable (fs_serializer)
+{
+    item_standard : short;
+    item_optional : short = null;
+    item_with_default : short = 1;
+    item_deprecated : short (deprecated);
+    item_vector_implicit : [ short ];
+    item_list : [ short ] (fs_vector:"IList");
+    item_readonly_list : [ short ] (fs_vector:"IReadOnlyList");
+}
+
+table UShortTable (fs_serializer)
+{
+    item_standard : ushort;
+    item_optional : ushort = null;
+    item_with_default : ushort = 1;
+    item_deprecated : ushort (deprecated);
+    item_vector_implicit : [ ushort ];
+    item_list : [ ushort ] (fs_vector:"IList");
+    item_readonly_list : [ ushort ] (fs_vector:"IReadOnlyList");
+}
+
+table UIntTable (fs_serializer)
+{
+    item_standard : uint;
+    item_optional : uint = null;
+    item_with_default : uint = 1;
+    item_deprecated : uint (deprecated);
+    item_vector_implicit : [ uint ];
+    item_list : [ uint ] (fs_vector:"IList");
+    item_readonly_list : [ uint ] (fs_vector:"IReadOnlyList");
+}
+
+table IntTable (fs_serializer)
+{
+    item_standard : int;
+    item_optional : int = null;
+    item_with_default : int = 1;
+    item_deprecated : int (deprecated);
+    item_vector_implicit : [ int ];
+    item_list : [ int ] (fs_vector:"IList");
+    item_readonly_list : [ int ] (fs_vector:"IReadOnlyList");
+}
+
+table ULongTable (fs_serializer)
+{
+    item_standard : ulong;
+    item_optional : ulong = null;
+    item_with_default : ulong = 1;
+    item_deprecated : ulong (deprecated);
+    item_vector_implicit : [ ulong ];
+    item_list : [ ulong ] (fs_vector:"IList");
+    item_readonly_list : [ ulong ] (fs_vector:"IReadOnlyList");
+}
+
+table LongTable (fs_serializer)
+{
+    item_standard : long;
+    item_optional : long = null;
+    item_with_default : long = 1;
+    item_deprecated : long (deprecated);
+    item_vector_implicit : [ long ];
+    item_list : [ long ] (fs_vector:"IList");
+    item_readonly_list : [ long ] (fs_vector:"IReadOnlyList");
+}
+
+table FloatTable (fs_serializer)
+{
+    item_standard : float;
+    item_optional : float = null;
+    item_with_default : float = 2.71;
+    item_deprecated : float (deprecated);
+    item_vector_implicit : [ float ];
+    item_list : [ float ] (fs_vector:"IList");
+    item_readonly_list : [ float ] (fs_vector:"IReadOnlyList");
+}
+
+table DoubleTable (fs_serializer)
+{
+    item_standard : double;
+    item_optional : double = null;
+    item_with_default : double = 3.14;
+    item_deprecated : double (deprecated);
+    item_vector_implicit : [ double ];
+    item_list : [ double ] (fs_vector:"IList");
+    item_readonly_list : [ double ] (fs_vector:"IReadOnlyList");
+}
+
+table EmptyTable (fs_serializer)
+{
+}
