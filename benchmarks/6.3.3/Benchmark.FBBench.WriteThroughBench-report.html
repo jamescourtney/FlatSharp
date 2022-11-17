@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.WriteThroughBench-20221116-201005</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.819)
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.100
+  [Host]   : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+  ShortRun : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET 7.0  
+IterationCount=5  LaunchCount=7  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>    Method</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th> P25</th><th> P95</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>RefStructSmall</td><td>174.3 ns</td><td>0.70 ns</td><td>1.09 ns</td><td>174.4 ns</td><td>174.1 ns</td><td>175.6 ns</td><td>0.0086</td><td>144 B</td>
+</tr><tr><td>RefStructLarge</td><td>1,141.0 ns</td><td>6.62 ns</td><td>10.30 ns</td><td>1,147.1 ns</td><td>1,129.8 ns</td><td>1,153.1 ns</td><td>0.0095</td><td>176 B</td>
+</tr><tr><td>ValueStructSmall</td><td>221.5 ns</td><td>0.47 ns</td><td>0.76 ns</td><td>221.4 ns</td><td>221.0 ns</td><td>223.2 ns</td><td>0.0062</td><td>104 B</td>
+</tr><tr><td>ValueStructLarge</td><td>1,220.0 ns</td><td>6.21 ns</td><td>9.67 ns</td><td>1,213.9 ns</td><td>1,211.0 ns</td><td>1,232.1 ns</td><td>0.0057</td><td>104 B</td>
+</tr></tbody></table>
+</body>
+</html>

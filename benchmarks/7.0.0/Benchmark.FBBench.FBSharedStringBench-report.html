@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBSharedStringBench-20221116-182801</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.819)
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.100
+  [Host]   : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+  ShortRun : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET 7.0  
+IterationCount=5  LaunchCount=7  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>                                  Method</th><th>CacheSize</th><th>VectorLength</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>P25</th><th>P95</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>127</td><td>1000</td><td>14.65 &mu;s</td><td>0.056 &mu;s</td><td>0.084 &mu;s</td><td>14.66 &mu;s</td><td>14.60 &mu;s</td><td>14.79 &mu;s</td><td>-</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>127</td><td>1000</td><td>49.45 &mu;s</td><td>0.120 &mu;s</td><td>0.190 &mu;s</td><td>49.37 &mu;s</td><td>49.33 &mu;s</td><td>49.86 &mu;s</td><td>-</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>127</td><td>1000</td><td>48.45 &mu;s</td><td>0.134 &mu;s</td><td>0.212 &mu;s</td><td>48.46 &mu;s</td><td>48.22 &mu;s</td><td>48.75 &mu;s</td><td>-</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>1024</td><td>1000</td><td>14.48 &mu;s</td><td>0.087 &mu;s</td><td>0.133 &mu;s</td><td>14.41 &mu;s</td><td>14.38 &mu;s</td><td>14.72 &mu;s</td><td>-</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>1024</td><td>1000</td><td>47.17 &mu;s</td><td>0.335 &mu;s</td><td>0.521 &mu;s</td><td>47.05 &mu;s</td><td>46.74 &mu;s</td><td>48.10 &mu;s</td><td>-</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>1024</td><td>1000</td><td>45.30 &mu;s</td><td>0.282 &mu;s</td><td>0.447 &mu;s</td><td>45.46 &mu;s</td><td>45.01 &mu;s</td><td>45.84 &mu;s</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>
