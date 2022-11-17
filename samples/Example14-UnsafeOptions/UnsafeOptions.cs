@@ -56,7 +56,7 @@ public class UnsafeOptionsExample : IFlatSharpSample
 
         Assert.True(
             Unsafe.SizeOf<UnsafeUnion>() == 21,
-            "The size of unsafe unsions is that of their largest member plus 1.");
+            "The size of unsafe unions is that of their largest member plus 1.");
 
         Assert.True(
             Unsafe.SizeOf<TwentyBytes>() == 20,
