@@ -20,20 +20,42 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        MonsterAttributeExample.MonsterAttributeExample.Run();
-        SerializerOptions.SerializerOptionsExample.Run();
-        SchemaFilesExample.SchemaFilesExample.Run();
-        SchemaFilesExample2.SchemaFilesExample2.Run();
-        GrpcExample.GrpcExample.Run();
-        CopyConstructorsExample.CopyConstructorsExample.Run();
-        IncludesExample.IncludesExample.Run();
-        SortedVectors.SortedVectorsExample.Run();
-        Unions.UnionsExample.Run();
-        SharedStrings.SharedStringsExample.Run();
-        IndexedVectors.IndexedVectorsExample.Run();
-        TypeFacades.TypeFacadesExample.Run();
-        StructVectors.StructVectorsSample.Run();
-        WriteThrough.WriteThroughSample.Run();
-        ValueStructs.ValueStructsSample.Run();
+        List<IFlatSharpSample> samples = new()
+        {
+            new Basics.Basics(),
+            new DeserializationModes.DeserializationModes(),
+            new Vectors.VectorsSample(),
+            new GrpcExample.GrpcExample(),
+            new CopyConstructorsExample.CopyConstructorsExample(),
+            new IncludesExample.IncludesExample(),
+            new SortedVectors.SortedVectorsExample(),
+            new Unions.UnionsExample(),
+            new SharedStrings.SharedStringsExample(),
+            new IndexedVectors.IndexedVectorsExample(),
+            new StructVectors.StructVectorsSample(),
+            new WriteThrough.WriteThroughSample(),
+            new ValueStructs.ValueStructsSample(),
+            new UnsafeOptions.UnsafeOptionsExample(),
+        };
+
+        foreach (var sample in samples)
+        {
+            if (sample.HasConsoleOutput)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"Beginning Sample: {sample.GetType().Name}:");
+                Console.WriteLine();
+
+                sample.Run();
+
+                Console.WriteLine();
+                Console.WriteLine($"Done with Sample: {sample.GetType().Name}");
+                Console.WriteLine();
+            }
+            else
+            {
+                sample.Run();
+            }
+        }
     }
 }

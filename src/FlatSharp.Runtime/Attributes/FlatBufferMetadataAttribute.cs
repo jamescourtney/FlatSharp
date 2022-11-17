@@ -36,9 +36,8 @@ public enum FlatBufferMetadataKind
 public class FlatBufferMetadataAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new FlatBufferItemAttribute.
+    /// Initializes a new FlatBufferMetadataAttribute.
     /// </summary>
-    /// <param name="index">The field index within the struct or table.</param>
     public FlatBufferMetadataAttribute(FlatBufferMetadataKind kind, string value)
     {
         this.Kind = kind;

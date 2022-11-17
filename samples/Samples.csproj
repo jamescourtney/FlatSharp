@@ -5,34 +5,38 @@
     <OutputType>exe</OutputType>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
+    
+    <!-- Necessary only for the unsafe example. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <FlatSharpSchema Include="Example02-SchemaFiles\SchemaFilesExample.fbs" />
-    <FlatSharpSchema Include="Example03-SchemaFiles2\SchemaFilesExample2.fbs" />
-    <FlatSharpSchema Include="Example04-IOOptions\IOOptionsExample.fbs" />
-    <FlatSharpSchema Include="Example05-gRPC\GrpcExample.fbs" />
-    <FlatSharpSchema Include="Example06-CopyConstructors\CopyConstructorsExample.fbs" />
-    <FlatSharpSchema Include="Example07-Includes\**\*.fbs">
-      <IncludePath>Example07-Includes</IncludePath>
+    <FlatSharpSchema Include="Example00-Basics\Basics.fbs" />
+    <FlatSharpSchema Include="Example01-DeserializationModes\DeserializationModes.fbs" />
+    <FlatSharpSchema Include="Example02-Vectors\Vectors.fbs" />
+    <FlatSharpSchema Include="Example03-IOOptions\IOOptionsExample.fbs" />
+    <FlatSharpSchema Include="Example04-gRPC\GrpcExample.fbs" />
+    <FlatSharpSchema Include="Example05-CopyConstructors\CopyConstructorsExample.fbs" />
+    <FlatSharpSchema Include="Example06-Includes\**\*.fbs">
+      <IncludePath>Example06-Includes</IncludePath>
     </FlatSharpSchema>
-    <FlatSharpSchema Include="Example08-SortedVectors\SortedVectors.fbs" />
+    <FlatSharpSchema Include="Example07-SortedVectors\SortedVectors.fbs" />
+    <FlatSharpSchema Include="Example08-IndexedVectors\IndexedVectors.fbs" />
     <FlatSharpSchema Include="Example09-Unions\Unions.fbs" />
     <FlatSharpSchema Include="Example10-SharedStrings\SharedStrings.fbs" />
-    <FlatSharpSchema Include="Example11-IndexedVectors\IndexedVectors.fbs" />
-    <FlatSharpSchema Include="Example13-StructVectors\StructVectors.fbs" />
-    <FlatSharpSchema Include="Example14-WriteThrough\WriteThrough.fbs" />
-    <FlatSharpSchema Include="Example15-ValueStructs\ValueStructs.fbs" />
+    <FlatSharpSchema Include="Example11-StructVectors\StructVectors.fbs" />
+    <FlatSharpSchema Include="Example12-WriteThrough\WriteThrough.fbs" />
+    <FlatSharpSchema Include="Example13-ValueStructs\ValueStructs.fbs" />
+    <FlatSharpSchema Include="Example14-UnsafeOptions\UnsafeOptions.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="6.3.3" />
-    <PackageReference Include="FlatSharp.Compiler" Version="6.3.3">
+    <PackageReference Include="FlatSharp.Compiler" Version="7.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="6.3.3" />
+    <PackageReference Include="FlatSharp.Runtime" Version="7.0.0" />
     <PackageReference Include="Grpc" Version="2.38.1" />
   </ItemGroup>
-
 </Project>
+

@@ -17,7 +17,7 @@
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Wrapper struct to pass arguments into <see cref="IGeneratedSerializer{T}.Parse{TInputBuffer}(TInputBuffer, GeneratedSerializerParseArguments)"/>.
+/// Wrapper struct to pass arguments into Parse methods on <see cref="IGeneratedSerializer{T}"/>.
 /// </summary>
 public readonly struct GeneratedSerializerParseArguments
 {
@@ -43,7 +43,6 @@ public interface IGeneratedSerializer<T>
     /// <param name="writer">The span writer.</param>
     /// <param name="destination">The span to write to.</param>
     /// <param name="item">The object to serialize.</param>
-    /// <param name="offset">The offset to begin writing at.</param>
     /// <param name="context">The serialization context.</param>
     void Write<TSpanWriter>(
         TSpanWriter writer,

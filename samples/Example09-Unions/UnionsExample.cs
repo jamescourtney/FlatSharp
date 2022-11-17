@@ -22,20 +22,23 @@ namespace Samples.Unions;
 /// 
 /// FlatSharp suppo
 /// </summary>
-public class UnionsExample
+public class UnionsExample : IFlatSharpSample
 {
-    public static void Run()
+    public bool HasConsoleOutput => false;
+
+    public void Run()
     {
         Cat simon = new Cat { Breed = CatBreed.Bengal, Name = "Simon" };
         Dog george = new Dog { Breed = DogBreed.Corgi, Name = "George" };
-        Fish brick = new Fish { Kind = FishKind.Coelacanth, Name = "Brick" };
+        Fish brick = new Fish { Kind = FishKind.Puffer, Name = "Brick" };
 
         // A person can only have one pet. It can be a cat, dog, or fish.
-        // This person has a fish named brick. You could model a person with multiple
-        // pets as a vector of unions.
+        // This person has a dog named George. They've also known Simon the cat
+        // and Brick the fish
         Person person = new Person
         {
-            Pet = new Pet(brick)
+            Pet = new Pet(george),
+            PreviousPets = new[] { new Pet(simon), new Pet(brick) }
         };
 
         Pet pet = person.Pet.Value;
@@ -47,64 +50,18 @@ public class UnionsExample
             string? lowerName = dog.Name?.ToLowerInvariant();
         }
 
-        // Similiarly, FlatSharp unions also include a method called "Switch".
-        // You can use this instead of a switch statement. The advantage is that
-        // if a union element is added later, your code will fail to compile, so
-        // it helps you to handle all of the cases.
-        string breed = pet.Switch(
-            caseDefault: () => "unknown",
-            caseDoggo: d => d.Breed.ToString(),
-            caseCat: c => c.Breed.ToString(),
-            caseFish: f => f.Kind.ToString());
-         
+        Assert.True(!pet.TryGet(out Cat? cat), "This pet is a dog, so this method will return false");
+
+        // Accessing .Cat directly will throw because this is a Dog.
+        Assert.Throws<InvalidOperationException>(() => Console.WriteLine(pet.Cat.Name));
+
         // Finally, each union can accept a visitor. Using structs as visitors
         // will allow you to benefit from devirtualization if performance is a concern.
         string? name = pet.Accept<PetNameVisitor, string?>(new PetNameVisitor());
+        Console.WriteLine($"Pet name: {name}");
     }
 
-    /// <summary>
-    /// You can also use unions from C#. However, the semantics are not as nice.
-    /// </summary>
-    [FlatBufferTable]
-    public class PersonCS
-    {
-        [FlatBufferItem(0)]
-        public virtual FlatBufferUnion<Dog, Cat, Fish>? Pet { get; set; }
-
-        public void UsePet()
-        {
-            if (this.Pet is null)
-            {
-                return;
-            }
-
-            var union = this.Pet.Value;
-
-            if (union.TryGet(out Dog? dog))
-            {
-                // Woof woof
-            }
-            else if (union.TryGet(out Cat? cat))
-            {
-                // Meow meow
-            }
-            else if (union.TryGet(out Fish? fish))
-            {
-                // gurgle gurgle
-            }
-
-            // C# unions still support the switch method above:
-            union.Switch(
-                defaultCase: () => { },
-                case1: (Dog d) => { },
-                case2: (Cat c) => { },
-                case3: (Fish f) => { });
-
-            string? name = union.Accept<PetNameVisitor, string?>(new PetNameVisitor());
-        }
-    }
-
-    // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish>
+    // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish, string>
     public struct PetNameVisitor : Pet.Visitor<string?>
     {
         public string? Visit(Dog item)
@@ -120,6 +77,11 @@ public class UnionsExample
         public string? Visit(Fish item)
         {
             return item.Name;
+        }
+
+        public string? Visit(string item)
+        {
+            return item;
         }
     }
 }

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBDeserializeBench-20221116-172612</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.819)
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.100
+  [Host]   : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+  ShortRun : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET 7.0  
+IterationCount=5  LaunchCount=7  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>                                  Method</th><th>TraversalCount</th><th>DeserializeOption</th><th>VectorLength</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>P25</th><th>P95</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>FlatSharp_ParseAndTraverse</td><td>1</td><td>Lazy</td><td>30</td><td>1.709 &mu;s</td><td>0.0132 &mu;s</td><td>0.0205 &mu;s</td><td>1.703 &mu;s</td><td>1.696 &mu;s</td><td>1.748 &mu;s</td><td>0.4864</td><td>-</td><td>7.95 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>1</td><td>Lazy</td><td>30</td><td>1.401 &mu;s</td><td>0.0190 &mu;s</td><td>0.0307 &mu;s</td><td>1.391 &mu;s</td><td>1.383 &mu;s</td><td>1.468 &mu;s</td><td>0.4864</td><td>-</td><td>7.95 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>1</td><td>Lazy</td><td>30</td><td>1.681 &mu;s</td><td>0.0041 &mu;s</td><td>0.0067 &mu;s</td><td>1.679 &mu;s</td><td>1.677 &mu;s</td><td>1.695 &mu;s</td><td>0.3719</td><td>-</td><td>6.08 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>1</td><td>Lazy</td><td>30</td><td>1.502 &mu;s</td><td>0.0085 &mu;s</td><td>0.0127 &mu;s</td><td>1.502 &mu;s</td><td>1.494 &mu;s</td><td>1.517 &mu;s</td><td>0.3719</td><td>-</td><td>6.08 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>1</td><td>Progressive</td><td>30</td><td>2.412 &mu;s</td><td>0.0658 &mu;s</td><td>0.1025 &mu;s</td><td>2.379 &mu;s</td><td>2.360 &mu;s</td><td>2.675 &mu;s</td><td>0.6294</td><td>0.0191</td><td>10.3 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>1</td><td>Progressive</td><td>30</td><td>1.873 &mu;s</td><td>0.0248 &mu;s</td><td>0.0400 &mu;s</td><td>1.868 &mu;s</td><td>1.847 &mu;s</td><td>1.936 &mu;s</td><td>0.6294</td><td>0.0210</td><td>10.3 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>1</td><td>Progressive</td><td>30</td><td>2.186 &mu;s</td><td>0.0141 &mu;s</td><td>0.0224 &mu;s</td><td>2.178 &mu;s</td><td>2.174 &mu;s</td><td>2.245 &mu;s</td><td>0.5150</td><td>0.0153</td><td>8.43 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>1</td><td>Progressive</td><td>30</td><td>2.045 &mu;s</td><td>0.1063 &mu;s</td><td>0.1716 &mu;s</td><td>1.987 &mu;s</td><td>1.955 &mu;s</td><td>2.450 &mu;s</td><td>0.5150</td><td>0.0153</td><td>8.43 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>1</td><td>Greedy</td><td>30</td><td>1.896 &mu;s</td><td>0.0118 &mu;s</td><td>0.0191 &mu;s</td><td>1.898 &mu;s</td><td>1.892 &mu;s</td><td>1.924 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>1</td><td>Greedy</td><td>30</td><td>1.745 &mu;s</td><td>0.0368 &mu;s</td><td>0.0561 &mu;s</td><td>1.722 &mu;s</td><td>1.700 &mu;s</td><td>1.849 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>1</td><td>Greedy</td><td>30</td><td>1.979 &mu;s</td><td>0.0298 &mu;s</td><td>0.0454 &mu;s</td><td>1.961 &mu;s</td><td>1.951 &mu;s</td><td>2.088 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>1</td><td>Greedy</td><td>30</td><td>1.849 &mu;s</td><td>0.0326 &mu;s</td><td>0.0526 &mu;s</td><td>1.825 &mu;s</td><td>1.820 &mu;s</td><td>1.976 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>1</td><td>GreedyMutable</td><td>30</td><td>1.896 &mu;s</td><td>0.0130 &mu;s</td><td>0.0203 &mu;s</td><td>1.900 &mu;s</td><td>1.888 &mu;s</td><td>1.919 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>1</td><td>GreedyMutable</td><td>30</td><td>1.721 &mu;s</td><td>0.0110 &mu;s</td><td>0.0161 &mu;s</td><td>1.724 &mu;s</td><td>1.717 &mu;s</td><td>1.743 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>1</td><td>GreedyMutable</td><td>30</td><td>1.984 &mu;s</td><td>0.0177 &mu;s</td><td>0.0286 &mu;s</td><td>1.980 &mu;s</td><td>1.956 &mu;s</td><td>2.029 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>1</td><td>GreedyMutable</td><td>30</td><td>1.866 &mu;s</td><td>0.0247 &mu;s</td><td>0.0399 &mu;s</td><td>1.859 &mu;s</td><td>1.834 &mu;s</td><td>1.927 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>5</td><td>Lazy</td><td>30</td><td>8.286 &mu;s</td><td>0.0630 &mu;s</td><td>0.1000 &mu;s</td><td>8.272 &mu;s</td><td>8.206 &mu;s</td><td>8.448 &mu;s</td><td>2.4109</td><td>-</td><td>39.42 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>5</td><td>Lazy</td><td>30</td><td>6.649 &mu;s</td><td>0.0491 &mu;s</td><td>0.0778 &mu;s</td><td>6.641 &mu;s</td><td>6.594 &mu;s</td><td>6.815 &mu;s</td><td>2.4109</td><td>-</td><td>39.42 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>5</td><td>Lazy</td><td>30</td><td>8.269 &mu;s</td><td>0.0348 &mu;s</td><td>0.0563 &mu;s</td><td>8.277 &mu;s</td><td>8.248 &mu;s</td><td>8.341 &mu;s</td><td>1.8311</td><td>-</td><td>30.05 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>5</td><td>Lazy</td><td>30</td><td>7.314 &mu;s</td><td>0.0714 &mu;s</td><td>0.1111 &mu;s</td><td>7.278 &mu;s</td><td>7.247 &mu;s</td><td>7.567 &mu;s</td><td>1.8387</td><td>-</td><td>30.05 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>5</td><td>Progressive</td><td>30</td><td>4.518 &mu;s</td><td>0.0476 &mu;s</td><td>0.0755 &mu;s</td><td>4.499 &mu;s</td><td>4.475 &mu;s</td><td>4.636 &mu;s</td><td>0.6256</td><td>0.0153</td><td>10.3 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>5</td><td>Progressive</td><td>30</td><td>3.082 &mu;s</td><td>0.0086 &mu;s</td><td>0.0134 &mu;s</td><td>3.082 &mu;s</td><td>3.077 &mu;s</td><td>3.107 &mu;s</td><td>0.6294</td><td>0.0191</td><td>10.3 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>5</td><td>Progressive</td><td>30</td><td>4.104 &mu;s</td><td>0.0212 &mu;s</td><td>0.0336 &mu;s</td><td>4.101 &mu;s</td><td>4.081 &mu;s</td><td>4.156 &mu;s</td><td>0.5112</td><td>0.0153</td><td>8.43 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>5</td><td>Progressive</td><td>30</td><td>3.292 &mu;s</td><td>0.0107 &mu;s</td><td>0.0173 &mu;s</td><td>3.292 &mu;s</td><td>3.283 &mu;s</td><td>3.312 &mu;s</td><td>0.5150</td><td>0.0153</td><td>8.43 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>5</td><td>Greedy</td><td>30</td><td>3.437 &mu;s</td><td>0.0494 &mu;s</td><td>0.0798 &mu;s</td><td>3.439 &mu;s</td><td>3.370 &mu;s</td><td>3.561 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>5</td><td>Greedy</td><td>30</td><td>2.627 &mu;s</td><td>0.0272 &mu;s</td><td>0.0424 &mu;s</td><td>2.633 &mu;s</td><td>2.593 &mu;s</td><td>2.696 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>5</td><td>Greedy</td><td>30</td><td>3.638 &mu;s</td><td>0.0316 &mu;s</td><td>0.0492 &mu;s</td><td>3.616 &mu;s</td><td>3.610 &mu;s</td><td>3.728 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>5</td><td>Greedy</td><td>30</td><td>2.986 &mu;s</td><td>0.0139 &mu;s</td><td>0.0225 &mu;s</td><td>2.980 &mu;s</td><td>2.970 &mu;s</td><td>3.037 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>5</td><td>GreedyMutable</td><td>30</td><td>3.474 &mu;s</td><td>0.0462 &mu;s</td><td>0.0733 &mu;s</td><td>3.452 &mu;s</td><td>3.410 &mu;s</td><td>3.577 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>5</td><td>GreedyMutable</td><td>30</td><td>2.640 &mu;s</td><td>0.0372 &mu;s</td><td>0.0611 &mu;s</td><td>2.612 &mu;s</td><td>2.584 &mu;s</td><td>2.724 &mu;s</td><td>0.5188</td><td>0.0153</td><td>8.5 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse_ValueStructs</td><td>5</td><td>GreedyMutable</td><td>30</td><td>3.639 &mu;s</td><td>0.0176 &mu;s</td><td>0.0279 &mu;s</td><td>3.628 &mu;s</td><td>3.620 &mu;s</td><td>3.692 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial_ValueStructs</td><td>5</td><td>GreedyMutable</td><td>30</td><td>3.013 &mu;s</td><td>0.0347 &mu;s</td><td>0.0551 &mu;s</td><td>2.987 &mu;s</td><td>2.981 &mu;s</td><td>3.128 &mu;s</td><td>0.4616</td><td>0.0114</td><td>7.56 KB</td>
+</tr></tbody></table>
+</body>
+</html>
