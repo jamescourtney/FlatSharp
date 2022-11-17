@@ -41,21 +41,9 @@ namespace Benchmark.FBBench
         public override void FlatSharp_ParseAndTraversePartial() => base.FlatSharp_ParseAndTraversePartial();
 
         [Benchmark]
-        public override void FlatSharp_ParseAndTraverse_NonVirtual() => base.FlatSharp_ParseAndTraverse_NonVirtual();
-
-        [Benchmark]
-        public override void FlatSharp_ParseAndTraversePartial_NonVirtual() => base.FlatSharp_ParseAndTraversePartial_NonVirtual();
-
-        [Benchmark]
         public override void FlatSharp_ParseAndTraverse_ValueStructs() => base.FlatSharp_ParseAndTraverse_ValueStructs();
 
         [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial_ValueStructs() => base.FlatSharp_ParseAndTraversePartial_ValueStructs();
-
-        [Benchmark]
-        public override void FlatSharp_ParseAndTraverse_ValueStructs_NonVirtual() => base.FlatSharp_ParseAndTraverse_ValueStructs_NonVirtual();
-
-        [Benchmark]
-        public override void FlatSharp_ParseAndTraversePartial_ValueStructs_NonVirtual() => base.FlatSharp_ParseAndTraversePartial_ValueStructs_NonVirtual();
     }
 }
