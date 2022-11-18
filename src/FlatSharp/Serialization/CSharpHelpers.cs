@@ -92,11 +92,6 @@ internal static class CSharpHelpers
         return GetPropertyAccessModifiers(getModifier, setModifier);
     }
 
-    internal static bool IsCSharp11RequiredProperty(PropertyInfo property)
-    {
-        return property.GetCustomAttributes().Any(x => x.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute");
-    }
-
     internal static string ToCSharpString(this AccessModifier? modifier)
     {
         return modifier switch

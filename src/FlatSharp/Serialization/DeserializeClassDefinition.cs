@@ -226,7 +226,7 @@ internal class DeserializeClassDefinition
         }
 
         string required = string.Empty;
-        if (CSharpHelpers.IsCSharp11RequiredProperty(itemModel.PropertyInfo))
+        if (itemModel.IsRequired)
         {
             required = " required";
         }
