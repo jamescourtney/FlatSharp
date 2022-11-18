@@ -59,7 +59,10 @@ public class WriteThroughSample : IFlatSharpSample
 
         {
             // Each block is 128 bytes. For a 1MB filter, we need 8192 blocks.
-            BloomFilter filter = new BloomFilter(1024 * 1024 / 128);
+            BloomFilter filter = new BloomFilter(1024 * 1024 / 128)
+            { 
+                Blocks = new List<Block>() 
+            };
 
             // Write our bloom filter out to an array. It should be about 1MB in size.
             rawData = new byte[BloomFilter.Serializer.GetMaxSize(filter)];

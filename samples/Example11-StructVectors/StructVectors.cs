@@ -53,6 +53,8 @@ public class StructVectorsSample : IFlatSharpSample
             Sender = "5566779900",
 
             HashReference = new Sha256_Reference(),
+            HashValue = new Sha256_Value(),
+            HashFastValue = new Sha256_FastValue(),
         };
 
         byte[] originalHash;
