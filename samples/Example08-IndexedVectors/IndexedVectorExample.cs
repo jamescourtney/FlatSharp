@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Samples.IndexedVectors;
 
 /// <summary>
@@ -44,11 +46,11 @@ public class IndexedVectorsExample : IFlatSharpSample
         {
             Users = new IndexedVector<string, User>
             {
-                { new User("1") { FirstName = "Charlie", LastName = "Kelly" } },
-                { new User("2") { FirstName = "Dennis", LastName = "Reynolds" } },
-                { new User("3") { FirstName = "Ronald", LastName = "McDonald" } },
-                { new User("4") { FirstName = "Frank", LastName = "Reynolds" } },
-                { new User("5") { FirstName = "Deeandra", LastName = "Reynolds" } },
+                { new User { Id = "1", FirstName = "Charlie", LastName = "Kelly" } },
+                { new User { Id = "2", FirstName = "Dennis", LastName = "Reynolds" } },
+                { new User { Id = "3", FirstName = "Ronald", LastName = "McDonald" } },
+                { new User { Id = "4", FirstName = "Frank", LastName = "Reynolds" } },
+                { new User { Id = "5", FirstName = "Deeandra", LastName = "Reynolds" } },
             }
         };
 
@@ -77,16 +79,5 @@ public class IndexedVectorsExample : IFlatSharpSample
                 parsedTable.Users!.TryGetValue(key, out var person),
                 "We can use an indexed vector like a dictionary");
         }
-    }
-}
-
-/// <summary>
-/// Define a partial class for user to expose a public constructor that correctly initializes the object.
-/// </summary>
-public partial class User
-{
-    public User(string id)
-    {
-        this.Id = id;
     }
 }
