@@ -74,7 +74,7 @@ public class ValueStructTestCases
     [Fact]
     public void Basics()
     {
-        Assert.Equal(148, Unsafe.SizeOf<ValueStruct>());
+        Assert.Equal(36, Unsafe.SizeOf<ValueStruct>());
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class ValueStructTestCases
     {
         ValueStruct v = default;
 
-        Assert.Equal(128, v.D_Length);
+        Assert.Equal(16, v.D_Length);
 
         for (int i = 0; i < v.D_Length; ++i)
         {

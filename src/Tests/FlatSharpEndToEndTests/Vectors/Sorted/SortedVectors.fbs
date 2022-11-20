@@ -52,6 +52,28 @@ table RootTableReadOnly (fs_serializer)
     list_vector_of_string : [ StringKey ] (fs_sortedVector, fs_vector:"IReadOnlyList");
 }
 
+table RootTableIndexed (fs_serializer)
+{
+    indexed_vector_of_bool : [ BoolKey ] (fs_vector:"IIndexedVector");
+
+    indexed_vector_of_byte : [ ByteKey ] (fs_vector:"IIndexedVector");
+    indexed_vector_of_sbyte : [ SByteKey ] (fs_vector:"IIndexedVector");
+
+    indexed_vector_of_short : [ ShortKey ] (fs_vector:"IIndexedVector");
+    indexed_vector_of_ushort : [ UShortKey ]  (fs_vector:"IIndexedVector");
+
+    indexed_vector_of_int : [ IntKey ] (fs_vector:"IIndexedVector");
+    indexed_vector_of_uint : [ UIntKey ] (fs_vector:"IIndexedVector");
+
+    indexed_vector_of_long : [ LongKey ] (fs_vector:"IIndexedVector");
+    indexed_vector_of_ulong : [ ULongKey ] (fs_vector:"IIndexedVector");
+
+    indexed_vector_of_float : [ FloatKey ] (fs_vector:"IIndexedVector");
+    indexed_vector_of_double : [ DoubleKey ] (fs_vector:"IIndexedVector");
+
+    indexed_vector_of_string : [ StringKey ] (fs_vector:"IIndexedVector");
+}
+
 table BoolKey { Key : bool (key); }
 table ByteKey { Key : ubyte (key); }
 table SByteKey { Key : byte (key); }
