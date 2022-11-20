@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-namespace FlatSharpEndToEndTests.TableMembers;
+namespace FlatSharpEndToEndTests.RawData;
+
+using StringTable = FlatSharpEndToEndTests.TableMembers.StringTable;
 
 public class RawDataStringTests
 {
@@ -73,9 +75,7 @@ public class RawDataStringTests
             ItemStandard = new string(new char[] { (char)1, (char)2, (char)3 }),
         };
 
-        Span<byte> target = new byte[10240];
-        int offset = FlatBufferSerializer.Default.Serialize(root, target);
-        target = target.Slice(0, offset);
+        byte[] target = root.AllocateAndSerialize();
 
         byte[] expectedResult =
         {
@@ -91,5 +91,43 @@ public class RawDataStringTests
         };
 
         Assert.True(expectedResult.AsSpan().SequenceEqual(target));
+    }
+
+    [Fact]
+    public void StringVector()
+    {
+        var root = new StringTable
+        {
+            ItemDeprecated = "notnull",
+            ItemVectorImplicit = new[] { "abc_", "def", "ghi" }
+        };
+
+        byte[] data = root.AllocateAndSerialize();
+
+        byte[] expectedResult =
+        {
+            4, 0, 0, 0,          // offset to table start
+            248, 255, 255, 255,  // soffset to vtable (-8)
+            16, 0, 0, 0,         // uoffset_t to vector
+            10, 0,               // vtable length
+            8, 0,                // table length
+            0, 0,                // offset of index 0 field
+            0, 0,                // offset to index 1 field (deprecated)
+            4, 0,                // offset to index 2 field (the vector)
+            0, 0,                // padding to 4-byte alignment
+            3, 0, 0, 0,          // vector length
+            12, 0, 0, 0,         // offset to index 0
+            20, 0, 0, 0,         // offset to index 1
+            24, 0, 0, 0,         // offset to index 2
+            4, 0, 0 ,0,          // length of string 0
+            (byte)'a', (byte)'b', (byte)'c', (byte)'_', 0, // string 0
+            0, 0, 0,             // padding
+            3, 0, 0 ,0,          // length of string 1
+            (byte)'d', (byte)'e', (byte)'f', 0, // string 1
+            3, 0, 0 ,0,          // length of string 1
+            (byte)'g', (byte)'h', (byte)'i', 0, // string 2
+        };
+
+        Assert.True(expectedResult.AsSpan().SequenceEqual(data));
     }
 }
