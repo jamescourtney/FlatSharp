@@ -21,9 +21,27 @@ attribute "fs_sharedString";
 
 namespace FlatSharpEndToEndTests.RawData;
 
-table SharedStringTable
+table SharedStringTable (fs_serializer)
 {
     a : string (fs_sharedString);
     b : string (fs_sharedString);
     c : string (fs_sharedString);
+    vector : [ string ] (fs_sharedString);
+}
+
+table EmptyTable (fs_serializer) { }
+
+struct SimpleStruct
+{
+    Long : long;
+    Byte : ubyte;
+    Uint : uint;
+}
+
+table SimpleTable (fs_serializer)
+{
+    String : string;
+    struct : SimpleStruct;
+    struct_vector : [ SimpleStruct ];
+    inner_table : SimpleTable;
 }

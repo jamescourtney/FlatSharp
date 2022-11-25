@@ -29,10 +29,12 @@ public static class Helpers
         }
     }
 
-    public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>
+    public static byte[] AllocateAndSerialize<T>(this T item, ISerializer<T> serializer = null) where T : class, IFlatBufferSerializable<T>
     {
-        byte[] data = new byte[item.Serializer.GetMaxSize(item)];
-        int bytesWritten = item.Serializer.Write(data, item);
+        serializer ??= item.Serializer;
+
+        byte[] data = new byte[serializer.GetMaxSize(item)];
+        int bytesWritten = serializer.Write(data, item);
         return data.AsMemory().Slice(0, bytesWritten).ToArray();
     }
 
