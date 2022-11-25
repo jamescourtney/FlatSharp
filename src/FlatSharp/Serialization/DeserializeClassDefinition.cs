@@ -411,7 +411,7 @@ internal class DeserializeClassDefinition
         else
         {
             return $@"
-                {this.ClassName}<TInputBuffer>? item = new();
+                {this.ClassName}<TInputBuffer>? item = new {this.ClassName}<TInputBuffer>();
                 item.Initialize(buffer, offset, remainingDepth);
                 return item;
             ";
