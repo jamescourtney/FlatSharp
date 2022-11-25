@@ -17,12 +17,13 @@
 attribute "fs_vector";
 attribute "fs_serializer";
 attribute "fs_sortedVector";
+attribute "fs_sharedString";
 
 namespace FlatSharpEndToEndTests.RawData;
 
 table SharedStringTable
 {
     a : string (fs_sharedString);
-    a : string (fs_sharedString);
-    a : string (fs_sharedString);
+    b : string (fs_sharedString);
+    c : string (fs_sharedString);
 }
