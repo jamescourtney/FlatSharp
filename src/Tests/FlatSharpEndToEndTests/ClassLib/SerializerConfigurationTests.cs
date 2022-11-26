@@ -15,7 +15,6 @@
  */
 
 using FlatSharp.Internal;
-using Microsoft.CodeAnalysis.Options;
 using System.IO;
 
 namespace FlatSharpEndToEndTests.ClassLib.SerializerConfigurationTests;
