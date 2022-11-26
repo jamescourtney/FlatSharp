@@ -31,17 +31,37 @@ public static class Helpers
 
     public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>
     {
-        byte[] data = new byte[item.Serializer.GetMaxSize(item)];
-        int bytesWritten = item.Serializer.Write(data, item);
+        return item.AllocateAndSerialize(item.Serializer);
+    }
+
+    public static byte[] AllocateAndSerialize<T>(this T item, ISerializer<T> serializer) where T : class, IFlatBufferSerializable<T>
+    {
+        byte[] data = new byte[serializer.GetMaxSize(item)];
+        int bytesWritten = serializer.Write(data, item);
         return data.AsMemory().Slice(0, bytesWritten).ToArray();
+    }
+
+    public static T SerializeAndParse<T>(this T item) where T : class, IFlatBufferSerializable<T>
+    {
+        return SerializeAndParse<T>(item, item.Serializer);
     }
 
     public static T SerializeAndParse<T>(
         this T item,
-        FlatBufferDeserializationOption? option = null) where T : class, IFlatBufferSerializable<T>
+        FlatBufferDeserializationOption? option) where T : class, IFlatBufferSerializable<T>
     {
         byte[] buffer = item.AllocateAndSerialize();
         return item.Serializer.Parse(buffer, option);
+    }
+
+    public static T SerializeAndParse<T>(
+        this T item,
+        ISerializer<T>? serializer) where T : class, IFlatBufferSerializable<T>
+    {
+        serializer ??= item.Serializer;
+
+        byte[] buffer = item.AllocateAndSerialize();
+        return serializer.Parse(buffer);
     }
 }
 

@@ -17,7 +17,7 @@
 namespace FlatSharpEndToEndTests.ClassLib.FlatBufferVectorOfUnionTests;
 
 /// <summary>
-/// Tests for the FlatBufferVector class that implements IList.
+/// Tests for FlatSharp's IList of Union.
 /// </summary>
 
 public class FlatBufferVectorOfUnionTests

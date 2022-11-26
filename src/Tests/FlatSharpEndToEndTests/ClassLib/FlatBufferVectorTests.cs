@@ -19,7 +19,7 @@ using System.Linq;
 namespace FlatSharpEndToEndTests.ClassLib.FlatBufferVectorTests;
 
 /// <summary>
-/// Tests for the FlatBufferVector class that implements IList.
+/// Tests for FlatSharp's IList implementations.
 /// </summary>
 public class FlatBufferVectorTests
 {

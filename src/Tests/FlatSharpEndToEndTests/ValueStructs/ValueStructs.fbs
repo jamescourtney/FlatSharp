@@ -39,7 +39,7 @@ struct ValueStruct (fs_valueStruct) {
     A : ubyte;
     B : int;
     C : long;
-    D : [ubyte : 128];
+    D : [ ubyte : 16 ];
     Inner : InnerValueStruct;
 }
 
@@ -50,36 +50,36 @@ struct RefStruct {
 
 struct ValueUnsafeStructVector_Byte (fs_valueStruct) {
     GuardLower : ulong;
-    Vector : [ubyte : 128] (fs_unsafeStructVector);
+    Vector : [ubyte : 16] (fs_unsafeStructVector);
     GuardHigher : ulong;
 }
 
 struct ValueUnsafeStructVector_UShort (fs_valueStruct) {
     GuardLower : ulong;
-    Vector : [ushort : 128] (fs_unsafeStructVector);
+    Vector : [ushort : 16] (fs_unsafeStructVector);
     GuardHigher : ulong;
 }
 
 struct ValueUnsafeStructVector_UInt (fs_valueStruct) {
     GuardLower : ulong;
-    Vector : [uint : 128] (fs_unsafeStructVector);
+    Vector : [uint : 16] (fs_unsafeStructVector);
     GuardHigher : ulong;
 }
 
 struct ValueUnsafeStructVector_ULong (fs_valueStruct) {
     GuardLower : ulong;
-    Vector : [ulong : 128] (fs_unsafeStructVector);
+    Vector : [ulong : 16] (fs_unsafeStructVector);
     GuardHigher : ulong;
 }
 
 struct ValueUnsafeStructVector_Float (fs_valueStruct) {
     GuardLower : ulong;
-    Vector : [float : 128] (fs_unsafeStructVector);
+    Vector : [float : 16] (fs_unsafeStructVector);
     GuardHigher : ulong;
 }
 
 struct ValueUnsafeStructVector_Double (fs_valueStruct) {
     GuardLower : ulong;
-    Vector : [double : 128] (fs_unsafeStructVector);
+    Vector : [double : 16] (fs_unsafeStructVector);
     GuardHigher : ulong;
 }

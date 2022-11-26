@@ -83,6 +83,47 @@ public partial class TableMemberTests
     [ClassData(typeof(DeserializationOptionClassData))]
     public void Double(FlatBufferDeserializationOption option) => this.RunTest<double, DoubleTable>(3.14, option);
 
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void String(FlatBufferDeserializationOption option)
+    {
+        {
+            byte[] emptyTable = new EmptyTable().AllocateAndSerialize();
+            StringTable parsed = StringTable.Serializer.Parse(emptyTable, option);
+
+            Assert.Null(parsed.ItemDeprecated);
+            Assert.Null(parsed.ItemStandard);
+            Assert.Null(parsed.ItemVectorImplicit);
+            Assert.Null(parsed.ItemVectorReadonly);
+        }
+
+        {
+            StringTable template = new()
+            {
+                ItemDeprecated = "deprecated",
+                ItemStandard = "standard",
+                ItemVectorImplicit = new[] { "a", "b", },
+                ItemVectorReadonly = new[] { "c", "d", "e" },
+            };
+
+            StringTable parsed = template.SerializeAndParse(option);
+
+            Assert.Null(parsed.ItemDeprecated);
+            Assert.Equal("standard", parsed.ItemStandard);
+
+            IList<string> @implicit = parsed.ItemVectorImplicit;
+            Assert.Equal(2, @implicit.Count);
+            Assert.Equal("a", @implicit[0]);
+            Assert.Equal("b", @implicit[1]);
+
+            IReadOnlyList<string> rolist = parsed.ItemVectorReadonly;
+            Assert.Equal(3, rolist.Count);
+            Assert.Equal("c", rolist[0]);
+            Assert.Equal("d", rolist[1]);
+            Assert.Equal("e", rolist[2]);
+        }
+    }
+
     private void RunTest<T, TTable>(T expectedDefault, FlatBufferDeserializationOption option)
         where T : struct
         where TTable : class, ITypedTable<T>, IFlatBufferSerializable<TTable>, new()

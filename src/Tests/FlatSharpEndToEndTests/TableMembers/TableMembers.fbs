@@ -143,6 +143,14 @@ table DoubleTable (fs_serializer)
     item_readonly_list : [ double ] (fs_vector:"IReadOnlyList");
 }
 
+table StringTable (fs_serializer)
+{
+    item_standard : string;
+    item_deprecated : string (deprecated);
+    item_vector_implicit : [ string ];
+    item_vector_readonly : [ string ] (fs_vector:"IReadOnlyList");
+}
+
 table EmptyTable (fs_serializer)
 {
 }
