@@ -1,0 +1,14 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpEndToEndTests.ClassLib.SerializerConfigurationTests;
+
+table Root (fs_serializer)
+{
+    StringVector : [ string ] (fs_sharedString);
+}
