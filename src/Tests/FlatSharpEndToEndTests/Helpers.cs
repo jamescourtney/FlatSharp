@@ -29,7 +29,7 @@ public static class Helpers
         }
     }
 
-    public static byte[] AllocateAndSerialize<T>(this T item, ISerializer<T> serializer = null) where T : class, IFlatBufferSerializable<T>
+    public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>
     {
         return item.AllocateAndSerialize(item.Serializer);
     }
