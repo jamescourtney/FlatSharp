@@ -1,0 +1,19 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpEndToEndTests.PartialMethods;
+
+struct Struct
+{
+   a : int;
+}
+
+table Table (fs_serializer)
+{
+   s : Struct;
+}
