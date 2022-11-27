@@ -99,9 +99,4 @@ public record class FlatBufferSerializerOptions
     /// is not wholly sufficient to enable them.
     /// </summary>
     public bool EnableValueStructMemoryMarshalDeserialization { get; set; } = true;
-
-    /// <summary>
-    /// Indicates if "protected internal" modifiers should be converted to protected.
-    /// </summary>
-    internal bool ConvertProtectedInternalToProtected { get; set; } = true;
 }
