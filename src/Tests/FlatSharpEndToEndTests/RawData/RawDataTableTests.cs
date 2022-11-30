@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace FlatSharpEndToEndTests.RawData;
 
 public class RawDataTableTests
@@ -284,5 +286,44 @@ public class RawDataTableTests
 
         Assert.Equal(0, nonDeprecatedParsed.Value);
         Assert.Equal(255L, nonDeprecatedParsed.Other);
+    }
+
+    [Fact]
+    public void ForceWriteTable_WritesDefault()
+    {
+        var table = new ForceWriteTable();
+        byte[] buffer = table.AllocateAndSerialize();
+
+        Assert.Equal(1, table.Value);
+
+        byte[] expectedData =
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,
+            1, 0, 0, 0,
+            6, 0,
+            8, 0,
+            4, 0,
+        };
+
+        Assert.True(buffer.AsSpan().SequenceEqual(expectedData));
+    }
+
+    [Fact]
+    public void NonForceWriteTable_DoesNotWriteDefault()
+    {
+        var table = new NonForceWriteTable();
+        Assert.Equal(1, table.Value);
+        byte[] buffer = table.AllocateAndSerialize();
+
+        byte[] expectedData =
+        {
+            4, 0, 0, 0,
+            252, 255, 255, 255,
+            4, 0,
+            4, 0,
+        };
+
+        Assert.True(buffer.AsSpan().SequenceEqual(expectedData));
     }
 }

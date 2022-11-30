@@ -100,7 +100,7 @@ public class FlatSharpCompiler
                     Exception? exception = null;
                     try
                     {
-                        CreateCSharp(bfbs, inputHash, options, out cSharp);
+                        cSharp = CreateCSharp(bfbs, inputHash, options);
                     }
                     catch (Exception ex)
                     {
@@ -320,7 +320,7 @@ public class FlatSharpCompiler
             options.InputFiles = fbsFiles.Select(x => x.FullName);
 
             List<byte[]> bfbs = GetBfbs(options);
-            CreateCSharp(bfbs, "hash", options, out string cSharp);
+            string cSharp = CreateCSharp(bfbs, "hash", options);
 
             var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
             string debugText = formattedText();
@@ -488,13 +488,12 @@ public class FlatSharpCompiler
         return (os, name);
     }
 
-    private static void CreateCSharp(
+    private static string CreateCSharp(
         List<byte[]> bfbs,
         string inputHash,
-        CompilerOptions options,
-        out string csharp)
+        CompilerOptions options)
     {
-        csharp = string.Empty;
+        string csharp = string.Empty;
 
         try
         {
@@ -521,9 +520,12 @@ public class FlatSharpCompiler
                 new ExternalTypeSchemaMutator(),
             };
 
+            Stopwatch sw = Stopwatch.StartNew();
+            ISerializer<Schema.Schema> mutableSerializer = Instrument("CompileReflectionFbs", options, FlatBufferSerializer.Default.Compile<Schema.Schema>);
+
             foreach (var s in bfbs)
             {
-                rootModel.UnionWith(ParseSchema(s, options, postProcessTransforms, mutators).ToRootModel(options));
+                rootModel.UnionWith(ParseSchema(mutableSerializer, s, options, postProcessTransforms, mutators).ToRootModel(options));
             }
 
             ErrorContext.Current.ThrowIfHasErrors();
@@ -538,54 +540,66 @@ public class FlatSharpCompiler
 
                 if (step > CodeWritingPass.Initialization)
                 {
-                    csharp = writer.ToString();
-                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, true);
+                    csharp = Instrument($"{step}.CodeWriterToString", options, writer.ToString);
+                    (assembly, _, _) = Instrument($"{step}.CompilePreviousAssembly", options, () => RoslynSerializerGenerator.CompileAssembly(csharp, true));
                 }
 
                 writer = new CodeWriter();
 
-                rootModel.WriteCode(
-                    writer,
-                    new CompileContext
+                Instrument(
+                    $"{step}.WriteCode",
+                    options,
+                    () =>
                     {
-                        CompilePass = step,
-                        Options = localOptions,
-                        InputHash = inputHash,
-                        PreviousAssembly = assembly,
-                        TypeModelContainer = TypeModelContainer.CreateDefault(),
+                        rootModel.WriteCode(
+                            writer,
+                            new CompileContext
+                            {
+                                CompilePass = step,
+                                Options = localOptions,
+                                InputHash = inputHash,
+                                PreviousAssembly = assembly,
+                                TypeModelContainer = TypeModelContainer.CreateDefault(),
+                            });
+
+                        return true;
                     });
 
                 ErrorContext.Current.ThrowIfHasErrors();
             }
 
-            csharp = writer.ToString();
+            csharp = Instrument($"FinalStep.CodeWriterToString", options, writer.ToString);
 
-            foreach (var transform in postProcessTransforms)
+            csharp = Instrument($"PostProcessTransforms", options, () =>
             {
-                csharp = transform(csharp);
-            }
+                foreach (var transform in postProcessTransforms)
+                {
+                    csharp = transform(csharp);
+                }
+
+                return csharp;
+            });
         }
         finally
         {
             if (csharp is not null)
             {
-                csharp = RoslynSerializerGenerator.GetFormattedText(csharp);
+                csharp = Instrument("PrettyPrint", options, () => RoslynSerializerGenerator.GetFormattedText(csharp));
             }
         }
+
+        return csharp;
     }
 
     private static Schema.Schema ParseSchema(
+        ISerializer<Schema.Schema> serializer,
         byte[] bfbs,
         CompilerOptions options,
         List<Func<string, string>> postProcessTransforms,
         params ISchemaMutator[] mutators)
     {
-        ISerializer<Schema.Schema> mutableSerializer = FlatBufferSerializer.Default
-            .Compile<Schema.Schema>()
-            .WithSettings(s => s.UseGreedyMutableDeserialization());
-
         // Mutable
-        var schema = mutableSerializer.Parse(bfbs);
+        var schema = serializer.Parse(bfbs, FlatBufferDeserializationOption.GreedyMutable);
 
         foreach (var mutator in mutators)
         {
@@ -593,10 +607,27 @@ public class FlatSharpCompiler
         }
 
         // Serialize
-        byte[] temp = new byte[mutableSerializer.GetMaxSize(schema)];
-        mutableSerializer.Write(temp, schema);
+        byte[] temp = new byte[serializer.GetMaxSize(schema)];
+        serializer.Write(temp, schema);
 
         // Immutable.
-        return mutableSerializer.WithSettings(s => s.UseGreedyDeserialization()).Parse(temp);
+        return serializer.Parse(temp, FlatBufferDeserializationOption.Greedy);
+    }
+
+    [ExcludeFromCodeCoverage]
+    private static T Instrument<T>(string step, CompilerOptions opts, Func<T> callback)
+    {
+        if (opts.Instrument)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            T result = callback();
+            sw.Stop();
+            Console.WriteLine($"FlatSharp compiler instrumentation: {step} took {sw.Elapsed.TotalMilliseconds}ms.");
+            return result;
+        }
+        else
+        {
+            return callback();
+        }
     }
 }

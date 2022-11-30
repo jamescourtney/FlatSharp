@@ -7,8 +7,8 @@ attribute "fs_writeThrough";
 
 namespace FlatSharpEndToEndTests.DepthLimit;
 
-table LinkedListNode (fs_serializer)
+table LLNode (fs_serializer)
 {
     Value : int;
-    Next : LinkedListNode;
+    Next : LLNode;
 }

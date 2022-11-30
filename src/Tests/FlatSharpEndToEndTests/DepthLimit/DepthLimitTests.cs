@@ -20,15 +20,25 @@ namespace FlatSharpEndToEndTests.DepthLimit;
 
 public class DepthLimitTests
 {
+    [Fact]
+    public void DepthLimit_Negative()
+    {
+        var ex = Assert.Throws<ArgumentException>(
+            () => LLNode.Serializer.WithSettings(opt => opt.WithObjectDepthLimit(-1)));
+
+        Assert.Contains("ObjectDepthLimit must be nonnegative.", ex.Message);
+    }
+
+
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
     public void DepthLimit_OneOver(FlatBufferDeserializationOption option)
     {
         const int Limit = 50;
 
-        var serializer = LinkedListNode.Serializer.WithSettings(opt => opt.UseDeserializationMode(option).WithObjectDepthLimit(Limit));
+        var serializer = LLNode.Serializer.WithSettings(opt => opt.UseDeserializationMode(option).WithObjectDepthLimit(Limit));
 
-        LinkedListNode head = CreateList(Limit + 1);
+        LLNode head = CreateList(Limit + 1);
 
         var ex = Assert.Throws<InvalidDataException>(
             () => ParseAndTraverseList(head, serializer));
@@ -42,29 +52,29 @@ public class DepthLimitTests
     {
         const int Limit = 50;
 
-        var serializer = LinkedListNode.Serializer.WithSettings(opt => opt.UseDeserializationMode(option).WithObjectDepthLimit(Limit));
+        var serializer = LLNode.Serializer.WithSettings(opt => opt.UseDeserializationMode(option).WithObjectDepthLimit(Limit));
 
-        LinkedListNode head = CreateList(Limit);
+        LLNode head = CreateList(Limit);
         ParseAndTraverseList(head, serializer);
     }
 
-    private static void ParseAndTraverseList(LinkedListNode head, ISerializer<LinkedListNode> serializer)
+    private static void ParseAndTraverseList(LLNode head, ISerializer<LLNode> serializer)
     {
-        LinkedListNode current = head.SerializeAndParse(serializer);
+        LLNode current = head.SerializeAndParse(serializer);
         while (current != null)
         {
             current = current.Next;
         }
     }
 
-    private static LinkedListNode CreateList(int length)
+    private static LLNode CreateList(int length)
     {
-        LinkedListNode head = new() { Value = 0 };
-        LinkedListNode current = head;
+        LLNode head = new() { Value = 0 };
+        LLNode current = head;
 
         for (int i = 1; i < length; ++i)
         {
-            LinkedListNode next = new() { Value = i };
+            LLNode next = new() { Value = i };
             current.Next = next;
             current = next;
         }

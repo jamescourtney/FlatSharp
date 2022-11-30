@@ -43,4 +43,7 @@ public record CompilerOptions
 
     [Option("debug", Hidden = true, Default = false)]
     public bool Debug { get; set; }
+
+    [Option("instrument", Hidden = true, Default = false)]
+    public bool Instrument { get; set; }
 }

@@ -18,6 +18,7 @@ attribute "fs_vector";
 attribute "fs_serializer";
 attribute "fs_sortedVector";
 attribute "fs_sharedString";
+attribute "fs_forceWrite";
 
 namespace FlatSharpEndToEndTests.RawData;
 
@@ -98,4 +99,14 @@ table NonDeprecatedItemTable (fs_serializer)
 {
     Value : int;
     Other : long;
+}
+
+table ForceWriteTable (fs_serializer)
+{
+    Value : int = 1 (fs_forceWrite);
+}
+
+table NonForceWriteTable (fs_serializer)
+{
+    Value : int = 1;
 }
