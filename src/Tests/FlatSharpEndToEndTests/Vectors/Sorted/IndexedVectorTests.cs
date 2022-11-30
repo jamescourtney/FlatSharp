@@ -15,6 +15,7 @@
  */
 
 using FlatSharp.Internal;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 
 namespace FlatSharpEndToEndTests.Vectors.Sorted;
@@ -22,6 +23,12 @@ namespace FlatSharpEndToEndTests.Vectors.Sorted;
 public class IndexedVectorTests
 {
     private static readonly Random Rng = new();
+    private readonly Xunit.Abstractions.ITestOutputHelper outputHelper;
+
+    public IndexedVectorTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+    {
+        this.outputHelper = outputHelper;
+    }
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
@@ -110,7 +117,7 @@ public class IndexedVectorTests
         opt,
         x => x.IndexedVectorOfFloat,
         (x, v) => x.IndexedVectorOfFloat = v,
-        GetValueFactory<float, FloatKey>((k, v) => k.Key = v),
+        () => new FloatKey { Key = (float)Rng.NextDouble() },
         k => k.Key);
 
     [Theory]
@@ -119,7 +126,7 @@ public class IndexedVectorTests
         opt,
         x => x.IndexedVectorOfDouble,
         (x, v) => x.IndexedVectorOfDouble = v,
-        GetValueFactory<double, DoubleKey>((k, v) => k.Key = v),
+        () => new DoubleKey { Key = Rng.NextDouble() },
         k => k.Key);
 
     [Theory]
@@ -150,7 +157,7 @@ public class IndexedVectorTests
             setKey(val, key);
             return val;
         };
-    }
+    } 
 
     private void IndexedVectorTest<TKey, TValue>(
         FlatBufferDeserializationOption option,
@@ -200,7 +207,13 @@ public class IndexedVectorTests
             TKey key = getKey(createValue());
             if (!knownKeys.Contains(key))
             {
-                Assert.False(vector.TryGetValue(key, out TValue value));
+                bool result = vector.TryGetValue(key, out TValue value);
+                if (result)
+                {
+                    this.outputHelper.WriteLine($"Unexpected result: Key = {key}. ActualKey = {getKey(value)}");
+                }
+
+                Assert.False(result);
                 Assert.Null(value);
                 Assert.False(vector.ContainsKey(key));
                 Assert.Throws<KeyNotFoundException>(() => vector[key]);
