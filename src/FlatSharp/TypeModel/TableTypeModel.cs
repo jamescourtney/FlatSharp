@@ -384,11 +384,7 @@ public class TableTypeModel : RuntimeTypeModel
 
         if (specialCtor is not null)
         {
-            if (!IsVisible(specialCtor))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Constructor for '{typeName}' accepting {nameof(FlatBufferDeserializationContext)} is not visible to subclasses outside the assembly.");
-            }
-
+            FlatSharpInternal.Assert(IsVisible(specialCtor), "Special deserialize constructor should be visible.");
             defaultConstructor = specialCtor;
         }
         else if (defaultCtor is not null)
