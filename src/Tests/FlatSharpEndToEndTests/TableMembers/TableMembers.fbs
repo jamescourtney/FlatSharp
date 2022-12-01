@@ -154,3 +154,25 @@ table StringTable (fs_serializer)
 table EmptyTable (fs_serializer)
 {
 }
+
+struct SecondStruct
+{
+    value : int;
+}
+
+struct FirstStruct
+{
+    first : int;
+    second : ulong;
+    second_struct : SecondStruct;
+}
+
+union MyUnion { FirstStruct, SecondStruct, str : string }
+
+table DeserializationOptionsTable (fs_serializer)
+{
+    str : string;
+    first_struct : FirstStruct;
+    second_struct : SecondStruct;
+    union : MyUnion;
+}
