@@ -44,13 +44,19 @@ public static class SpanWriterExtensions
         Span<byte> span,
         Span<TElement> buffer,
         int offset,
-        SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : struct
+        int alignment,
+        SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : unmanaged
     {
+        var size = Unsafe.SizeOf<TElement>();
+
+        if (size % alignment != 0)
+            throw new InvalidOperationException($"Unsafe Span serialization does not support types with size {size} that is not a multiple of alignment {alignment}.");
+
         int numberOfItems = buffer.Length;
         int vectorStartOffset = ctx.AllocateVector(
-            itemAlignment: Unsafe.SizeOf<TElement>(),
+            itemAlignment: alignment,
             numberOfItems,
-            sizePerItem: Unsafe.SizeOf<TElement>());
+            sizePerItem: size);
 
         spanWriter.WriteUOffset(span, offset, vectorStartOffset);
         spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);

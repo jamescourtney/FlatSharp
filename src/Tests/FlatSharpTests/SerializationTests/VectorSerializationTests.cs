@@ -296,6 +296,67 @@ public class VectorSerializationTests
         }
 
         [Fact]
+        public void UnalignedStruct_Value5Byte_NativeArray()
+        {
+            var root = new RootTable<NativeArray<ValueFiveByteStruct>>
+            {
+                Vector = new NativeArray<ValueFiveByteStruct>(new[]
+                {
+                    new ValueFiveByteStruct { Byte = 1, Int = 1 },
+                    new ValueFiveByteStruct { Byte = 2, Int = 2 },
+                    new ValueFiveByteStruct { Byte = 3, Int = 3 },
+                }, Allocator.Temp)
+            };
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                Span<byte> target = new byte[10240];
+                FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+            });
+        }
+
+        [Fact]
+        public void AlignedStruct_Value5Byte_NativeArray()
+        {
+            var root = new RootTable<NativeArray<ValueFiveByteStructWithPadding>>
+            {
+                Vector = new NativeArray<ValueFiveByteStructWithPadding>(new[]
+                {
+                    new ValueFiveByteStructWithPadding { Byte = 1, Int = 1 },
+                    new ValueFiveByteStructWithPadding { Byte = 2, Int = 2 },
+                    new ValueFiveByteStructWithPadding { Byte = 3, Int = 3 },
+                }, Allocator.Temp)
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 0, 0, 0,          // index 0.Int
+                1,                   // index 0.Byte
+                0, 0, 0,             // padding
+                2, 0, 0, 0,          // index 1.Int
+                2,                   // index 1.Byte
+                0, 0, 0,             // padding
+                3, 0, 0, 0,          // index2.Int
+                3,                   // Index2.byte
+                0, 0, 0,             // padding
+            };
+
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [Fact]
         public void UnalignedStruct_9Byte()
         {
             var root = new RootTable2<IReadOnlyList<NineByteStruct>>
@@ -835,6 +896,14 @@ public class VectorSerializationTests
 
     [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
     public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+    public struct ValueFiveByteStructWithPadding
     {
         [FieldOffset(0)] public int Int;
 
