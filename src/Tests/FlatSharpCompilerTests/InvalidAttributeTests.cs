@@ -126,6 +126,6 @@ public class InvalidAttributeTests
         ";
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-        Assert.Contains("Unable to parse 'fs_vector' value 'banana'. Valid values are: IList, IReadOnlyList, Memory, ReadOnlyMemory, IIndexedVector.", ex.Message);
+        Assert.Contains("Unable to parse 'fs_vector' value 'banana'. Valid values are: IList, IReadOnlyList, Memory, ReadOnlyMemory, IIndexedVector, UnityNativeArray.", ex.Message);
     }
 }

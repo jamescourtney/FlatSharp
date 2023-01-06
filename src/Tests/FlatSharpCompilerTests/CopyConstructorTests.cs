@@ -15,6 +15,8 @@
  */
 
 using FlatSharp.Internal;
+using System.Linq;
+using Unity.Collections;
 
 namespace FlatSharpTests.Compiler;
 
@@ -46,6 +48,7 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   IntVector_List:[int] ({MetadataKeys.VectorKind}:""IList"", id: 9);
   IntVector_RoList:[int] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 10);
   IntVector_Array:[int] ({MetadataKeys.VectorKind}:""IList"", id: 11);
+  IntVector_NativeArray:[int] ({MetadataKeys.VectorKind}:""UnityNativeArray"", id: 26);
   
   TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 12);
   TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 13);
@@ -94,6 +97,7 @@ table InnerTable {{
             IntVector_Array = new[] { 7, 8, 9, },
             IntVector_List = new[] { 10, 11, 12, }.ToList(),
             IntVector_RoList = new[] { 13, 14, 15 }.ToList(),
+            IntVector_NativeArray = new NativeArray<int>(new[] { 16, 17, 18, }, Allocator.Persistent),
 
             TableVector_Array = CreateInner("Rocket", "Molly", "Clementine"),
             TableVector_Indexed = new IndexedVector<string, InnerTable>(CreateInner("Pudge", "Sunshine", "Gypsy"), false),
@@ -124,10 +128,10 @@ table InnerTable {{
             }
         };
 
-        byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(original)];
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(original, data);
+        byte[] data = new byte[FlatBufferSerializer.DefaultWithUnitySupport.GetMaxSize(original)];
+        int bytesWritten = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(original, data);
 
-        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new() { NormalizeFieldNames = false });
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new() { NormalizeFieldNames = false, UnityAssemblyPath = typeof(NativeArray<>).Assembly.Location});
 
         Type outerTableType = asm.GetType("CopyConstructorTest.OuterTable");
         dynamic serializer = outerTableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
@@ -152,6 +156,8 @@ table InnerTable {{
         DeepCompareIntVector(original.IntVector_Array, parsed.IntVector_Array, copied.IntVector_Array);
         DeepCompareIntVector(original.IntVector_List, parsed.IntVector_List, copied.IntVector_List);
         DeepCompareIntVector(original.IntVector_RoList, parsed.IntVector_RoList, copied.IntVector_RoList);
+        DeepCompareIntVector(original.IntVector_NativeArray, parsed.IntVector_NativeArray, copied.IntVector_NativeArray);
+
 
         Assert.Equal((byte)3, original.UnionVal.Value.Discriminator);
         Assert.Equal((byte)3, parsed.UnionVal.Discriminator);
@@ -368,6 +374,9 @@ table InnerTable {{
 
         [FlatBufferItem(11)]
         public virtual IList<int>? IntVector_Array { get; set; }
+
+        [FlatBufferItem(26)]
+        public virtual NativeArray<int>? IntVector_NativeArray { get; set; }
 
         [FlatBufferItem(12)]
         public virtual IList<InnerTable>? TableVector_List { get; set; }

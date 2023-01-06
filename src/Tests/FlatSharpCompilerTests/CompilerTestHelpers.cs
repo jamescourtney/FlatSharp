@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+using FlatSharp.TypeModel;
+
 namespace FlatSharpTests.Compiler;
 
 public static class CompilerTestHelpers
 {
     public static readonly FlatBufferSerializer CompilerTestSerializer = new FlatBufferSerializer(
-        new FlatBufferSerializerOptions { EnableAppDomainInterceptOnAssemblyLoad = true });
+        new FlatBufferSerializerOptions { EnableAppDomainInterceptOnAssemblyLoad = true }, TypeModelContainer.CreateDefault().WithUnitySupport(true));
 }

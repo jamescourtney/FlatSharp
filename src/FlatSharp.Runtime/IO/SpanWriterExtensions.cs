@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Runtime.InteropServices;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
@@ -35,6 +37,33 @@ public static class SpanWriterExtensions
         spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
 
         memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+    }
+    
+    public static void UnsafeWriteSpan<TSpanWriter, TElement>(
+        this TSpanWriter spanWriter,
+        Span<byte> span,
+        Span<TElement> buffer,
+        int offset,
+        int alignment,
+        SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : unmanaged
+    {
+        var size = Unsafe.SizeOf<TElement>();
+
+        if (size % alignment != 0)
+            throw new InvalidOperationException($"Unsafe Span serialization does not support types with size {size} that is not a multiple of alignment {alignment}.");
+
+        int numberOfItems = buffer.Length;
+        int vectorStartOffset = ctx.AllocateVector(
+            itemAlignment: alignment,
+            numberOfItems,
+            sizePerItem: size);
+
+        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
+        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+
+
+        var start = span.Slice(vectorStartOffset + sizeof(uint));
+        MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
     }
 
     /// <summary>

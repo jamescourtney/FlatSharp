@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2022 Unity Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler;
+namespace FlatSharp.TypeModel;
 
-/// <summary>
-/// Enumerates supported vector types.
-/// </summary>
-public enum VectorType
+internal static class TypeModelContainerExtensions
 {
-    IList,
-    IReadOnlyList,
-    Memory,
-    ReadOnlyMemory,
-    IIndexedVector,
-    UnityNativeArray
+    public static TypeModelContainer WithUnitySupport(this TypeModelContainer container, bool enableUnitySupport)
+    {
+        if (enableUnitySupport)
+            container.RegisterProvider(new UnityTypeModelProvider());
+        return container;
+    }
 }
