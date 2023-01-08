@@ -48,13 +48,10 @@ public static class SpanWriterExtensions
         int alignment,
         SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : unmanaged
     {
-        var size = Unsafe.SizeOf<TElement>();
+        // Since we are copying bytes here, only LE is supported.
+        FlatSharpInternal.AssertLittleEndian();
 
-        // This check is always elided.
-        if (!BitConverter.IsLittleEndian)
-        {
-            throw new InvalidOperationException($"Unsafe Span serialization is only valid on little endian architectures.");
-        }
+        var size = Unsafe.SizeOf<TElement>();
 
         // Inlining this method should allow this check to be elided as the alignment is a constant from the callsite.
         if (size % alignment != 0)
