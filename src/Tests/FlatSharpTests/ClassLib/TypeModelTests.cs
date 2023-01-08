@@ -1033,7 +1033,16 @@ public class TypeModelTests
             () => TypeModelContainer.CreateDefault().WithUnitySupport(true).CreateTypeModel(typeof(NativeArray<string>)));
         Assert.Equal("UnityNativeArray vectors only support scalar or struct generic arguments. Type = Unity.Collections.NativeArray<System.String>.", ex.Message);
     }
-    
+
+    [Fact]
+    public void TypeModel_Vector_NativeArrayOfReferenceStruct_NotAllowed()
+    {
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+            () => TypeModelContainer.CreateDefault().WithUnitySupport(true).CreateTypeModel(typeof(NativeArray<StructWriteThrough>)));
+
+        Assert.Equal("UnityNativeArray vectors only support value types. Type = Unity.Collections.NativeArray<FlatSharpTests.TypeModelTests.StructWriteThrough>.", ex.Message);
+    }
+
     [Fact]
     public void Parse_NativeArrayThrowsExceptionForNonPinnedBuffer()
     {

@@ -11,7 +11,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

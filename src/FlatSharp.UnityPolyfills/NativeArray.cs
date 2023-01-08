@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Unity.Collections
@@ -37,6 +38,7 @@ namespace Unity.Collections
     }
 
     // for testing, we remove the 'where T : struct' constraint and enforce this in UnityNativeArrayVectorTypeModel
+    [ExcludeFromCodeCoverage]
     public unsafe struct NativeArray<T> : IEnumerable<T>, IEquatable<NativeArray<T>> /* where T : struct */
     {
         internal Memory<T> m_Buffer;
@@ -135,6 +137,7 @@ namespace Unity.Collections
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    [ExcludeFromCodeCoverage]
     public static unsafe class NativeArrayUnsafeUtility
     {
         public static NativeArray<T> ConvertExistingDataToNativeArray<T>(void* dataPointer, int length, Allocator allocator) where T : struct
@@ -149,7 +152,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-
+    [ExcludeFromCodeCoverage]
     public static unsafe class NativeArrayUnsafeUtilityEx
     {
         public static NativeArray<T> ConvertExistingDataToNativeArray<T>(Span<T> span, Allocator allocator) where T : struct

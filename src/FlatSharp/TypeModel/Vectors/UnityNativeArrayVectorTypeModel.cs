@@ -18,27 +18,30 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
     
     public override void Validate()
     {
-        if (!this.ClrType.IsGenericType || this.ClrType.GetGenericTypeDefinition().FullName != "Unity.Collections.NativeArray`1")
-            throw new InvalidFlatBufferDefinitionException(
-                $"UnityNativeArray vectors must be of type Unity.Collections.NativeArray. Type = {this.GetCompilableTypeName()}.");
+        FlatSharpInternal.Assert(
+            this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition().FullName == "Unity.Collections.NativeArray`1",
+            "Expecting Unity Native Array");
 
         var genericArgumentType = this.ClrType.GetGenericArguments()[0];
-        if (ItemTypeModel.SchemaType != FlatBufferSchemaType.Scalar && ItemTypeModel.SchemaType != FlatBufferSchemaType.Struct)
+
+        if (this.ItemTypeModel.SchemaType != FlatBufferSchemaType.Scalar && this.ItemTypeModel.SchemaType != FlatBufferSchemaType.Struct)
+        {
             throw new InvalidFlatBufferDefinitionException(
                 $"UnityNativeArray vectors only support scalar or struct generic arguments. Type = {this.GetCompilableTypeName()}.");
-        
-        if (!genericArgumentType.IsValueType)
-            throw new InvalidFlatBufferDefinitionException(
-                $"UnityNativeArray vectors only support value type generic arguments. Type = {this.GetCompilableTypeName()}.");
-        
-        if (ItemTypeModel.PhysicalLayout.Length != 1)
-            throw new InvalidFlatBufferDefinitionException(
-                $"UnityNativeArray vectors do not support the specified generic argument type. Type = {this.GetCompilableTypeName()}.");
+        }
 
+        FlatSharpInternal.Assert(this.ItemTypeModel.PhysicalLayout.Length == 1, "Expecting a simple layout");
+
+        if (!genericArgumentType.IsValueType)
+        {
+            throw new InvalidFlatBufferDefinitionException(
+                $"UnityNativeArray vectors only support value types. Type = {this.GetCompilableTypeName()}.");
+        }
 
         base.Validate();
     }
 
+    [ExcludeFromCodeCoverage]
     protected override string CreateLoop(FlatBufferSerializerOptions options, string vectorVariableName, string numberOfItemsVariableName, string expectedVariableName, string body)
     {
         FlatSharpInternal.Assert(false, "Not expecting to do loop get max size for memory vector");
@@ -68,7 +71,10 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
         {
             string body = $@"
                 if (!buffer.IsPinned)
-                    throw new NotSupportedException(""Non-greedy parsing of a NativeArray requires a pinned buffer."");
+                {{
+                   throw new NotSupportedException(""Non-greedy parsing of a NativeArray requires a pinned buffer."");
+                }}
+
                 var bufferSpan = {context.InputBufferVariableName}.UnsafeReadSpan<{context.InputBufferTypeName}, {this.ItemTypeModel.GetGlobalCompilableTypeName()}>({context.OffsetVariableName});
                 var nativeArray = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtilityEx.ConvertExistingDataToNativeArray<{this.ItemTypeModel.GetGlobalCompilableTypeName()}>(bufferSpan, Allocator.None);
                 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -83,8 +89,14 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
-        var writeNativeArray = $"{context.SpanWriterVariableName}.UnsafeWriteSpan({context.SpanVariableName}, {context.ValueVariableName}.AsSpan(), {context.OffsetVariableName}, " +
-                               $"{ItemTypeModel.PhysicalLayout[0].Alignment}, {context.SerializationContextVariableName});";
+        string writeNativeArray = $@"
+            {context.SpanWriterVariableName}.UnsafeWriteSpan(
+                {context.SpanVariableName},
+                {context.ValueVariableName}.AsSpan(),
+                {context.OffsetVariableName},
+                {this.ItemTypeModel.PhysicalLayout[0].Alignment},
+                {context.SerializationContextVariableName});
+        ";
 
         return new CodeGeneratedMethod(writeNativeArray);
     }

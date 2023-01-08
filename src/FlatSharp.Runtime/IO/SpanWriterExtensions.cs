@@ -38,7 +38,8 @@ public static class SpanWriterExtensions
 
         memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
     }
-    
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void UnsafeWriteSpan<TSpanWriter, TElement>(
         this TSpanWriter spanWriter,
         Span<byte> span,
@@ -49,8 +50,17 @@ public static class SpanWriterExtensions
     {
         var size = Unsafe.SizeOf<TElement>();
 
+        // This check is always elided.
+        if (!BitConverter.IsLittleEndian)
+        {
+            throw new InvalidOperationException($"Unsafe Span serialization is only valid on little endian architectures.");
+        }
+
+        // Inlining this method should allow this check to be elided as the alignment is a constant from the callsite.
         if (size % alignment != 0)
-            throw new InvalidOperationException($"Unsafe Span serialization does not support types with size {size} that is not a multiple of alignment {alignment}.");
+        {
+            throw new InvalidOperationException($"Type '{typeof(TElement).FullName}' does not support Unsafe Span serialization because the size ({size}) is not a multiple of the alignment ({alignment}).");
+        }
 
         int numberOfItems = buffer.Length;
         int vectorStartOffset = ctx.AllocateVector(
@@ -61,8 +71,8 @@ public static class SpanWriterExtensions
         spanWriter.WriteUOffset(span, offset, vectorStartOffset);
         spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
 
+        var start = span.Slice(vectorStartOffset + sizeof(uint), numberOfItems * size);
 
-        var start = span.Slice(vectorStartOffset + sizeof(uint));
         MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
     }
 
