@@ -208,7 +208,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         }
 
         // Write bind service method
-        writer.AppendLine($"public static {GrpcCore}.ServerServiceDefinition BindService({baseClassName} serviceImpl)");
+        writer.AppendLine($"public static {GrpcCore}.ServerServiceDefinition BindService({baseClassName}? serviceImpl)");
         using (writer.WithBlock())
         {
             writer.AppendLine($"return {GrpcCore}.ServerServiceDefinition.CreateBuilder()");
@@ -216,7 +216,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
             {
                 foreach (var method in this.calls)
                 {
-                    writer.AppendLine($".AddMethod({methodNameMap[method.Name]}, serviceImpl.{method.Name})");
+                    writer.AppendLine($".AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? null : serviceImpl.{method.Name})");
                 }
 
                 writer.AppendLine(".Build();");
@@ -225,13 +225,13 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
         // Write bind service overload
         writer.AppendLine();
-        writer.AppendLine($"public static void BindService({GrpcCore}.ServiceBinderBase serviceBinder, {baseClassName} serviceImpl)");
+        writer.AppendLine($"public static void BindService({GrpcCore}.ServiceBinderBase serviceBinder, {baseClassName}? serviceImpl)");
         using (writer.WithBlock())
         {
             foreach (var method in this.calls)
             {
                 string serverDelegate = GetServerHandlerDelegate(method);
-                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, {serverDelegate});");
+                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? null : {serverDelegate});");
             }
         }
     }
