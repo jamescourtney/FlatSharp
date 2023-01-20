@@ -13,12 +13,12 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>7.0.2</Version>
-    <PackageVersion>7.0.2</PackageVersion>
+    <Version>7.1.0</Version>
+    <PackageVersion>7.1.0</PackageVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
     <Description>FlatSharp is a fast, idiomatic implementation of the FlatBuffer binary format.</Description>
-    <Copyright>2022</Copyright>
+    <Copyright>2023</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
     <PackageReleaseNotes>Release notes at https://github.com/jamescourtney/FlatSharp/releases</PackageReleaseNotes>
