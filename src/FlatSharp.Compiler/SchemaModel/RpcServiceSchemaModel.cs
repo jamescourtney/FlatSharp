@@ -211,6 +211,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         writer.AppendLine($"public static {GrpcCore}.ServerServiceDefinition BindService({baseClassName}? serviceImpl)");
         using (writer.WithBlock())
         {
+            writer.AppendLine("#pragma warning disable CS8604");
             writer.AppendLine($"return {GrpcCore}.ServerServiceDefinition.CreateBuilder()");
             using (writer.IncreaseIndent())
             {
@@ -221,6 +222,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
                 writer.AppendLine(".Build();");
             }
+            writer.AppendLine("#pragma warning restore CS8604");
         }
 
         // Write bind service overload
@@ -228,11 +230,13 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         writer.AppendLine($"public static void BindService({GrpcCore}.ServiceBinderBase serviceBinder, {baseClassName}? serviceImpl)");
         using (writer.WithBlock())
         {
+            writer.AppendLine("#pragma warning disable CS8604");
             foreach (var method in this.calls)
             {
                 string serverDelegate = GetServerHandlerDelegate(method);
                 writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? null : {serverDelegate});");
             }
+            writer.AppendLine("#pragma warning restore CS8604");
         }
     }
 
