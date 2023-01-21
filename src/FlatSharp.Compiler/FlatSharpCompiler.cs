@@ -75,6 +75,12 @@ public class FlatSharpCompiler
             Console.Error.WriteLine("FlatSharp compiler: No output directory specified.");
             return -1;
         }
+        
+        if (!string.IsNullOrEmpty(options.UnityAssemblyPath) && !File.Exists(options.UnityAssemblyPath))
+        {
+            Console.Error.WriteLine("FlatSharp compiler: Unity assembly path specified does not exist.");
+            return -1;
+        }
 
         // Read existing file to see if we even need to do any work.
         const string outputFileName = "FlatSharp.generated.cs";
@@ -315,7 +321,7 @@ public class FlatSharpCompiler
     {
         try
         {
-            Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
+            Assembly[] additionalRefs = BuildAdditionalReferences(options, additionalReferences);
 
             options.InputFiles = fbsFiles.Select(x => x.FullName);
 
@@ -529,6 +535,8 @@ public class FlatSharpCompiler
             }
 
             ErrorContext.Current.ThrowIfHasErrors();
+            
+            Assembly[] additionalRefs = BuildAdditionalReferences(options);
 
             foreach (var step in steps)
             {
@@ -541,7 +549,7 @@ public class FlatSharpCompiler
                 if (step > CodeWritingPass.Initialization)
                 {
                     csharp = Instrument($"{step}.CodeWriterToString", options, writer.ToString);
-                    (assembly, _, _) = Instrument($"{step}.CompilePreviousAssembly", options, () => RoslynSerializerGenerator.CompileAssembly(csharp, true));
+                    (assembly, _, _) = Instrument($"{step}.CompilePreviousAssembly", options, () => RoslynSerializerGenerator.CompileAssembly(csharp, true, additionalRefs));
                 }
 
                 writer = new CodeWriter();
@@ -559,7 +567,7 @@ public class FlatSharpCompiler
                                 Options = localOptions,
                                 InputHash = inputHash,
                                 PreviousAssembly = assembly,
-                                TypeModelContainer = TypeModelContainer.CreateDefault(),
+                                TypeModelContainer = TypeModelContainer.CreateDefault().WithUnitySupport(localOptions.UnityAssemblyPath is not null),
                             });
 
                         return true;
@@ -629,5 +637,16 @@ public class FlatSharpCompiler
         {
             return callback();
         }
+    }
+
+    private static Assembly[] BuildAdditionalReferences(CompilerOptions options, IEnumerable<Assembly>? additionalReferences = null)
+    {
+        var references = new List<Assembly>();
+        if (additionalReferences is not null)
+            references.AddRange(additionalReferences);
+        if (options.UnityAssemblyPath is not null)
+            references.Add(Assembly.LoadFrom(options.UnityAssemblyPath));
+        
+        return references.ToArray();
     }
 }

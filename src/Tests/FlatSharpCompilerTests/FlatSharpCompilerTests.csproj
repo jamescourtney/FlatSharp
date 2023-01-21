@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />

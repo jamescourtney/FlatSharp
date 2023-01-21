@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using Unity.Collections;
+
 namespace FlatSharpTests.Compiler;
 
 public class FullTests
@@ -76,6 +78,7 @@ public class FullTests
                 
             ScalarVector : [uint] ({MetadataKeys.VectorKind}:""IList"");
             ScalarArray : [uint] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
+            ScalarUnityNativeArray : [uint] ({MetadataKeys.VectorKind}:""UnityNativeArray"");
 
             UnionVector : [Any] ({MetadataKeys.VectorKind}:""IList"");
             UnionArray : [Any] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
@@ -98,7 +101,7 @@ public class FullTests
         }}
         ";
 
-        FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        FlatSharpCompiler.CompileAndLoadAssembly(schema, new() { UnityAssemblyPath = typeof(NativeArray<>).Assembly.Location});
     }
 #endif
 }

@@ -17,6 +17,7 @@
 using System.Linq;
 using FlatSharp.CodeGen;
 using FlatSharp.TypeModel;
+using Unity.Collections;
 
 namespace FlatSharpTests;
 
@@ -1015,6 +1016,57 @@ public class TypeModelTests
 
         Assert.Equal(33, structModel.PhysicalLayout.Single().InlineSize);
         Assert.Equal(8, structModel.PhysicalLayout.Single().Alignment);
+    }
+    
+    [Fact]
+    public void TypeModel_Vector_NativeArrayOfUnionIsNotAllowed()
+    {
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+            () => TypeModelContainer.CreateDefault().WithUnitySupport(true).CreateTypeModel(typeof(NativeArray<FlatBufferUnion<string>>)));
+        Assert.Equal("UnityNativeArray vectors only support scalar or struct generic arguments. Type = Unity.Collections.NativeArray<FlatSharp.FlatBufferUnion<System.String>>.", ex.Message);
+    }
+    
+    [Fact]
+    public void TypeModel_Vector_NativeArrayOfClassIsNotAllowed()
+    {
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+            () => TypeModelContainer.CreateDefault().WithUnitySupport(true).CreateTypeModel(typeof(NativeArray<string>)));
+        Assert.Equal("UnityNativeArray vectors only support scalar or struct generic arguments. Type = Unity.Collections.NativeArray<System.String>.", ex.Message);
+    }
+
+    [Fact]
+    public void TypeModel_Vector_NativeArrayOfReferenceStruct_NotAllowed()
+    {
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+            () => TypeModelContainer.CreateDefault().WithUnitySupport(true).CreateTypeModel(typeof(NativeArray<StructWriteThrough>)));
+
+        Assert.Equal("UnityNativeArray vectors only support value types. Type = Unity.Collections.NativeArray<FlatSharpTests.TypeModelTests.StructWriteThrough>.", ex.Message);
+    }
+
+    [Fact]
+    public void Parse_NativeArrayThrowsExceptionForNonPinnedBuffer()
+    {
+        byte[] data =
+        {
+            12, 0, 0, 0, // offset to table start
+            6, 0,        // vtable length
+            8, 0,        // table length
+            4, 0,        // offset of index 0 field
+            0, 0,        // padding to 4-byte alignment
+            8, 0, 0, 0,  // soffset to vtable
+            4, 0, 0, 0,  // uoffset_t to vector
+            0, 0, 0, 0,  // vector length
+        };
+
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var table = new FlatBufferSerializer(
+                new FlatBufferSerializerOptions() { DeserializationOption = FlatBufferDeserializationOption.Lazy },
+                TypeModelContainer.CreateDefault().WithUnitySupport(true)).Parse<GenericTable<NativeArray<byte>>>(data);
+            
+            // the lazy access here should cause an exception
+            table.Value.GetHashCode();
+        });
     }
 
     public enum UntaggedEnum
