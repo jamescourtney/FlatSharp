@@ -18,6 +18,7 @@ attribute "fs_vector";
 attribute "fs_serializer";
 attribute "fs_sortedVector";
 attribute "fs_sharedString";
+attribute "fs_forceWrite";
 
 namespace FlatSharpEndToEndTests.RawData;
 
@@ -38,10 +39,74 @@ struct SimpleStruct
     Uint : uint;
 }
 
+struct OuterStruct
+{
+    Inner : SimpleStruct;
+}
+
 table SimpleTable (fs_serializer)
 {
     String : string;
     struct : SimpleStruct;
     struct_vector : [ SimpleStruct ];
     inner_table : SimpleTable;
+    outer_struct : OuterStruct;
+}
+
+enum SimpleEnum : ubyte
+{
+    A,
+    B,
+    C
+}
+
+table DefaultValueTypes (fs_serializer)
+{
+    bool : bool = true;
+    byte : ubyte = 1;
+    sbyte : byte = -1;
+    ushort : ushort = 65535;
+    short : short = -32768;
+    uint : uint = 4294967295;
+    int : int =  -2147483648;
+    float : float = 3.14;
+    ulong : ulong = 9223372036854775807;
+    long : long = -9223372036854775808;
+    double : double = 3.14159;
+    simple_enum : SimpleEnum = B;
+
+    opt_bool : bool = null;
+    opt_byte : ubyte = null;
+    opt_sbyte : byte = null;
+    opt_ushort : ushort = null;
+    opt_short : short = null;
+    opt_uint : uint = null;
+    opt_int : int = null;
+    opt_float : float = null;
+    opt_ulong : ulong = null;
+    opt_long : long = null;
+    opt_double : double = null;
+    opt_simple_enum : SimpleEnum = null;
+}
+
+table DeprecatedItemTable (fs_serializer)
+{
+    Value : int (deprecated);
+    Other : long;
+}
+
+table NonDeprecatedItemTable (fs_serializer)
+{
+    Value : int;
+    Other : long;
+}
+
+table ForceWriteTable (fs_serializer)
+{
+    Value : int = 1 (fs_forceWrite);
+}
+
+table NonForceWriteTable (fs_serializer)
+{
+    Value : int = 1;
 }

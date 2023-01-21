@@ -135,5 +135,11 @@ public class SpanComparerTests
             Assert.Equal(0, comparer.Compare(true, leftSpan, true, leftSpan));
             Assert.Equal(0, comparer.Compare(true, rightSpan, true, rightSpan));
         }
+
+        // Verify that the not-present case works as expected.
+        byte[] defaultData = new byte[32];
+        Assert.Equal(0, comparer.Compare(true, defaultData, false, default));
+        Assert.Equal(0, comparer.Compare(false, default, true, defaultData));
+        Assert.Equal(0, comparer.Compare(false, default, false, default));
     }
 }

@@ -143,7 +143,7 @@ public class RootModel
 
     private static void WriteHelperClass(Type type, CompileContext context, CodeWriter writer)
     {
-        var options = new FlatBufferSerializerOptions() { ConvertProtectedInternalToProtected = false };
+        var options = new FlatBufferSerializerOptions();
         var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
         string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver());
 

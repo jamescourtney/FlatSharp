@@ -1,0 +1,18 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_rpcInterface";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+
+namespace FlatSharpEndToEndTests.FileIdentifiers;
+
+table NoId (fs_serializer)
+{
+}
+table HasId (fs_serializer)
+{
+}
+
+file_identifier "abcd";
+root_type HasId;

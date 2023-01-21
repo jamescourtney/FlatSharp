@@ -206,7 +206,7 @@ internal class DeserializeClassDefinition
     private void AddPropertyDefinitions(ItemMemberModel itemModel)
     {
         string setter = string.Empty;
-        var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo, this.options.ConvertProtectedInternalToProtected);
+        var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo);
 
         if (itemModel.PropertyInfo.SetMethod is not null)
         {
