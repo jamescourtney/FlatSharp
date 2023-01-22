@@ -30,7 +30,7 @@ public sealed class FlatBufferProgressiveVector<T, TInputBuffer, TVectorItemAcce
 
     where T : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+    where TVectorItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
 {
     // The chunk size here matches the number of bits in the presenceMask array below.
     private const uint ChunkSize = 32;

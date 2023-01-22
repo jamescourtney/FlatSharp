@@ -47,7 +47,7 @@ public sealed class ImmutableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObje
 
     public static ImmutableList<T> GetOrCreate<TInputBuffer, TItemAccessor>(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> vector)
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
     {
         int count = vector.Count;
 

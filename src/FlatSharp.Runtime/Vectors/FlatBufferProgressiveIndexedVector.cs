@@ -27,7 +27,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffe
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
+    where TVectorItemAccessor : IVectorItemAccessor<TValue, TValue, TInputBuffer>
 {
     private readonly Dictionary<TKey, TValue?> backingDictionary = new();
     private FlatBufferProgressiveVector<TValue, TInputBuffer, TVectorItemAccessor> backingVector;

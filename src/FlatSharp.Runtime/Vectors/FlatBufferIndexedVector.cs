@@ -28,7 +28,7 @@ public class FlatBufferIndexedVector<TKey, TValue, TInputBuffer, TVectorItemAcce
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
     where TInputBuffer : IInputBuffer
-    where TVectorItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
+    where TVectorItemAccessor : IVectorItemAccessor<TValue, TValue, TInputBuffer>
 {
     private FlatBufferDeserializationOption deserializationOption;
     private FlatBufferVectorBase<TValue, TInputBuffer, TVectorItemAccessor> vector;

@@ -122,7 +122,46 @@ public class ListVectorTypeModel : BaseVectorTypeModel
                     {context.TableFieldContextVariableName},
                     {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
 
-        return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, accessorClassName, context, isEverWriteThrough)) { ClassDefinition = vectorClassDef };
+
+        string createIterableFlatBufferVector;
+        if (this.ItemTypeModel.ClrType.IsValueType)
+        {
+            createIterableFlatBufferVector =
+                $@"LazyValueVector<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate(
+                    {context.InputBufferVariableName}, 
+                    new {accessorClassName}(
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
+                        {context.InputBufferVariableName}),
+                    {context.RemainingDepthVariableName},
+                    {context.TableFieldContextVariableName},
+                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
+        }
+        else
+        {
+            var derivedType = this.ItemTypeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
+
+            createIterableFlatBufferVector =
+               $@"LazyReferenceVector<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}, {derivedType}>.GetOrCreate(
+                    {context.InputBufferVariableName}, 
+                    new {accessorClassName}(
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
+                        {context.InputBufferVariableName}),
+                    {context.RemainingDepthVariableName},
+                    {context.TableFieldContextVariableName},
+                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
+        }
+
+        return new CodeGeneratedMethod(
+            CreateParseBody(
+                this.ItemTypeModel,
+                createFlatBufferVector,
+                accessorClassName,
+                context,
+                isEverWriteThrough,
+                createIterableFlatBufferVector)) 
+        { 
+            ClassDefinition = vectorClassDef
+        };
     }
 
     internal static string CreateParseBody(
@@ -130,7 +169,8 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         string createFlatBufferVector,
         string itemAccessorTypeName,
         ParserCodeGenContext context,
-        bool isEverWriteThrough = false)
+        bool isEverWriteThrough = false,
+        string? iterableCreation = null)
     {
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
@@ -164,12 +204,17 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         }
         else if (context.Options.Lazy)
         {
-            return $"return {createFlatBufferVector};";
+            return $"return {iterableCreation ?? createFlatBufferVector};";
         }
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
             return $"return FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>.GetOrCreate({createFlatBufferVector});";
         }
+    }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return this.GetGlobalCompilableTypeName();
     }
 }

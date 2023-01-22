@@ -163,4 +163,9 @@ public class StringTypeModel : RuntimeTypeModel
         comparerType = typeof(StringSpanComparer);
         return true;
     }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "string";
+    }
 }

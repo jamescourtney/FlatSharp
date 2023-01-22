@@ -110,4 +110,9 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
             IsMethodInline = true,
         };
     }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return this.GetGlobalCompilableTypeName();
+    }
 }

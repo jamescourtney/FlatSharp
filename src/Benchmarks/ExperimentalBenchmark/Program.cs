@@ -29,32 +29,118 @@ using System.Runtime.CompilerServices;
 
 namespace BenchmarkCore
 {
+    public class IterationTests
+    {
+        public const int Length = 1000;
+        public byte[] buffer;
+        public Outer outer;
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            outer = new Outer { RefItems = new List<RefStruct>(), ValueItems = new List<ValueStruct>(), };
+
+            for (int i = 0; i < Length; ++i)
+            {
+                outer.RefItems.Add(new RefStruct { A = i });
+                outer.ValueItems.Add(new ValueStruct { A = i });
+            }
+
+
+            buffer = new byte[Outer.Serializer.GetMaxSize(outer)];
+            Outer.Serializer.Write(buffer, outer);
+            outer = Outer.Serializer.Parse(buffer, FlatBufferDeserializationOption.Lazy);
+        }
+
+        //[Benchmark]
+        public int RefNormalTraversal()
+        {
+            int sum = 0;
+            IList<RefStruct> items = outer.RefItems!;
+
+            if (items is null)
+            {
+                return sum;
+            }
+
+            for (int i = 0; i < Length; ++i)
+            {
+                sum += items[i].A;
+            }
+
+            return sum;
+        }
+
+        //[Benchmark]
+        public int ValueNormalTraversal()
+        {
+            int sum = 0;
+            IList<ValueStruct> items = outer.ValueItems!;
+
+            if (items is null)
+            {
+                return sum;
+            }
+
+            for (int i = 0; i < Length; ++i)
+            {
+                sum += items[i].A;
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public int RefFancyTraversal()
+        {
+            IVisitableReferenceVector<RefStruct> vec = (IVisitableReferenceVector<RefStruct>)outer.RefItems;
+            return vec.Visit<Visitor, int>(new Visitor());
+        }
+
+        //[Benchmark]
+        public int ValueFancyTraversal()
+        {
+            IVisitableValueVector<ValueStruct> vec = (IVisitableValueVector<ValueStruct>)outer.ValueItems;
+            return vec.Visit<Visitor, int>(new Visitor());
+        }
+
+        private struct Visitor : IReferenceVectorVisitor<RefStruct, int>, IValueVectorVisitor<ValueStruct, int>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int IValueVectorVisitor<ValueStruct, int>.Visit<TVector>(TVector vector)
+            {
+                int sum = 0;
+                for (int i = 0; i < vector.Count; ++i)
+                {
+                    sum += vector[i].A;
+                }
+
+                return sum;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Visit<TDerived, TVector>(TVector vector) 
+                where TDerived : RefStruct 
+                where TVector : struct, ISimpleVector<TDerived>
+            {
+                int sum = 0;
+                for (int i = 0; i < vector.Count; ++i)
+                {
+                    TDerived item = vector[i];
+                    sum += item.A;
+                    sum += 3;
+                }
+
+                return sum;
+            }
+        }
+    }
+
     public class Program
     {
         public static void Main(string[] args)
         {
-            IndexedVector<string, Item> values = new();
-            for (int i = 0; i < 10000; ++i)
-            {
-                string key = Guid.NewGuid().ToString();
-                Item item = new Item() { Key = key, Value = i, Vec3 = new Vector3(i), AVX = new Vector<float>(i) };
-                values.Add(item);
-            }
-
-            Outer outer = new Outer { Items = values };
-
-            byte[] buffer = new byte[Outer.Serializer.GetMaxSize(outer)];
-            Outer.Serializer.Write(buffer, outer);
-
-            var parsed = Outer.Serializer.Parse(buffer);
-
-            int sum = 0;
-            foreach (var kvp in values)
-            {
-                sum += parsed.Items[kvp.Key].Value;
-            }
-
-            Console.WriteLine(sum);
+            BenchmarkRunner.Run(typeof(Program).Assembly);
         }
     }
 }

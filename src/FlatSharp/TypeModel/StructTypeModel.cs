@@ -31,6 +31,7 @@ public class StructTypeModel : RuntimeTypeModel
     private int maxAlignment = 1;
     private ConstructorInfo? preferredConstructor;
     private MethodInfo? onDeserializeMethod;
+    private readonly Guid guid = Guid.NewGuid();
 
     internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
     {
@@ -108,7 +109,7 @@ public class StructTypeModel : RuntimeTypeModel
     {
         // We have to implement two items: The table class and the overall "read" method.
         // Let's start with the read method.
-        string className = "structReader_" + Guid.NewGuid().ToString("n");
+        string className = this.GetDeserializedClassName(context.Options.DeserializationOption);
         DeserializeClassDefinition classDef = DeserializeClassDefinition.Create(
             className,
             this.onDeserializeMethod,
@@ -277,6 +278,12 @@ public class StructTypeModel : RuntimeTypeModel
         }
     }
 
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        var (ns, name) = nameResolver.ResolveHelperClassName(this);
+        return $"{ns}.{name}.{this.GetDeserializedClassName(option)}<{inputBufferTypeName}>";
+    }
+
     private IEnumerable<(PropertyInfo Property, FlatBufferItemAttribute Attribute)> GetProperties()
     {
         return this.ClrType
@@ -284,5 +291,10 @@ public class StructTypeModel : RuntimeTypeModel
             .Select(x => (Property: x, Attribute: x.GetCustomAttribute<FlatBufferItemAttribute>()!))
             .Where(x => x.Attribute is not null)
             .OrderBy(x => x.Attribute.Index);
+    }
+
+    private string GetDeserializedClassName(FlatBufferDeserializationOption option)
+    {
+        return $"structReader_{this.guid:n}_{option}";
     }
 }

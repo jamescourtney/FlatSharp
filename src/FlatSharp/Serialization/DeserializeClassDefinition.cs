@@ -287,7 +287,7 @@ internal class DeserializeClassDefinition
 
         return
         $@"
-            private sealed class {this.ClassName}<TInputBuffer> 
+            internal sealed class {this.ClassName}<TInputBuffer> 
                 : {typeModel.GetGlobalCompilableTypeName()}
                 , {interfaceGlobalName}
                 , {typeof(IPoolableObject).GetGlobalCompilableTypeName()}

@@ -36,7 +36,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         FlatBufferVectorBase<TValue, TInputBuffer, TItemAccessor> backing,
         bool mutable)
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<TValue, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<TValue, TValue, TInputBuffer>
     {
         if (!ObjectPool.TryGet(out GreedyIndexedVector<TKey, TValue>? vector))
         {

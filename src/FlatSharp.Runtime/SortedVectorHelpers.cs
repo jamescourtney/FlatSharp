@@ -77,7 +77,7 @@ public static class SortedVectorHelpers
     /// <returns>A value if found, null otherwise.</returns>
     internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferVectorBase<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<TTable, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<TTable, TTable, TInputBuffer>
         where TTable : class, ISortableTable<TKey>
         where TKey : notnull
     {
@@ -107,7 +107,7 @@ public static class SortedVectorHelpers
     /// <returns>A value if found, null otherwise.</returns>
     internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferProgressiveVector<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<TTable, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<TTable, TTable, TInputBuffer>
         where TTable : class, ISortableTable<TKey>
         where TKey : notnull
     {
@@ -316,7 +316,7 @@ public static class SortedVectorHelpers
 
     private struct LazyVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
     {
         private readonly FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> items;
 
@@ -334,7 +334,7 @@ public static class SortedVectorHelpers
 
     private struct ProgressiveVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
         where T : notnull
     {
         private readonly FlatBufferProgressiveVector<T, TInputBuffer, TItemAccessor> items;

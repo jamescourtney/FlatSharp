@@ -21,11 +21,13 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
+public sealed class LazyValueVector<T, TInputBuffer, TItemAccessor>
     : IList<T>
     , IReadOnlyList<T>
     , IFlatBufferDeserializedVector
     , IPoolableObject
+    , IVisitableValueVector<T>
+    where T : struct
 
     where TInputBuffer : IInputBuffer
     where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
@@ -36,7 +38,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     private TItemAccessor itemAccessor;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private FlatBufferVectorBase()
+    private LazyValueVector()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
     }
@@ -55,16 +57,16 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         this.fieldContext = fieldContext;
     }
 
-    public static FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> GetOrCreate(
+    public static LazyValueVector<T, TInputBuffer, TItemAccessor> GetOrCreate(
         TInputBuffer memory,
         TItemAccessor itemAccessor,
         short remainingDepth,
         TableFieldContext fieldContext,
         FlatBufferDeserializationOption option)
     {
-        if (!ObjectPool.TryGet<FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>>(out var item))
+        if (!ObjectPool.TryGet<LazyValueVector<T, TInputBuffer, TItemAccessor>>(out var item))
         {
-            item = new FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>();
+            item = new LazyValueVector<T, TInputBuffer, TItemAccessor>();
         }
 
         item.Initialize(memory, itemAccessor, remainingDepth, fieldContext, option);
@@ -101,7 +103,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
     int IFlatBufferDeserializedVector.Count => this.Count;
 
-    public bool Contains(T? item)
+    public bool Contains(T item)
     {
         return this.IndexOf(item) >= 0;
     }
@@ -124,7 +126,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    internal void CopyRangeTo(int startIndex, T?[] array, uint count)
+    internal void CopyRangeTo(int startIndex, T[] array, uint count)
     {
         if (startIndex < 0)
         {
@@ -159,14 +161,8 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    public int IndexOf(T? item)
+    public int IndexOf(T item)
     {
-        // FlatBuffer vectors are not allowed to have null by definition.
-        if (item is null)
-        {
-            return -1;
-        }
-
         var context = this.fieldContext;
         var remainingDepth = this.remainingDepth;
         var buffer = this.memory;
@@ -174,7 +170,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         int count = this.Count;
         for (int i = 0; i < count; ++i)
         {
-            T parsed = this.itemAccessor.ParseItem(i, buffer, remainingDepth, context);
+            var parsed = this.itemAccessor.ParseItem(i, buffer, remainingDepth, context);
             if (item.Equals(parsed))
             {
                 return i;
@@ -241,5 +237,20 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
                 ObjectPool.Return(this);
             }
         }
+    }
+
+    public TReturn Visit<TVisitor, TReturn>(TVisitor visitor)
+        where TVisitor : IValueVectorVisitor<T, TReturn>
+    {
+        return visitor.Visit<SimpleVector>(new() { vector = this });
+    }
+
+    private struct SimpleVector : ISimpleVector<T>
+    {
+        public LazyValueVector<T, TInputBuffer, TItemAccessor> vector;
+
+        public int Count => this.vector.Count;
+
+        public T this[int index] => this.vector[index];
     }
 }

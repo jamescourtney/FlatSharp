@@ -380,4 +380,10 @@ $@"
 
         base.Validate();
     }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        // improve?
+        return this.ClrType.GetGlobalCompilableTypeName();
+    }
 }

@@ -38,6 +38,11 @@ public partial class BoolTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(InputBufferExtensions.ReadBool);
 
     protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "bool";
+    }
 }
 
     
@@ -60,6 +65,11 @@ public partial class ByteTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadByte);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteByte);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "byte";
+    }
 }
 
     
@@ -82,6 +92,11 @@ public partial class SByteTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadSByte);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteSByte);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "sbyte";
+    }
 }
 
     
@@ -104,6 +119,11 @@ public partial class UShortTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUShort);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUShort);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "ushort";
+    }
 }
 
     
@@ -126,6 +146,11 @@ public partial class ShortTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadShort);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteShort);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "short";
+    }
 }
 
     
@@ -148,6 +173,11 @@ public partial class IntTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadInt);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteInt);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "int";
+    }
 }
 
     
@@ -170,6 +200,11 @@ public partial class UIntTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUInt);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUInt);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "uint";
+    }
 }
 
     
@@ -192,6 +227,11 @@ public partial class LongTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadLong);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteLong);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "long";
+    }
 }
 
     
@@ -214,6 +254,11 @@ public partial class ULongTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadULong);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteULong);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "ulong";
+    }
 }
 
     
@@ -236,6 +281,11 @@ public partial class FloatTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadFloat);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteFloat);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "float";
+    }
 }
 
     
@@ -258,6 +308,11 @@ public partial class DoubleTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadDouble);
 
     protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteDouble);
+    
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return "double";
+    }
 }
 
 

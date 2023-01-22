@@ -55,9 +55,11 @@ internal static class FlatBufferVectorHelpers
             ";
         }
 
+        string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
+
         string body = $@"
 
-internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
+internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {derivedTypeName}, {context.InputBufferTypeName}>
     where {context.InputBufferTypeName} : IInputBuffer
 {{
     private readonly int offset;
@@ -78,10 +80,10 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
     public int Count => this.count;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
+    public {derivedTypeName} ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName})
     {{
         int {context.OffsetVariableName} = this.offset + ({inlineSize} * index);
-        item = {context.GetParseInvocation(itemTypeModel.ClrType)};
+        return {context.GetParseInvocation(itemTypeModel.ClrType)};
     }}
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,7 +117,7 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
 
         string classDef = $@"
 
-internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
+internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {itemTypeName}, {context.InputBufferTypeName}>
     where {context.InputBufferTypeName} : IInputBuffer
 {{
     private readonly int discriminatorVectorOffset;
@@ -145,10 +147,10 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
     public int ItemSize => throw new NotImplementedException();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
+    public {itemTypeName} ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName})
     {{
         var {context.OffsetVariableName} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + (index * sizeof(int)));
-        item = {context.GetParseInvocation(typeModel.ClrType)};
+        return {context.GetParseInvocation(typeModel.ClrType)};
     }}
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

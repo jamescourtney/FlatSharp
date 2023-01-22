@@ -206,4 +206,9 @@ public interface ITypeModel
     /// Validates the type model for correctness after the entire type graph has been loaded. Validates cross-object dependencies.
     /// </summary>
     void Validate();
+
+    /// <summary>
+    /// Gets the fully qualified name of the deserialized type.
+    /// </summary>
+    string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName);
 }

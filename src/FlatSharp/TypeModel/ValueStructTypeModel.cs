@@ -349,4 +349,9 @@ public class ValueStructTypeModel : RuntimeTypeModel
         FlatSharpInternal.Assert(value is not null, "Unsafe.SizeOf returned null.");
         return (int)value;
     }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return this.GetGlobalCompilableTypeName();
+    }
 }

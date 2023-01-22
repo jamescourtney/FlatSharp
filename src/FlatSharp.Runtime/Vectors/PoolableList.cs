@@ -39,7 +39,7 @@ public sealed class PoolableList<T> : IList<T>, IReadOnlyList<T>, IPoolableObjec
 
     public static PoolableList<T> GetOrCreate<TInputBuffer, TItemAccessor>(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> item)
         where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+        where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
     {
         int count = item.Count;
 

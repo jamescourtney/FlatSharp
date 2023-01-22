@@ -21,14 +21,17 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
-    : IList<T>
-    , IReadOnlyList<T>
+public sealed class LazyReferenceVector<TBase, TInputBuffer, TItemAccessor, TDerived> 
+    : IList<TBase>
+    , IReadOnlyList<TBase>
     , IFlatBufferDeserializedVector
     , IPoolableObject
+    , IVisitableReferenceVector<TBase>
+    where TBase : class
+    where TDerived : class, TBase
 
     where TInputBuffer : IInputBuffer
-    where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
+    where TItemAccessor : IVectorItemAccessor<TBase, TDerived, TInputBuffer>
 {
     private TInputBuffer memory;
     private TableFieldContext fieldContext;
@@ -36,7 +39,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     private TItemAccessor itemAccessor;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private FlatBufferVectorBase()
+    private LazyReferenceVector()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
     }
@@ -55,16 +58,16 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         this.fieldContext = fieldContext;
     }
 
-    public static FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> GetOrCreate(
+    public static LazyReferenceVector<TBase, TInputBuffer, TItemAccessor, TDerived> GetOrCreate(
         TInputBuffer memory,
         TItemAccessor itemAccessor,
         short remainingDepth,
         TableFieldContext fieldContext,
         FlatBufferDeserializationOption option)
     {
-        if (!ObjectPool.TryGet<FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>>(out var item))
+        if (!ObjectPool.TryGet<LazyReferenceVector<TBase, TInputBuffer, TItemAccessor, TDerived>>(out var item))
         {
-            item = new FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>();
+            item = new LazyReferenceVector<TBase, TInputBuffer, TItemAccessor, TDerived>();
         }
 
         item.Initialize(memory, itemAccessor, remainingDepth, fieldContext, option);
@@ -75,18 +78,25 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
     /// <summary>
     /// Gets the item at the given index.
     /// </summary>
-    public T this[int index]
+    public TBase this[int index]
     {
         get
         {
-            this.CheckIndex(index);
-            return this.itemAccessor.ParseItem(index, this.memory, this.remainingDepth, this.fieldContext);
+            return this.ParseIndex(index);
         }
         set
         {
             this.CheckIndex(index);
             this.itemAccessor.WriteThrough(index, value, this.memory, this.fieldContext);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private TDerived ParseIndex(int index)
+    {
+        this.CheckIndex(index);
+        TDerived item = this.itemAccessor.ParseItem(index, this.memory, this.remainingDepth, this.fieldContext);
+        return item;
     }
 
     public FlatBufferDeserializationOption DeserializationOption { get; private set; }
@@ -101,12 +111,12 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
 
     int IFlatBufferDeserializedVector.Count => this.Count;
 
-    public bool Contains(T? item)
+    public bool Contains(TBase? item)
     {
         return this.IndexOf(item) >= 0;
     }
 
-    public void CopyTo(T[]? array, int arrayIndex)
+    public void CopyTo(TBase[]? array, int arrayIndex)
     {
         if (array is null)
         {
@@ -124,7 +134,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    internal void CopyRangeTo(int startIndex, T?[] array, uint count)
+    internal void CopyRangeTo(int startIndex, TBase?[] array, uint count)
     {
         if (startIndex < 0)
         {
@@ -146,7 +156,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    public IEnumerator<T> GetEnumerator()
+    public IEnumerator<TBase> GetEnumerator()
     {
         int count = this.Count;
         var context = this.fieldContext;
@@ -159,7 +169,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    public int IndexOf(T? item)
+    public int IndexOf(TBase? item)
     {
         // FlatBuffer vectors are not allowed to have null by definition.
         if (item is null)
@@ -174,7 +184,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         int count = this.Count;
         for (int i = 0; i < count; ++i)
         {
-            T parsed = this.itemAccessor.ParseItem(i, buffer, remainingDepth, context);
+            var parsed = this.itemAccessor.ParseItem(i, buffer, remainingDepth, context);
             if (item.Equals(parsed))
             {
                 return i;
@@ -193,7 +203,7 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         }
     }
 
-    public void Add(T item)
+    public void Add(TBase item)
     {
         throw new NotMutableException("FlatBufferVector does not allow adding items.");
     }
@@ -203,12 +213,12 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
         throw new NotMutableException("FlatBufferVector does not support clearing.");
     }
 
-    public void Insert(int index, T item)
+    public void Insert(int index, TBase item)
     {
         throw new NotMutableException("FlatBufferVector does not support inserting.");
     }
 
-    public bool Remove(T item)
+    public bool Remove(TBase item)
     {
         throw new NotMutableException("FlatBufferVector does not support removing.");
     }
@@ -242,4 +252,21 @@ public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>
             }
         }
     }
+
+    public TReturn Visit<TVisitor, TReturn>(TVisitor visitor) 
+        where TVisitor : IReferenceVectorVisitor<TBase, TReturn>
+    {
+        return visitor.Visit<TDerived, SimpleVector>(new() { vector = this });
+    }
+
+    private struct SimpleVector : ISimpleVector<TDerived>
+    {
+        public LazyReferenceVector<TBase, TInputBuffer, TItemAccessor, TDerived> vector;
+
+        public int Count => this.vector.Count;
+
+        public TDerived this[int index] => this.vector.ParseIndex(index);
+    }
+
+
 }
