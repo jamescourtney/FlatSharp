@@ -48,7 +48,7 @@ jobs:
       run: dotnet build -c Release
       
     - name: Upload Files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: Files
+        name: generated-csharp
         path: src/tests/CompileTests/CSharp8
