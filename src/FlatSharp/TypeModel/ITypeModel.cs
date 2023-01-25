@@ -114,7 +114,7 @@ public interface ITypeModel
 
     /// <summary>
     /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
-    /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
+    /// that accepts an instance of <see cref="FlatSharp.FlatBufferDeserializationContext"/>.
     /// </summary>
     ConstructorInfo? PreferredSubclassConstructor { get; }
 
@@ -122,6 +122,11 @@ public interface ITypeModel
     /// Validates a default value.
     /// </summary>
     bool ValidateDefaultValue(object defaultValue);
+
+    /// <summary>
+    /// Indicates if the parsing logic is invariant with respect to the deserialization mode.
+    /// </summary>
+    bool IsParsingInvariant { get; }
 
     /// <summary>
     /// Gets the table field contexts for this type model. Probably only useful for tables.
@@ -174,6 +179,11 @@ public interface ITypeModel
     /// Attempts to get the key of the table. Will return false when there is no key or the type model does not represent a table.
     /// </summary>
     bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember);
+
+    /// <summary>
+    /// Tries to get the file identifier. Should only succeed for tables.
+    /// </summary>
+    bool TryGetFileIdentifier([NotNullWhen(true)] out string? fileId);
 
     /// <summary>
     /// Returns any additional types that must have their assemblies referenced.

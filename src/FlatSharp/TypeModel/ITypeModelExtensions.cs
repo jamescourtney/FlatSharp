@@ -196,7 +196,7 @@ internal static class ITypeModelExtensions
     /// Indicates if the given type model has enough recursive depth to require object depth tracking (ie, there
     /// is a risk of stack overflow). This can be due to an excessively deep object graph or a cycle (we do not care which).
     /// </summary>
-    public static bool IsDeepEnoughToRequireDepthTracking(this ITypeModel typeModel)
+    public static bool IsDeepEnoughToRequireDepthTracking(this ITypeModel typeModel, int threshold = 500)
     {
         static bool Recurse(ITypeModel model, int depthRemaining)
         {
@@ -216,7 +216,7 @@ internal static class ITypeModelExtensions
             return false;
         }
 
-        return Recurse(typeModel, 500);
+        return Recurse(typeModel, threshold);
     }
 
     /// <summary>

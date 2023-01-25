@@ -22,21 +22,30 @@
 <#@ output extension=".cs" #>
 
 <#
-    int numGenerics = 50;
+    int numGenericInterfaces = 100;
 #>
 
 namespace FlatSharp;
 
+/// <summary>
+/// Describes a Flat Buffer union with a discriminator.
+/// </summary>
 public interface IFlatBufferUnion
 {
+    /// <summary>
+    /// Gets the discriminator from the union.
+    /// </summary>
     byte Discriminator { get; }
 }
 
 <#
-    for (int i = 1; i <= numGenerics; ++i)
+    for (int i = 1; i <= numGenericInterfaces; ++i)
     {
 #>
 
+/// <summary>
+/// A Flat Buffer union visitor capable of visiting <#= i #> items.
+/// </summary>
 public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerable.Range(1, i).Select(x => $"T{x}")) #>>
 {
 <#
@@ -49,202 +58,27 @@ public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerab
 <#
         }
 #>
+}
+
+
+/// <summary>
+/// A FlatBuffer union visitor describing a union of <#= i #> items.
+/// </summary>
+public interface IFlatBufferUnion<<#= string.Join(", ", Enumerable.Range(1, i).Select(x => $"T{x}")) #>> : IFlatBufferUnion
+{
+<#
+        for (int j = 1; j <= i; ++j)
+        {
+#>
+    
+            T<#= j #> Item<#= j #>  { get; }
+
+<#
+        }
+#>
 
 }
 
-<#
-    }
-#>
-
-<#
-    for (int i = 0; i < numGenerics; ++i)
-    {
-        var range = Enumerable.Range(1, i + 1);
-        var genericList = string.Join(", ", range.Select(x => "T" + x));
-#>
-        public interface IFlatBufferUnion<<#= genericList #>> : IFlatBufferUnion
-        <# foreach (var genericType in range) { #>
-            where T<#= genericType #> : notnull
-        <# } #>
-        {
-        <# foreach (var genericType in range) { #>
-            T<#= genericType #> Item<#= genericType #> { get; }
-        <# } #>
-
-            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>;
-        }
-
-        [ExcludeFromCodeCoverage]
-        public struct FlatBufferUnion<<#= genericList #>> : IFlatBufferUnion<<#= genericList #>>
-
-        <# foreach (var genericType in range) { #>
-            where T<#= genericType #> : notnull
-        <# } #>
-        {
-            private readonly byte discriminator;
-            private readonly object value;
-                
-            <# foreach (var genericType in range) { #>
-
-            public FlatBufferUnion(<#= "T" + genericType #> item)
-            {
-                if (item is null)
-                {
-                    throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
-                }
-
-                this.discriminator = <#= genericType #>;
-                this.value = item;
-            }
-                
-            <# } #>
-            
-            public byte Discriminator => this.discriminator;
-
-            <# foreach (var genericType in range) { #>
-
-            public T<#= genericType #> Item<#= genericType #>
-            {
-                get 
-                {
-                    if (this.discriminator == <#= genericType #>)
-                    {
-                        return (T<#= genericType #>)this.value;
-                    }
-                    else
-                    {
-                        throw new System.InvalidOperationException();
-                    }
-                }
-            }
-
-            public bool TryGet([NotNullWhen(true)] out T<#= genericType #>? item)
-            {
-                if (this.discriminator == <#= genericType #>)
-                {
-                    item = (T<#= genericType #>)this.value;
-                    return true;
-                }
-                else
-                {
-                    item = default;
-                    return false;
-                }
-            }
-                
-            <# 
-            } 
-            #>
-            
-
-            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                        return visitor.Visit((T<#= genericType #>)this.value);
-                <# } #>
-                    default:
-                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
-                }
-            }
-
-            public void Switch(
-                System.Action defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Action<T{x}> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        case<#= genericType #>((T<#= genericType #>)this.value);
-                        break;
-                    }
-                <# } #>
-                    default:
-                        defaultCase();
-                        break;
-                }
-            }
-
-            public void Switch<TState>(
-                TState state,
-                System.Action<TState> defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Action<TState, T{x}> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        case<#= genericType #>(state, (T<#= genericType #>)this.value);
-                        break;
-                    }
-                <# } #>
-                    default:
-                        defaultCase(state);
-                        break;
-                }
-            }
-
-                
-            public TResult Switch<TResult>(
-                System.Func<TResult> defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, TResult> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        return case<#= genericType #>((T<#= genericType #>)this.value);
-                    }
-                <# } #>
-                    default:
-                        return defaultCase();
-                }
-            }
-
-            public TResult Switch<TState, TResult>(
-                TState state,
-                System.Func<TState, TResult> defaultCase,
-                <#= string.Join(",\r\n", range.Select(x => $"System.Func<TState, T{x}, TResult> case{x}")) #>)
-            {
-                switch (this.discriminator)
-                {
-                <# foreach (var genericType in range) { #>
-                    case <#= genericType #>:
-                    {
-                        return case<#= genericType #>(state, (T<#= genericType #>)this.value);
-                    }
-                <# } #>
-                    default:
-                        return defaultCase(state);
-                }
-            }
-
-            public override bool Equals(object? other)
-            {
-                if (other is FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> otherUnion)
-                {
-                    return this.discriminator == otherUnion.Discriminator &&
-                            this.value.Equals(otherUnion.value);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            public override int GetHashCode()
-            {
-                return this.value.GetHashCode() ^ this.discriminator;
-            }
-        }
 <#
     }
 #>

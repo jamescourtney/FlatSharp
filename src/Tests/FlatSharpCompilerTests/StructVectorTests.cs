@@ -73,7 +73,7 @@ public class StructVectorTests
                 foo:Foo;
             }}
             struct Foo {{
-              V:[Bar:7] ({MetadataKeys.NonVirtualProperty});
+              V:[Bar:7];
             }}";
 
         var ex = Assert.Throws<InvalidFbsFileException>(
@@ -117,19 +117,19 @@ public class StructVectorTests
             }}
             struct Bar {{ A:ubyte; B:ulong; }}
             struct Foo {{
-              V:[Bar:{length}] ({MetadataKeys.NonVirtualProperty});
+              V:[Bar:{length}];
             }}";
 
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
             schema,
-            new());
+            new() { NormalizeFieldNames = false });
 
         Type tableType = asm.GetType("StructVectorTests.Table");
         Type fooType = asm.GetType("StructVectorTests.Foo");
 
         var property = fooType.GetProperty("__flatsharp__V_0", BindingFlags.Instance | BindingFlags.NonPublic);
-        Assert.False(property.GetMethod.IsVirtual);
-        Assert.False(property.SetMethod.IsVirtual);
+        Assert.True(property.GetMethod.IsVirtual);
+        Assert.True(property.SetMethod.IsVirtual);
 
         Type barType = asm.GetType("StructVectorTests.Bar");
 
@@ -231,7 +231,7 @@ public class StructVectorTests
 
         dynamic table = Activator.CreateInstance(tableType);
         dynamic foo = Activator.CreateInstance(fooType);
-        table.foo = foo;
+        table.Foo = foo;
 
         Assert.Equal(length, foo.V.Count);
 
@@ -242,10 +242,10 @@ public class StructVectorTests
             items.Add(GetRandom<T>());
         }
 
-        table.foo.V.CopyFrom((IReadOnlyList<T>)items);
+        table.Foo.V.CopyFrom((IReadOnlyList<T>)items);
         for (int i = 0; i < length; ++i)
         {
-            CheckRandom<T>(items[i], table.foo.V[i]);
+            CheckRandom<T>(items[i], table.Foo.V[i]);
         }
 
         for (int i = 0; i < length; ++i)
@@ -264,11 +264,11 @@ public class StructVectorTests
 
         dynamic copy = Activator.CreateInstance(tableType, (object)parsed);
 
-        Assert.Equal(length, parsed.foo.V.Count);
+        Assert.Equal(length, parsed.Foo.V.Count);
         for (int i = 0; i < length; ++i)
         {
-            CheckRandom<T>(foo.V[i], parsed.foo.V[i]);
-            CheckRandom<T>(foo.V[i], copy.foo.V[i]);
+            CheckRandom<T>(foo.V[i], parsed.Foo.V[i]);
+            CheckRandom<T>(foo.V[i], copy.Foo.V[i]);
         }
 
         bool isMutable = option is FlatBufferDeserializationOption.GreedyMutable;
@@ -282,7 +282,7 @@ public class StructVectorTests
         {
             for (int i = 0; i < length; ++i)
             {
-                parsed.foo.V[i] = GetRandom<T>();
+                parsed.Foo.V[i] = GetRandom<T>();
             }
 
             Assert.True(isMutable);

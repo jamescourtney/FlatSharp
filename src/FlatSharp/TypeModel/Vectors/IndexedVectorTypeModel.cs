@@ -32,7 +32,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         this.keyMemberModel = null!;
     }
 
-    public override string LengthPropertyName => nameof(IIndexedVector<string, string>.Count);
+    public override string LengthPropertyName => "Count";
 
     public override Type OnInitialize()
     {
@@ -90,7 +90,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        ValidateWriteThrough(
+        bool isEverWriteThrough = ValidateWriteThrough(
             writeThroughSupported: false,
             this,
             context.AllFieldContexts,
@@ -100,35 +100,41 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
         string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
 
-        (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-            this.valueTypeModel,
-            context);
-
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
 
+        (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateVectorItemAccessor(
+            this.ItemTypeModel,
+            this.PaddedMemberInlineSize,
+            context,
+            isEverWriteThrough);
+
+        string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
+
         string createFlatBufferVector =
-        $@"new {vectorClassName}<{context.InputBufferTypeName}>(
-            {context.InputBufferVariableName}, 
-            {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-            {this.PaddedMemberInlineSize},
-            {context.RemainingDepthVariableName},
-            {context.TableFieldContextVariableName})";
+            $@"FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate(
+                    {context.InputBufferVariableName}, 
+                    new {accessorClassName}(
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
+                        {context.InputBufferVariableName}),
+                    {context.RemainingDepthVariableName},
+                    {context.TableFieldContextVariableName},
+                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
 
         string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
         if (context.Options.GreedyDeserialize)
         {
             // Eager indexed vector.
-            body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
+            body = $@"return GreedyIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate<{context.InputBufferTypeName}, {accessorClassName}>({createFlatBufferVector}, {mutable});";
         }
         else if (context.Options.Lazy)
         {
             // Lazy indexed vector.
-            body = $@"return new {nameof(FlatBufferIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
+            body = $@"return FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate({createFlatBufferVector});";
         }
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            body = $@"return new {nameof(FlatBufferProgressiveIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
+            body = $@"return FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate({createFlatBufferVector});";
         }
 
         return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };

@@ -117,19 +117,6 @@ public class InvalidAttributeTests
     }
 
     [Fact]
-    public void FlatSharpBoolAttribute_FailsToParse()
-    {
-        string schema = @$"
-            {MetadataHelpers.AllAttributes}
-            namespace ns;
-            table Foo {{ Value : [ubyte] ({MetadataKeys.NonVirtualProperty}:""banana""); }}
-        ";
-
-        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-        Assert.Contains("Unable to parse 'fs_nonVirtual' value 'banana' as a boolean. Expecting 'true' or 'false'.", ex.Message);
-    }
-
-    [Fact]
     public void FlatSharpEnumAttribute_FailsToParse()
     {
         string schema = @$"
@@ -139,6 +126,6 @@ public class InvalidAttributeTests
         ";
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-        Assert.Contains("Unable to parse 'fs_vector' value 'banana'. Valid values are: IList, IReadOnlyList, Array, Memory, ReadOnlyMemory, IIndexedVector.", ex.Message);
+        Assert.Contains("Unable to parse 'fs_vector' value 'banana'. Valid values are: IList, IReadOnlyList, Memory, ReadOnlyMemory, IIndexedVector, UnityNativeArray.", ex.Message);
     }
 }

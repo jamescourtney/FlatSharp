@@ -20,7 +20,7 @@ public enum FlatBufferSchemaElementType
 {
     Unknown = 0,
     Table = 1,
-    Struct = 2,
+    ReferenceStruct = 2,
     ValueStruct = 3,
     Enum = 4,
     Union = 5,
@@ -31,4 +31,5 @@ public enum FlatBufferSchemaElementType
     StructVector = 10,
     ValueStructVector = 11,
     RpcCall = 12,
+    PoolableUnion = 13,
 }

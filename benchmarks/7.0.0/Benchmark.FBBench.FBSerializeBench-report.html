@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBSerializeBench-20221116-170806</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.819)
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.100
+  [Host]   : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+  ShortRun : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET 7.0  
+IterationCount=5  LaunchCount=7  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>                             Method</th><th>VectorLength</th><th> Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>  P25</th><th>  P95</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Google_FlatBuffers_Serialize</td><td>30</td><td>5,261.5 ns</td><td>35.96 ns</td><td>57.03 ns</td><td>5,253.9 ns</td><td>5,218.8 ns</td><td>5,350.2 ns</td><td>0.0076</td><td>144 B</td>
+</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>30</td><td>5,674.7 ns</td><td>62.34 ns</td><td>97.06 ns</td><td>5,629.6 ns</td><td>5,619.9 ns</td><td>5,900.9 ns</td><td>0.0076</td><td>144 B</td>
+</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>30</td><td>19,569.7 ns</td><td>729.64 ns</td><td>1,178.23 ns</td><td>19,786.3 ns</td><td>18,744.8 ns</td><td>21,279.8 ns</td><td>1.4343</td><td>24424 B</td>
+</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>30</td><td>3,223.3 ns</td><td>20.51 ns</td><td>33.12 ns</td><td>3,213.5 ns</td><td>3,203.5 ns</td><td>3,268.3 ns</td><td>0.0076</td><td>144 B</td>
+</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>30</td><td>7,908.2 ns</td><td>302.61 ns</td><td>471.13 ns</td><td>7,780.7 ns</td><td>7,497.3 ns</td><td>8,541.3 ns</td><td>0.0076</td><td>232 B</td>
+</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>30</td><td>1,909.3 ns</td><td>24.99 ns</td><td>38.90 ns</td><td>1,934.7 ns</td><td>1,866.6 ns</td><td>1,958.0 ns</td><td>0.0076</td><td>144 B</td>
+</tr><tr><td>PBDN_Serialize</td><td>30</td><td>8,212.4 ns</td><td>108.93 ns</td><td>166.34 ns</td><td>8,179.4 ns</td><td>8,087.0 ns</td><td>8,576.9 ns</td><td>-</td><td>32 B</td>
+</tr><tr><td>PBDN_Serialize_NonVirtual</td><td>30</td><td>7,960.1 ns</td><td>89.37 ns</td><td>144.31 ns</td><td>7,992.9 ns</td><td>7,863.5 ns</td><td>8,197.4 ns</td><td>-</td><td>32 B</td>
+</tr><tr><td>MsgPack_Serialize_NonVirtual</td><td>30</td><td>2,506.4 ns</td><td>52.81 ns</td><td>80.64 ns</td><td>2,480.0 ns</td><td>2,436.2 ns</td><td>2,661.8 ns</td><td>0.1488</td><td>2528 B</td>
+</tr><tr><td>FlatSharp_GetMaxSize</td><td>30</td><td>138.0 ns</td><td>1.05 ns</td><td>1.60 ns</td><td>138.1 ns</td><td>137.1 ns</td><td>141.8 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize</td><td>30</td><td>1,212.6 ns</td><td>5.00 ns</td><td>7.79 ns</td><td>1,211.4 ns</td><td>1,207.6 ns</td><td>1,228.2 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_ValueStructs</td><td>30</td><td>1,229.4 ns</td><td>3.88 ns</td><td>6.15 ns</td><td>1,232.1 ns</td><td>1,224.8 ns</td><td>1,236.1 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>30</td><td>1,784.7 ns</td><td>51.68 ns</td><td>75.75 ns</td><td>1,761.9 ns</td><td>1,742.0 ns</td><td>1,917.9 ns</td><td>0.0038</td><td>88 B</td>
+</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>30</td><td>819.7 ns</td><td>7.70 ns</td><td>11.52 ns</td><td>818.6 ns</td><td>810.4 ns</td><td>838.6 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>30</td><td>977.0 ns</td><td>9.31 ns</td><td>14.77 ns</td><td>980.3 ns</td><td>973.7 ns</td><td>995.1 ns</td><td>0.0038</td><td>88 B</td>
+</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>30</td><td>396.3 ns</td><td>2.25 ns</td><td>3.50 ns</td><td>396.5 ns</td><td>395.4 ns</td><td>401.1 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_ValueTableVector</td><td>30</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>-</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>

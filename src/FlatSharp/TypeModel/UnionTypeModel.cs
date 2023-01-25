@@ -16,6 +16,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 
 namespace FlatSharp.TypeModel;
 
@@ -45,6 +46,11 @@ public class UnionTypeModel : RuntimeTypeModel
             new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
             new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
         }.ToImmutableArray();
+
+    /// <summary>
+    /// Unions can be invariant on the parse path, depending on their children.
+    /// </summary>
+    public override bool IsParsingInvariant => this.Children.All(x => x.IsParsingInvariant);
 
     /// <summary>
     /// Unions are not fixed because they contain tables.
@@ -134,6 +140,9 @@ $@"
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
         List<string> switchCases = new List<string>();
+
+        (string? extraClass, string createNew) = GetUnionHelperClass(context);
+
         for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
         {
             var unionMember = this.UnionElementTypeModel[i];
@@ -155,7 +164,7 @@ $@"
 $@"
                 case {unionIndex}:
                     {inlineAdjustment}
-                    return new {this.GetGlobalCompilableTypeName()}({itemContext.GetParseInvocation(unionMember.ClrType)});
+                    return {createNew}({itemContext.GetParseInvocation(unionMember.ClrType)});
 ";
             switchCases.Add(@case);
         }
@@ -174,7 +183,94 @@ $@"
             }}
         ";
 
-        return new CodeGeneratedMethod(body);
+        return new CodeGeneratedMethod(body) { ClassDefinition = extraClass };
+    }
+
+    private (string? classDef, string createNewUnion) GetUnionHelperClass(ParserCodeGenContext context)
+    {
+        if (this.ClrType.IsValueType || !typeof(IPoolableObject).IsAssignableFrom(this.ClrType))
+        {
+            // Nothing special for value-type or non-poolable unions.
+            return (null, $"new {this.GetGlobalCompilableTypeName()}");
+        }
+
+        string className = "unionReader_" + Guid.NewGuid().ToString("n");
+
+        List<string> getOrCreates = new();
+        List<string> returnToPoolCases = new();
+
+        for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+        {
+            int unionIndex = i + 1; // unions start at 1.
+            string itemType = this.UnionElementTypeModel[i].GetGlobalCompilableTypeName();
+
+            getOrCreates.Add($@"
+                public static {className} GetOrCreate({itemType} value)
+                {{
+                    if (!{typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.TryGet)}<{className}>(out var union))
+                    {{
+                        union = new {className}();
+                    }}
+
+                    union.discriminator = {unionIndex};
+                    union.Item{unionIndex} = value;
+                    union.isAlive = 1;
+
+                    return union;
+                }}
+            ");
+
+            string recursiveReturn = string.Empty;
+            if (typeof(IPoolableObject).IsAssignableFrom(this.UnionElementTypeModel[i].ClrType))
+            {
+                recursiveReturn = $"this.Item{unionIndex}?.ReturnToPool(true);";
+            }
+
+            returnToPoolCases.Add($@"
+                    case {unionIndex}:
+                    {{
+                        {recursiveReturn}
+                        this.Item{unionIndex} = default({itemType})!;
+                    }}
+                    break;
+                ");
+        }
+
+        string returnCondition = string.Empty;
+        if (!context.Options.Lazy)
+        {
+            returnCondition = "if (unsafeForce)";
+        }
+
+        // Reference type unions are much more special!
+        string extraClass = $@"
+            private sealed class {className} : {this.ClrType.GetGlobalCompilableTypeName()}
+            {{
+                private int isAlive;
+
+                {string.Join("\r\n", getOrCreates)}
+
+                public override void ReturnToPool(bool unsafeForce = false)
+                {{
+                    {returnCondition}
+                    {{
+                        int alive = {typeof(Interlocked).GetGlobalCompilableTypeName()}.Exchange(ref this.isAlive, 0);
+                        if (alive > 0)
+                        {{
+                            switch (base.discriminator)
+                            {{
+                                {string.Join("\r\n", returnToPoolCases)}
+                            }}
+                            
+                            base.discriminator = -1;
+                            {typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.Return)}(this);
+                        }}
+                    }}
+                }}
+            }}
+        ";
+
+        return (extraClass, $"{className}.GetOrCreate");
     }
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)

@@ -38,11 +38,6 @@ public class StructMemberModel : ItemMemberModel
     {
         base.Validate();
 
-        if (!this.IsVirtual && this.IsWriteThrough)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
-        }
-
         if (this.ItemTypeModel.SerializeMethodRequiresContext)
         {
             throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");

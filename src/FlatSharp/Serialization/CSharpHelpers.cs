@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System.Linq;
+using FlatSharp.TypeModel;
+
 namespace FlatSharp.CodeGen;
 
 /// <summary>
@@ -21,6 +24,8 @@ namespace FlatSharp.CodeGen;
 /// </summary>
 internal static class CSharpHelpers
 {
+    internal const string Net7PreprocessorVariable = "NET7_0_OR_GREATER";
+
     internal static string GetGlobalCompilableTypeName(this Type t)
     {
         return $"global::{GetCompilableTypeName(t)}";
@@ -71,18 +76,17 @@ internal static class CSharpHelpers
     }
 
     internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
-        PropertyInfo property,
-        bool convertProtectedInternalToProtected)
+        PropertyInfo property)
     {
         FlatSharpInternal.Assert(property.GetMethod is not null, $"Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
-        var getModifier = GetAccessModifier(property.GetMethod, convertProtectedInternalToProtected);
+        var getModifier = GetAccessModifier(property.GetMethod);
 
         if (property.SetMethod is null)
         {
             return (getModifier, null, null);
         }
 
-        var setModifier = GetAccessModifier(property.SetMethod, convertProtectedInternalToProtected);
+        var setModifier = GetAccessModifier(property.SetMethod);
 
         return GetPropertyAccessModifiers(getModifier, setModifier);
     }
@@ -108,7 +112,7 @@ internal static class CSharpHelpers
         };
     }
 
-    internal static AccessModifier GetAccessModifier(this MethodInfo method, bool convertProtectedInternalToProtected)
+    internal static AccessModifier GetAccessModifier(this MethodInfo method)
     {
         if (method.IsPublic)
         {
@@ -117,11 +121,6 @@ internal static class CSharpHelpers
 
         if (method.IsFamilyOrAssembly)
         {
-            if (convertProtectedInternalToProtected)
-            {
-                return AccessModifier.Protected;
-            }
-
             return AccessModifier.ProtectedInternal;
         }
 
@@ -136,5 +135,11 @@ internal static class CSharpHelpers
         }
 
         throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
+    }
+
+    internal static string GetAssertSizeOfStatement(ITypeModel model, object size)
+    {
+        string globalName = model.GetGlobalCompilableTypeName();
+        return $"{typeof(FlatSharpInternal).GetGlobalCompilableTypeName()}.AssertSizeOf<{globalName}>({size});";
     }
 }

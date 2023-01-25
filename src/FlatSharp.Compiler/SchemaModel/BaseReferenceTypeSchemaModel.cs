@@ -15,6 +15,7 @@
  */
 
 using System.Linq;
+using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
 using FlatSharp.TypeModel;
 
@@ -25,19 +26,19 @@ namespace FlatSharp.Compiler.SchemaModel;
 /// </summary>
 public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 {
-    private readonly Dictionary<int, PropertyFieldModel> properties;
-    private readonly List<StructVectorPropertyFieldModel> structVectors;
-    private readonly FlatBufferObject table;
+    protected readonly Dictionary<int, PropertyFieldModel> properties;
+    protected readonly List<StructVectorPropertyFieldModel> structVectors;
+    protected readonly FlatBufferObject flatBufferObject;
 
-    protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject table) : base(schema, table.Name, new FlatSharpAttributes(table.Attributes))
+    protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject flatBufferObject) : base(schema, flatBufferObject.Name, new FlatSharpAttributes(flatBufferObject.Attributes))
     {
-        this.DeclaringFile = table.DeclarationFile;
         this.properties = new Dictionary<int, PropertyFieldModel>();
+        this.DeclaringFile = flatBufferObject.DeclarationFile;
         this.structVectors = new();
-        this.table = table;
+        this.flatBufferObject = flatBufferObject;
 
         int previousIndex = -1;
-        foreach (var field in table.Fields.OrderBy(x => x.Id))
+        foreach (var field in flatBufferObject.Fields.OrderBy(x => x.Id))
         {
             if (PropertyFieldModel.TryCreate(this, field, previousIndex, out PropertyFieldModel? model))
             {
@@ -55,15 +56,13 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
                 this.structVectors.Add(svModel);
             }
         }
-
-        this.AttributeValidator.NonVirtualValidator = (b) => AttributeValidationResult.Valid;
     }
 
     public abstract bool OptionalFieldsSupported { get; }
 
     public sealed override string DeclaringFile { get; }
 
-    public IEnumerable<string>? Documentation => this.table.Documentation;
+    public IEnumerable<string>? Documentation => this.flatBufferObject.Documentation;
 
     protected sealed override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
@@ -71,14 +70,21 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
         using (writer.WithBlock())
         {
+            this.EmitStaticConstructor(writer, context);
             this.EmitDefaultConstrutor(writer, context);
             this.EmitDeserializationConstructor(writer);
             this.EmitCopyConstructor(writer, context);
+            this.EmitPoolableObject(writer, context);
+
+            writer.AppendLine("static partial void OnStaticInitialize();");
 
             writer.AppendLine("partial void OnInitialized(FlatBufferDeserializationContext? context);");
 
-            writer.AppendLine($"protected void {TableTypeModel.OnDeserializedMethodName}({nameof(FlatBufferDeserializationContext)}? context) => this.OnInitialized(context);");
-            writer.AppendLine();
+            writer.AppendLine($"protected void {TableTypeModel.OnDeserializedMethodName}({nameof(FlatBufferDeserializationContext)} context)");
+            using (writer.WithBlock())
+            {
+                writer.AppendLine("this.OnInitialized(context);");
+            }
 
             foreach (var property in this.properties.OrderBy(x => x.Key))
             {
@@ -108,6 +114,9 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     private void EmitCopyConstructor(CodeWriter writer, CompileContext context)
     {
+        writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, "[System.Diagnostics.CodeAnalysis.SetsRequiredMembers]")
+              .Flush();
+
         writer.AppendLine($"public {this.Name}({this.Name} source)");
         using (writer.WithBlock())
         {
@@ -160,5 +169,32 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
         }
 
         writer.AppendLine("#pragma warning restore CS8618"); // nullable
+    }
+
+    private void EmitPoolableObject(CodeWriter writer, CompileContext context)
+    {
+        if (context.Options.GeneratePoolableObjects == true)
+        {
+            writer.AppendLine("/// <inheritdoc />");
+            writer.AppendLine("public virtual void ReturnToPool(bool unsafeForce = false)");
+            using (writer.WithBlock())
+            {
+            }
+        }
+    }
+
+    protected virtual void EmitStaticConstructor(CodeWriter writer, CompileContext context)
+    {
+        writer.AppendLine($"static {this.Name}()");
+        using (writer.WithBlock())
+        {
+            var keyProperty = this.properties.Values.SingleOrDefault(p => p.Field.Key);
+            if (keyProperty is not null)
+            {
+                writer.AppendLine($"global::FlatSharp.SortedVectorHelpers.RegisterKeyLookup<{this.Name}, {keyProperty.Field.Type.ResolveTypeOrElementTypeName(this.Schema, keyProperty.Attributes)}>(x => x.{keyProperty.FieldName}, {keyProperty.Index});");
+            }
+
+            writer.AppendLine("OnStaticInitialize();");
+        }
     }
 }

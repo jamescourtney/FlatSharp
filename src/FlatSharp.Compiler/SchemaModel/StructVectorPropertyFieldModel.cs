@@ -65,7 +65,6 @@ public record StructVectorPropertyFieldModel
 
         new FlatSharpAttributeValidator(FlatBufferSchemaElementType.StructVector, $"{this.Parent.FullName}.{this.FieldName}")
         {
-            NonVirtualValidator = _ => AttributeValidationResult.Valid,
             SetterKindValidator = k => k == SetterKind.Public ? AttributeValidationResult.Valid : AttributeValidationResult.ValueInvalid,
             WriteThroughValidator = _ => AttributeValidationResult.Valid,
         }.Validate(this.Attributes);
@@ -92,7 +91,7 @@ public record StructVectorPropertyFieldModel
         [NotNullWhen(true)] out StructVectorPropertyFieldModel? model)
     {
         model = null;
-        if (parent.ElementType != FlatBufferSchemaElementType.Struct)
+        if (parent.ElementType != FlatBufferSchemaElementType.ReferenceStruct)
         {
             return false;
         }

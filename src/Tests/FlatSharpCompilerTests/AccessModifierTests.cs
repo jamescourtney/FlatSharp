@@ -49,15 +49,11 @@ public class AccessModifierTests
             namespace VirtualTests;
             table VirtualTable ({MetadataKeys.SerializerKind}:""{option}"") {{
                 Default:int ({MetadataKeys.Setter}:""{setterKind}"");
-                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", {MetadataKeys.Setter}:""{setterKind}"");
-                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
                 Struct:VirtualStruct;
             }}
 
             struct VirtualStruct {{
                 Default:int ({MetadataKeys.Setter}:""{setterKind}"");
-                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", {MetadataKeys.Setter}:""{setterKind}"");
-                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
         bool isInit = setterKind == SetterKind.PublicInit
@@ -87,47 +83,31 @@ public class AccessModifierTests
             Type type = asm.GetType(typeName);
             Assert.True(type.IsPublic);
             var defaultProperty = type.GetProperty("Default");
-            var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
-            var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
 
             Assert.NotNull(defaultProperty);
-            Assert.NotNull(forcedVirtualProperty);
-            Assert.NotNull(forcedNonVirtualProperty);
-
             Assert.True(defaultProperty.GetMethod.IsPublic);
-            Assert.True(forcedVirtualProperty.GetMethod.IsPublic);
-            Assert.True(forcedNonVirtualProperty.GetMethod.IsPublic);
+            Assert.True(defaultProperty.GetMethod.IsVirtual);
 
             if (isInit)
             {
                 Assert.Contains(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                Assert.Contains(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                Assert.Contains(forcedNonVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
             }
 
             if (setterKind == SetterKind.None)
             {
                 Assert.Null(defaultProperty.SetMethod);
-                Assert.Null(forcedVirtualProperty.SetMethod);
-                Assert.NotNull(forcedNonVirtualProperty.SetMethod); // non-virtual can't have null setters.
             }
             else if (setterKind == SetterKind.Protected || setterKind == SetterKind.ProtectedInit)
             {
                 Assert.True(defaultProperty.SetMethod.IsFamily);
-                Assert.True(forcedVirtualProperty.SetMethod.IsFamily);
-                Assert.True(forcedNonVirtualProperty.SetMethod.IsFamily);
             }
             else if (setterKind == SetterKind.ProtectedInternal || setterKind == SetterKind.ProtectedInternalInit)
             {
                 Assert.True(defaultProperty.SetMethod.IsFamilyOrAssembly);
-                Assert.True(forcedVirtualProperty.SetMethod.IsFamilyOrAssembly);
-                Assert.True(forcedNonVirtualProperty.SetMethod.IsFamilyOrAssembly);
             }
             else if (setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit)
             {
                 Assert.True(defaultProperty.SetMethod.IsPublic);
-                Assert.True(forcedVirtualProperty.SetMethod.IsPublic);
-                Assert.True(forcedNonVirtualProperty.SetMethod.IsPublic);
             }
             else
             {

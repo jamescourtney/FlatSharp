@@ -27,9 +27,9 @@ public static class ISerializerExtensions
     /// Wraps the given generated serializer as an ISerializer.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public static ISerializer<T> AsISerializer<T>(this IGeneratedSerializer<T> generatedSerializer) where T : class
+    public static ISerializer<T> AsISerializer<T>(this IGeneratedSerializer<T> generatedSerializer, FlatBufferDeserializationOption option) where T : class
     {
-        return new GeneratedSerializerWrapper<T>(generatedSerializer, null, () => null, null);
+        return new GeneratedSerializerWrapper<T>(option, generatedSerializer, () => null);
     }
 
     /// <summary>
@@ -37,9 +37,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static T Parse<T>(this ISerializer<T> serializer, byte[] data) where T : class
+    public static T Parse<T>(this ISerializer<T> serializer, byte[] data, FlatBufferDeserializationOption? option = null) where T : class
     {
-        return serializer.Parse(new ArrayInputBuffer(data));
+        return serializer.Parse(new ArrayInputBuffer(data), option);
     }
 
     /// <summary>
@@ -47,9 +47,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static object Parse(this ISerializer serializer, byte[] data)
+    public static object Parse(this ISerializer serializer, byte[] data, FlatBufferDeserializationOption? option = null)
     {
-        return serializer.Parse(new ArrayInputBuffer(data));
+        return serializer.Parse(new ArrayInputBuffer(data), option);
     }
 
     /// <summary>
@@ -57,9 +57,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static T Parse<T>(this ISerializer<T> serializer, ArraySegment<byte> data) where T : class
+    public static T Parse<T>(this ISerializer<T> serializer, ArraySegment<byte> data, FlatBufferDeserializationOption? option = null) where T : class
     {
-        return serializer.Parse(new ArraySegmentInputBuffer(data));
+        return serializer.Parse(new ArraySegmentInputBuffer(data), option);
     }
 
     /// <summary>
@@ -67,9 +67,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static object Parse(this ISerializer serializer, ArraySegment<byte> data)
+    public static object Parse(this ISerializer serializer, ArraySegment<byte> data, FlatBufferDeserializationOption? option = null)
     {
-        return serializer.Parse(new ArraySegmentInputBuffer(data));
+        return serializer.Parse(new ArraySegmentInputBuffer(data), option);
     }
 
     /// <summary>
@@ -77,18 +77,18 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static T Parse<T>(this ISerializer<T> serializer, Memory<byte> data) where T : class
+    public static T Parse<T>(this ISerializer<T> serializer, Memory<byte> data, FlatBufferDeserializationOption? option = null) where T : class
     {
-        return serializer.Parse(new MemoryInputBuffer(data));
+        return serializer.Parse(new MemoryInputBuffer(data), option);
     }
 
     /// <summary>
     /// Parses the given Memory as an instance of T.
     /// </summary>
     /// <returns>The parsed instance.</returns>
-    public static object Parse(this ISerializer serializer, Memory<byte> data)
+    public static object Parse(this ISerializer serializer, Memory<byte> data, FlatBufferDeserializationOption? option = null)
     {
-        return serializer.Parse(new MemoryInputBuffer(data));
+        return serializer.Parse(new MemoryInputBuffer(data), option);
     }
 
     /// <summary>
@@ -96,9 +96,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static T Parse<T>(this ISerializer<T> serializer, ReadOnlyMemory<byte> data) where T : class
+    public static T Parse<T>(this ISerializer<T> serializer, ReadOnlyMemory<byte> data, FlatBufferDeserializationOption? option = null) where T : class
     {
-        return serializer.Parse(new ReadOnlyMemoryInputBuffer(data));
+        return serializer.Parse(new ReadOnlyMemoryInputBuffer(data), option);
     }
 
     /// <summary>
@@ -106,9 +106,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The parsed instance.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static object Parse(this ISerializer serializer, ReadOnlyMemory<byte> data)
+    public static object Parse(this ISerializer serializer, ReadOnlyMemory<byte> data, FlatBufferDeserializationOption? option = null)
     {
-        return serializer.Parse(new ReadOnlyMemoryInputBuffer(data));
+        return serializer.Parse(new ReadOnlyMemoryInputBuffer(data), option);
     }
 
     /// <summary>

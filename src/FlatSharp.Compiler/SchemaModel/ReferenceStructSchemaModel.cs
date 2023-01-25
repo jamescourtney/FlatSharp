@@ -31,7 +31,6 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         };
 
         this.AttributeValidator.WriteThroughValidator = _ => AttributeValidationResult.Valid;
-
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ReferenceStructSchemaModel? model)
@@ -53,7 +52,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
 
     public override bool OptionalFieldsSupported => false;
 
-    public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Struct;
+    public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ReferenceStruct;
 
     protected override void OnValidate()
     {
@@ -77,5 +76,11 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         writer.AppendLine(attribute);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial class {this.Name}");
+        writer.AppendLine($"    : object");
+
+        if (context.Options.GeneratePoolableObjects == true)
+        {
+            writer.AppendLine($"    , IPoolableObject");
+        }
     }
 }

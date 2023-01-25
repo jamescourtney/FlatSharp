@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,93 +14,78 @@
  * limitations under the License.
  */
 
+using Microsoft.CodeAnalysis.Options;
+
 namespace FlatSharpTests.Compiler;
 
 public class UnionTests
 {
     [Fact]
-    public void TestUnionCustomClassGeneration()
+    public void UnsafeUnion_NotAllowedOnTable()
     {
         string schema = $@"
             {MetadataHelpers.AllAttributes}
-            namespace Foobar;
-
-            table A {{ Value:int32; }}
-            table B {{ Value:int32; }}
-            struct C {{ Value:int32; }}
-
-            union TestUnion {{ First:A, B, Foobar.C }}
-
-            table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
+            namespace UnionTests;
+            table Test (fs_unsafeUnion) {{ x : int; }}
         ";
 
-        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-        Type unionType = asm.GetType("Foobar.TestUnion");
-        Type aType = asm.GetType("Foobar.A");
-        Type bType = asm.GetType("Foobar.B");
-        Type cType = asm.GetType("Foobar.C");
-        Type dType = asm.GetType("Foobar.D");
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new()));
 
-        Assert.Equal(unionType, Nullable.GetUnderlyingType(dType.GetProperty("Union").PropertyType));
+        Assert.Contains("The attribute 'fs_unsafeUnion' is never valid on Table elements.", ex.Errors);
+    }
 
-        // Custom union derives from FlatBufferUnion
-        Assert.True(typeof(IFlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
-        Type[] types = new[] { aType, bType, cType };
-        string[] expectedAliases = new[] { "First", "B", "Foobar_C" };
+    [Fact]
+    public void UnsafeUnion_WithReferenceStruct()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace UnionTests;
+            struct RefStruct {{ x : int; }}
+            struct ValueStruct (fs_valueStruct) {{ x : int; }}
+            union MyUnion (fs_unsafeUnion) {{ RefStruct, ValueStruct }}
+        ";
 
-        // Validate nested enum
-        Type nestedEnum = unionType.GetNestedTypes().Where(x => x.IsEnum).Single();
-        Assert.True(nestedEnum.IsEnum);
-        Assert.Equal("ItemKind", nestedEnum.Name);
-        Assert.Equal(typeof(byte), Enum.GetUnderlyingType(nestedEnum));
-        Assert.Equal(types.Length + 1, Enum.GetValues(nestedEnum).Length);
-        Assert.Equal("NONE", Enum.GetName(nestedEnum, (byte)0));
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new()));
 
-        for (int i = 0; i < types.Length; ++i)
-        {
-            Assert.Equal(expectedAliases[i], Enum.GetName(nestedEnum, (byte)(i + 1)));
-        }
+        Assert.Contains("FlatBufferion 'UnionTests.MyUnion' declares the 'fs_unsafeUnion' attribute. 'fs_unsafeUnion' is only valid on unions consisting only of value types.", ex.Errors);
+    }
 
-        Type nestedVistior = unionType.GetNestedTypes().Where(x => x.IsInterface).Single();
+    [Fact]
+    public void UnsafeUnion_WithTable()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace UnionTests;
+            struct ValueStruct (fs_valueStruct) {{ x : int; }}
+            struct Table {{ x : int; }}
+            union MyUnion (fs_unsafeUnion) {{ Table, ValueStruct }}
+        ";
 
-        // Custom union defines ctors for all input types.
-        foreach (var type in types)
-        {
-            var ctor = unionType.GetConstructor(new[] { type });
-            Assert.NotNull(ctor);
-        }
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new()));
 
-        var switchMethods = unionType.GetMethods().Where(m => m.Name == "Switch").Where(m => m.DeclaringType == unionType).ToArray();
-        Assert.Equal(4, switchMethods.Length);
-        Assert.Equal(2, switchMethods.Count(x => x.ReturnType.FullName != "System.Void")); // 2 of them return something.
-        Assert.True(switchMethods.All(x => x.IsHideBySig)); // all of them hide the method from the base class.
+        Assert.Contains("FlatBufferion 'UnionTests.MyUnion' declares the 'fs_unsafeUnion' attribute. 'fs_unsafeUnion' is only valid on unions consisting only of value types.", ex.Errors);
+    }
 
-        // Validate parameter names on switch method.
-        var switchMethod = switchMethods.Single(x => x.ReturnType.FullName == "System.Void" && !x.IsGenericMethod);
-        var parameters = switchMethod.GetParameters();
-        Assert.Equal(types.Length + 1, parameters.Length);
-        Assert.Equal(typeof(Action), parameters[0].ParameterType);
-        Assert.Equal("caseDefault", parameters[0].Name);
+    [Fact]
+    public void UnsafeUnion_OK()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace UnionTests;
+            struct ValueStruct (fs_valueStruct) {{ x : int; }}
+            struct ValueStructB (fs_valueStruct) {{ x : int; }}
+            union MyUnion (fs_unsafeUnion) {{ ValueStruct, ValueStructB }}
+        ";
 
-        for (int i = 0; i < types.Length; ++i)
-        {
-            Assert.Equal(typeof(Action<>).MakeGenericType(types[i]), parameters[i + 1].ParameterType);
-            Assert.Equal("case" + expectedAliases[i], parameters[i + 1].Name);
-        }
-
-        // Now let's use it a little bit.
-        for (int i = 0; i < types.Length; ++i)
-        {
-            object member = Activator.CreateInstance(types[i]);
-            dynamic union = Activator.CreateInstance(unionType, member);
-            byte discriminator = union.Discriminator;
-            object kind = union.Kind;
-
-            byte kindValue = Convert.ToByte((object)union.Kind);
-
-            Assert.Equal(i + 1, discriminator);
-            Assert.Equal(i + 1, kindValue);
-            Assert.Equal(expectedAliases[i], kind.ToString());
-        }
+        // Usage is validated in the EndtoEndTests. Compiling is good enough for this project.
+        FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new());
     }
 }

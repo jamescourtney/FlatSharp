@@ -220,35 +220,6 @@ public class ScalarVectorTests
                 Assert.Equal(memoryTable.Vector[i], resultVector[i]);
             }
         }
-
-        {
-            var memoryTable = new RootTable<T[]>
-            {
-                Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
-                Inner = new InnerTable<T[]>
-                {
-                    Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
-                }
-            };
-
-            Span<byte> memory = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
-            var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<T[]>>(memory.Slice(0, offset).ToArray());
-            var resultVector = memoryTableResult.Vector;
-            Assert.Equal(length, resultVector.Length);
-            for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
-            {
-                Assert.Equal(memoryTable.Vector[i], resultVector[i]);
-            }
-
-            var inner = memoryTableResult.Inner;
-            var innerVector = inner.Vector;
-            Assert.Equal(length, innerVector.Length);
-            for (int i = 0; i < innerVector.Length; ++i)
-            {
-                Assert.Equal(memoryTable.Inner.Vector[i], innerVector[i]);
-            }
-        }
     }
 
     [FlatBufferEnum(typeof(long))]

@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-using System.Buffers;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using FlatSharp.Attributes;
 using FlatSharp.TypeModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Formatting;
+using System.Buffers;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 
 namespace FlatSharp.CodeGen;
 
@@ -37,19 +36,21 @@ namespace FlatSharp.CodeGen;
 /// </summary>
 internal class RoslynSerializerGenerator
 {
-    public const string GeneratedSerializerClassName = "GeneratedSerializer";
+    private static IReadOnlyList<FlatBufferDeserializationOption> DistinctDeserializationOptions = Enum.GetValues(typeof(FlatBufferDeserializationOption)).Cast<FlatBufferDeserializationOption>().Distinct().ToList();
 
-    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.CSharp8);
+#if NET7_0_OR_GREATER
+    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
+        LanguageVersion.CSharp11,
+        preprocessorSymbols: new[] { CSharpHelpers.Net7PreprocessorVariable });
+#else
+    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
+        LanguageVersion.CSharp11);
+#endif
+
     private static readonly ConcurrentDictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new ConcurrentDictionary<string, (Assembly, byte[])>();
-
-    private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
-    private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
-    private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
     private readonly FlatBufferSerializerOptions options;
     private readonly TypeModelContainer typeModelContainer;
-
-    private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
     private static readonly List<MetadataReference> commonReferences;
 
@@ -100,6 +101,8 @@ internal class RoslynSerializerGenerator
     /// </summary>
     internal static bool EnableStrictValidation { get; set; }
 
+    internal static bool AllowUnsafeBlocks { get; set; }
+
     public RoslynSerializerGenerator(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
     {
         this.options = options;
@@ -108,22 +111,19 @@ internal class RoslynSerializerGenerator
 
     public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
     {
-        string code = this.GenerateCSharp<TRoot>();
+        var (code, typeName) = this.GenerateCSharpRecursive<TRoot>();
 
         string template =
 $@"
-            namespace Generated
-            {{
-                using System;
-                using System.Collections.Generic;
-                using System.Linq;
-                using System.Runtime.CompilerServices;
-                using FlatSharp;
-                using FlatSharp.Attributes;
-                using FlatSharp.Internal;
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Runtime.CompilerServices;
+            using FlatSharp;
+            using FlatSharp.Attributes;
+            using FlatSharp.Internal;
 
-                {code}
-            }}";
+            {code}";
 
         var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
@@ -133,7 +133,7 @@ $@"
                 this.options.EnableAppDomainInterceptOnAssemblyLoad,
                 externalRefs.ToArray());
 
-        Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
+        Type? type = assembly.GetType(typeName);
         FlatSharpInternal.Assert(type is not null, "Generated assembly did not contain serializer type.");
 
         object? item = Activator.CreateInstance(type);
@@ -143,13 +143,12 @@ $@"
             $"Compilation succeeded, but created instance {item}, Type = {assembly.GetTypes()[0]}");
 
         return new GeneratedSerializerWrapper<TRoot>(
+            this.options.DeserializationOption,
             (IGeneratedSerializer<TRoot>)item,
-            assembly,
-            formattedTextFactory,
-            assemblyData);
+            formattedTextFactory);
     }
 
-    internal string GenerateCSharp<TRoot>(string visibility = "public")
+    internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>()
     {
         ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
         if (rootModel.SchemaType != FlatBufferSchemaType.Table)
@@ -157,53 +156,20 @@ $@"
             throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
         }
 
-        this.DefineMethods(rootModel);
-        this.ImplementInterfaceMethod(typeof(TRoot));
-        this.ImplementMethods(rootModel);
+        IMethodNameResolver resolver = new DefaultMethodNameResolver();
 
-        string? compilerVersion = typeof(RoslynSerializerGenerator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+        HashSet<Type> dependencies = new();
+        rootModel.TraverseObjectGraph(dependencies);
 
-        string code = $@"
-            [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
-            {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{typeof(TRoot).GetGlobalCompilableTypeName()}>
-            {{    
-                // Method generated to help AOT compilers make good decisions about generics.
-                public void __AotHelper()
-                {{
-                    this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
-                    this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
+        List<string> parts = new();
+        foreach (Type type in dependencies)
+        {
+            parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), resolver));
+        }
 
-                    this.Parse<IInputBuffer>(default!, default);
-                    this.Parse<IInputBuffer2>(default!, default);
-                    this.Parse<MemoryInputBuffer>(default!, default);
-                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, default);
-                    this.Parse<ArrayInputBuffer>(default!, default);
-                    this.Parse<ArraySegmentInputBuffer>(default!, default);
-
-                    throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
-                }}
-
-                public {GeneratedSerializerClassName}()
-                {{
-                    string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
-                    string compilerVersion = ""{compilerVersion}"";
-
-                    if (runtimeVersion != compilerVersion)
-                    {{
-                        throw new InvalidOperationException($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
-                    }}
-
-                    if (string.IsNullOrEmpty(runtimeVersion))
-                    {{
-                        throw new InvalidOperationException($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
-                    }}
-                }}
-
-                {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
-            }}
-";
-
-        return code;
+        var serializerParts = resolver.ResolveGeneratedSerializerClassName(this.typeModelContainer.CreateTypeModel(typeof(TRoot)));
+        string fullName = $"{serializerParts.@namespace}.{serializerParts.name}";
+        return (string.Join("\r\n\r\n", parts), fullName);
     }
 
     internal static string GetFormattedText(string cSharpCode)
@@ -248,7 +214,7 @@ $@"
         string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
             .WithModuleName(name)
-            .WithAllowUnsafe(false)
+            .WithAllowUnsafe(AllowUnsafeBlocks)
             .WithOptimizationLevel(OptimizationLevel.Release)
             .WithNullableContextOptions(NullableContextOptions.Enable);
 
@@ -392,23 +358,6 @@ $@"
         }
     }
 
-    /// <summary>
-    /// Recursively crawls through the object graph and looks for methods to define.
-    /// </summary>
-    private void DefineMethods(ITypeModel rootModel)
-    {
-        HashSet<Type> types = new();
-        rootModel.TraverseObjectGraph(types);
-
-        foreach (var type in types)
-        {
-            string nameBase = Guid.NewGuid().ToString("n");
-            this.writeMethods[type] = $"WriteInlineValueOf_{nameBase}";
-            this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
-            this.readMethods[type] = $"Read_{nameBase}";
-        }
-    }
-
     private HashSet<Assembly> TraverseAssemblyReferenceGraph<TRoot>()
     {
         var rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
@@ -448,109 +397,254 @@ $@"
         return seenAssemblies;
     }
 
-    private void ImplementInterfaceMethod(Type rootType)
+    private (string body, string fullName) ImplementInterfaceMethod(Type rootType, IMethodNameResolver resolver)
     {
+        ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(rootType);
+        List<string> bodyParts = new();
+
         {
-            string typeName = typeof(FlatBufferDeserializationOption).GetCompilableTypeName();
+            var parts = resolver.ResolveSerialize(typeModel);
+
+            // Reserve first 4 bytes for offset to first table.
+            string writeFileId = $"context.Offset = 4;";
+
+            // Or if there is a file ID, reserve the first 8 bytes.
+            if (typeModel.TryGetFileIdentifier(out string? fileId))
+            {
+                writeFileId = $"""
+                    context.Offset = 8;
+                    target[7] = {(byte)fileId[3]};
+                    target[6] = {(byte)fileId[2]};
+                    target[5] = {(byte)fileId[1]};
+                    target[4] = {(byte)fileId[0]};
+                """;
+            }
 
             string methodText =
 $@"
-                public {typeName} DeserializationOption => {typeName}.{this.options.DeserializationOption};
-";
-            this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
-        }
-
-        {
-            string methodText =
-$@"
-                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, int offset, SerializationContext context)
+                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, SerializationContext context)
                     where TSpanWriter : ISpanWriter
                 {{
-                    {this.writeMethods[rootType]}(writer, target, root, offset, context);
+                    {writeFileId}
+                    {parts.@namespace}.{parts.className}.{parts.methodName}(writer, target, root, 0, context);
                 }}
 ";
-            this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
+            bodyParts.Add(methodText);
         }
 
         {
+            string fileIdSize = string.Empty;
+            if (typeModel.TryGetFileIdentifier(out _))
+            {
+                fileIdSize = "maxSize += 4; // file id";
+            }
+
+            var parts = resolver.ResolveGetMaxSize(typeModel);
             string methodText =
 $@"
                 public int GetMaxSize({CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root)
                 {{
-                    return {this.maxSizeMethods[rootType]}(root);
+                    int maxSize = 0;
+                    {fileIdSize}
+                    maxSize += {parts.@namespace}.{parts.className}.{parts.methodName}(root);
+                    return maxSize;
                 }}
 ";
-            this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
+            bodyParts.Add(methodText);
         }
 
+        var pairs = new[]
         {
+            (nameof(IGeneratedSerializer<bool>.ParseGreedy), FlatBufferDeserializationOption.Greedy),
+            (nameof(IGeneratedSerializer<bool>.ParseGreedyMutable), FlatBufferDeserializationOption.GreedyMutable),
+            (nameof(IGeneratedSerializer<bool>.ParseProgressive), FlatBufferDeserializationOption.Progressive),
+            (nameof(IGeneratedSerializer<bool>.ParseLazy), FlatBufferDeserializationOption.Lazy),
+        };
+
+        foreach (var pair in pairs)
+        {
+            var parts = resolver.ResolveParse(pair.Item2, typeModel);
             string methodText =
 $@"
-                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, in {typeof(GeneratedSerializerParseArguments).GetGlobalCompilableTypeName()} args) 
+                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} {pair.Item1}<TInputBuffer>(TInputBuffer buffer, in {typeof(GeneratedSerializerParseArguments).GetGlobalCompilableTypeName()} args) 
                     where TInputBuffer : IInputBuffer
                 {{
-                    return {this.readMethods[rootType]}(buffer, args.{nameof(GeneratedSerializerParseArguments.Offset)}, args.{nameof(GeneratedSerializerParseArguments.DepthLimit)});
+                    return {parts.@namespace}.{parts.className}.{parts.methodName}(buffer, args.{nameof(GeneratedSerializerParseArguments.Offset)}, args.{nameof(GeneratedSerializerParseArguments.DepthLimit)});
                 }}
 ";
-            this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
+            bodyParts.Add(methodText);
         }
+
+        string? compilerVersion = typeof(RoslynSerializerGenerator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+
+        var resolvedName = resolver.ResolveGeneratedSerializerClassName(typeModel);
+
+        string code = $@"
+        namespace {resolvedName.@namespace}
+        {{
+            internal class {resolvedName.name} : {nameof(IGeneratedSerializer<byte>)}<{rootType.GetGlobalCompilableTypeName()}>
+            {{    
+                // Method generated to help AOT compilers make good decisions about generics.
+                public void __AotHelper()
+                {{
+                    this.Write<ISpanWriter>(default!, new byte[10], default!, default!);
+                    this.Write<SpanWriter>(default!, new byte[10], default!, default!);
+
+                    this.ParseLazy<IInputBuffer>(default!, default);
+                    this.ParseLazy<MemoryInputBuffer>(default!, default);
+                    this.ParseLazy<ReadOnlyMemoryInputBuffer>(default!, default);
+                    this.ParseLazy<ArrayInputBuffer>(default!, default);
+                    this.ParseLazy<ArraySegmentInputBuffer>(default!, default);
+
+                    this.ParseProgressive<IInputBuffer>(default!, default);
+                    this.ParseProgressive<MemoryInputBuffer>(default!, default);
+                    this.ParseProgressive<ReadOnlyMemoryInputBuffer>(default!, default);
+                    this.ParseProgressive<ArrayInputBuffer>(default!, default);
+                    this.ParseProgressive<ArraySegmentInputBuffer>(default!, default);
+
+                    this.ParseGreedy<IInputBuffer>(default!, default);
+                    this.ParseGreedy<MemoryInputBuffer>(default!, default);
+                    this.ParseGreedy<ReadOnlyMemoryInputBuffer>(default!, default);
+                    this.ParseGreedy<ArrayInputBuffer>(default!, default);
+                    this.ParseGreedy<ArraySegmentInputBuffer>(default!, default);
+
+                    this.ParseGreedyMutable<IInputBuffer>(default!, default);
+                    this.ParseGreedyMutable<MemoryInputBuffer>(default!, default);
+                    this.ParseGreedyMutable<ReadOnlyMemoryInputBuffer>(default!, default);
+                    this.ParseGreedyMutable<ArrayInputBuffer>(default!, default);
+                    this.ParseGreedyMutable<ArraySegmentInputBuffer>(default!, default);
+
+                    throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
+                }}
+
+                public {resolvedName.name}()
+                {{
+                    string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
+                    string compilerVersion = ""{compilerVersion}"";
+
+                    if (runtimeVersion != compilerVersion)
+                    {{
+                        throw new InvalidOperationException($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                    }}
+
+                    if (string.IsNullOrEmpty(runtimeVersion))
+                    {{
+                        throw new InvalidOperationException($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                    }}
+                }}
+
+                {string.Join("\r\n", bodyParts)}
+            }}
+        }}
+";
+
+        return (code, $"{resolvedName.@namespace}.{resolvedName.name}");
     }
 
-    private void ImplementMethods(ITypeModel rootTypeModel)
+    /// <summary>
+    /// Implements methods for a single type.
+    /// </summary>
+    /// <returns>The c# code</returns>
+    internal string ImplementHelperClass(ITypeModel typeModel, IMethodNameResolver resolver)
     {
-        bool requiresDepthTracking = rootTypeModel.IsDeepEnoughToRequireDepthTracking();
-        List<(ITypeModel, TableFieldContext)> allContexts = rootTypeModel.GetAllTableFieldContexts();
-
-        Dictionary<ITypeModel, List<TableFieldContext>> allContextsMap = new();
-        foreach (var item in allContexts)
+        bool requiresDepthTracking = typeModel.IsDeepEnoughToRequireDepthTracking();
+        
+        // Find all table field contexts in the whole graph. This can probably
+        // be cached...
+        Dictionary<ITypeModel, HashSet<TableFieldContext>> allContextsMap = new();
+        foreach (ITypeModel model in this.typeModelContainer.GetEnumerator())
         {
-            if (!allContextsMap.TryGetValue(item.Item1, out List<TableFieldContext>? list))
+            var contexts = model.GetAllTableFieldContexts();
+            foreach (var ctx in contexts)
             {
-                list = new();
-                allContextsMap[item.Item1] = list;
-            }
+                if (!allContextsMap.TryGetValue(ctx.Item1, out HashSet<TableFieldContext>? set))
+                {
+                    set = new();
+                    allContextsMap[ctx.Item1] = set;
+                }
 
-            list.Add(item.Item2);
+                set.Add(ctx.Item2);
+            }
         }
 
-        foreach (var type in this.writeMethods.Keys)
+        bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;
+
+        var requirements = typeModel.TableFieldContextRequirements;
+
+        string getMaxSizeFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.GetMaxSize)
+            ? "fieldContext"
+            : string.Empty;
+
+        string parseFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.Parse)
+            ? "fieldContext"
+            : string.Empty;
+
+        string serializeFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.Serialize)
+            ? "fieldContext"
+            : string.Empty;
+
+        var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, resolver, this.options, this.typeModelContainer, allContextsMap);
+        var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, resolver, this.typeModelContainer, this.options, allContextsMap);
+        var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
+
+        CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
+        CodeGeneratedMethod writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
+
+        List<string> methods = new();
+
+        methods.Add(this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext));
+        methods.Add(maxSizeMethod.ClassDefinition ?? string.Empty);
+
+        methods.Add(this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext));
+        methods.Add(writeMethod.ClassDefinition ?? string.Empty);
+
+        if (typeModel.IsParsingInvariant)
         {
-            ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
-            bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;
-
-            var requirements = typeModel.TableFieldContextRequirements;
-
-            string getMaxSizeFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.GetMaxSize)
-                ? "fieldContext"
-                : string.Empty;
-
-            string parseFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.Parse)
-                ? "fieldContext"
-                : string.Empty;
-
-            string serializeFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.Serialize)
-                ? "fieldContext"
-                : string.Empty;
-
-            var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.maxSizeMethods, this.options, this.typeModelContainer, allContextsMap);
-            var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContextsMap);
-            var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options, allContextsMap);
-
-            var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
             var parseMethod = typeModel.CreateParseMethodBody(parseContext);
-            var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
 
-            this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext);
-            this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext);
-            this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
-
-            string? extraClasses = typeModel.CreateExtraClasses();
-            if (extraClasses is not null)
+            methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
+            methods.Add(parseMethod.ClassDefinition ?? string.Empty);
+        }
+        else
+        {
+            foreach (var option in DistinctDeserializationOptions)
             {
-                var node = CSharpSyntaxTree.ParseText(extraClasses, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
+                parseContext = parseContext with { Options = this.options with { DeserializationOption = option } };
+                var parseMethod = typeModel.CreateParseMethodBody(parseContext);
+                methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
+                methods.Add(parseMethod.ClassDefinition ?? string.Empty);
             }
         }
+
+        methods.Add(typeModel.CreateExtraClasses() ?? string.Empty);
+
+        (string ns, string name) = resolver.ResolveHelperClassName(typeModel);
+
+        string serializerBody = string.Empty;
+        if (typeModel.SchemaType == FlatBufferSchemaType.Table)
+        {
+            // Generate a serializer as well.
+            (serializerBody, _) = ImplementInterfaceMethod(typeModel.ClrType, resolver);
+        }
+
+        string @class =
+$@"
+            namespace {ns}
+            {{
+                // Make sure we can reference the namespace of the type we are using.
+                // Ensures that extension methods, etc are available.
+                using {typeModel.ClrType.Namespace};
+
+                internal static class {name}
+                {{
+                    {string.Join("\r\n", methods)}
+                }}
+            }}
+
+            {serializerBody}
+";
+
+        return @class;
     }
 
     /// <summary>
@@ -598,7 +692,7 @@ $@"
     /// <summary>
     /// Gets a method to serialize the given type with the given body.
     /// </summary>
-    private void GenerateGetMaxSizeMethod(ITypeModel typeModel, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
+    private string GenerateGetMaxSizeMethod(ITypeModel typeModel, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
     {
         string tableFieldContextParameter = string.Empty;
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
@@ -609,15 +703,15 @@ $@"
         string declaration =
 $@"
             {method.GetMethodImplAttribute()}
-            private static int {this.maxSizeMethods[typeModel.ClrType]}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
+            internal static int {context.MethodNameResolver.ResolveGetMaxSize(typeModel).methodName}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
             {{
                 {method.MethodBody}
             }}";
 
-        this.AddMethod(method, declaration);
+        return declaration;
     }
 
-    private void GenerateParseMethod(bool requiresDepthTracking, ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
+    private string GenerateParseMethod(bool requiresDepthTracking, ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
     {
         string tableFieldContextParameter = string.Empty;
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
@@ -637,10 +731,10 @@ $@"
             ";
         }
 
-        string declaration =
+        string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
+            internal static {clrType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
                 short {context.RemainingDepthVariableName}
@@ -650,10 +744,10 @@ $@"
                 {method.MethodBody}
             }}";
 
-        this.AddMethod(method, declaration);
+        return fullText;
     }
 
-    private void GenerateSerializeMethod(ITypeModel typeModel, CodeGeneratedMethod method, SerializationCodeGenContext context)
+    private string GenerateSerializeMethod(ITypeModel typeModel, CodeGeneratedMethod method, SerializationCodeGenContext context)
     {
         string serializationContextParameter = string.Empty;
         string tableFieldContextParameter = string.Empty;
@@ -668,10 +762,10 @@ $@"
             tableFieldContextParameter = $", {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
         }
 
-        string declaration =
+        string fullText =
 $@"
             {method.GetMethodImplAttribute()}
-            private static void {this.writeMethods[typeModel.ClrType]}<TSpanWriter>(
+            internal static void {context.MethodNameResolver.ResolveSerialize(typeModel).methodName}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
@@ -682,19 +776,7 @@ $@"
                 {method.MethodBody}
             }}";
 
-        this.AddMethod(method, declaration);
-    }
-
-    private void AddMethod(CodeGeneratedMethod method, string fullText)
-    {
-        var node = CSharpSyntaxTree.ParseText(fullText, ParseOptions);
-        this.methodDeclarations.Add(node.GetRoot());
-
-        if (!string.IsNullOrEmpty(method.ClassDefinition))
-        {
-            node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
-            this.methodDeclarations.Add(node.GetRoot());
-        }
+        return fullText;
     }
 
     /// <summary>

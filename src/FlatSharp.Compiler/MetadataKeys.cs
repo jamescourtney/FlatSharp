@@ -29,15 +29,6 @@ public static class MetadataKeys
     public const string SerializerKind = "fs_serializer";
 
     /// <summary>
-    /// Controls whether fields are virtual or non-virtual. They are virtual by default.
-    /// Valid On:
-    /// - Table (as a default for all fields in the table, overridden by the setting on a field)
-    /// - Struct (as a default for all fields in the struct, overridden by the setting on a field)
-    /// - Field 
-    /// </summary>
-    public const string NonVirtualProperty = "fs_nonVirtual";
-
-    /// <summary>
     /// Controls whether a vector field should be sorted or not. The field must be a vector.
     /// Valid On:
     /// - Field 
@@ -104,6 +95,27 @@ public static class MetadataKeys
     public const string RpcInterface = "fs_rpcInterface";
 
     /// <summary>
+    /// Controls whether field names are affected by --normalize-field-names option.
+    /// Valid On:
+    /// - Table (as a default for all fields in the table, overridden by the setting on a field)
+    /// - Struct (as a default for all fields in the struct, overridden by the setting on a field)
+    /// - Field 
+    /// </summary>
+    public const string LiteralName = "fs_literalName";
+
+    /// <summary>
+    /// Indicates that a flatsharp table, struct, or enum is externally defined. FlatSharp will assume
+    /// that the signature matches what is in the FlatBuffer definition.
+    /// </summary>
+    public const string UnsafeExternal = "fs_unsafeExternal";
+
+    /// <summary>
+    /// Indicates that a union should be generated with a fixed byte vector for value-type structs. Avoids boxing allocations.
+    /// </summary>
+
+    public const string UnsafeUnion = "fs_unsafeUnion";
+
+    /// <summary>
     /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
     /// Valid On:
     /// - Table field
@@ -141,6 +153,6 @@ public static class MetadataKeys
 
     public static IEnumerable<string> UnsupportedStandardAttributes => new[]
     {
-            "force_align", "flexbuffer", "hash", "original_order"
-        };
+        "force_align", "flexbuffer", "hash", "original_order"
+    };
 }

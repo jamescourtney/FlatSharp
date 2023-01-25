@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBSerializeBench-20221116-191435</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.819)
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.100
+  [Host]   : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+  ShortRun : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET 7.0  
+IterationCount=5  LaunchCount=7  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>                             Method</th><th>VectorLength</th><th>Mean</th><th>Error</th><th>StdDev</th><th> P25</th><th> P95</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>FlatSharp_GetMaxSize</td><td>30</td><td>138.8 ns</td><td>1.62 ns</td><td>2.57 ns</td><td>137.8 ns</td><td>143.7 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize</td><td>30</td><td>1,219.5 ns</td><td>11.01 ns</td><td>16.81 ns</td><td>1,206.5 ns</td><td>1,240.6 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_ValueStructs</td><td>30</td><td>1,237.3 ns</td><td>4.99 ns</td><td>7.62 ns</td><td>1,230.6 ns</td><td>1,246.7 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>30</td><td>1,760.1 ns</td><td>33.91 ns</td><td>55.71 ns</td><td>1,732.9 ns</td><td>1,860.9 ns</td><td>0.0038</td><td>88 B</td>
+</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>30</td><td>827.8 ns</td><td>6.18 ns</td><td>9.63 ns</td><td>824.0 ns</td><td>846.9 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>30</td><td>977.2 ns</td><td>16.61 ns</td><td>26.35 ns</td><td>949.8 ns</td><td>1,010.2 ns</td><td>0.0048</td><td>88 B</td>
+</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>30</td><td>395.3 ns</td><td>1.88 ns</td><td>3.04 ns</td><td>393.9 ns</td><td>400.7 ns</td><td>-</td><td>-</td>
+</tr><tr><td>FlatSharp_Serialize_ValueTableVector</td><td>30</td><td>796.4 ns</td><td>15.92 ns</td><td>25.25 ns</td><td>782.9 ns</td><td>853.8 ns</td><td>-</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>

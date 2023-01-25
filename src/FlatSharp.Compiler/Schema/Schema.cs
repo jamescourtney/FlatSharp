@@ -37,10 +37,12 @@ table Schema {
 [FlatBufferTable]
 public class Schema
 {
-    [FlatBufferItem(0, Required = true, SortedVector = true)]
+    // Note that this is a sorted vector in the BFBS. However, this can lead to bugs as we rewrite field names since fields refer to the index of the object's type.
+    [FlatBufferItem(0, Required = true)]
     public virtual IList<FlatBufferObject> Objects { get; set; } = new List<FlatBufferObject>();
 
-    [FlatBufferItem(1, Required = true, SortedVector = true)]
+    // Note that this is a sorted vector in the BFBS. However, this can lead to bugs as we rewrite field names.
+    [FlatBufferItem(1, Required = true)]
     public virtual IList<FlatBufferEnum> Enums { get; set; } = new List<FlatBufferEnum>();
 
     [FlatBufferItem(2)]
@@ -61,7 +63,7 @@ public class Schema
     [FlatBufferItem(7)]
     public virtual IIndexedVector<string, SchemaFile>? FbsFiles { get; set; }
 
-    public RootModel ToRootModel()
+    public RootModel ToRootModel(CompilerOptions options)
     {
         RootModel model = new RootModel(this.AdvancedFeatures);
 
@@ -71,7 +73,7 @@ public class Schema
             {
                 model.AddElement(enumModel);
             }
-            else if (UnionSchemaModel.TryCreate(this, @enum, out var unionModel))
+            else if (ValueUnionSchemaModel.TryCreate(this, @enum, options, out var unionModel))
             {
                 model.AddElement(unionModel);
             }

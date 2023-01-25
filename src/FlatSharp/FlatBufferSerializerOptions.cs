@@ -19,7 +19,7 @@ namespace FlatSharp;
 /// <summary>
 /// Defines various confiration settings for serializing and deserializing buffers.
 /// </summary>
-public class FlatBufferSerializerOptions
+public record class FlatBufferSerializerOptions
 {
     /// <summary>
     /// Initializes a new instance of FlatBufferSerializerOptions with the given set of flags.
@@ -48,7 +48,7 @@ public class FlatBufferSerializerOptions
     /// <summary>
     /// The deserialization mode.
     /// </summary>
-    public FlatBufferDeserializationOption DeserializationOption { get; }
+    public FlatBufferDeserializationOption DeserializationOption { get; internal init; }
 
     public bool Progressive =>
         this.DeserializationOption == FlatBufferDeserializationOption.Progressive;
@@ -99,9 +99,4 @@ public class FlatBufferSerializerOptions
     /// is not wholly sufficient to enable them.
     /// </summary>
     public bool EnableValueStructMemoryMarshalDeserialization { get; set; } = true;
-
-    /// <summary>
-    /// Indicates if "protected internal" modifiers should be converted to protected.
-    /// </summary>
-    internal bool ConvertProtectedInternalToProtected { get; set; } = true;
 }

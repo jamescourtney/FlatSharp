@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using Unity.Collections;
+
 namespace FlatSharpTests.Compiler;
 
 public class FullTests
@@ -33,12 +35,6 @@ public class FullTests
 
     private void Test(FlatBufferDeserializationOption option)
     {
-        string arrayVectorKind = "Array";
-        if (option == FlatBufferDeserializationOption.Lazy || option == FlatBufferDeserializationOption.Progressive)
-        {
-            arrayVectorKind = "IList";
-        }
-
         string schema = $@"
         {MetadataHelpers.AllAttributes}
 
@@ -53,38 +49,39 @@ public class FullTests
         {{ 
             Bool : bool;
             DeprecatedBool : bool ({MetadataKeys.Deprecated});
-            Byte : ubyte ({MetadataKeys.Setter}:""Public"", {MetadataKeys.NonVirtualProperty});
+            Byte : ubyte ({MetadataKeys.Setter}:""Public"");
             SByte : byte ({MetadataKeys.Setter}:""None"");
             UShort : ushort = 3 ({MetadataKeys.Setter}:""PublicInit"");
-            Short : short = null ({MetadataKeys.Setter}:""ProtectedInit"", {MetadataKeys.NonVirtualProperty});
-            DeprecatedShort : short ({MetadataKeys.Deprecated}, {MetadataKeys.Setter}:""ProtectedInit"", {MetadataKeys.NonVirtualProperty});
+            Short : short = null ({MetadataKeys.Setter}:""ProtectedInit"");
+            DeprecatedShort : short ({MetadataKeys.Deprecated}, {MetadataKeys.Setter}:""ProtectedInit"");
             UInt : uint = null ({MetadataKeys.Setter}:""Protected"");
             Int : int = 3 ({MetadataKeys.Setter}:""ProtectedInternal"");
             ULong : ulong ({MetadataKeys.Setter}:""ProtectedInternalInit"");
             Long : long = null;
             Double : double = 10;
-            Float : float ({MetadataKeys.NonVirtualProperty});
+            Float : float;
             E1 : RegularEnum = null;
-            E2 : FlagsEnum = E ({MetadataKeys.NonVirtualProperty});
+            E2 : FlagsEnum = E;
 
-            Outer : OuterStruct ({MetadataKeys.NonVirtualProperty});
+            Outer : OuterStruct;
             OuterVirtual : OuterStruct;
 
             StructVectorList : [OuterStruct] ({MetadataKeys.VectorKind}:""IList"");
-            StructVectorArray : [OuterStruct] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"", {MetadataKeys.NonVirtualProperty});
+            StructVectorArray : [OuterStruct] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
 
             TableVectorList : [InnerTable] ({MetadataKeys.VectorKind}:""IList"", {MetadataKeys.SortedVector});
-            TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"", {MetadataKeys.NonVirtualProperty});
+            TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
             TableVectorIndexed : [InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"");
 
             MemVector : [ubyte] ({MetadataKeys.VectorKind}:""Memory"");
             RoMemVector : [ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
                 
             ScalarVector : [uint] ({MetadataKeys.VectorKind}:""IList"");
-            ScalarArray : [uint] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
+            ScalarArray : [uint] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
+            ScalarUnityNativeArray : [uint] ({MetadataKeys.VectorKind}:""UnityNativeArray"");
 
             UnionVector : [Any] ({MetadataKeys.VectorKind}:""IList"");
-            UnionArray : [Any] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
+            UnionArray : [Any] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
         }}
 
         table InnerTable
@@ -95,18 +92,16 @@ public class FullTests
 
         struct InnerStruct {{
             Bytes : [ubyte:32];
-            BytesNonVirtual : [uint:4] ({MetadataKeys.NonVirtualProperty});
         }}
             
         struct OuterStruct {{
-            InnerNonVirtual : InnerStruct ({MetadataKeys.NonVirtualProperty});
             Inner : InnerStruct;
-            RegEnum : RegularEnum ({MetadataKeys.NonVirtualProperty});
+            RegEnum : RegularEnum;
             FEnum : FlagsEnum;
         }}
         ";
 
-        FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        FlatSharpCompiler.CompileAndLoadAssembly(schema, new() { UnityAssemblyPath = typeof(NativeArray<>).Assembly.Location});
     }
 #endif
 }

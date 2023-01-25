@@ -1,0 +1,135 @@
+﻿/*
+ * Copyright 2022 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+<#
+    int numGenerics = 5;
+#>
+
+namespace FlatSharp;
+
+<#
+    for (int i = 0; i < numGenerics; ++i)
+    {
+        var range = Enumerable.Range(1, i + 1);
+        var genericList = string.Join(", ", range.Select(x => "T" + x));
+#>
+
+        [ExcludeFromCodeCoverage]
+        public struct FlatBufferUnion<<#= genericList #>> 
+            : IFlatBufferUnion<<#= genericList #>>
+
+        <# foreach (var genericType in range) { #>
+            where T<#= genericType #> : notnull
+        <# } #>
+        {
+            private readonly byte discriminator;
+            private readonly object value;
+                
+            <# foreach (var genericType in range) { #>
+
+            public FlatBufferUnion(<#= "T" + genericType #> item)
+            {
+                if (item is null)
+                {
+                    throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+                }
+
+                this.discriminator = <#= genericType #>;
+                this.value = item;
+            }
+                
+            <# } #>
+            
+            public byte Discriminator => this.discriminator;
+
+            <# foreach (var genericType in range) { #>
+
+            public T<#= genericType #> Item<#= genericType #>
+            {
+                get 
+                {
+                    if (this.discriminator == <#= genericType #>)
+                    {
+                        return (T<#= genericType #>)this.value;
+                    }
+                    else
+                    {
+                        throw new System.InvalidOperationException();
+                    }
+                }
+            }
+
+            public bool TryGet([NotNullWhen(true)] out T<#= genericType #>? item)
+            {
+                if (this.discriminator == <#= genericType #>)
+                {
+                    item = (T<#= genericType #>)this.value;
+                    return true;
+                }
+                else
+                {
+                    item = default;
+                    return false;
+                }
+            }
+                
+            <# 
+            } 
+            #>
+            
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>
+            {
+                switch (this.discriminator)
+                {
+                <# foreach (var genericType in range) { #>
+                    case <#= genericType #>:
+                        return visitor.Visit((T<#= genericType #>)this.value);
+                <# } #>
+                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
+            public override bool Equals(object? other)
+            {
+                if (other is FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> otherUnion)
+                {
+                    return this.discriminator == otherUnion.Discriminator &&
+                            this.value.Equals(otherUnion.value);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            public override int GetHashCode()
+            {
+                return this.value.GetHashCode() ^ this.discriminator;
+            }
+        }
+<#
+    }
+#>

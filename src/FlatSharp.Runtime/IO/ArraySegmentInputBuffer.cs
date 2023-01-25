@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of <see cref="IInputBuffer"/> for array segments.
 /// </summary>
-public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
+public struct ArraySegmentInputBuffer : IInputBuffer
 {
     private readonly ArraySegmentPointer pointer;
 
@@ -29,6 +29,8 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
     {
         this.pointer = new ArraySegmentPointer { segment = memory };
     }
+
+    public bool IsPinned => false;
 
     public bool IsReadOnly => false;
 
@@ -109,24 +111,6 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<byte> GetByteMemory(int start, int length)
-    {
-        checked
-        {
-            FlatSharpInternal.Assert(start >= 0, "GetByteMemory.Start was negative.");
-
-            var seg = this.pointer.segment;
-            return new Memory<byte>(seg.Array, seg.Offset + start, length);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-    {
-        return this.GetByteMemory(start, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan()
     {
         return this.pointer.segment;
@@ -149,10 +133,22 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
     {
         return this.pointer.segment;
     }
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
-    {
-        return serializer.Parse(this, arguments);
-    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseLazy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseProgressive(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedyMutable(this, in arguments);
 
     // Array Segment is a relatively heavy struct. It contains an array pointer, an int offset, and and int length.
     // Copying this by value for each method call is actually slower than having a little private pointer to a single item.

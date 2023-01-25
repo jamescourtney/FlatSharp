@@ -29,8 +29,8 @@ public class TableTypeModel : RuntimeTypeModel
     internal const string OnDeserializedMethodName = "OnFlatSharpDeserialized";
     private const int FileIdentifierSize = 4;
 
-    private readonly string ParseClassName = "tableReader_" + Guid.NewGuid().ToString("n");
-    private readonly string ExtraClassName = "tableMetadata_" + Guid.NewGuid().ToString("n");
+    private readonly string GuidBase = Guid.NewGuid().ToString("n");
+    private readonly string MetadataClassName = "tableMetadata_" + Guid.NewGuid().ToString("n");
 
     /// <summary>
     /// Maps vtable index -> type model.
@@ -44,7 +44,6 @@ public class TableTypeModel : RuntimeTypeModel
     private ConstructorInfo? preferredConstructor;
     private MethodInfo? onDeserializeMethod;
     private FlatBufferTableAttribute attribute = null!;
-    private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
     internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
     {
@@ -199,6 +198,12 @@ public class TableTypeModel : RuntimeTypeModel
             this.ValidateKey(memberModel);
             this.ValidateForceWrite(memberModel);
         }
+    }
+
+    public override bool TryGetFileIdentifier([NotNullWhen(true)] out string? fileIdentifier)
+    {
+        fileIdentifier = this.attribute.FileIdentifier;
+        return fileIdentifier is not null;
     }
 
     public override List<(ITypeModel, TableFieldContext)> GetFieldContexts()
@@ -379,11 +384,7 @@ public class TableTypeModel : RuntimeTypeModel
 
         if (specialCtor is not null)
         {
-            if (!IsVisible(specialCtor))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Constructor for '{typeName}' accepting {nameof(FlatBufferDeserializationContext)} is not visible to subclasses outside the assembly.");
-            }
-
+            FlatSharpInternal.Assert(IsVisible(specialCtor), "Special deserialize constructor should be visible.");
             defaultConstructor = specialCtor;
         }
         else if (defaultCtor is not null)
@@ -683,7 +684,7 @@ $@"
             {
                 ValueVariableName = $"{valueVariableName}{nullForgiving}",
                 OffsetVariableName = $"{OffsetVariableName(index, 0)}",
-                TableFieldContextVariableName = $"{this.ExtraClassName}.{memberModel.PropertyInfo.Name}",
+                TableFieldContextVariableName = $"{this.MetadataClassName}.{memberModel.PropertyInfo.Name}",
             }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
         }
         else
@@ -693,7 +694,7 @@ $@"
                 ValueVariableName = $"{valueVariableName}{nullForgiving}",
                 OffsetVariableName = $"offsetTuple",
                 IsOffsetByRef = true,
-                TableFieldContextVariableName = $"{this.ExtraClassName}.{memberModel.PropertyInfo.Name}",
+                TableFieldContextVariableName = $"{this.MetadataClassName}.{memberModel.PropertyInfo.Name}",
             }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
 
             offsetTuple = $"var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(index, x)))});";
@@ -707,9 +708,11 @@ $@"
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
+        string className = this.GetTableReaderClassName(context);
+
         // We have to implement two items: The table class and the overall "read" method.
         // Let's start with the read method.
-        var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, this.MaxIndex, context.Options);
+        var classDef = DeserializeClassDefinition.Create(className, this.onDeserializeMethod, this, this.MaxIndex, context.Options);
 
         // Build up a list of property overrides.
         foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
@@ -719,16 +722,17 @@ $@"
 
             var tempContext = context with
             {
-                TableFieldContextVariableName = $"{this.ExtraClassName}.{item.Value.PropertyInfo.Name}"
+                TableFieldContextVariableName = $"{this.MetadataClassName}.{item.Value.PropertyInfo.Name}"
             };
 
             classDef.AddProperty(value, tempContext);
         }
 
-        string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), {context.RemainingDepthVariableName});";
+        string body = $"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), {context.RemainingDepthVariableName});";
         return new CodeGeneratedMethod(body)
         {
             ClassDefinition = classDef.ToString(),
+            IsMethodInline = true,
         };
     }
 
@@ -760,7 +764,7 @@ $@"
             var itemContext = context with
             {
                 ValueVariableName = variableName,
-                TableFieldContextVariableName = $"{this.ExtraClassName}.{member.PropertyInfo.Name}",
+                TableFieldContextVariableName = $"{this.MetadataClassName}.{member.PropertyInfo.Name}",
             };
 
             string statement =
@@ -807,7 +811,7 @@ $@"
         }
 
         return $@"
-            private static class {this.ExtraClassName}
+            private static class {this.MetadataClassName}
             {{
                 {string.Join("\r\n", tableContextInitializations)}
             }}
@@ -823,4 +827,6 @@ $@"
     private int GetVTableLength(int index) => 4 + (2 * (index + 1));
 
     private int GetVTablePosition(int index) => 4 + (2 * index);
+
+    private string GetTableReaderClassName(ParserCodeGenContext context) => $"tableReader_{this.GuidBase}_{context.Options.DeserializationOption}";
 }

@@ -3,33 +3,30 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net6.0</TargetFrameworks>
+        <TargetFrameworks>net7.0</TargetFrameworks>
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
+        <!--<PublishAot>true</PublishAot>-->
+        <IsPackable>false</IsPackable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
-        <PackageReference Include="Grpc" Version="2.27.0" />
-        <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-        <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.2" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj">
+            <PrivateAssets>all</PrivateAssets>
+        </ProjectReference>
         <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-        <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Remove="Benchmark.fbs.generated.cs" />
-        <Compile Include="Benchmark.fbs.generated.cs" />
     </ItemGroup>
 
-    <Target Name="FBS" BeforeTargets="CoreCompile">
-        <PropertyGroup>
-            <FlatSharpCompilerDll>..\..\FlatSharp.Compiler\bin\$(Configuration)\$(TargetFramework)\FlatSharp.Compiler.dll</FlatSharpCompilerDll>
-        </PropertyGroup>
-        <Exec Command="dotnet $(FlatSharpCompilerDll) -i Benchmark.fbs -o . --nullable-warnings true" />
-    </Target>
+    <ItemGroup>
+        <FlatSharpSchema Include="Benchmark.fbs" />
+    </ItemGroup>
+
+    <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>

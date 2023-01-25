@@ -22,9 +22,13 @@ namespace FlatSharp;
 /// <summary>
 /// A serializer capable of reading and writing data to the FlatBuffer binary format.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class FlatBufferSerializer
 {
     public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
+    
+    // Test hook
+    internal static FlatBufferSerializer DefaultWithUnitySupport { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions(), TypeModelContainer.CreateDefault().WithUnitySupport(true));
 
     private readonly Dictionary<Type, object> serializerCache = new();
 
@@ -194,6 +198,11 @@ public sealed class FlatBufferSerializer
         return this.GetOrCreateUntypedSerializer(typeof(T)).GetMaxSize(item);
     }
 
+    public static ISerializer<T> CompileFor<T>(T item) where T : class
+    {
+        return FlatBufferSerializer.Default.Compile<T>();
+    }
+
     private ISerializer<TRoot> GetOrCreateTypedSerializer<TRoot>() where TRoot : class
     {
         if (!this.serializerCache.TryGetValue(typeof(TRoot), out object? serializer))
@@ -202,7 +211,7 @@ public sealed class FlatBufferSerializer
             {
                 if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                 {
-                    serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>();
+                    serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>().WithSettings(s => s.UseDeserializationMode(this.Options.DeserializationOption));
                     this.serializerCache[typeof(TRoot)] = serializer;
                 }
             }

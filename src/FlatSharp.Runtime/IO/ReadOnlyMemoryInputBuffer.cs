@@ -25,16 +25,18 @@ namespace FlatSharp;
 /// being thrown. ReadOnlyMemoryInputBuffer guarantees that the objects returned will
 /// not modify in the input buffer (unless unsafe operations / MemoryMarshal) are used.
 /// </summary>
-public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
+public struct ReadOnlyMemoryInputBuffer : IInputBuffer
 {
     private const string ErrorMessage = "ReadOnlyMemory inputs may not deserialize writable memory.";
 
     private readonly MemoryPointer pointer;
 
-    public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory)
+    public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory, bool isPinned = false)
     {
-        this.pointer = new MemoryPointer { memory = memory };
+        this.pointer = new MemoryPointer { memory = memory, isPinned = isPinned };
     }
+
+    public bool IsPinned => this.pointer.isPinned;
 
     public bool IsReadOnly => true;
 
@@ -118,17 +120,6 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
         return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
     }
 
-    public Memory<byte> GetByteMemory(int start, int length)
-    {
-        throw new InvalidOperationException(ErrorMessage);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-    {
-        return this.pointer.memory.Slice(start, length);
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan()
     {
@@ -141,6 +132,22 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
         return this.pointer.memory;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseLazy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseProgressive(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedyMutable(this, in arguments);
+
     public Span<byte> GetSpan()
     {
         throw new InvalidOperationException(ErrorMessage);
@@ -151,16 +158,12 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
         throw new InvalidOperationException(ErrorMessage);
     }
 
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
-    {
-        return serializer.Parse(this, arguments);
-    }
-
     // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a
     // a reference that will be collected ephemerally in Gen0 than is is to
     // copy it around.
     private class MemoryPointer
     {
         public ReadOnlyMemory<byte> memory;
+        public bool isPinned;
     }
 }

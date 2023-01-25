@@ -17,7 +17,7 @@
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Wrapper struct to pass arguments into <see cref="IGeneratedSerializer{T}.Parse{TInputBuffer}(TInputBuffer, GeneratedSerializerParseArguments)"/>.
+/// Wrapper struct to pass arguments into Parse methods on <see cref="IGeneratedSerializer{T}"/>.
 /// </summary>
 public readonly struct GeneratedSerializerParseArguments
 {
@@ -38,23 +38,16 @@ public readonly struct GeneratedSerializerParseArguments
 public interface IGeneratedSerializer<T>
 {
     /// <summary>
-    /// Gets the option used to create this generated serializer.
-    /// </summary>
-    FlatBufferDeserializationOption DeserializationOption { get; }
-
-    /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
     /// <param name="writer">The span writer.</param>
     /// <param name="destination">The span to write to.</param>
     /// <param name="item">The object to serialize.</param>
-    /// <param name="offset">The offset to begin writing at.</param>
     /// <param name="context">The serialization context.</param>
     void Write<TSpanWriter>(
         TSpanWriter writer,
         Span<byte> destination,
         T item,
-        int offset,
         SerializationContext context) where TSpanWriter : ISpanWriter;
 
     /// <summary>
@@ -65,7 +58,28 @@ public interface IGeneratedSerializer<T>
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
     /// </summary>
-    T Parse<TInputBuffer>(
+    T ParseLazy<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T ParseProgressive<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T ParseGreedy<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T ParseGreedyMutable<TInputBuffer>(
         TInputBuffer buffer,
         in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
 }

@@ -15,7 +15,11 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
+using FlatSharp.TypeModel;
+using Unity.Collections;
 
 namespace FlatSharpTests;
 
@@ -127,6 +131,73 @@ public class VectorDeserializationTests
         Assert.Equal((byte)2, item.Vector.Span[1]);
         Assert.Equal((byte)3, item.Vector.Span[2]);
     }
+    
+    [Fact]
+    public void EmptyNativeArrayVector()
+    {
+        byte[] data =
+        {
+            12, 0, 0, 0, // offset to table start
+            6, 0,        // vtable length
+            8, 0,        // table length
+            4, 0,        // offset of index 0 field
+            0, 0,        // padding to 4-byte alignment
+            8, 0, 0, 0,  // soffset to vtable
+            4, 0, 0, 0,  // uoffset_t to vector
+            0, 0, 0, 0,  // vector length
+        };
+
+        var item = FlatBufferSerializer.DefaultWithUnitySupport.Parse<RootTable<NativeArray<byte>>>(data);
+        Assert.True(item.Vector.Length == 0);
+    }
+
+    [Fact]
+    public void SimpleNativeArrayVector()
+    {
+        byte[] data =
+        {
+            12, 0, 0, 0, // offset to table start
+            6, 0,        // vtable length
+            8, 0,        // table length
+            4, 0,        // offset of index 0 field
+            0, 0,        // padding to 4-byte alignment
+            8, 0, 0, 0,  // soffset to vtable
+            4, 0, 0, 0,  // uoffset_t to vector
+            3, 0, 0, 0,  // vector length
+            1, 2, 3,     // True false true
+        };
+
+        var item = FlatBufferSerializer.DefaultWithUnitySupport.Parse<RootTable<NativeArray<byte>>>(data);
+        Assert.Equal(3, item.Vector.Length);
+        Assert.Equal((byte)1, item.Vector[0]);
+        Assert.Equal((byte)2, item.Vector[1]);
+        Assert.Equal((byte)3, item.Vector[2]);
+    }
+    
+    [Fact]
+    public void SimpleNativeArrayVectorOfInt()
+    {
+        byte[] data =
+        {
+            12, 0, 0, 0, // offset to table start
+            6, 0,        // vtable length
+            8, 0,        // table length
+            4, 0,        // offset of index 0 field
+            0, 0,        // padding to 4-byte alignment
+            8, 0, 0, 0,  // soffset to vtable
+            4, 0, 0, 0,  // uoffset_t to vector
+            3, 0, 0, 0,  // vector length
+            1, 0, 0, 0,  // vector data
+            2, 0, 0, 0,
+            3, 0, 0, 0,
+        };
+
+        var item = FlatBufferSerializer.DefaultWithUnitySupport.Parse<RootTable<NativeArray<int>>>(data);
+        Assert.Equal(3, item.Vector.Length);
+        Assert.Equal(1, item.Vector[0]);
+        Assert.Equal(2, item.Vector[1]);
+        Assert.Equal(3, item.Vector[2]);
+    }
 
     [Fact]
     public void NullString()
@@ -195,7 +266,7 @@ public class VectorDeserializationTests
             4, 0, 0, 0  // soffset to vtable
         };
 
-        var item = FlatBufferSerializer.Default.Parse<RootTable<int[]>>(data);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<int>>>(data);
         Assert.Null(item.Vector);
     }
 
@@ -215,10 +286,10 @@ public class VectorDeserializationTests
         };
 
         // we parse non-scalar array and scalar arrays differently, so test for both.
-        var item = FlatBufferSerializer.Default.Parse<RootTable<int[]>>(data);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<int>>>(data);
         Assert.Empty(item.Vector);
 
-        var stringItem = FlatBufferSerializer.Default.Parse<RootTable<string[]>>(data);
+        var stringItem = FlatBufferSerializer.Default.Parse<RootTable<IReadOnlyList<string>>>(data);
         Assert.Empty(stringItem.Vector);
     }
 
@@ -242,11 +313,17 @@ public class VectorDeserializationTests
             3, 0, 0, 0, 0, 0, 0, 0,
         };
 
-        var item = FlatBufferSerializer.Default.Parse<RootTable<long[]>>(data);
-        Assert.Equal(3, item.Vector.Length);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<long>>>(data);
+        Assert.Equal(3, item.Vector.Count);
         Assert.Equal(1L, item.Vector[0]);
         Assert.Equal(2L, item.Vector[1]);
         Assert.Equal(3L, item.Vector[2]);
+
+        var item2 = FlatBufferSerializer.Default.Parse<RootTable<IReadOnlyList<long>>>(data);
+        Assert.Equal(3, item2.Vector.Count);
+        Assert.Equal(1L, item2.Vector[0]);
+        Assert.Equal(2L, item2.Vector[1]);
+        Assert.Equal(3L, item2.Vector[2]);
     }
 
     [Fact]
@@ -257,15 +334,14 @@ public class VectorDeserializationTests
             Vector = new List<string> { "one", "two", "three" }
         };
 
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.GreedyMutable);
-        FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseGreedyMutableDeserialization());
 
         byte[] buffer = new byte[100];
-        serializer.Serialize(root, buffer);
+        serializer.Write(buffer, root);
 
         var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
-        Assert.Equal(typeof(List<string>), parsed.Vector.GetType());
+        Assert.Equal(typeof(PoolableList<string>), parsed.Vector.GetType());
         Assert.False(parsed.Vector.IsReadOnly);
 
         // Shouldn't throw.
@@ -280,18 +356,17 @@ public class VectorDeserializationTests
             Vector = new List<string> { "one", "two", "three" }
         };
 
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
-        FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseGreedyDeserialization());
 
         byte[] buffer = new byte[100];
-        serializer.Serialize(root, buffer);
+        serializer.Write(buffer, root);
 
         var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
-        Assert.Equal(typeof(ReadOnlyCollection<string>), parsed.Vector.GetType());
+        Assert.Equal(typeof(ImmutableList<string>), parsed.Vector.GetType());
         Assert.True(parsed.Vector.IsReadOnly);
 
-        Assert.Throws<NotSupportedException>(() => parsed.Vector.Add("four"));
+        Assert.Throws<NotMutableException>(() => parsed.Vector.Add("four"));
     }
 
     [Fact]
@@ -305,10 +380,10 @@ public class VectorDeserializationTests
         root.Vector.Span.Fill(1);
 
         byte[] buffer = new byte[1024];
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
-        var serializer = new FlatBufferSerializer(options);
 
-        serializer.Serialize(root, buffer.AsSpan());
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseGreedyDeserialization());
+
+        serializer.Write(buffer, root);
 
         var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
         var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
@@ -316,7 +391,7 @@ public class VectorDeserializationTests
         Assert.Equal((byte)1, parsed1.Vector.Span[0]);
         Assert.Equal((byte)1, parsed2.Vector.Span[0]);
 
-        // Asser that this change affects only the 'parsed1' object.
+        // Assert that this change affects only the 'parsed1' object.
         parsed1.Vector.Span[0] = 2;
 
         Assert.Equal((byte)2, parsed1.Vector.Span[0]);
@@ -337,10 +412,9 @@ public class VectorDeserializationTests
         root.Vector.Span.Fill(1);
 
         byte[] buffer = new byte[1024];
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy);
-        var serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseLazyDeserialization());
 
-        serializer.Serialize(root, buffer.AsSpan());
+        serializer.Write(buffer.AsSpan(), root);
 
         var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
         var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
@@ -353,6 +427,102 @@ public class VectorDeserializationTests
 
         Assert.Equal((byte)2, parsed1.Vector.Span[0]);
         Assert.Equal((byte)2, parsed2.Vector.Span[0]);
+    }
+
+    /// <summary>
+    /// Asserts that when greedy parsing is off, a change to the memory of the parsed object represents a change in the buffer.
+    /// </summary>
+    [Fact]
+    public void MemoryVector_ProgressiveDeserialize()
+    {
+        RootTable<Memory<byte>> root = new RootTable<Memory<byte>>()
+        {
+            Vector = new Memory<byte>(new byte[100])
+        };
+
+        root.Vector.Span.Fill(1);
+
+        byte[] buffer = new byte[1024];
+        var serializer = FlatBufferSerializer.CompileFor(root).WithSettings(s => s.UseProgressiveDeserialization());
+
+        serializer.Write(buffer.AsSpan(), root);
+
+        var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+        var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+
+        Assert.Equal((byte)1, parsed1.Vector.Span[0]);
+        Assert.Equal((byte)1, parsed2.Vector.Span[0]);
+
+        // Asser that this change affects both objects.
+        parsed1.Vector.Span[0] = 2;
+
+        Assert.Equal((byte)2, parsed1.Vector.Span[0]);
+        Assert.Equal((byte)2, parsed2.Vector.Span[0]);
+    }
+    
+    [Fact]
+    public void NativeArrayVector_GreedyDeserialize()
+    {
+        RootTable<NativeArray<byte>> root = new RootTable<NativeArray<byte>>()
+        {
+            Vector = new NativeArray<byte>(new byte[100], Allocator.Temp)
+        };
+
+        root.Vector.AsSpan().Fill(1);
+
+        byte[] buffer = new byte[1024];
+        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
+        var serializer = new FlatBufferSerializer(options, TypeModelContainer.CreateDefault().WithUnitySupport(true));
+
+        serializer.Serialize(root, buffer.AsSpan());
+
+        var parsed1 = serializer.Parse<RootTable<NativeArray<byte>>>(buffer);
+        var parsed2 = serializer.Parse<RootTable<NativeArray<byte>>>(buffer);
+
+        Assert.Equal((byte)1, parsed1.Vector[0]);
+        Assert.Equal((byte)1, parsed2.Vector[0]);
+
+        // Assert that this change affects only the 'parsed1' object.
+        parsed1.Vector.AsSpan()[0] = 2;
+
+
+        Assert.Equal((byte)2, parsed1.Vector[0]);
+        Assert.Equal((byte)1, parsed2.Vector[0]);
+    }
+    
+    [Fact]
+    public void NativeArrayVector_LazyDeserialize()
+    {
+        RootTable<NativeArray<byte>> root = new RootTable<NativeArray<byte>>()
+        {
+            Vector = new NativeArray<byte>(new byte[100], Allocator.Temp)
+        };
+
+        root.Vector.AsSpan().Fill(1);
+
+        byte[] buffer = new byte[1024];
+        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy);
+        var serializer = new FlatBufferSerializer(options, TypeModelContainer.CreateDefault().WithUnitySupport(true));
+
+        serializer.Serialize(root, buffer.AsSpan());
+
+        var memory = buffer.AsMemory();
+        using (var handle = memory.Pin())
+        {
+            var parsed1 =
+                serializer.Parse<RootTable<NativeArray<byte>>, MemoryInputBuffer>(new MemoryInputBuffer(memory, true));
+            var parsed2 =
+                serializer.Parse<RootTable<NativeArray<byte>>, MemoryInputBuffer>(new MemoryInputBuffer(memory, true));
+
+            Assert.Equal((byte)1, parsed1.Vector[0]);
+            Assert.Equal((byte)1, parsed2.Vector[0]);
+
+            // Asser that this change affects both objects.
+            parsed1.Vector.AsSpan()[0] = 2;
+
+            Assert.Equal((byte)2, parsed1.Vector[0]);
+            Assert.Equal((byte)2, parsed2.Vector[0]);
+        }
     }
 
     [Fact]
@@ -379,9 +549,9 @@ public class VectorDeserializationTests
             0, 0, 0,             // padding
         };
 
-        var item = FlatBufferSerializer.Default.Parse<RootTable<ValueFiveByteStruct[]>>(data);
+        var item = FlatBufferSerializer.Default.Parse<RootTable<IList<ValueFiveByteStruct>>>(data);
 
-        Assert.Equal(3, item.Vector.Length);
+        Assert.Equal(3, item.Vector.Count);
         for (int i = 0; i < 3; ++i)
         {
             Assert.Equal(i + 1, item.Vector[i].Int);
@@ -398,11 +568,6 @@ public class VectorDeserializationTests
     public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
         FlatBufferDeserializationOption.Lazy,
         v => v.Vector.ToArray());
-
-    [Fact]
-    public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
-        FlatBufferDeserializationOption.Greedy,
-        v => v.Vector);
 
     private void VectorOfUnionTest<V>(
         FlatBufferDeserializationOption option,
@@ -436,7 +601,7 @@ public class VectorDeserializationTests
             4, 0,
         };
 
-        var serializer = new FlatBufferSerializer(option);
+        var serializer = FlatBufferSerializer.Default.Compile<V>().WithSettings(s => s.UseDeserializationMode(option));
         V parsed = serializer.Parse<V>(data);
         var items = getItems(parsed);
 
@@ -473,5 +638,13 @@ public class VectorDeserializationTests
 
         [FlatBufferItem(1, Key = true)]
         public virtual TKey? Key { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+    public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
     }
 }

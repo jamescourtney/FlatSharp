@@ -14,48 +14,93 @@
  * limitations under the License.
  */
 
+using System.Threading;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
-    where TInputBuffer : IInputBuffer
-{
-    protected readonly TInputBuffer memory;
-    protected readonly TableFieldContext fieldContext;
-    protected readonly short remainingDepth;
+public sealed class FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> 
+    : IList<T>
+    , IReadOnlyList<T>
+    , IFlatBufferDeserializedVector
+    , IPoolableObject
 
-    protected FlatBufferVectorBase(
+    where TInputBuffer : IInputBuffer
+    where TItemAccessor : IVectorItemAccessor<T, TInputBuffer>
+{
+    private TInputBuffer memory;
+    private TableFieldContext fieldContext;
+    private short remainingDepth;
+    private TItemAccessor itemAccessor;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private FlatBufferVectorBase()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    {
+    }
+
+    private void Initialize(
         TInputBuffer memory,
+        TItemAccessor itemAccessor,
         short remainingDepth,
-        TableFieldContext fieldContext)
+        TableFieldContext fieldContext,
+        FlatBufferDeserializationOption option)
     {
         this.memory = memory;
         this.remainingDepth = remainingDepth;
+        this.itemAccessor = itemAccessor;
+        this.DeserializationOption = option;
         this.fieldContext = fieldContext;
+    }
+
+    public static FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> GetOrCreate(
+        TInputBuffer memory,
+        TItemAccessor itemAccessor,
+        short remainingDepth,
+        TableFieldContext fieldContext,
+        FlatBufferDeserializationOption option)
+    {
+        if (!ObjectPool.TryGet<FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>>(out var item))
+        {
+            item = new FlatBufferVectorBase<T, TInputBuffer, TItemAccessor>();
+        }
+
+        item.Initialize(memory, itemAccessor, remainingDepth, fieldContext, option);
+
+        return item;
     }
 
     /// <summary>
     /// Gets the item at the given index.
     /// </summary>
-    public virtual T this[int index]
+    public T this[int index]
     {
         get
         {
             this.CheckIndex(index);
-            this.ParseItem(index, out T item);
+            this.itemAccessor.ParseItem(index, this.memory, this.remainingDepth, this.fieldContext, out T item);
             return item;
         }
         set
         {
-            throw new NotMutableException("FlatBufferVector does not allow mutating items.");
+            this.CheckIndex(index);
+            this.itemAccessor.WriteThrough(index, value, this.memory, this.fieldContext);
         }
     }
 
-    public int Count { get; protected init; }
+    public FlatBufferDeserializationOption DeserializationOption { get; private set; }
+
+    public int Count => this.itemAccessor.Count;
 
     public bool IsReadOnly => true;
+
+    IInputBuffer IFlatBufferDeserializedVector.InputBuffer => this.memory;
+
+    int IFlatBufferDeserializedVector.ItemSize => this.itemAccessor.ItemSize;
+
+    int IFlatBufferDeserializedVector.Count => this.Count;
 
     public bool Contains(T? item)
     {
@@ -70,9 +115,13 @@ public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnl
         }
 
         var count = this.Count;
+        var context = this.fieldContext;
+        var remainingDepth = this.remainingDepth;
+        var buffer = this.memory;
+
         for (int i = 0; i < count; ++i)
         {
-            this.ParseItem(i, out array[arrayIndex + i]);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out array[arrayIndex + i]);
         }
     }
 
@@ -88,30 +137,26 @@ public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnl
             checked((uint)(this.Count - startIndex)),
             count);
 
+        var context = this.fieldContext;
+        var remainingDepth = this.remainingDepth;
+        var buffer = this.memory;
+
         for (int i = 0; i < count; ++i)
         {
-            this.ParseItem(i + startIndex, out array[i]);
+            this.itemAccessor.ParseItem(i + startIndex, buffer, remainingDepth, context, out array[i]);
         }
-    }
-
-    public T[] ToArray()
-    {
-        T[] array = new T[this.Count];
-
-        for (int i = 0; i < array.Length; ++i)
-        {
-            this.ParseItem(i, out array[i]);
-        }
-
-        return array;
     }
 
     public IEnumerator<T> GetEnumerator()
     {
         int count = this.Count;
+        var context = this.fieldContext;
+        var remainingDepth = this.remainingDepth;
+        var buffer = this.memory;
+
         for (int i = 0; i < count; ++i)
         {
-            this.ParseItem(i, out T parsed);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out T parsed);
             yield return parsed;
         }
     }
@@ -124,10 +169,14 @@ public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnl
             return -1;
         }
 
+        var context = this.fieldContext;
+        var remainingDepth = this.remainingDepth;
+        var buffer = this.memory;
+
         int count = this.Count;
         for (int i = 0; i < count; ++i)
         {
-            this.ParseItem(i, out T parsed);
+            this.itemAccessor.ParseItem(i, buffer, remainingDepth, context, out T parsed);
             if (item.Equals(parsed))
             {
                 return i;
@@ -137,23 +186,8 @@ public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnl
         return -1;
     }
 
-    public List<T> FlatBufferVectorToList()
-    {
-        int count = this.Count;
-        var list = new List<T>(count);
-
-        for (int i = 0; i < count; ++i)
-        {
-            this.ParseItem(i, out T item);
-            list.Add(item);
-        }
-
-        return list;
-    }
-
-    protected abstract void ParseItem(int index, out T item);
-
-    protected void CheckIndex(int index)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CheckIndex(int index)
     {
         if ((uint)index >= this.Count)
         {
@@ -190,5 +224,24 @@ public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnl
     IEnumerator IEnumerable.GetEnumerator()
     {
         return this.GetEnumerator();
+    }
+
+    int IFlatBufferDeserializedVector.OffsetOf(int index) => this.itemAccessor.OffsetOf(index);
+
+    object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
+
+    public void ReturnToPool(bool force = false)
+    {
+        if (this.DeserializationOption.ShouldReturnToPool(force))
+        {
+            var context = Interlocked.Exchange(ref this.fieldContext!, null);
+            if (context is not null)
+            {
+                this.memory = default!;
+                this.remainingDepth = default;
+                this.itemAccessor = default!;
+                ObjectPool.Return(this);
+            }
+        }
     }
 }

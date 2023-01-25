@@ -1,0 +1,51 @@
+﻿/*
+ * Copyright 2021 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace Samples.StructVectors;
+
+attribute "fs_serializer";
+attribute "fs_nonVirtual";
+attribute "fs_valueStruct";
+attribute "fs_unsafeStructVector";
+
+table Transaction (fs_serializer) {
+   amount : double;
+   sender : string;
+   receiver : string;
+
+   hash_reference : Sha256_Reference (required);
+   hash_value : Sha256_Value (required);
+   hash_fast_value : Sha256_FastValue (required);
+}
+
+// A reference (class-based) struct representing a SHA256 value.
+struct Sha256_Reference
+{
+   value : [ubyte:32] (fs_nonVirtual);
+}
+
+// A value (struct-based) struct representing the same.
+struct Sha256_Value (fs_valueStruct)
+{
+   value : [ ubyte : 32 ];
+}
+
+// A value (struct-based) struct using unsafe code for fast access to the value array.
+// This option generates code that is not safe, but is considerably faster than the alternative.
+struct Sha256_FastValue (fs_valueStruct) 
+{
+   Value : [ ubyte : 32 ] (fs_unsafeStructVector);
+}

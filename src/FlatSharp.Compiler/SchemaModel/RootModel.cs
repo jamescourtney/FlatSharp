@@ -26,7 +26,7 @@ public class RootModel
         AdvancedFeatures.AdvancedUnionFeatures | // vectors of union and string members in unions.
         AdvancedFeatures.OptionalScalars;        // nullable scalars in tables.
 
-    private readonly List<BaseSchemaModel> elements = new();
+    private readonly Dictionary<string, BaseSchemaModel> elements = new();
 
     public RootModel(AdvancedFeatures advancedFeatures)
     {
@@ -37,9 +37,31 @@ public class RootModel
         }
     }
 
+    public void UnionWith(RootModel other)
+    {
+        foreach (var kvp in other.elements)
+        {
+            if (this.elements.TryGetValue(kvp.Key, out BaseSchemaModel? model))
+            {
+                if (model.DeclaringFile != kvp.Value.DeclaringFile)
+                {
+                    string name = kvp.Value.FriendlyName;
+                    ErrorContext.Current.RegisterError($"Duplicate type declared in two different FBS files: {name}. File1: {kvp.Value.DeclaringFile}, File2: {model.DeclaringFile}");
+                }
+            }
+            else
+            {
+                this.elements[kvp.Key] = kvp.Value;
+            }
+        }
+    }
+
     public void AddElement(BaseSchemaModel model)
     {
-        this.elements.Add(model);
+        if (!this.elements.TryAdd(model.FullName, model))
+        {
+            ErrorContext.Current.RegisterError($"Duplicate type declared in same FBS file: {model.FriendlyName}. File: {model.DeclaringFile}");
+        }
     }
 
     internal void WriteCode(CodeWriter writer, CompileContext context)
@@ -64,6 +86,7 @@ public class RootModel
         writer.AppendLine("using FlatSharp;");
         writer.AppendLine("using FlatSharp.Attributes;");
         writer.AppendLine("using FlatSharp.Internal;");
+
 
         // disable obsolete warnings. Flatsharp allows marking default constructors
         // as obsolete and we don't want to raise warnings for our own code.
@@ -99,11 +122,31 @@ public class RootModel
                 context.Options,
                 context.PreviousAssembly,
                 context.TypeModelContainer);
+
+            HashSet<Type> seenTypes = new();
+            foreach (var item in this.elements.Values)
+            {
+                item.TraverseTypeModel(context, seenTypes);
+            }
+
+            foreach (Type t in seenTypes)
+            {
+                WriteHelperClass(t, context, writer);
+            }
         }
 
-        foreach (var item in this.elements)
+        foreach (var item in this.elements.Values)
         {
             item.WriteCode(writer, context);
         }
+    }
+
+    private static void WriteHelperClass(Type type, CompileContext context, CodeWriter writer)
+    {
+        var options = new FlatBufferSerializerOptions();
+        var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver());
+
+        writer.AppendLine(helper);
     }
 }

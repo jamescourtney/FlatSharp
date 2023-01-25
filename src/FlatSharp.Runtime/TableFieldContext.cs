@@ -42,4 +42,21 @@ public sealed class TableFieldContext
     /// Indicates if this field is flagged as writethrough-enabled.
     /// </summary>
     public readonly bool WriteThrough;
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is TableFieldContext ctx)
+        {
+            return this.FullName == ctx.FullName
+                && this.SharedString == ctx.SharedString
+                && this.WriteThrough == ctx.WriteThrough;
+        }
+
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return this.FullName.GetHashCode();
+    }
 }

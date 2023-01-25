@@ -119,6 +119,8 @@ public abstract class RuntimeTypeModel : ITypeModel
     /// </summary>
     public abstract IEnumerable<ITypeModel> Children { get; }
 
+    public virtual bool IsParsingInvariant => false;
+
     /// <summary>
     /// Validates a default value.
     /// </summary>
@@ -165,6 +167,13 @@ public abstract class RuntimeTypeModel : ITypeModel
     public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
     {
         tableMember = null;
+        return false;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public virtual bool TryGetFileIdentifier([NotNullWhen(true)] out string? fileIdentifier)
+    {
+        fileIdentifier = null;
         return false;
     }
 

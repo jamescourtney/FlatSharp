@@ -39,6 +39,11 @@ public class StringTypeModel : RuntimeTypeModel
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
 
     /// <summary>
+    /// Strings are not sensitive to deserialization mode.
+    /// </summary>
+    public override bool IsParsingInvariant => true;
+
+    /// <summary>
     /// Strings are arbitrary in length.
     /// </summary>
     public override bool IsFixedSize => false;
@@ -95,7 +100,10 @@ public class StringTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});");
+        return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});")
+        {
+            IsMethodInline = true
+        };
     }
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -116,7 +124,6 @@ public class StringTypeModel : RuntimeTypeModel
                             {context.OffsetVariableName},
                             {context.ValueVariableName},
                             {context.SerializationContextVariableName});
-
                         return;
                     }}
                 }}

@@ -26,175 +26,40 @@ namespace FlatSharpTests;
 public class TableSerializationTests
 {
     [Fact]
-    public void AllMembersNull()
-    {
-        SimpleTable table = new SimpleTable();
-
-        byte[] buffer = new byte[1024];
-
-        byte[] expectedData =
-        {
-            4, 0, 0, 0,
-            252, 255, 255, 255,
-            4, 0,
-            4, 0,
-        };
-
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-    }
-
-    [Fact]
     public void RootTableNull()
     {
         Assert.Throws<ArgumentNullException>(() => FlatBufferSerializer.Default.Serialize<SimpleTable>(null, new byte[1024]));
     }
 
     [Fact]
-    public void TableWithStruct()
-    {
-        SimpleTable table = new SimpleTable
-        {
-            Struct = new SimpleStruct { Byte = 1, Long = 2, Uint = 3 }
-        };
-
-        byte[] buffer = new byte[1024];
-
-        byte[] expectedData =
-        {
-            4, 0, 0, 0,             // uoffset to table start
-            236, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
-            2, 0, 0, 0, 0, 0, 0, 0, // struct.long
-            1,                      // struct.byte
-            0, 0, 0,                // padding
-            3, 0, 0, 0,             // struct.uint
-            8, 0,                   // vtable length
-            20, 0,                  // table length
-            0, 0,                   // index 0 offset
-            4, 0,                   // Index 1 offset
-        };
-
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-    }
-
-    [Fact]
-    public void TableWithStructAndString()
-    {
-        SimpleTable table = new SimpleTable
-        {
-            String = "hi",
-            Struct = new SimpleStruct { Byte = 1, Long = 2, Uint = 3 }
-        };
-
-        byte[] buffer = new byte[1024];
-
-        byte[] expectedData =
-        {
-            4, 0, 0, 0,             // uoffset to table start
-            232, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
-            2, 0, 0, 0, 0, 0, 0, 0, // struct.long
-            1, 0, 0, 0,             // struct.byte + padding
-            3, 0, 0, 0,             // struct.uint
-            12, 0, 0, 0,            // uoffset to string
-            8, 0,                   // vtable length
-            24, 0,                  // table length
-            20, 0,                  // index 0 offset
-            4, 0,                   // Index 1 offset
-            2, 0, 0, 0,             // string length
-            104, 105, 0,            // hi + null terminator
-        };
-
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-    }
-
-    [Fact]
-    public void EmptyTableSerialize()
-    {
-        EmptyTable table = new EmptyTable();
-
-        byte[] buffer = new byte[1024];
-
-        byte[] expectedData =
-        {
-            4, 0, 0, 0,
-            252, 255, 255, 255,
-            4, 0,
-            4, 0,
-        };
-
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-
-        int maxSize = FlatBufferSerializer.Default.GetMaxSize(table);
-        Assert.Equal(23, maxSize);
-    }
-
-    [Fact]
-    public void TableWithStructAndStringNonVirtual()
-    {
-        SimpleTableNonVirtual table = new SimpleTableNonVirtual
-        {
-            String = "hi",
-            Struct = new SimpleStructNonVirtual { Byte = 1, Long = 2, Uint = 3 }
-        };
-
-        byte[] buffer = new byte[1024];
-
-        byte[] expectedData =
-        {
-            4, 0, 0, 0,             // uoffset to table start
-            232, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
-            2, 0, 0, 0, 0, 0, 0, 0, // struct.long
-            1, 0, 0, 0,             // struct.byte + padding
-            3, 0, 0, 0,             // struct.uint
-            12, 0, 0, 0,            // uoffset to string
-            8, 0,                   // vtable length
-            24, 0,                  // table length
-            20, 0,                  // index 0 offset
-            4, 0,                   // Index 1 offset
-            2, 0, 0, 0,             // string length
-            104, 105, 0,            // hi + null terminator
-        };
-
-        int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-        var parsed = FlatBufferSerializer.Default.Parse<SimpleTableNonVirtual>(buffer);
-    }
-
-    [Fact]
     public void TableParse_NotMutable()
     {
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy);
-        var table = this.SerializeAndParse(options, out _);
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out _);
 
         Assert.Throws<NotMutableException>(() => table.String = null);
         Assert.Throws<NotMutableException>(() => table.Struct = null);
         Assert.Throws<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
         Assert.Throws<NotMutableException>(() => table.StructVector.Add(null));
 
-        Assert.IsAssignableFrom<FlatBufferVector<SimpleStruct, ArrayInputBuffer>>(table.StructVector);
+        Assert.Contains("FlatBufferVectorBase", table.StructVector.GetType().FullName);
     }
 
     [Fact]
     public void TableParse_Progressive()
     {
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive);
-        var table = this.SerializeAndParse(options, out _);
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out _);
 
         Assert.Throws<NotMutableException>(() => table.String = string.Empty);
         Assert.Throws<NotMutableException>(() => table.Struct.Long = 0);
         Assert.Throws<NotMutableException>(() => table.Struct = new());
 
-        Assert.Equal(typeof(FlatBufferProgressiveVector<SimpleStruct, ArrayInputBuffer>), table.StructVector.GetType());
+        Assert.Contains("FlatBufferProgressiveVector", table.StructVector.GetType().FullName);
     }
 
     [Fact]
     public void TableParse_GreedyImmutable()
     {
-        var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
-        var table = this.SerializeAndParse(options, out var buffer);
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var buffer);
 
         bool reaped = false;
         for (int i = 0; i < 5; ++i)
@@ -227,7 +92,7 @@ public class TableSerializationTests
         Assert.Equal(6u, table.StructVector[0].Uint);
     }
 
-    private SimpleTable SerializeAndParse(FlatBufferSerializerOptions options, out WeakReference<byte[]> buffer)
+    private SimpleTable SerializeAndParse(FlatBufferDeserializationOption option, out WeakReference<byte[]> buffer)
     {
         SimpleTable table = new SimpleTable
         {
@@ -236,13 +101,12 @@ public class TableSerializationTests
             StructVector = new List<SimpleStruct> { new SimpleStruct { Byte = 4, Long = 5, Uint = 6 } },
         };
 
-        var serializer = new FlatBufferSerializer(options);
+        var serializer = FlatBufferSerializer.CompileFor(table).WithSettings(s => s.UseDeserializationMode(option));
 
         var rawBuffer = new byte[1024];
-        serializer.Serialize(table, rawBuffer);
+        serializer.Write(rawBuffer, table);
         buffer = new WeakReference<byte[]>(rawBuffer);
 
-        string csharp = serializer.Compile<SimpleTable>().CSharp;
         return serializer.Parse<SimpleTable>(rawBuffer);
     }
 
@@ -276,35 +140,6 @@ public class TableSerializationTests
 
         [FlatBufferItem(2)]
         public virtual uint Uint { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class SimpleTableNonVirtual
-    {
-        [FlatBufferItem(0)]
-        public string? String { get; set; }
-
-        [FlatBufferItem(1)]
-        public SimpleStructNonVirtual? Struct { get; set; }
-
-        [FlatBufferItem(2)]
-        public IList<SimpleStructNonVirtual>? StructVector { get; set; }
-
-        [FlatBufferItem(4)]
-        public SimpleTableNonVirtual? InnerTable { get; set; }
-    }
-
-    [FlatBufferStruct]
-    public class SimpleStructNonVirtual
-    {
-        [FlatBufferItem(0)]
-        public long Long { get; set; }
-
-        [FlatBufferItem(1)]
-        public byte Byte { get; set; }
-
-        [FlatBufferItem(2)]
-        public uint Uint { get; set; }
     }
 
     [FlatBufferTable]

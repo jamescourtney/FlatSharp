@@ -1,0 +1,68 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_nonVirtual";
+attribute "fs_valueStruct";
+attribute "fs_unsafeStructVector";
+attribute "fs_nonVirtual";
+attribute "fs_sortedVector";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_unsafeUnion";
+
+namespace Microbench;
+
+// Tests reading and writing a string.
+table StringTable (fs_serializer:"Progressive") {
+    SingleString : string;
+    Vector : [string];
+}
+
+table PrimitivesTable (fs_serializer:"Progressive") {
+    Bool : bool;
+    Byte : ubyte;
+    SByte : byte;
+    Short : short;
+    UShort : ushort;
+    Int : int;
+    UInt : uint;
+    Long : long;
+    ULong : ulong;
+    Double : double;
+    Float : float;
+}
+
+struct RefStruct (fs_writeThrough) { Value : int; }
+struct ValueStruct (fs_valueStruct) { Value : int; }
+
+table StructsTable (fs_serializer:"Progressive")
+{
+    SingleRef : RefStruct;
+    SingleValue : ValueStruct (fs_writeThrough, required);
+    VecRef : [RefStruct];
+    VecValue : [ValueStruct] (fs_writeThrough);
+}
+
+table StringKey { Key : string (key); }
+table IntKey { Key : int (key); }
+
+table SortedTable (fs_serializer:"Progressive")
+{
+    Strings : [StringKey] (fs_vector:"IIndexedVector");
+    Ints : [IntKey] (fs_vector:"IIndexedVector");
+}
+
+
+struct ValueStructA (fs_valueStruct) { x : int; }
+struct ValueStructB (fs_valueStruct) { y : long; }
+struct ValueStructC (fs_valueStruct) { a : ValueStructA; b : ValueStructB; }
+
+union UnsafeUnion (fs_unsafeUnion) { ValueStructA, ValueStructB, ValueStructC }
+union SafeUnion { ValueStructA, ValueStructB, ValueStructC }
+union MixedUnion { ValueStructA, ValueStructB, ValueStructC, Something : string }
+
+table UnionTable (fs_serializer:"Progressive")
+{
+    Unsafe : [ UnsafeUnion ];
+    Safe : [ SafeUnion ];
+    Mixed : [ MixedUnion ];
+}

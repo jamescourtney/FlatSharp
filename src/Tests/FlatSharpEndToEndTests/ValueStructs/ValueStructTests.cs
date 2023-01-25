@@ -29,7 +29,8 @@ public class ValueStructTestCases
             {
                 new() { X = 1, Y = 2, Z = 3 },
                 new() { X = 4, Y = 5, Z = 6 },
-            }
+            },
+            Point = default,
         };
 
         byte[] data = new byte[1024];
@@ -73,7 +74,7 @@ public class ValueStructTestCases
     [Fact]
     public void Basics()
     {
-        Assert.Equal(148, Unsafe.SizeOf<ValueStruct>());
+        Assert.Equal(36, Unsafe.SizeOf<ValueStruct>());
     }
 
     [Fact]
@@ -81,7 +82,7 @@ public class ValueStructTestCases
     {
         ValueStruct v = default;
 
-        Assert.Equal(128, v.D_Length);
+        Assert.Equal(16, v.D_Length);
 
         for (int i = 0; i < v.D_Length; ++i)
         {
@@ -118,45 +119,46 @@ public class ValueStructTestCases
 
         RootTable table = new()
         {
-            refStruct = rs,
-            union = new TestUnion(vs),
-            valueStruct = vs,
-            valueStructVector = Enumerable.Range(0, 10).Select(x => vs).ToList(),
-            vectorOfUnion = Enumerable.Range(0, 10).Select(x => new TestUnion(vs)).ToList(),
+            RefStruct = rs,
+            Union = new TestUnion(vs),
+            ValueStruct = vs,
+            ValueStructVector = Enumerable.Range(0, 10).Select(x => vs).ToList(),
+            VectorOfUnion = Enumerable.Range(0, 10).Select(x => new TestUnion(vs)).ToList(),
+            RequiredValueStruct = default,
         };
 
         ISerializer<RootTable> serializer = RootTable.Serializer;
         int maxBytes = serializer.GetMaxSize(table);
         byte[] buffer = new byte[maxBytes];
         int written = serializer.Write(buffer, table);
-        RootTable parsed = serializer.Parse(buffer[..written]);
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written));
 
-        Assert.NotNull(parsed.refStruct);
-        Assert.NotNull(parsed.valueStruct);
-        Assert.NotNull(parsed.valueStructVector);
-        Assert.NotNull(parsed.union);
-        Assert.NotNull(parsed.vectorOfUnion);
+        Assert.NotNull(parsed.RefStruct);
+        Assert.NotNull(parsed.ValueStruct);
+        Assert.NotNull(parsed.ValueStructVector);
+        Assert.NotNull(parsed.Union);
+        Assert.NotNull(parsed.VectorOfUnion);
 
-        Assert.Equal(table.vectorOfUnion.Count, parsed.vectorOfUnion.Count);
-        Assert.Equal(table.valueStructVector.Count, parsed.valueStructVector.Count);
+        Assert.Equal(table.VectorOfUnion.Count, parsed.VectorOfUnion.Count);
+        Assert.Equal(table.ValueStructVector.Count, parsed.ValueStructVector.Count);
 
-        Assert.Equal(table.refStruct.A, parsed.refStruct.A);
-        AssertStructsEqual(table.refStruct.VS, parsed.refStruct.VS);
+        Assert.Equal(table.RefStruct.A, parsed.RefStruct.A);
+        AssertStructsEqual(table.RefStruct.VS, parsed.RefStruct.VS);
 
-        AssertStructsEqual(table.valueStruct.Value, parsed.valueStruct.Value);
-        AssertStructsEqual(table.union.Value.ValueStruct, parsed.union.Value.ValueStruct);
+        AssertStructsEqual(table.ValueStruct.Value, parsed.ValueStruct.Value);
+        AssertStructsEqual(table.Union.Value.ValueStruct, parsed.Union.Value.ValueStruct);
 
-        for (int i = 0; i < table.vectorOfUnion.Count; ++i)
+        for (int i = 0; i < table.VectorOfUnion.Count; ++i)
         {
-            var t = table.vectorOfUnion[i];
-            var p = parsed.vectorOfUnion[i];
+            var t = table.VectorOfUnion[i];
+            var p = parsed.VectorOfUnion[i];
             AssertStructsEqual(t.ValueStruct, p.ValueStruct);
         }
 
-        for (int i = 0; i < table.valueStructVector.Count; ++i)
+        for (int i = 0; i < table.ValueStructVector.Count; ++i)
         {
-            var t = table.valueStructVector[i];
-            var p = parsed.valueStructVector[i];
+            var t = table.ValueStructVector[i];
+            var p = parsed.ValueStructVector[i];
             AssertStructsEqual(t, p);
         }
     }
@@ -323,9 +325,9 @@ public class ValueStructTestCases
         span[0] = item;
         Span<byte> bytes = MemoryMarshal.Cast<T, byte>(span);
 
-        Span<byte> guardLow = bytes[..sizeof(ulong)];
-        Span<byte> mid = bytes[sizeof(ulong)..^sizeof(ulong)];
-        Span<byte> guardHigh = bytes[^sizeof(ulong)..];
+        Span<byte> guardLow = bytes.Slice(0, sizeof(ulong));
+        Span<byte> mid = bytes.Slice(sizeof(ulong), bytes.Length - (2 * sizeof(ulong)));
+        Span<byte> guardHigh = bytes.Slice(bytes.Length - sizeof(ulong));
 
         int count = 0;
         for (int i = 0; i < guardLow.Length; ++i)
@@ -352,18 +354,21 @@ public class ValueStructTestCases
     [Fact]
     public void SerializeAndParse_Empty()
     {
-        RootTable t = new();
+        RootTable t = new()
+        {
+            RequiredValueStruct = default,
+        };
 
-        Assert.Null(t.valueStruct);
+        Assert.Null(t.ValueStruct);
 
         ISerializer<RootTable> serializer = RootTable.Serializer;
         int maxBytes = serializer.GetMaxSize(t);
         byte[] buffer = new byte[maxBytes];
         int written = serializer.Write(buffer, t);
-        RootTable parsed = serializer.Parse(buffer[..written]);
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written));
 
-        Assert.Null(parsed.refStruct);
-        Assert.Null(parsed.valueStruct);
+        Assert.Null(parsed.RefStruct);
+        Assert.Null(parsed.ValueStruct);
     }
 
     private static void AssertStructsEqual(ValueStruct a, ValueStruct b)

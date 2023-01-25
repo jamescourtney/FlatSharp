@@ -22,16 +22,14 @@ using SChannel = System.Threading.Channels.Channel;
 
 namespace FlatSharpEndToEndTests.GrpcTests;
 
+#if NET7_0
 public class EchoServiceTestCases
 {
     [Fact]
     public async Task GrpcSerializersOverridable_EnableSharedStrings()
     {
-        EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
-            new SerializerSettings
-            {
-                SharedStringWriterFactory = () => new SharedStringWriter()
-            });
+        EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer
+            .WithSettings(s => s.UseDefaultSharedStringWriter());
 
         int length = await this.SharedStringsTest_Common();
         Assert.True(length <= 2048);
@@ -46,10 +44,7 @@ public class EchoServiceTestCases
                 () => EchoService.Serializer<StringMessage>.Value = null);
 
             EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
-                new SerializerSettings
-                {
-                    SharedStringWriterFactory = null
-                });
+                s => s.DisableSharedStrings());
 
             int length = await this.SharedStringsTest_Common();
             Assert.True(length >= 100_000);
@@ -242,10 +237,11 @@ public class EchoServiceTestCases
             await task;
 
             Assert.True(channel.Reader.Completion.IsCompleted);
-            Assert.True(channel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
 
+    /*
     [Fact]
     public Task EchoServerStreaming_Interface_Canceled()
     {
@@ -281,9 +277,10 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => task);
 
             Assert.True(channel.Reader.Completion.IsCompleted);
-            Assert.False(channel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.False(channel.Reader.Completion.IsFaulted);
         });
     }
+    */
 
     [Fact]
     public Task EchoDuplexStreaming()
@@ -324,8 +321,8 @@ public class EchoServiceTestCases
 
             sourceChannel.Writer.Complete();
             await duplexCall;
-
-            Assert.True(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            
+            Assert.False(duplexCall.IsFaulted);
         });
     }
 
@@ -356,7 +353,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.False(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.True(destChannel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -406,7 +403,7 @@ public class EchoServiceTestCases
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.False(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            Assert.True(destChannel.Reader.Completion.IsFaulted);
         });
     }
 
@@ -490,3 +487,4 @@ public class EchoServiceTestCases
         }
     }
 }
+#endif

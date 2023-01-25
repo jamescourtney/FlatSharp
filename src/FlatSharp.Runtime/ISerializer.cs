@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,30 +24,12 @@ namespace FlatSharp;
 public interface ISerializer
 {
     /// <summary>
-    /// The type of object that this serializer can read and write.
+    /// Gets the root type for this serializer.
     /// </summary>
     Type RootType { get; }
 
     /// <summary>
-    /// Gets the C# code that FlatSharp generated to produce this serializer.
-    /// This will only be set for runtime-generated serializers.
-    /// </summary>
-    string? CSharp { get; }
-
-    /// <summary>
-    /// Gets the Assembly FlatSharp generated to produce this serializer.
-    /// This will only be set for runtime-generated serializers.
-    /// </summary>
-    Assembly? Assembly { get; }
-
-    /// <summary>
-    /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
-    /// This will only be set for runtime-generated serializers.
-    /// </summary>
-    byte[]? AssemblyBytes { get; }
-
-    /// <summary>
-    /// Gets the type of deserializer in use. This can be used to distinguish between Greedy and Lazy modes.
+    /// Gets the default DeserializationOption for this serializer.
     /// </summary>
     FlatBufferDeserializationOption DeserializationOption { get; }
 
@@ -61,22 +43,34 @@ public interface ISerializer
     int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item) where TSpanWriter : ISpanWriter;
 
     /// <summary>
-    /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
+    /// Computes the maximum size necessary to serialize the given instance.
     /// </summary>
     int GetMaxSize(object item);
 
     /// <summary>
-    /// Parses the given buffer as an instance of <typeparamref name="T"/>.
+    /// Parses the given buffer as an instance of this ISerializer's type.
     /// </summary>
-    object Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+    /// <param name="buffer">The input buffer.</param>
+    /// <param name="option">The deserialization option. If <c>null</c>, the serializer's default setting is used.</param>
+    object Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
+    /// Returns a new <see cref="ISerializer"/> instance based on the current one with the given settings.
+    /// </summary>
+    ISerializer WithSettings(Action<SerializerSettings> settingsCallback);
 }
 
 /// <summary>
 /// An object that can read and write <typeparamref name="T"/> from a buffer.
 /// </summary>
-public interface ISerializer<T> : ISerializer
+public interface ISerializer<T>
     where T : class
 {
+    /// <summary>
+    /// Gets the default DeserializationOption for this serializer.
+    /// </summary>
+    FlatBufferDeserializationOption DeserializationOption { get; }
+
     /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
@@ -94,10 +88,12 @@ public interface ISerializer<T> : ISerializer
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/>.
     /// </summary>
-    new T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+    /// <param name="buffer">The input buffer.</param>
+    /// <param name="option">The deserialization option. If <c>null</c>, the serializer's default setting is used.</param>
+    T Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer;
 
     /// <summary>
     /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.
     /// </summary>
-    ISerializer<T> WithSettings(SerializerSettings settings);
+    ISerializer<T> WithSettings(Action<SerializerSettings> settingsCallback);
 }

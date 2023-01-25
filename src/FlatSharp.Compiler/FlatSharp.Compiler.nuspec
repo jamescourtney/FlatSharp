@@ -17,8 +17,6 @@
     <file src="FlatSharp.Compiler.targets" target="build/FlatSharp.Compiler.targets" />
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
-    <file src="$OutDir$\netcoreapp3.1\**" target="tools/netcoreapp3.1" />
-    <file src="$OutDir$\net5.0\**" target="tools/net5.0" />
     <file src="$OutDir$\net6.0\**" target="tools/net6.0" />
   </files>
 </package>

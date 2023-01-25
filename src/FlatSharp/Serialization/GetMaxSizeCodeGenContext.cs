@@ -27,14 +27,14 @@ public record GetMaxSizeCodeGenContext
     public GetMaxSizeCodeGenContext(
         string valueVariableName,
         string tableFieldContextVariableName,
-        IReadOnlyDictionary<Type, string> methodNameMap,
+        IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.ValueVariableName = valueVariableName;
         this.TableFieldContextVariableName = tableFieldContextVariableName;
-        this.MethodNameMap = methodNameMap;
+        this.MethodNameResolver = methodNameResolver;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
         this.AllFieldContexts = allFieldContexts;
@@ -58,7 +58,7 @@ public record GetMaxSizeCodeGenContext
     /// <summary>
     /// A mapping of type to serialize method name for that type.
     /// </summary>
-    public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
+    public IMethodNameResolver MethodNameResolver { get; }
 
     /// <summary>
     /// Serialization options.
@@ -68,7 +68,7 @@ public record GetMaxSizeCodeGenContext
     /// <summary>
     /// All contexts for the entire object graph.
     /// </summary>
-    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+    public IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> AllFieldContexts { get; }
 
     /// <summary>
     /// Gets a get max size invocation for the given type.
@@ -77,7 +77,8 @@ public record GetMaxSizeCodeGenContext
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
-        StringBuilder sb = new($"{this.MethodNameMap[type]}({this.ValueVariableName}");
+        var parts = this.MethodNameResolver.ResolveGetMaxSize(typeModel);
+        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.ValueVariableName}");
 
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
         {

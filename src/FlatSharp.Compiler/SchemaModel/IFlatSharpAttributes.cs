@@ -27,7 +27,7 @@ public interface IFlatSharpAttributes
 
     MemoryMarshalBehavior? MemoryMarshalBehavior { get; }
 
-    bool? NonVirtual { get; }
+    bool? PreserveFieldName { get; }
 
     bool? RpcInterface { get; }
 
@@ -46,4 +46,8 @@ public interface IFlatSharpAttributes
     bool? WriteThrough { get; }
 
     RpcStreamingType? StreamingType { get; }
+
+    string? ExternalTypeName { get; }
+
+    bool? UnsafeUnion { get; }
 }

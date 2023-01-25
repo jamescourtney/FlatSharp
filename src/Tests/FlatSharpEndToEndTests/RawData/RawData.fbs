@@ -1,0 +1,112 @@
+﻿/*
+ * Copyright 2018 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+attribute "fs_vector";
+attribute "fs_serializer";
+attribute "fs_sortedVector";
+attribute "fs_sharedString";
+attribute "fs_forceWrite";
+
+namespace FlatSharpEndToEndTests.RawData;
+
+table SharedStringTable (fs_serializer)
+{
+    a : string (fs_sharedString);
+    b : string (fs_sharedString);
+    c : string (fs_sharedString);
+    vector : [ string ] (fs_sharedString);
+}
+
+table EmptyTable (fs_serializer) { }
+
+struct SimpleStruct
+{
+    Long : long;
+    Byte : ubyte;
+    Uint : uint;
+}
+
+struct OuterStruct
+{
+    Inner : SimpleStruct;
+}
+
+table SimpleTable (fs_serializer)
+{
+    String : string;
+    struct : SimpleStruct;
+    struct_vector : [ SimpleStruct ];
+    inner_table : SimpleTable;
+    outer_struct : OuterStruct;
+}
+
+enum SimpleEnum : ubyte
+{
+    A,
+    B,
+    C
+}
+
+table DefaultValueTypes (fs_serializer)
+{
+    bool : bool = true;
+    byte : ubyte = 1;
+    sbyte : byte = -1;
+    ushort : ushort = 65535;
+    short : short = -32768;
+    uint : uint = 4294967295;
+    int : int =  -2147483648;
+    float : float = 3.14;
+    ulong : ulong = 9223372036854775807;
+    long : long = -9223372036854775808;
+    double : double = 3.14159;
+    simple_enum : SimpleEnum = B;
+
+    opt_bool : bool = null;
+    opt_byte : ubyte = null;
+    opt_sbyte : byte = null;
+    opt_ushort : ushort = null;
+    opt_short : short = null;
+    opt_uint : uint = null;
+    opt_int : int = null;
+    opt_float : float = null;
+    opt_ulong : ulong = null;
+    opt_long : long = null;
+    opt_double : double = null;
+    opt_simple_enum : SimpleEnum = null;
+}
+
+table DeprecatedItemTable (fs_serializer)
+{
+    Value : int (deprecated);
+    Other : long;
+}
+
+table NonDeprecatedItemTable (fs_serializer)
+{
+    Value : int;
+    Other : long;
+}
+
+table ForceWriteTable (fs_serializer)
+{
+    Value : int = 1 (fs_forceWrite);
+}
+
+table NonForceWriteTable (fs_serializer)
+{
+    Value : int = 1;
+}

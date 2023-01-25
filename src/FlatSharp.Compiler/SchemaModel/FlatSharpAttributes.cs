@@ -39,7 +39,7 @@ public class FlatSharpAttributes : IFlatSharpAttributes
 
     public FlatBufferDeserializationOption? DeserializationOption => this.TryParseEnum(MetadataKeys.SerializerKind, FlatBufferDeserializationOption.Default);
 
-    public bool? NonVirtual => this.TryParseBoolean(MetadataKeys.NonVirtualProperty);
+    public bool? PreserveFieldName => this.TryParseBoolean(MetadataKeys.LiteralName);
 
     public bool? SortedVector => this.TryParseBoolean(MetadataKeys.SortedVector);
 
@@ -64,6 +64,26 @@ public class FlatSharpAttributes : IFlatSharpAttributes
     public bool? RpcInterface => this.TryParseBoolean(MetadataKeys.RpcInterface);
 
     public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
+
+    public bool? UnsafeUnion => this.TryParseBoolean(MetadataKeys.UnsafeUnion);
+
+    public string? ExternalTypeName
+    {
+        get
+        {
+            if (this.rawAttributes.TryGetValue(MetadataKeys.UnsafeExternal, out var obj))
+            {
+                if (obj.Value == null || obj.Value == "0")
+                {
+                    return string.Empty;
+                }
+
+                return obj.Value;
+            }
+
+            return null;
+        }
+    }
 
     private bool? TryParseBoolean(string key)
     {

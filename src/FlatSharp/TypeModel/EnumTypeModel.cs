@@ -52,6 +52,8 @@ public class EnumTypeModel : RuntimeTypeModel
         }
     }
 
+    public override bool IsParsingInvariant => true;
+
     public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
 
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
@@ -93,7 +95,9 @@ public class EnumTypeModel : RuntimeTypeModel
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
         Type underlyingType = this.underlyingTypeModel.ClrType;
-        string body = $"return ({this.GetCompilableTypeName()}){context.GetParseInvocation(underlyingType)};";
+        string body = $@"
+            {CSharpHelpers.GetAssertSizeOfStatement(this, $"sizeof({this.underlyingTypeModel.ClrType.GetGlobalCompilableTypeName()})")}
+            return ({this.GetCompilableTypeName()}){context.GetParseInvocation(underlyingType)};";
 
         return new CodeGeneratedMethod(body)
         {
@@ -111,7 +115,12 @@ public class EnumTypeModel : RuntimeTypeModel
             ValueVariableName = $"({underlyingTypeName}){context.ValueVariableName}"
         };
 
-        return new CodeGeneratedMethod($"{innerContext.GetSerializeInvocation(underlyingType)};")
+        string body = $@"
+            {CSharpHelpers.GetAssertSizeOfStatement(this, $"sizeof({this.underlyingTypeModel.ClrType.GetGlobalCompilableTypeName()})")}
+            {innerContext.GetSerializeInvocation(underlyingType)};
+        ";
+
+        return new CodeGeneratedMethod(body)
         {
             IsMethodInline = true,
         };

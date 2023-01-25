@@ -44,6 +44,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
     {
         this.service = service;
         this.interfaceName = $"I{this.Name}";
+        this.DeclaringFile = service.DeclaringFile;
         this.calls = new();
 
         if (service.Calls is not null)
@@ -59,7 +60,11 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.RpcService;
 
-    public override string DeclaringFile => this.service.DeclaringFile;
+    public override string DeclaringFile { get; }
+
+    public override void TraverseTypeModel(CompileContext context, HashSet<Type> seenTypes)
+    {
+    }
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
@@ -225,17 +230,8 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         {
             foreach (var method in this.calls)
             {
-                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]},");
-                using (writer.IncreaseIndent())
-                {
-                    writer.AppendLine("serviceImpl == null");
-                    using (writer.IncreaseIndent())
-                    {
-                        writer.AppendLine("? null");
-                        string serverDelegate = GetServerHandlerDelegate(method);
-                        writer.AppendLine($": {serverDelegate});");
-                    }
-                }
+                string serverDelegate = GetServerHandlerDelegate(method);
+                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, {serverDelegate});");
             }
         }
     }

@@ -20,6 +20,8 @@ public static class Helpers
 {
     public static (string ns, string typeName) ParseName(string name)
     {
+        name = name.Trim();
+
         int lastIndex = name.LastIndexOf('.');
         if (lastIndex == -1)
         {

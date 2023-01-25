@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using FlatSharp.CodeGen;
+using FlatSharp.TypeModel;
+
 namespace FlatSharp.Compiler.SchemaModel;
 
 public abstract class BaseSchemaModel
@@ -47,6 +50,8 @@ public abstract class BaseSchemaModel
 
     public string FullName { get; }
 
+    public virtual string FriendlyName => this.FullName;
+
     public abstract string DeclaringFile { get; }
 
     public abstract FlatBufferSchemaElementType ElementType { get; }
@@ -59,16 +64,27 @@ public abstract class BaseSchemaModel
 
     public void WriteCode(CodeWriter writer, CompileContext context)
     {
-        if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
-        {
-            this.Validate();
+        this.Validate();
 
-            writer.AppendLine($"namespace {this.Namespace}");
-            using (writer.WithBlock())
-            {
-                this.OnWriteCode(writer, context);
-            }
+        if (this.Attributes.ExternalTypeName is not null && context.CompilePass == CodeWritingPass.LastPass)
+        {
+            return;
         }
+
+        writer.AppendLine($"namespace {this.Namespace}");
+        using (writer.WithBlock())
+        {
+            this.OnWriteCode(writer, context);
+        }
+    }
+
+    public virtual void TraverseTypeModel(CompileContext context, HashSet<Type> seenTypes)
+    {
+        Type? thisType = context.PreviousAssembly?.GetType(this.FullName);
+        FlatSharpInternal.Assert(thisType is not null, "Expecting to find the type...");
+
+        ITypeModel typeModel = context.TypeModelContainer.CreateTypeModel(thisType);
+        typeModel.TraverseObjectGraph(seenTypes);
     }
 
     protected abstract void OnWriteCode(CodeWriter writer, CompileContext context);

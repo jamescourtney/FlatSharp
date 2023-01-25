@@ -112,13 +112,12 @@ public struct SpanWriter : ISpanWriter
         return bytesWritten;
     }
 
-    public void InvokeWrite<TItemType>(IGeneratedSerializer<TItemType> serializer, Span<byte> destination, TItemType item, int offset, SerializationContext context)
+    public void InvokeWrite<TItemType>(IGeneratedSerializer<TItemType> serializer, Span<byte> destination, TItemType item, SerializationContext context)
     {
         serializer.Write(
             this,
             destination,
             item,
-            offset,
             context);
     }
 

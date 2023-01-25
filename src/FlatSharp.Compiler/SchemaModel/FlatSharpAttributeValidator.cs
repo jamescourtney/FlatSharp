@@ -40,11 +40,6 @@ public class FlatSharpAttributeValidator
             }
         }
 
-        if (attributes.NonVirtual is not null)
-        {
-            RegisterError(MetadataKeys.NonVirtualProperty, this.NonVirtualValidator(attributes.NonVirtual.Value), attributes.NonVirtual.Value);
-        }
-
         if (attributes.DeserializationOption is not null)
         {
             RegisterError(MetadataKeys.SerializerKind, this.DeserializationOptionValidator(attributes.DeserializationOption.Value), attributes.DeserializationOption.Value);
@@ -104,9 +99,17 @@ public class FlatSharpAttributeValidator
         {
             RegisterError(MetadataKeys.Streaming, this.StreamingTypeValidator(attributes.StreamingType.Value), attributes.StreamingType.Value);
         }
-    }
 
-    public Func<bool, AttributeValidationResult> NonVirtualValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
+        if (attributes.ExternalTypeName is not null)
+        {
+            RegisterError(MetadataKeys.UnsafeExternal, this.ExternValidator(attributes.ExternalTypeName), attributes.ExternalTypeName);
+        }
+
+        if (attributes.UnsafeUnion is not null)
+        {
+            RegisterError(MetadataKeys.UnsafeUnion, this.UnsafeUnionValidator(attributes.UnsafeUnion.Value), attributes.UnsafeUnion);
+        }
+    }
 
     public Func<VectorType, AttributeValidationResult> VectorTypeValidator { get; set; } = (v) => AttributeValidationResult.NeverValid;
 
@@ -131,4 +134,8 @@ public class FlatSharpAttributeValidator
     public Func<bool, AttributeValidationResult> RpcInterfaceValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
 
     public Func<RpcStreamingType, AttributeValidationResult> StreamingTypeValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
+
+    public Func<string, AttributeValidationResult> ExternValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
+
+    public Func<bool, AttributeValidationResult> UnsafeUnionValidator { get; set; } = b => AttributeValidationResult.NeverValid;
 }

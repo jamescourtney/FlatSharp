@@ -38,9 +38,19 @@ public class CodeWriter
         this.builder.AppendLine(line);
     }
 
+    public void AppendInheritDoc()
+    {
+        this.AppendLine("/// <inheritdoc />");
+    }
+
     public void AppendSummaryComment(params string[] summaryParts)
     {
         this.AppendSummaryComment((IEnumerable<string>)summaryParts);
+    }
+
+    public PreprocessorHelper BeginPreprocessorIf(string condition, string code)
+    {
+        return new PreprocessorHelper(condition, code, this);
     }
 
     public void AppendSummaryComment(IEnumerable<string>? summaryParts)
@@ -76,6 +86,13 @@ public class CodeWriter
     public override string ToString()
     {
         return this.builder.ToString();
+    }
+
+    public IDisposable WithNoIndent()
+    {
+        var temp = this.indent;
+        this.indent = 0;
+        return new FakeDisposable(() => this.indent = temp);
     }
 
     public IDisposable IncreaseIndent()

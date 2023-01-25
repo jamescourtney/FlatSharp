@@ -32,7 +32,7 @@ table Object {  // Used for both tables and structs.
 }
 */
 [FlatBufferTable]
-public class FlatBufferObject
+public class FlatBufferObject : INamedSchemaElement
 {
     [FlatBufferItem(0, Required = true, Key = true)]
     public virtual string Name { get; set; } = string.Empty;
@@ -58,4 +58,8 @@ public class FlatBufferObject
 
     [FlatBufferItem(7, Required = true)]
     public virtual string DeclarationFile { get; set; } = string.Empty;
+
+    // Not part of flatbuffer schema -- flatsharp extension only.
+    [FlatBufferItem(8)]
+    public virtual string? OriginalName { get; set; }
 }

@@ -1,0 +1,36 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpEndToEndTests.IO.InputBufferTests;
+
+table PrimitiveTypesTable (fs_serializer)
+{
+    A : bool;
+    B : ubyte;
+    C : byte;
+    D : ushort;
+    E : short;
+    F : uint;
+    G : int;
+    H : ulong;
+    I : long;
+    J : float;
+    K : double;
+    L : string;
+    M : string (fs_sharedString);
+}
+
+table ReadOnlyMemoryTable (fs_serializer)
+{
+    Memory : [ ubyte ] (fs_vector:"ReadOnlyMemory");
+}
+
+table MemoryTable (fs_serializer)
+{
+    Memory : [ ubyte ];
+}

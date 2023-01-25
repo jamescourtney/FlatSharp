@@ -20,18 +20,11 @@ namespace FlatSharp;
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation based on a <see cref="Dictionary{TKey, TValue}"/>.
 /// </summary>
 public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
-    where TValue : class
+    where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
-    private static readonly Func<TValue, TKey> KeyGetter;
-
     private readonly Dictionary<TKey, TValue> backingDictionary;
     private bool mutable;
-
-    static IndexedVector()
-    {
-        KeyGetter = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter;
-    }
 
     public IndexedVector()
     {
@@ -50,7 +43,7 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         var dictionary = new Dictionary<TKey, TValue>(capacity);
         foreach (var item in items)
         {
-            dictionary[KeyGetter(item)] = item;
+            dictionary[GetKey(item)] = item;
         }
 
         this.backingDictionary = dictionary;
@@ -64,7 +57,7 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
     /// <summary>
     /// Gets the key from the given value.
     /// </summary>
-    public static TKey GetKey(TValue value) => KeyGetter(value);
+    public static TKey GetKey(TValue value) => SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter(value);
 
     /// <summary>
     /// An indexer for getting values by their keys.
@@ -125,7 +118,7 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
             throw new NotMutableException();
         }
 
-        this.backingDictionary[KeyGetter(value)] = value;
+        this.backingDictionary[GetKey(value)] = value;
     }
 
     /// <summary>
@@ -138,7 +131,7 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
             throw new NotMutableException();
         }
 
-        TKey key = KeyGetter(value);
+        TKey key = GetKey(value);
 
 #if NETSTANDARD2_0
         var dictionary = this.backingDictionary;
@@ -150,7 +143,7 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         dictionary[key] = value;
         return true;
 #else
-            return this.backingDictionary.TryAdd(key, value);
+        return this.backingDictionary.TryAdd(key, value);
 #endif
     }
 
@@ -172,5 +165,10 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         }
 
         return this.backingDictionary.Remove(key);
+    }
+
+    [ExcludeFromCodeCoverage]
+    public void ReturnToPool(bool unsafeForce = false)
+    {
     }
 }

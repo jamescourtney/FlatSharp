@@ -1,0 +1,60 @@
+﻿/*
+ * Copyright 2020 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Declare FlatSharp attributes.
+
+attribute "fs_vector";
+attribute "fs_serializer";
+
+namespace Samples.Vectors;
+
+// Vectors (or, Lists in C# terminology) are indexed-based collections
+// of items sequentially laid out in the underlying buffer.
+// Vectors can be:
+// - primitives
+// - strings
+// - enums
+// - tables
+// - structs
+// - unions
+
+// There are a few Vector topics that get their own samples that aren't covered here:
+// Indexed Vectors (key/value lookups)
+// Sorted Vectors and Binary Search
+// Write Through Vectors (update the underlying buffer in-place)
+
+struct SimpleStruct { A : int; B : float; }
+table SimpleTable { A : int; InnerVector : [ string ]; }
+
+union SimpleUnion { SimpleStruct, SimpleTable }
+
+table LotsOfLists (fs_serializer)
+{
+    // Vectors are IList<T> by default. You can make this explicity with fs_vector:"IList"
+    list_vector_of_table : [ SimpleTable ]; 
+
+    // They can also be IReadOnlyList.
+    read_only_list_vector_of_struct : [ SimpleStruct ] (fs_vector:"IReadOnlyList");
+
+    // Or even unions!
+    list_vector_of_union : [ SimpleUnion ];
+
+    // Or even Memory<byte>
+    vector_of_ubyte : [ ubyte ];
+
+    // And finally ReadOnlyMemory<byte>
+    read_only_vector_of_ubyte : [ ubyte ] (fs_vector:"ReadOnlyMemory");
+}

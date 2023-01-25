@@ -31,6 +31,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
     private int inlineSize;
     private int maxAlignment = 1;
+    private bool isExternal;
 
     internal ValueStructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
     {
@@ -46,6 +47,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
     /// </summary>
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
         new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.inlineSize, this.maxAlignment) }.ToImmutableArray();
+
+    /// <summary>
+    /// Like scalars, value structs are not sensitive to deserialization mode.
+    /// </summary>
+    public override bool IsParsingInvariant => true;
 
     /// <summary>
     /// Structs are composed of scalars.
@@ -103,12 +109,20 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
+        if (this.isExternal)
+        {
+            return this.CreateExternalParseMethod(context);
+        }
+
         var propertyStatements = new List<string>();
         for (int i = 0; i < this.members.Count; ++i)
         {
             var member = this.members[i];
+
+            var parts = context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, member.model);
+
             propertyStatements.Add($@"
-                item.{member.accessor} = {context.MethodNameMap[member.model.ClrType]}<{context.InputBufferTypeName}>(
+                item.{member.accessor} = {parts.@namespace}.{parts.className}.{parts.methodName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {member.offset},
                     {context.RemainingDepthVariableName});");
@@ -125,13 +139,15 @@ public class ValueStructTypeModel : RuntimeTypeModel
             return new CodeGeneratedMethod(nonMarshalBody);
         }
 
+        string globalName = this.ClrType.GetGlobalCompilableTypeName();
+
         // For little endian architectures, we can do the equivalent of a reinterpret_cast operation. This will be
         // generally faster than reading fields individually, since we will read entire words.
         string body = $@"
             if (BitConverter.IsLittleEndian)
             {{
-                var mem = {context.InputBufferVariableName}.{nameof(InputBufferExtensions.AsReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
-                return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(mem)[0];
+                var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
+                return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.{nameof(MemoryMarshal.Read)}<{globalName}>(mem);
             }}
             else
             {{
@@ -144,6 +160,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
+        if (this.isExternal)
+        {
+            return this.CreateExternalSerializeMethod(context);
+        }
+
         var propertyStatements = new List<string>();
         for (int i = 0; i < this.members.Count; ++i)
         {
@@ -157,7 +178,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
             propertyStatements.Add(fieldContext.GetSerializeInvocation(member.model.ClrType) + ";");
         }
-
+        
         string body;
         string slice = $"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
         if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
@@ -166,8 +187,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
                 {slice}
                 if (BitConverter.IsLittleEndian)
                 {{
-                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(sizedSpan);
-                    tempSpan[0] = {context.ValueVariableName};
+                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
                 }}
                 else
                 {{
@@ -183,6 +203,33 @@ public class ValueStructTypeModel : RuntimeTypeModel
         }
 
         return new CodeGeneratedMethod(body);
+    }
+
+    private CodeGeneratedMethod CreateExternalSerializeMethod(SerializationCodeGenContext context)
+    {
+        string globalName = this.ClrType.GetGlobalCompilableTypeName();
+        string body = $@"
+            FlatSharpInternal.AssertLittleEndian();
+            FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
+            Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
+            {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
+        ";
+
+        return new CodeGeneratedMethod(body) { IsMethodInline = true };
+    }
+
+    private CodeGeneratedMethod CreateExternalParseMethod(ParserCodeGenContext context)
+    {
+        string globalName = this.ClrType.GetGlobalCompilableTypeName();
+
+        string body = $@"
+            FlatSharpInternal.AssertLittleEndian();
+            FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
+            var slice = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
+            return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Read<{globalName}>(slice);
+        ";
+
+        return new CodeGeneratedMethod(body) { IsMethodInline = true };
     }
 
     public override void Initialize()
@@ -259,8 +306,10 @@ public class ValueStructTypeModel : RuntimeTypeModel
             throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
         }
 
+        this.isExternal = this.ClrType.GetCustomAttribute<ExternalDefinitionAttribute>() is not null;
         this.CanMarshalOnSerialize = false;
         this.CanMarshalOnParse = false;
+
 
         if (UnsafeSizeOf(this.ClrType) == this.inlineSize)
         {

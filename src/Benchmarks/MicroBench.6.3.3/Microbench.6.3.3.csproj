@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\..\common.props" />
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>net7.0</TargetFrameworks>
+        <DelaySign>false</DelaySign>
+        <SignAssembly>false</SignAssembly>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.2" />
+        <PackageReference Include="FlatSharp" Version="6.3.5" />
+        <PackageReference Include="FlatSharp.Compiler" Version="6.3.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Microbench.Current\*.cs" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <FlatSharpSchema Include="../Microbench.fbs" />
+    </ItemGroup>
+</Project>

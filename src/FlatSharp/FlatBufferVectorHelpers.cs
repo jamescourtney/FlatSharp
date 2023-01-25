@@ -14,71 +14,94 @@
  * limitations under the License.
  */
 
+using System.IO;
+
 namespace FlatSharp.TypeModel;
 
 internal static class FlatBufferVectorHelpers
 {
-    public static (string classDef, string className) CreateFlatBufferVectorSubclass(
+    public static (string classDef, string className) CreateVectorItemAccessor(
         ITypeModel itemTypeModel,
-        ParserCodeGenContext parseContext)
+        int inlineSize,
+        ParserCodeGenContext context,
+        bool isEverWriteThrough)
     {
-        Type itemType = itemTypeModel.ClrType;
-        string className = $"FlatBufferVector_{Guid.NewGuid():n}";
+        string className = $"ItemAccessor_{Guid.NewGuid():n}";
+        string itemTypeName = itemTypeModel.GetGlobalCompilableTypeName();
 
-        parseContext = parseContext with
+        context = context with
         {
             InputBufferTypeName = "TInputBuffer",
-            InputBufferVariableName = "memory",
+            InputBufferVariableName = "buffer",
             IsOffsetByRef = false,
             TableFieldContextVariableName = "fieldContext",
             RemainingDepthVariableName = "remainingDepth",
         };
 
-        var serializeContext = parseContext.GetWriteThroughContext("data", "item", "0");
-        string writeThroughBody = serializeContext.GetSerializeInvocation(itemType);
-        if (itemTypeModel.SerializeMethodRequiresContext)
+        var serializeContext = context.GetWriteThroughContext("data", "item", "0");
+        string writeThroughBody = $"throw new NotMutableException(\"FlatBufferVector does not support mutation.\");";
+        if (isEverWriteThrough)
         {
-            writeThroughBody = "throw new NotSupportedException(\"write through is not available for this type\")";
+            writeThroughBody = @$"
+                if (!context.WriteThrough)
+                {{
+                    {writeThroughBody}
+                }}
+
+                int offset = checked(this.offset + ({inlineSize} * index));
+                Span<byte> {serializeContext.SpanVariableName} = inputBuffer.GetSpan().Slice(offset, {inlineSize});
+
+                {serializeContext.GetSerializeInvocation(itemTypeModel.ClrType)};
+            ";
         }
 
-        string classDef = $@"
-                public sealed class {className}<{parseContext.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {parseContext.InputBufferTypeName}>
-                    where {parseContext.InputBufferTypeName} : {nameof(IInputBuffer)}
-                {{
-                    public {className}(
-                        {parseContext.InputBufferTypeName} memory,
-                        int offset,
-                        int itemSize,
-                        short remainingDepth,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, remainingDepth, fieldContext)
-                    {{
-                    }}
+        string body = $@"
 
-                    protected override void ParseItem(
-                        {parseContext.InputBufferTypeName} memory,
-                        int offset,
-                        short remainingDepth,
-                        {nameof(TableFieldContext)} fieldContext,
-                        out {itemType.GetGlobalCompilableTypeName()} item)
-                    {{
-                        item = {parseContext.GetParseInvocation(itemType)};
-                    }}
+internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
+    where {context.InputBufferTypeName} : IInputBuffer
+{{
+    private readonly int offset;
+    private readonly int count;
 
-                    protected override void WriteThrough({itemType.GetGlobalCompilableTypeName()} {serializeContext.ValueVariableName}, Span<byte> {serializeContext.SpanVariableName})
-                    {{
-                        {writeThroughBody};
-                    }}
-                }}
-            ";
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public {className}(int offset, TInputBuffer buffer)
+    {{
+        this.count = checked((int)buffer.ReadUInt(offset));
 
-        return (classDef, className);
+        // Advance to the start of the element at index 0. Easiest to do this once
+        // in the .ctor than repeatedly for each index.
+        this.offset = checked(offset + sizeof(uint));
+    }}
+
+    public int ItemSize => {inlineSize};
+
+    public int Count => this.count;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
+    {{
+        int {context.OffsetVariableName} = this.offset + ({inlineSize} * index);
+        item = {context.GetParseInvocation(itemTypeModel.ClrType)};
+    }}
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteThrough(int index, {itemTypeName} {serializeContext.ValueVariableName}, {context.InputBufferTypeName} inputBuffer, TableFieldContext context)
+    {{
+        {writeThroughBody}
+    }}
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int OffsetOf(int index) => this.offset + ({inlineSize} * index);
+}}";
+        return (body, className);
     }
 
-    public static (string classDef, string className) CreateFlatBufferVectorOfUnionSubclass(
+    public static (string classDef, string className) CreateVectorOfUnionItemAccessor(
         ITypeModel typeModel,
         ParserCodeGenContext context)
     {
-        string className = $"FlatBufferUnionVector_{Guid.NewGuid():n}";
+        string className = $"FlatBufferUnionVectorAccessor_{Guid.NewGuid():n}";
+        string itemTypeName = typeModel.GetGlobalCompilableTypeName();
 
         context = context with
         {
@@ -91,31 +114,53 @@ internal static class FlatBufferVectorHelpers
         };
 
         string classDef = $@"
-                public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVectorOfUnion<{typeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
-                    where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
-                {{
-                    public {className}(
-                        {context.InputBufferTypeName} memory,
-                        int discriminatorOffset,
-                        int offsetVectorOffset,
-                        short remainingDepth,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, remainingDepth, fieldContext)
-                    {{
-                    }}
 
-                    protected override void ParseItem(
-                        {context.InputBufferTypeName} memory,
-                        int discriminatorOffset,
-                        int offsetOffset,
-                        short remainingDepth,
-                        {nameof(TableFieldContext)} {context.TableFieldContextVariableName},
-                        out {typeModel.GetGlobalCompilableTypeName()} item)
-                    {{
-                        var {context.OffsetVariableName} = (discriminatorOffset, offsetOffset);
-                        item = {context.GetParseInvocation(typeModel.ClrType)};
-                    }}
-                }}
-            ";
+internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
+    where {context.InputBufferTypeName} : IInputBuffer
+{{
+    private readonly int discriminatorVectorOffset;
+    private readonly int offsetVectorOffset;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public {className}(
+        {context.InputBufferTypeName} memory,
+        int discriminatorOffset,
+        int offsetVectorOffset)
+    {{
+        uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
+        uint offsetCount = memory.ReadUInt(offsetVectorOffset);
+
+        if (discriminatorCount != offsetCount)
+        {{
+            throw new {typeof(InvalidDataException).GetGlobalCompilableTypeName()}($""Union vector had mismatched number of discriminators and offsets."");
+        }}
+
+        this.Count = (int)offsetCount;
+        this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
+        this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
+    }}
+
+    public int Count {{ get; }}
+
+    public int ItemSize => throw new NotImplementedException();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
+    {{
+        var {context.OffsetVariableName} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + (index * sizeof(int)));
+        item = {context.GetParseInvocation(typeModel.ClrType)};
+    }}
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteThrough(int index, {itemTypeName} value, {context.InputBufferTypeName} inputBuffer, TableFieldContext context)
+    {{
+        throw new NotMutableException();
+    }}
+
+    public int OffsetOf(int index) => throw new NotImplementedException();
+}}
+";
+
 
         return (classDef, className);
     }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-using System.IO;
+namespace FlatSharp.Internal;
 
-namespace FlatSharp;
-
-internal static class FlatSharpInternal
+public static class FlatSharpInternal
 {
     [ExcludeFromCodeCoverage]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assert(
         [DoesNotReturnIf(false)] bool condition,
         string message,
@@ -30,7 +29,46 @@ internal static class FlatSharpInternal
     {
         if (!condition)
         {
-            throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+            ThrowAssertFailed(message, memberName, fileName, lineNumber);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    private static void ThrowAssertFailed(
+        string message,
+        string memberName,
+        string fileName,
+        int lineNumber)
+    {
+        throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+    }
+
+    /// <summary>
+    /// Asserts that the type T has the expected size.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] //inline keeps the JIT codegen the same as this method should be known at JIT time.
+    public static void AssertSizeOf<T>(int expectedSize) where T : struct
+    {
+        if (Unsafe.SizeOf<T>() != expectedSize)
+        {
+            string message = $"Flatsharp expected type: {typeof(T).FullName} to have size {expectedSize}. Unsafe.SizeOf reported size {Unsafe.SizeOf<T>()}.";
+            throw new FlatSharpInternalException(message);
+        }
+    }
+
+    /// <summary>
+    /// Asserts that the system is a LE architecture.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] //inline keeps the JIT codegen the same as this method should be known at JIT time.
+    public static void AssertLittleEndian()
+    {
+        if (!BitConverter.IsLittleEndian)
+        {
+            string message = $"FlatSharp encountered a code path that is only functional on little endian architectures.";
+            throw new FlatSharpInternalException(message);
         }
     }
 }

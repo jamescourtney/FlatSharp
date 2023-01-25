@@ -1,0 +1,19 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_setter";
+
+namespace FlatSharpEndToEndTests.AccessModifiers;
+
+table Table (fs_serializer)
+{
+    public_implicit : int;
+    none : int (fs_setter:"None");
+
+    public : int (fs_setter:"Public");
+    protected_internal : int (fs_setter:"ProtectedInternal");
+    protected : int (fs_setter:"Protected");
+
+    public_init : int (fs_setter:"PublicInit");
+    protected_init : int (fs_setter:"ProtectedInit");
+    protected_internal_init : int (fs_setter:"ProtectedInternalInit");
+}

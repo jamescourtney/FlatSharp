@@ -49,8 +49,8 @@ public class DepthLimitTests
     }
 
     [Theory]
-    [InlineData(499, false)]
-    [InlineData(500, true)]
+    [InlineData(49, false)]
+    [InlineData(50, true)]
     public void DeepTable_NoCycle(int depth, bool expectCycleTracking)
     {
         StringBuilder sb = new();
@@ -65,7 +65,7 @@ public class DepthLimitTests
             sb.AppendLine($"table T{i} {{ Previous : T{i - 1}; }}");
         }
 
-        CompileAndVerify(sb.ToString(), $"Foo.Bar.T{depth - 1}", expectCycleTracking);
+        CompileAndVerify(sb.ToString(), $"Foo.Bar.T{depth - 1}", expectCycleTracking, 50);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class DepthLimitTests
             namespace Foo.Bar;
             table A {{ Next : B; }}
             table B {{ Next : C; }}
-            table C {{ Next : [A] (fs_vector:""Array""); }}
+            table C {{ Next : [A] (fs_vector:""IReadOnlyList""); }}
         ";
 
         CompileAndVerify(fbs, "Foo.Bar.A", true);
@@ -110,13 +110,13 @@ public class DepthLimitTests
         CompileAndVerify(fbs, "Foo.Bar.A", true);
     }
 
-    private static void CompileAndVerify(string fbs, string typeName, bool needsTracking)
+    private static void CompileAndVerify(string fbs, string typeName, bool needsTracking, int threshold = 500)
     {
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new());
         Type t = asm.GetTypes().Single(x => x.FullName == typeName);
         Assert.NotNull(t);
 
         ITypeModel typeModel = RuntimeTypeModel.CreateFrom(t);
-        Assert.Equal(needsTracking, typeModel.IsDeepEnoughToRequireDepthTracking());
+        Assert.Equal(needsTracking, typeModel.IsDeepEnoughToRequireDepthTracking(threshold));
     }
 }

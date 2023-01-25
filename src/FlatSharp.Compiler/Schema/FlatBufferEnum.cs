@@ -33,7 +33,7 @@ table Enum {
 */
 
 [FlatBufferTable]
-public class FlatBufferEnum
+public class FlatBufferEnum : INamedSchemaElement
 {
     [FlatBufferItem(0, Required = true, Key = true)]
     public virtual string Name { get; set; } = string.Empty;
@@ -55,6 +55,10 @@ public class FlatBufferEnum
 
     [FlatBufferItem(6, Required = true)]
     public virtual string DeclarationFile { get; set; } = string.Empty;
+
+    // Not part of flatbuffer schema -- flatsharp extension only.
+    [FlatBufferItem(7)]
+    public virtual string? OriginalName { get; set; }
 
     public BaseSchemaModel ToSchemaModel(Schema schema)
     {

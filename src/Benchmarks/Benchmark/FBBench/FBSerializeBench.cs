@@ -56,15 +56,7 @@ namespace Benchmark.FBBench
         public override void FlatSharp_Serialize() => base.FlatSharp_Serialize();
 
         [Benchmark]
-        public override void FlatSharp_Serialize_NonVirtual() => base.FlatSharp_Serialize_NonVirtual();
-
-#if FLATSHARP_5_7_1_OR_GREATER
-        [Benchmark]
         public override void FlatSharp_Serialize_ValueStructs() => base.FlatSharp_Serialize_ValueStructs();
-
-        [Benchmark]
-        public override void FlatSharp_Serialize_ValueStructs_NonVirtual() => base.FlatSharp_Serialize_ValueStructs_NonVirtual();
-#endif
 
         [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();

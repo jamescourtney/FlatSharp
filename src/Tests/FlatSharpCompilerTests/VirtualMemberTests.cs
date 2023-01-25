@@ -19,27 +19,20 @@ namespace FlatSharpTests.Compiler;
 public class VirtualMemberTests
 {
     [Fact]
-    public void DefaultVirtual() => this.VirtualTest(false);
+    public void DefaultVirtual() => this.VirtualTest();
 
-    [Fact]
-    public void DefaultNonVirtual() => this.VirtualTest(true);
-
-    private void VirtualTest(bool defaultNonVirtual)
+    private void VirtualTest()
     {
         string schema = $@"
             {MetadataHelpers.AllAttributes}
             namespace VirtualTests;
-            table VirtualTable ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", {MetadataKeys.SerializerKind}:""Lazy"") {{
+            table VirtualTable ({MetadataKeys.SerializerKind}:""Lazy"") {{
                 Default:int;
-                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"");
-                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"");
                 Struct:VirtualStruct;
             }}
 
-            struct VirtualStruct ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"") {{
+            struct VirtualStruct {{
                 Default:int;
-                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"");
-                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"");
             }}
 
             table DefaultTable ({MetadataKeys.SerializerKind}:""lazy"") {{ Default:int; Struct:DefaultStruct; }}
@@ -52,16 +45,10 @@ public class VirtualMemberTests
             Type type = asm.GetType(typeName);
             Assert.True(type.IsPublic);
             var defaultProperty = type.GetProperty("Default");
-            var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
-            var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
 
             Assert.NotNull(defaultProperty);
-            Assert.NotNull(forcedVirtualProperty);
-            Assert.NotNull(forcedNonVirtualProperty);
 
-            Assert.Equal(!defaultNonVirtual, defaultProperty.GetMethod.IsVirtual);
-            Assert.True(forcedVirtualProperty.GetMethod.IsVirtual);
-            Assert.False(forcedNonVirtualProperty.GetMethod.IsVirtual);
+            Assert.True(defaultProperty.GetMethod.IsVirtual);
         }
 
         foreach (var typeName in new[] { "VirtualTests.DefaultTable", "VirtualTests.DefaultStruct" })

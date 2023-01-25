@@ -44,6 +44,11 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.size, this.size) }.ToImmutableArray();
 
     /// <summary>
+    /// Scalars are not sensitive to deserialization mode.
+    /// </summary>
+    public override bool IsParsingInvariant => true;
+
+    /// <summary>
     /// Scalars are fixed size.
     /// </summary>
     public override bool IsFixedSize => true;

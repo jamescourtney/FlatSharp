@@ -24,6 +24,16 @@ namespace FlatSharp;
 public interface IInputBuffer
 {
     /// <summary>
+    /// Indicates if this instance is read only.
+    /// </summary>
+    bool IsReadOnly { get; }
+
+    /// <summary>
+    /// Indicates if this instance represents pinned (non-movable) memory.
+    /// </summary>
+    bool IsPinned { get; }
+
+    /// <summary>
     /// Gets the length of this input buffer.
     /// </summary>
     int Length { get; }
@@ -84,33 +94,6 @@ public interface IInputBuffer
     string ReadString(int offset, int byteLength, Encoding encoding);
 
     /// <summary>
-    /// Reads the byte memory at the given offset with the given length.
-    /// </summary>
-    Memory<byte> GetByteMemory(int start, int length);
-
-    /// <summary>
-    /// Reads the read only byte memory at the given offset with the given length.
-    /// </summary>
-    ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
-
-    /// <summary>
-    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
-    /// generic parameters.
-    /// </summary>
-    TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
-}
-
-/// <summary>
-/// Extensions to <see cref="IInputBuffer"/>.
-/// </summary>
-public interface IInputBuffer2 : IInputBuffer
-{
-    /// <summary>
-    /// Indicates if this instance is read only.
-    /// </summary>
-    bool IsReadOnly { get; }
-
-    /// <summary>
     /// Gets a read only span covering the entire input buffer.
     /// </summary>
     ReadOnlySpan<byte> GetReadOnlySpan();
@@ -129,4 +112,28 @@ public interface IInputBuffer2 : IInputBuffer
     /// Gets a memory covering the entire input buffer.
     /// </summary>
     Memory<byte> GetMemory();
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
 }

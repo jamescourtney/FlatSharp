@@ -1,0 +1,15 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpEndToEndTests.ClassLib.FlatBufferVectorOfUnionTests;
+
+union MyUnion { str : string, Struct, Table }
+
+struct Struct { Value : int; }
+table Table { Value : int; }
+table TableVector (fs_serializer) { Vector : [ MyUnion ]; }

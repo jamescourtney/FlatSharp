@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace FlatSharp.Internal;
 
@@ -35,6 +36,7 @@ public static class InputBufferExtensions
     /// <summary>
     /// Reads a string at the given offset.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
     {
         checked
@@ -101,7 +103,7 @@ public static class InputBufferExtensions
                 ThrowInvalidVtableException();
             }
 
-            fieldData = buffer.AsReadOnlySpan().Slice(vtableOffset, vtableLength).Slice(4);
+            fieldData = buffer.GetReadOnlySpan().Slice(vtableOffset, vtableLength).Slice(4);
             vtableFieldCount = (nuint)fieldData.Length / 2;
         }
     }
@@ -120,7 +122,7 @@ public static class InputBufferExtensions
         {
             // The local value stores a uoffset_t, so follow that now.
             uoffset = uoffset + buffer.ReadUOffset(uoffset);
-            return buffer.GetByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
+            return buffer.GetMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
         }
     }
 
@@ -132,41 +134,24 @@ public static class InputBufferExtensions
         {
             // The local value stores a uoffset_t, so follow that now.
             uoffset = uoffset + buffer.ReadUOffset(uoffset);
-            return buffer.GetReadOnlyByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
+            return buffer.GetReadOnlyMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
         }
     }
-
-    /// <summary>
-    /// Gets a read only span covering the entire input buffer.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<byte> AsReadOnlySpan<TBuffer>(this TBuffer buffer) where TBuffer : IInputBuffer
+    
+    public static Span<TElement> UnsafeReadSpan<TBuffer, TElement>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer where TElement : struct
     {
-        if (buffer is IInputBuffer2)
-        {
-            return ((IInputBuffer2)buffer).GetReadOnlySpan();
-        }
-        else
-        {
-            return buffer.GetReadOnlyByteMemory(0, buffer.Length).Span;
-        }
-    }
+        checked
+        {   
+            // The local value stores a uoffset_t, so follow that now.
+            uoffset = uoffset + buffer.ReadUOffset(uoffset);
 
-    /// <summary>
-    /// Gets a span covering the entire input buffer.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<byte> AsSpan<TBuffer>(this TBuffer buffer) where TBuffer : IInputBuffer
-    {
-        // Since this method is inlined, the JIT knows for sure the type of TBuffer
-        // and can elide this condition.
-        if (buffer is IInputBuffer2)
-        {
-            return ((IInputBuffer2)buffer).GetSpan();
-        }
-        else
-        {
-            return buffer.GetByteMemory(0, buffer.Length).Span;
+            // We need to construct a Span<TElement> from byte buffer that:
+            // 1. starts at correct offset for vector data
+            // 2. has a length based on *TElement* count not *byte* count
+            var byteSpanAtDataOffset = buffer.GetSpan().Slice(uoffset + sizeof(uint));
+            var sourceSpan = MemoryMarshal.Cast<byte, TElement>(byteSpanAtDataOffset).Slice(0, (int)buffer.ReadUInt(uoffset));
+
+            return sourceSpan;
         }
     }
 

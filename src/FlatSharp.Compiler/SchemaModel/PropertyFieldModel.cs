@@ -17,6 +17,7 @@
 using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using System.Text;
+using FlatSharp.CodeGen;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -40,7 +41,6 @@ public record PropertyFieldModel
 
         new FlatSharpAttributeValidator(elementType, $"{this.Parent.FullName}.{this.FieldName}")
         {
-            NonVirtualValidator = _ => AttributeValidationResult.Valid,
             VectorTypeValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             SortedVectorValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             SharedStringValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
@@ -49,12 +49,12 @@ public record PropertyFieldModel
                 switch (this.Attributes.SetterKind)
                 {
 #if !NET5_0_OR_GREATER
-                        case SetterKind.PublicInit:
+                    case SetterKind.PublicInit:
                     case SetterKind.ProtectedInit:
                     case SetterKind.ProtectedInternalInit:
                         return AttributeValidationResult.NeedsAtLeastDotNet5;
 #endif
-                        default:
+                    default:
                         return AttributeValidationResult.Valid;
                 }
             },
@@ -80,8 +80,6 @@ public record PropertyFieldModel
 
     public IFlatSharpAttributes Attributes { get; init; }
 
-    public bool DefaultOptional { get; init; }
-
     public string FieldName { get; init; }
 
     public int Index { get; init; }
@@ -91,7 +89,7 @@ public record PropertyFieldModel
     public static bool TryCreate(BaseReferenceTypeSchemaModel parent, Field field, int previousIndex, [NotNullWhen(true)] out PropertyFieldModel? model)
     {
         model = null;
-        if (parent.ElementType != FlatBufferSchemaElementType.Table && parent.ElementType != FlatBufferSchemaElementType.Struct)
+        if (parent.ElementType != FlatBufferSchemaElementType.Table && parent.ElementType != FlatBufferSchemaElementType.ReferenceStruct)
         {
             return false;
         }
@@ -144,12 +142,6 @@ public record PropertyFieldModel
             SetterKind.Public or _ => "set;",
         };
 
-        string @virtual = (this.Attributes.NonVirtual ?? this.Parent.Attributes.NonVirtual) switch
-        {
-            false or null => "virtual ",
-            true => string.Empty,
-        };
-
         string typeName = this.GetTypeName();
 
         string access = "public";
@@ -158,7 +150,17 @@ public record PropertyFieldModel
             access = "protected";
         }
 
-        writer.AppendLine($"{access} {@virtual}{typeName} {this.FieldName} {{ get; {setter} }}");
+        string property = $"{access} virtual {typeName} {this.FieldName} {{ get; {setter} }}";
+        if (this.Field.Required == true)
+        {
+            writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, $"required {property}")
+                  .Else(property)
+                  .Flush();
+        }
+        else
+        {
+            writer.AppendLine(property);
+        }
     }
 
     public string GetDefaultValue()
@@ -313,12 +315,18 @@ public record PropertyFieldModel
     {
         return this.Attributes.VectorKind switch
         {
-            VectorType.IList or null => $"IList<{innerType}>",
+            VectorType.IList => $"IList<{innerType}>",
             VectorType.IReadOnlyList => $"IReadOnlyList<{innerType}>",
-            VectorType.Array => $"{innerType}[]",
             VectorType.Memory => $"Memory<{innerType}>",
             VectorType.ReadOnlyMemory => $"ReadOnlyMemory<{innerType}>",
             VectorType.IIndexedVector => $"IIndexedVector<{keyType ?? "string"}, {innerType}>",
+            VectorType.UnityNativeArray => $"Unity.Collections.NativeArray<{innerType}>",
+
+            // Unqualified ubyte vectors default to Memory.
+            null => this.Field.Type.ElementType == BaseType.UByte 
+                  ? $"Memory<{innerType}>"
+                  : $"IList<{innerType}>",
+
             _ => throw new FlatSharpInternalException("Unknown vector kind: " + this.Attributes.VectorKind),
         };
     }

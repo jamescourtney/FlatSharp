@@ -18,6 +18,8 @@ using System.Linq;
 using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using FlatSharp.TypeModel;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using FlatSharp.Internal;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -34,6 +36,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         FlatSharpInternal.Assert(this.Attributes.ValueStruct == true, "Expecting value struct");
 
         this.@struct = @struct;
+        this.DeclaringFile = @struct.DeclarationFile;
         this.fields = new();
         this.structVectors = new();
 
@@ -70,6 +73,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         }
 
         this.AttributeValidator.MemoryMarshalValidator = _ => AttributeValidationResult.Valid;
+        this.AttributeValidator.ExternValidator = _ => AttributeValidationResult.Valid;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ValueStructSchemaModel? model)
@@ -91,7 +95,9 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStruct;
 
-    public override string DeclaringFile => this.@struct.DeclarationFile;
+    public override string DeclaringFile { get; }
+
+    public override string FriendlyName => this.@struct.OriginalName ?? this.FullName;
 
     protected override void OnValidate()
     {
@@ -106,6 +112,11 @@ public class ValueStructSchemaModel : BaseSchemaModel
         if (this.Attributes.MemoryMarshalBehavior is not null)
         {
             memMarshalBehavior = $"{nameof(FlatBufferStructAttribute.MemoryMarshalBehavior)} = {nameof(MemoryMarshalBehavior)}.{this.Attributes.MemoryMarshalBehavior}";
+        }
+
+        if (this.Attributes.ExternalTypeName is not null)
+        {
+            writer.AppendLine($"[FlatSharp.Internal.ExternalDefinitionAttribute]");
         }
 
         writer.AppendLine($"[FlatBufferStruct({memMarshalBehavior})]");

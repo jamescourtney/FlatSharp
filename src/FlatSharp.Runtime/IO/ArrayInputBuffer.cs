@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of <see cref="IInputBuffer"/> for managed arrays.
 /// </summary>
-public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
+public struct ArrayInputBuffer : IInputBuffer
 {
     private readonly byte[] memory;
 
@@ -29,6 +29,8 @@ public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
     {
         this.memory = buffer;
     }
+
+    public bool IsPinned => false;
 
     public bool IsReadOnly => false;
 
@@ -109,18 +111,6 @@ public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<byte> GetByteMemory(int start, int length)
-    {
-        return new Memory<byte>(this.memory, start, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-    {
-        return this.GetByteMemory(start, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan()
     {
         return this.memory;
@@ -143,8 +133,20 @@ public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
     {
         return this.memory;
     }
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
-    {
-        return serializer.Parse(this, arguments);
-    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseLazy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseProgressive(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedy(this, in arguments);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        => serializer.ParseGreedyMutable(this, in arguments);
 }

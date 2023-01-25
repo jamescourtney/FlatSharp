@@ -21,28 +21,27 @@
     <UsingTask TaskName="ProcessFlatSharpSchema" TaskFactory="$(TaskFactory)" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
         <ParameterGroup>
             <Inputs ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-            <Result ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+            <IncludeDirectories ParameterType="System.String" Output="true" />
         </ParameterGroup>
         <Task>
+            <Using Namespace="System" />
             <Using Namespace="System.IO" />
             <Code Type="Fragment" Language="cs">
-<![CDATA[
+                <![CDATA[
+                IncludeDirectories = string.Empty;
                 if (Inputs == null || Inputs.Length == 0)
                 {
-                    Result = Array.Empty<ITaskItem>();
                     Success = true;
                     goto End;
                 }
 
                 var errors = new HashSet<string>();
-                var alreadySeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var outputList = new List<ITaskItem>(Inputs.Length);
+                var includeDirectories = new HashSet<string>();
 
                 foreach (var item in Inputs)
                 {
-                    if (alreadySeen.Add(item.ItemSpec))
-                    {
-                        var includePath = String.Join(";", item.GetMetadata("IncludePath").Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    var includes = (item.GetMetadata("IncludePath") ?? string.Empty)
+                            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                             .Select(include =>
                             {
                                 if (!Directory.Exists(include))
@@ -52,9 +51,11 @@
                                 }
                                 
                                 return Path.GetFullPath(include).TrimEnd('\\');
-                            }));
-                        item.SetMetadata("IncludePath", includePath);
-                        outputList.Add(item);
+                            });
+                            
+                    foreach (var i in includes)
+                    {
+                        includeDirectories.Add(i);
                     }
                 }
                 
@@ -65,12 +66,11 @@
                         Log.LogError(error);
                     }
                     
-                    Result = Array.Empty<ITaskItem>();
                     Success = false;
                 }
                 else
                 {
-                    Result = outputList.ToArray();
+                    IncludeDirectories = string.Join(";", includeDirectories);
                     Success = true;
                 }
 
@@ -78,7 +78,6 @@
                 End:
                 {
                 }
-
 ]]>
             </Code>
         </Task>
@@ -90,53 +89,40 @@
         <UpToDateCheckInput Include="@(FlatSharpSchema)" />
     </ItemGroup>
 
-    <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
+    <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences" Condition=" '@(FlatSharpSchema)' != '' ">
         <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
             <FlatSharpNullable>false</FlatSharpNullable>
             <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
         </PropertyGroup>
 
+        <PropertyGroup Condition=" '$(FlatSharpPoolable)' == '' ">
+            <FlatSharpPoolable>false</FlatSharpPoolable>
+        </PropertyGroup>
+
+
         <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' == '' ">
-            <FlatSharpNameNormalization>false</FlatSharpNameNormalization>
+            <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
         </PropertyGroup>
 
-        <!-- Query the installed SDKs. -->
-        <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="true">
-            <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
-        </Exec>
-
-        <!-- try netcore3.1 -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '3\.1\.\d+')) ">
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\netcoreapp3.1\FlatSharp.Compiler.dll'))</CompilerPath>
-        </PropertyGroup>
-
-        <!-- try .net5.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '5\.0\.\d+')) ">
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
-        </PropertyGroup>
-
-        <!-- try .net6.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
+        <PropertyGroup>
             <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
         </PropertyGroup>
 
-        <Error 
-            Condition=" '$(CompilerPath)' == '' " 
-            Text="FlatSharp.Compiler requires .NET Core 3.1, .NET 5.0, or .NET 6.0 to be installed and available on the PATH." />
+        <PropertyGroup Condition=" '$(FlatSharpCompilerPath)' != '' ">
+            <CompilerPath>$(FlatSharpCompilerPath)</CompilerPath>
+        </PropertyGroup>
 
         <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
-            <Output TaskParameter="Result" ItemName="ProcessedFlatSharpSchema" />
+            <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
         </ProcessFlatSharpSchema>
 
         <Message
-            Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --input &quot;%(ProcessedFlatSharpSchema.fullpath)&quot; --includes &quot;%(ProcessedFlatSharpSchema.IncludePath)&quot; --output $(IntermediateOutputPath)"
-            Condition=" '%(ProcessedFlatSharpSchema.fullpath)' != '' "
+            Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
             Importance="high" />
 
         <Exec
-            Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --input &quot;%(ProcessedFlatSharpSchema.fullpath)&quot; --includes &quot;%(ProcessedFlatSharpSchema.IncludePath)&quot; --output $(IntermediateOutputPath)"
-            CustomErrorRegularExpression=".*"
-            Condition=" '%(ProcessedFlatSharpSchema.fullpath)' != '' " />
+            Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
+            CustomErrorRegularExpression=".*" />
 
         <ItemGroup>
             <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />

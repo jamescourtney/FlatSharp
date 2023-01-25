@@ -20,13 +20,13 @@ namespace Samples.Unions;
 
 enum DogBreed : byte { Golden, Lab, Corgi }
 enum CatBreed : byte { Calico, Shorthair, Bengal }
-enum FishKind : byte { Coelacanth, Dorado, Piranha }
+enum FishKind : byte { Coelacanth, Dorado, Piranha, Puffer }
 
 // FlatSharp generates a "Pet" union.
 // In this example, the "Doggo" label is applied, so all of the union's properties in C# will
 // refer to "Doggo". For fish and Cat, the names are left as-is.
 // If you want to include strings in your union, you need to indicate a label for the string (this is a flatc quirk).
-union Pet { Doggo : Dog, Cat, Fish }
+union Pet { Doggo : Dog, Cat, Fish, someString : string }
 
 table Dog { Breed:DogBreed; Name:string; }
 table Cat { Breed:CatBreed; Name:string; }
@@ -34,6 +34,9 @@ table Fish { Kind:FishKind; Weight:float64; Name:string; }
 
 table Person
 { 
-	// A person can have one pet. Either a dog, cat, or fish.
-	Pet:Pet;
+    // A person can have one pet. Either a dog, cat, or fish.
+    Pet : Pet;
+
+    // We can also store unions in a vector.
+    PreviousPets : [ Pet ];
 }

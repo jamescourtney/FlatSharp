@@ -36,54 +36,19 @@ public struct VTable4 : IVTable
     [FieldOffset(6)]
     private ushort offset6;
 
-    [FieldOffset(0)]
-    private ulong offset0ul;
-
-    [FieldOffset(0)]
-    private uint offset0ui;
-
     public int MaxSupportedIndex => 3;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
-        inputBuffer.InitializeVTable(
-            offset,
-            out _,
-            out nuint fieldCount,
-            out ReadOnlySpan<byte> fieldData);
-
-        item = new VTable4();
-        switch (fieldCount)
+        if (BitConverter.IsLittleEndian)
         {
-            case 0:
-                break;
-
-            case 1:
-            {
-                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
-            }
-            break;
-
-            case 2:
-            {
-                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-            }
-            break;
-
-            case 3:
-            {
-                fieldData = fieldData.Slice(0, 6);
-                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
-                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
-            }
-            break;
-
-            default:
-            {
-                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
-            }
-            break;
+            CreateLittleEndian(inputBuffer, offset, out item);
+        }
+        else
+        {
+            CreateBigEndian(inputBuffer, offset, out item);
         }
     }
 
@@ -99,5 +64,72 @@ public struct VTable4 : IVTable
             case 3: return this.offset6;
             default: return 0;
         }
+    }
+
+    /// <summary>
+    /// A generic/safe initialize method for BE archtectures.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+        where TInputBuffer : IInputBuffer
+    {
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
+        item = new VTable4();
+        switch (fieldCount)
+        {
+            case 0:
+                break;
+
+            case 1:
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
+                return;
+
+            case 2:
+                item.offset2 = ScalarSpanReader.ReadUShort(fieldData.Slice(2, 2));
+                goto case 1;
+
+            case 3:
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+                goto case 2;
+
+            default:    
+                item.offset6 = ScalarSpanReader.ReadUShort(fieldData.Slice(6, 2));
+                goto case 3;
+        }
+    }
+
+    /// <summary>
+    /// An optimized load mmethod for LE architectures.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+        where TInputBuffer : IInputBuffer
+    {
+#if NETSTANDARD2_0
+        CreateBigEndian(inputBuffer, offset, out item);
+#else
+
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
+        if (fieldData.Length >= Unsafe.SizeOf<VTable4>())
+        {
+            item = MemoryMarshal.Read<VTable4>(fieldData);
+        }
+        else
+        {
+            item = default;
+            Span<byte> target = MemoryMarshal.CreateSpan<byte>(ref Unsafe.As<VTable4, byte>(ref item), Unsafe.SizeOf<VTable4>());
+            fieldData.CopyTo(target);
+        }
+#endif
     }
 }

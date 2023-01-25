@@ -25,17 +25,24 @@ public class SharedStringWriter : ISharedStringWriter
     private readonly WriteCacheEntry[] sharedStringOffsetCache;
 
     /// <summary>
+    /// Initializes a new shared string writer with the default capacity.
+    /// </summary>
+    public SharedStringWriter() : this(null)
+    {
+    }
+
+    /// <summary>
     /// Initializes a new shared string writer with the given capacity.
     /// </summary>
     /// <param name="hashTableCapacity">The size of the hash table.</param>
-    public SharedStringWriter(int hashTableCapacity = DefaultCapacity)
+    public SharedStringWriter(int? hashTableCapacity = null)
     {
         if (hashTableCapacity <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(hashTableCapacity));
         }
 
-        this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity];
+        this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity ?? DefaultCapacity];
         this.IsDirty = true; // force reset to be called the first time.
     }
 

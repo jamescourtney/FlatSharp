@@ -18,6 +18,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using FlatSharp.TypeModel;
+using Unity.Collections;
 
 namespace FlatSharpTests;
 
@@ -27,74 +29,8 @@ namespace FlatSharpTests;
 
 public class VectorSerializationTests
 {
-    private static readonly Dictionary<FlatBufferDeserializationOption, FlatBufferSerializer> SerializerLookup;
-
-    static VectorSerializationTests()
-    {
-        SerializerLookup = new();
-        foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-        {
-            SerializerLookup[option] = new FlatBufferSerializer(option);
-        }
-    }
-
     public class SimpleTests
     {
-        [Fact]
-        public void EmptyString()
-        {
-            var root = new RootTable<string>
-            {
-                Vector = string.Empty,
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to string
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                0, 0, 0, 0,          // vector length
-                0,                   // null terminator (special case for strings).
-            };
-
-            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [Fact]
-        public void SimpleString()
-        {
-            var root = new RootTable<string>
-            {
-                Vector = new string(new char[] { (char)1, (char)2, (char)3 }),
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                3, 0, 0, 0,          // vector length
-                1, 2, 3, 0,          // data + null terminator (special case for string vectors).
-            };
-
-            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
-        }
 
         [Fact]
         public void Simple_Scalar_Vectors()
@@ -122,8 +58,8 @@ public class VectorSerializationTests
                 };
 
                 Span<byte> target = new byte[1024];
-                int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
+                int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+                string csharp = FlatBufferSerializer.DefaultWithUnitySupport.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -132,11 +68,12 @@ public class VectorSerializationTests
 
             Test<IList<byte>>(a => a.ToList());
             Test<IReadOnlyList<byte>>(a => a.ToList());
-            Test<byte[]>(a => a);
             Test<Memory<byte>>(a => a.AsMemory());
             Test<ReadOnlyMemory<byte>>(a => a.AsMemory());
+            Test<NativeArray<byte>>(a => new NativeArray<byte>(a, Allocator.Temp));
             Test<Memory<byte>?>(a => a.AsMemory());
             Test<ReadOnlyMemory<byte>?>(a => a.AsMemory());
+            Test<NativeArray<byte>?>(a => new NativeArray<byte>(a, Allocator.Temp));
         }
 
         [Fact]
@@ -162,8 +99,8 @@ public class VectorSerializationTests
                 };
 
                 Span<byte> target = new byte[1024];
-                int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
+                int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+                string csharp = FlatBufferSerializer.DefaultWithUnitySupport.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -172,11 +109,12 @@ public class VectorSerializationTests
 
             Test<IList<int>>(new List<int>());
             Test<IReadOnlyList<int>>(new List<int>());
-            Test<int[]>(new int[0]);
             Test<Memory<byte>>(new Memory<byte>(new byte[0]));
             Test<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(new byte[0]));
+            Test<NativeArray<byte>>(new NativeArray<byte>(new byte[0], Allocator.Temp));
             Test<Memory<byte>?>(new Memory<byte>(new byte[0]));
             Test<ReadOnlyMemory<byte>?>(new ReadOnlyMemory<byte>(new byte[0]));
+            Test<NativeArray<byte>?>(new NativeArray<byte>(new byte[0], Allocator.Temp));
             Test<IIndexedVector<string, TableWithKey<string>>>(new IndexedVector<string, TableWithKey<string>>());
         }
 
@@ -199,8 +137,8 @@ public class VectorSerializationTests
                 };
 
                 Span<byte> target = new byte[1024];
-                int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
+                int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+                string csharp = FlatBufferSerializer.DefaultWithUnitySupport.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -209,12 +147,11 @@ public class VectorSerializationTests
 
             Test<IList<int>>();
             Test<IReadOnlyList<int>>();
-            Test<int[]>();
             Test<Memory<byte>?>();
             Test<ReadOnlyMemory<byte>?>();
+            Test<NativeArray<byte>?>();
             Test<IIndexedVector<string, TableWithKey<string>>>();
 
-            Test<FlatBufferUnion<string>[]>();
             Test<IList<FlatBufferUnion<string>>>();
             Test<IReadOnlyList<FlatBufferUnion<string>>>();
 
@@ -224,7 +161,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_5Byte()
         {
-            var root = new RootTable<FiveByteStruct[]>
+            var root = new RootTable<IList<FiveByteStruct>>
             {
                 Vector = new[]
                 {
@@ -265,7 +202,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_Value5Byte()
         {
-            var root = new RootTable<ValueFiveByteStruct[]>
+            var root = new RootTable<IList<ValueFiveByteStruct>>
             {
                 Vector = new[]
                 {
@@ -304,9 +241,70 @@ public class VectorSerializationTests
         }
 
         [Fact]
+        public void UnalignedStruct_Value5Byte_NativeArray()
+        {
+            var root = new RootTable<NativeArray<ValueFiveByteStruct>>
+            {
+                Vector = new NativeArray<ValueFiveByteStruct>(new[]
+                {
+                    new ValueFiveByteStruct { Byte = 1, Int = 1 },
+                    new ValueFiveByteStruct { Byte = 2, Int = 2 },
+                    new ValueFiveByteStruct { Byte = 3, Int = 3 },
+                }, Allocator.Temp)
+            };
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                Span<byte> target = new byte[10240];
+                FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+            });
+        }
+
+        [Fact]
+        public void AlignedStruct_Value5Byte_NativeArray()
+        {
+            var root = new RootTable<NativeArray<ValueFiveByteStructWithPadding>>
+            {
+                Vector = new NativeArray<ValueFiveByteStructWithPadding>(new[]
+                {
+                    new ValueFiveByteStructWithPadding { Byte = 1, Int = 1 },
+                    new ValueFiveByteStructWithPadding { Byte = 2, Int = 2 },
+                    new ValueFiveByteStructWithPadding { Byte = 3, Int = 3 },
+                }, Allocator.Temp)
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 0, 0, 0,          // index 0.Int
+                1,                   // index 0.Byte
+                0, 0, 0,             // padding
+                2, 0, 0, 0,          // index 1.Int
+                2,                   // index 1.Byte
+                0, 0, 0,             // padding
+                3, 0, 0, 0,          // index2.Int
+                3,                   // Index2.byte
+                0, 0, 0,             // padding
+            };
+
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [Fact]
         public void UnalignedStruct_9Byte()
         {
-            var root = new RootTable2<NineByteStruct[]>
+            var root = new RootTable2<IReadOnlyList<NineByteStruct>>
             {
                 Vector = new[]
                 {
@@ -347,7 +345,7 @@ public class VectorSerializationTests
         [Fact]
         public void UnalignedStruct_Value9Byte()
         {
-            var root = new RootTable2<ValueNineByteStruct[]>
+            var root = new RootTable2<IReadOnlyList<ValueNineByteStruct>>
             {
                 Vector = new[]
                 {
@@ -515,393 +513,39 @@ public class VectorSerializationTests
                     Vector = testList
                 };
 
-                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<string>[]>>(data);
+                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<IReadOnlyList<TableWithKey<string>>>>(data);
                 Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
-                Assert.Throws<InvalidOperationException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey("AAA"));
-                Assert.Throws<InvalidOperationException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey(3));
-                Assert.Throws<ArgumentNullException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey((string)null));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, "AAA"));
+                Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
+            }
+
+            // Fail to use a table with uninitialized keys.
+            {
+                var rootSorted = new RootTableSorted<IList<TableWithUninitializedKey<string>>>
+                {
+                    Vector = testList.Select(x => new TableWithUninitializedKey<string> { Key = x.Key, Value = x.Value }).ToList(),
+                };
+
+                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithUninitializedKey<string>>>>(data);
+                Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, "AAA"));
+                Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed_greedy.Vector, (string)null));
             }
 
             // Fail to binary search through lazy sorted vector with null key.
             {
                 // Serialize succeeds here because the "root" is unsorted.
                 FlatBufferSerializer.Default.Serialize(root, data);
-                var lazyCopy = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IList<TableWithKey<string>>>>(data);
+                var lazyCopy = FlatBufferSerializer.Default.Compile<RootTable<IList<TableWithKey<string>>>>().WithSettings(s => s.UseLazyDeserialization()).Parse(data);
 
-                Assert.Throws<InvalidOperationException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey("AAA"));
-                Assert.Throws<InvalidOperationException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey(3));
-                Assert.Throws<ArgumentNullException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey((string)null));
+                Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, "AAA"));
+                Assert.Throws<ArgumentNullException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(lazyCopy.Vector, (string)null));
             }
 
-            // Two keys / one key errors
             {
-                // Can't have more than one key on something we serialize as that trips up type model validation.
-                IReadOnlyList<TableWithTwoKeys<string>> list = new List<TableWithTwoKeys<string>>
-                {
-                    new TableWithTwoKeys<string>() { Key = "a", Value = "a" },
-                    new TableWithTwoKeys<string>() { Key = "b", Value = "b" },
-                };
-
-                var ex = Assert.Throws<InvalidOperationException>(() => list.BinarySearchByFlatBufferKey("foo"));
+                var parsed = FlatBufferSerializer.Default.Compile<RootTable<IReadOnlyList<TableWithNoKey<string>>>>().WithSettings(s => s.UseLazyDeserialization()).Parse(data);
+                var ex = Assert.Throws<InvalidOperationException>(() => SortedVectorHelpers.BinarySearchByFlatBufferKey(parsed.Vector, "foo"));
             }
-            {
-                var parsed = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IReadOnlyList<TableWithNoKey<string>>>>(data);
-                var ex = Assert.Throws<InvalidOperationException>(() => parsed.Vector.BinarySearchByFlatBufferKey("foo"));
-            }
-        }
-    }
-
-    public class SortedVector_Bool : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorTest<bool>(rng => rng.Next() % 2 == 0, Comparer<bool>.Default);
-    }
-
-    public class SortedVector_Byte : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<byte>();
-    }
-
-    public class SortedVector_SByte : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<sbyte>();
-    }
-
-    public class SortedVector_UShort : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<ushort>();
-    }
-
-    public class SortedVector_Short : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<short>();
-    }
-
-    public class SortedVector_Uint : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<uint>();
-    }
-
-    public class SortedVector_Int : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<int>();
-    }
-
-    public class SortedVector_Ulong : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<ulong>();
-    }
-
-    public class SortedVector_Long : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<long>();
-    }
-
-    public class SortedVector_Double : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<double>();
-    }
-
-    public class SortedVector_Float : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorStructTest<float>();
-    }
-
-    public class SortedVector_String_Base64 : VectorSerializationTests
-    {
-        [Fact]
-        public void Test() => this.SortedVectorTest<string>(
-            rng =>
-            {
-                int length = rng.Next(0, 2048);
-                byte[] data = new byte[length];
-                rng.NextBytes(data);
-                return Convert.ToBase64String(data);
-            },
-            new Utf8StringComparer());
-    }
-
-    public class SortedVector_String_RandomChars : VectorSerializationTests
-    {
-        [Fact]
-        public void Test()
-        {
-            int i = 0;
-            StringBuilder s = new StringBuilder();
-
-            this.SortedVectorTest<string>(
-                rng =>
-                {
-                    s.Clear();
-                    for (int j = 0; j < Math.Min(i, 100); ++j)
-                    {
-                        s.Append("a");
-                    }
-
-                    ++i;
-                    return s.ToString();
-                },
-                new Utf8StringComparer());
-        }
-    }
-
-    public class SortedVector_String_Empty : VectorSerializationTests
-    {
-        [Fact]
-        public void Test()
-        {
-            StringBuilder sb = new();
-            this.SortedVectorTest<string>(
-                rng =>
-                {
-                    sb.Clear();
-                    int length = rng.Next(0, 2048);
-                    for (int i = 0; i < length; ++i)
-                    {
-                        // pick unicode characters in the basic multilingual plane.
-                        sb.Append((char)rng.Next(0x0, 0xD7FF));
-                    }
-
-                    return sb.ToString();
-                },
-                new Utf8StringComparer());
-        }
-    }
-
-    public class IndexedVectorTests
-    {
-        [Fact]
-        public void IndexedVector_Simple()
-        {
-            var table = new RootTableSorted<IIndexedVector<string, TableWithKey<string>>>
-            {
-                Vector = new IndexedVector<string, TableWithKey<string>>
-                {
-                    { new TableWithKey<string> { Key = "a", Value = "AAA" } },
-                    { new TableWithKey<string> { Key = "b", Value = "BBB" } },
-                    { new TableWithKey<string> { Key = "c", Value = "CCC" } },
-                }
-            };
-
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
-
-            byte[] data = new byte[1024 * 1024];
-            serializer.Serialize(table, data);
-
-            var parsed = serializer.Parse<RootTableSorted<IIndexedVector<string, TableWithKey<string>>>>(data);
-
-            Assert.Equal("AAA", parsed.Vector["a"].Value);
-            Assert.Equal("BBB", parsed.Vector["b"].Value);
-            Assert.Equal("CCC", parsed.Vector["c"].Value);
-
-            Assert.True(parsed.Vector.TryGetValue("a", out var value) && value.Value == "AAA");
-            Assert.True(parsed.Vector.TryGetValue("b", out value) && value.Value == "BBB");
-            Assert.True(parsed.Vector.TryGetValue("c", out value) && value.Value == "CCC");
-        }
-
-        [Fact]
-        public void IndexedVector_RandomString()
-        {
-            var table = new RootTable<IIndexedVector<string, TableWithKey<string>>>
-            {
-                Vector = new IndexedVector<string, TableWithKey<string>>()
-            };
-
-            List<string> keys = new List<string>();
-            for (int i = 0; i < 1000; ++i)
-            {
-                string key = Guid.NewGuid().ToString();
-                keys.Add(key);
-
-                table.Vector.AddOrReplace(new TableWithKey<string> { Key = key, Value = Guid.NewGuid().ToString() });
-            }
-
-            byte[] data = new byte[10 * 1024 * 1024];
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
-            serializer.Compile<RootTable<IIndexedVector<string, TableWithKey<string>>>>();
-            int bytesWritten = serializer.Serialize(table, data);
-
-            var parsed = serializer.Parse<RootTable<IIndexedVector<string, TableWithKey<string>>>>(data);
-
-            foreach (var key in keys)
-            {
-                Assert.Equal(table.Vector[key].Value, parsed.Vector[key].Value);
-            }
-        }
-
-        [Fact]
-        public void IndexedVector_RandomByte() => IndexedVectorScalarTest<byte>();
-
-        [Fact]
-        public void IndexedVector_RandomSByte() => IndexedVectorScalarTest<sbyte>();
-
-        [Fact]
-        public void IndexedVector_RandomUShort() => IndexedVectorScalarTest<ushort>();
-
-        [Fact]
-        public void IndexedVector_RandomShort() => IndexedVectorScalarTest<short>();
-
-        [Fact]
-        public void IndexedVector_RandomUInt() => IndexedVectorScalarTest<uint>();
-
-        [Fact]
-        public void IndexedVector_RandomInt() => IndexedVectorScalarTest<int>();
-
-        [Fact]
-        public void IndexedVector_RandomULong() => IndexedVectorScalarTest<ulong>();
-
-        [Fact]
-        public void IndexedVector_RandomLong() => IndexedVectorScalarTest<long>();
-
-        private void IndexedVectorScalarTest<T>() where T : struct
-        {
-            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-            {
-                var table = new RootTable<IIndexedVector<T, TableWithKey<T>>>
-                {
-                    Vector = new IndexedVector<T, TableWithKey<T>>()
-                };
-
-                Random r = new Random();
-                byte[] keyBuffer = new byte[8];
-                List<T> keys = new List<T>();
-                for (int i = 0; i < 1000; ++i)
-                {
-                    r.NextBytes(keyBuffer);
-                    T key = MemoryMarshal.Cast<byte, T>(keyBuffer)[0];
-                    keys.Add(key);
-                    table.Vector.AddOrReplace(new TableWithKey<T> { Key = key, Value = Guid.NewGuid().ToString() });
-                }
-
-                byte[] data = new byte[1024 * 1024];
-                var serializer = new FlatBufferSerializer(option);
-                int bytesWritten = serializer.Serialize(table, data);
-
-                var parsed = serializer.Parse<RootTable<IIndexedVector<T, TableWithKey<T>>>>(data);
-
-                foreach (var key in keys)
-                {
-                    Assert.Equal(table.Vector[key].Value, parsed.Vector[key].Value);
-                }
-
-                // verify sorted and that we can read it when it's from a normal vector.
-                var parsedList = serializer.Parse<RootTable<IList<TableWithKey<T>>>>(data);
-                Assert.Equal(parsed.Vector.Count, parsedList.Vector.Count);
-                var previous = parsedList.Vector[0];
-                for (int i = 1; i < parsedList.Vector.Count; ++i)
-                {
-                    var item = parsedList.Vector[i];
-                    Assert.True(Comparer<T>.Default.Compare(previous.Key, item.Key) <= 0);
-
-                    Assert.True(parsed.Vector.TryGetValue(item.Key, out var fromDict));
-                    Assert.Equal(item.Key, fromDict.Key);
-                    Assert.Equal(item.Value, fromDict.Value);
-
-                    previous = item;
-                }
-            }
-        }
-    }
-
-    protected void SortedVectorStructTest<TKey>() where TKey : struct
-    {
-        this.SortedVectorTest(
-            rng =>
-            {
-                byte[] data = new byte[8];
-                rng.NextBytes(data);
-                TKey value = MemoryMarshal.Cast<byte, TKey>(data.AsSpan())[0];
-                return value;
-            },
-            Comparer<TKey>.Default);
-    }
-
-    protected void SortedVectorTest<TKey>(
-        Func<Random, TKey> createValue,
-        IComparer<TKey> comparer)
-    {
-        Random rng = new Random();
-        foreach (int length in Enumerable.Range(0, 20).Concat(Enumerable.Range(1, 5).Select(x => x * 100)))
-        {
-            TableWithKey<TKey>[] values = new TableWithKey<TKey>[length];
-            for (int i = 0; i < values.Length; ++i)
-            {
-                values[i] = new TableWithKey<TKey> { Key = createValue(rng), Value = i.ToString() };
-            }
-
-            this.SortedVectorTest(values, comparer);
-        }
-    }
-
-    protected void SortedVectorTest<TKey>(
-        TableWithKey<TKey>[] values,
-        IComparer<TKey> comparer)
-    {
-        RootTableSorted<TableWithKey<TKey>[]> root = new RootTableSorted<TableWithKey<TKey>[]>
-        {
-            Vector = values
-        };
-
-        byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(root)];
-        FlatBufferSerializer.Default.Serialize(root, data);
-
-        void RunTest<TVector>(
-            FlatBufferSerializer serializer,
-            Func<TVector, int> getLength,
-            Func<TVector, int, TableWithKey<TKey>> indexer,
-            Func<TVector, TKey, TableWithKey<TKey>?> find)
-        {
-            var parsed = serializer.Parse<RootTableSorted<TVector>>(data);
-            var vector = parsed.Vector;
-            int length = getLength(vector);
-
-            Assert.Equal(root.Vector.Length, length);
-
-            if (length > 0)
-            {
-                TableWithKey<TKey> previous = indexer(vector, 0);
-                for (int i = 0; i < length; ++i)
-                {
-                    var item = indexer(vector, i);
-                    Assert.True(comparer.Compare(previous.Key, item.Key) <= 0);
-                    previous = item;
-                }
-
-                foreach (var originalItem in root.Vector)
-                {
-                    var item = find(vector, originalItem.Key);
-                    Assert.NotNull(item);
-
-                    if (originalItem.Key.ToString() != item.Key.ToString())
-                    {
-                    }
-
-                    Assert.Equal(originalItem.Key.ToString(), item.Key.ToString());
-                }
-            }
-        }
-
-        foreach (var kvp in SerializerLookup)
-        {
-            // Arrays only supported in greedy mode.
-            if (kvp.Key == FlatBufferDeserializationOption.Greedy
-             || kvp.Key == FlatBufferDeserializationOption.GreedyMutable)
-            {
-                RunTest<TableWithKey<TKey>[]>(kvp.Value, x => x.Length, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
-            }
-
-            RunTest<IList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
-            RunTest<IReadOnlyList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
         }
     }
 
@@ -914,10 +558,6 @@ public class VectorSerializationTests
         [Fact]
         public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             (l, v) => v.Vector = l.ToList());
-
-        [Fact]
-        public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
-            (l, v) => v.Vector = l);
 
         private void VectorOfUnionTest<V>(Action<FlatBufferUnion<string, Struct, TableWithKey<int>>[], V> setValue)
             where V : class, new()
@@ -982,8 +622,13 @@ public class VectorSerializationTests
     }
 
     [FlatBufferTable]
-    public class TableWithKey<TKey>
+    public class TableWithKey<TKey> : ISortableTable<TKey>
     {
+        static TableWithKey()
+        {
+            SortedVectorHelpers.RegisterKeyLookup<TableWithKey<TKey>, TKey>(x => x.Key, 1);
+        }
+
         [FlatBufferItem(0)]
         public virtual string? Value { get; set; }
 
@@ -992,22 +637,24 @@ public class VectorSerializationTests
     }
 
     [FlatBufferTable]
-    public class TableWithNoKey<TKey>
+    public class TableWithUninitializedKey<TKey> : ISortableTable<TKey>
+    {
+        [FlatBufferItem(0)]
+        public virtual string? Value { get; set; }
+
+        [FlatBufferItem(1, Key = true)]
+        public virtual TKey? Key { get; set; }
+    }
+
+    // Should be impossible since FlatSharp compiler only adds this to types that are sortable. However
+    // a user could technically add this themselves...
+    [FlatBufferTable]
+    public class TableWithNoKey<TKey> : ISortableTable<TKey>
     {
         [FlatBufferItem(0)]
         public virtual string? Value { get; set; }
 
         [FlatBufferItem(1)]
-        public virtual TKey? Key { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class TableWithTwoKeys<TKey>
-    {
-        [FlatBufferItem(0, Key = true)]
-        public virtual string? Value { get; set; }
-
-        [FlatBufferItem(1, Key = true)]
         public virtual TKey? Key { get; set; }
     }
 
@@ -1044,5 +691,31 @@ public class VectorSerializationTests
         [FieldOffset(0)] public long Long;
 
         [FieldOffset(8)] public byte Byte;
+    }
+
+    [FlatBufferStruct]
+    public class FiveByteStruct
+    {
+        [FlatBufferItem(0)]
+        public virtual int Int { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual byte Byte { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+    public struct ValueFiveByteStruct
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+    public struct ValueFiveByteStructWithPadding
+    {
+        [FieldOffset(0)] public int Int;
+
+        [FieldOffset(4)] public byte Byte;
     }
 }

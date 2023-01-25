@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using System.Runtime.ExceptionServices;
-
 using FlatSharp.Attributes;
 using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
+using FlatSharp.TypeModel;
+using System.Linq;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -58,22 +58,26 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
     {
         if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
         {
-            // generate the serializer.
-            string serializer = this.GenerateSerializerForType(
-                context,
-                this.Attributes.DeserializationOption.Value);
+            DefaultMethodNameResolver resolver = new();
+            ITypeModel model = context.TypeModelContainer.CreateTypeModel(context.PreviousAssembly!.GetType(this.FullName)!);
+            (string ns, string name) = resolver.ResolveGeneratedSerializerClassName(model);
 
-            writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
+            string optionTypeName = typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName();
+
+            writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{this.Attributes.DeserializationOption.Value});");
 
             writer.AppendLine();
 
-            writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
+            writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => (ISerializer)(({nameof(IFlatBufferSerializable)}<{this.FullName}>)this).Serializer;");
             writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
 
             writer.AppendLine();
-            writer.AppendLine($"#region Serializer for {this.FullName}");
-            writer.AppendLine(serializer);
-            writer.AppendLine($"#endregion");
+
+            foreach (var option in new[] { FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Greedy, FlatBufferDeserializationOption.GreedyMutable, FlatBufferDeserializationOption.Progressive })
+            {
+                string staticAbstractMethod = $"static ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{option}Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{option});";
+                writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, staticAbstractMethod).Flush();
+            }
         }
     }
 
@@ -95,41 +99,39 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
         using (writer.IncreaseIndent())
         {
             writer.AppendLine(": object");
+
+            if (context.Options.GeneratePoolableObjects == true)
+            {
+                writer.AppendLine(", IPoolableObject");
+            }
+
             if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
             {
                 writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");
+                writer.AppendLine($", {nameof(IFlatBufferSerializable)}");
+            }
+
+            PropertyFieldModel? keyField = this.properties.Values.SingleOrDefault(x => x.Field.Key);
+            if (keyField is not null)
+            {
+                writer.AppendLine($", {nameof(ISortableTable<bool>)}<{keyField.GetTypeName()}>");
             }
         }
     }
 
     protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
     {
-        writer.AppendLine($"this.{model.Field.Name} = {model.GetDefaultValue()};");
-    }
+        string line = $"this.{model.Field.Name} = {model.GetDefaultValue()};";
 
-    private string GenerateSerializerForType(
-        CompileContext context,
-        FlatBufferDeserializationOption deserializationOption)
-    {
-        Type? type = context.PreviousAssembly?.GetType(this.FullName);
-        FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
-
-        var options = new FlatBufferSerializerOptions(deserializationOption) { ConvertProtectedInternalToProtected = false };
-        var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
-
-        MethodInfo method = generator.GetType()
-                                     .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                                     .MakeGenericMethod(type);
-
-        try
+        if (model.Field.Required)
         {
-            string code = (string)method.Invoke(generator, new[] { "private" })!;
-            return code;
+            writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, string.Empty)
+                  .Else(line)
+                  .Flush();
         }
-        catch (TargetInvocationException ex)
+        else
         {
-            ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
-            throw;
+            writer.AppendLine(line);
         }
     }
 }

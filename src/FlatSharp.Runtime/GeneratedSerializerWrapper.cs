@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,65 +27,39 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     private readonly IGeneratedSerializer<T> innerSerializer;
     private readonly Lazy<string?> lazyCSharp;
-    private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
-    private readonly bool enableMemoryCopySerialization;
-    private readonly string? fileIdentifier;
-    private readonly short remainingDepthLimit;
+
+    private ThreadLocal<ISharedStringWriter?> sharedStringWriter;
+    private bool enableMemoryCopySerialization;
+    private short remainingDepthLimit;
+    private FlatBufferDeserializationOption option;
 
     public GeneratedSerializerWrapper(
+        FlatBufferDeserializationOption option,
         IGeneratedSerializer<T>? innerSerializer,
-        Assembly? generatedAssembly,
-        Func<string?> generatedCSharp,
-        byte[]? generatedAssemblyBytes)
+        Func<string?> generatedCSharp)
     {
         this.lazyCSharp = new Lazy<string?>(generatedCSharp);
-        this.Assembly = generatedAssembly;
-        this.AssemblyBytes = generatedAssemblyBytes;
         this.innerSerializer = innerSerializer ?? throw new ArgumentNullException(nameof(innerSerializer));
-
-        var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
-        this.fileIdentifier = tableAttribute?.FileIdentifier;
-        this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
+        this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(() => new SharedStringWriter());
         this.remainingDepthLimit = 1000; // sane default.
+        this.option = option;
     }
 
-    private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
+    private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template)
     {
-        this.lazyCSharp = template.lazyCSharp;
-        this.Assembly = template.Assembly;
-        this.AssemblyBytes = template.AssemblyBytes;
         this.innerSerializer = template.innerSerializer;
-        this.fileIdentifier = template.fileIdentifier;
         this.remainingDepthLimit = template.remainingDepthLimit;
-
-        this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
-
-        Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
-        if (writerFactory is not null)
-        {
-            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
-        }
-
-        if (settings.ObjectDepthLimit is not null)
-        {
-            if (settings.ObjectDepthLimit <= 0)
-            {
-                throw new ArgumentException("ObjectDepthLimit must be nonnegative.");
-            }
-
-            this.remainingDepthLimit = settings.ObjectDepthLimit.Value;
-        }
+        this.option = template.option;
+        this.sharedStringWriter = template.sharedStringWriter;
+        this.enableMemoryCopySerialization = template.enableMemoryCopySerialization;
+        this.lazyCSharp = template.lazyCSharp;
     }
 
-    Type ISerializer.RootType => typeof(T);
+    public Type RootType => typeof(T);
 
     public string? CSharp => this.lazyCSharp.Value;
 
-    public Assembly? Assembly { get; }
-
-    public byte[]? AssemblyBytes { get; }
-
-    public FlatBufferDeserializationOption DeserializationOption => this.innerSerializer.DeserializationOption;
+    public FlatBufferDeserializationOption DeserializationOption => this.option;
 
     public int GetMaxSize(T item)
     {
@@ -122,6 +96,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
     {
+        return this.Parse(buffer, this.option);
+    }
+
+    public T Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer
+    {
         if (buffer.Length >= int.MaxValue / 2)
         {
             throw new ArgumentOutOfRangeException("Buffer must be <= 1GB in size.");
@@ -132,11 +111,42 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
             throw new ArgumentException("Buffer is too small to be valid!");
         }
 
-        // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
-        return buffer.InvokeParse(this.innerSerializer, new GeneratedSerializerParseArguments(0, this.remainingDepthLimit));
+        var parseArgs = new GeneratedSerializerParseArguments(0, this.remainingDepthLimit);
+        var inner = this.innerSerializer;
+
+        T item;
+
+        switch (option ?? this.option)
+        {
+            case FlatBufferDeserializationOption.Lazy:
+                item = buffer.InvokeLazyParse(inner, in parseArgs);
+                break;
+
+            case FlatBufferDeserializationOption.Greedy:
+                item = buffer.InvokeGreedyParse(inner, in parseArgs);
+                break;
+
+            case FlatBufferDeserializationOption.GreedyMutable:
+                item = buffer.InvokeGreedyMutableParse(inner, in parseArgs);
+                break;
+
+            case FlatBufferDeserializationOption.Progressive:
+                item = buffer.InvokeProgressiveParse(inner, in parseArgs);
+                break;
+
+            default:
+                throw new InvalidOperationException("Unexpected deserialization mode: " + this.option);
+        }
+
+        if (item is IPoolableObjectDebug deserializedObject)
+        {
+            deserializedObject.IsRoot = true;
+        }
+
+        return item;
     }
 
-    object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);
+    object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option) => this.Parse(buffer, option);
 
     public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item)
         where TSpanWriter : ISpanWriter
@@ -166,7 +176,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 throw new BufferTooSmallException { SizeNeeded = inputBuffer.Length };
             }
 
-            inputBuffer.AsReadOnlySpan().CopyTo(destination);
+            inputBuffer.GetReadOnlySpan().CopyTo(destination);
             return inputBuffer.Length;
         }
 
@@ -177,21 +187,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         var serializationContext = SerializationContext.ThreadLocalContext.Value!;
         serializationContext.Reset(destination.Length);
 
-        ISharedStringWriter? sharedStringWriter = this.sharedStringWriter?.Value;
+        ISharedStringWriter? sharedStringWriter = this.sharedStringWriter.Value;
         serializationContext.SharedStringWriter = sharedStringWriter;
-
-        serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
-
-        string? fileId = this.fileIdentifier;
-        if (!string.IsNullOrEmpty(fileId))
-        {
-            destination[7] = (byte)fileId[3];
-            destination[4] = (byte)fileId[0];
-            destination[5] = (byte)fileId[1];
-            destination[6] = (byte)fileId[2];
-
-            serializationContext.Offset = 8;
-        }
 
         try
         {
@@ -201,7 +198,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 Debug.Assert(!sharedStringWriter.IsDirty);
             }
 
-            this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
+            writer.InvokeWrite(this.innerSerializer, destination, item, serializationContext);
 
             if (sharedStringWriter?.IsDirty == true)
             {
@@ -235,8 +232,43 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         };
     }
 
-    public ISerializer<T> WithSettings(SerializerSettings settings)
+    public ISerializer<T> WithSettings(Action<SerializerSettings> settingsCallback)
     {
-        return new GeneratedSerializerWrapper<T>(this, settings);
+        return this.WithSettingsCore(settingsCallback);
+    }
+
+    ISerializer ISerializer.WithSettings(Action<SerializerSettings> settingsCallback)
+    {
+        return this.WithSettingsCore(settingsCallback);
+    }
+
+    private GeneratedSerializerWrapper<T> WithSettingsCore(Action<SerializerSettings> settingsCallback)
+    {
+        var settings = new SerializerSettings();
+        settingsCallback(settings);
+
+        GeneratedSerializerWrapper<T> wrapper = new GeneratedSerializerWrapper<T>(this);
+
+        if (settings.DeserializationMode is not null)
+        {
+            wrapper.option = settings.DeserializationMode.Value;
+        }
+
+        if (settings.EnableMemoryCopySerialization is not null)
+        {
+            wrapper.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization.Value;
+        }
+
+        if (settings.ObjectDepthLimit is not null)
+        {
+            wrapper.remainingDepthLimit = settings.ObjectDepthLimit.Value;
+        }
+
+        if (settings.SharedStringWriterFactory is not null)
+        {
+            wrapper.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(settings.SharedStringWriterFactory);
+        }
+
+        return wrapper;
     }
 }
