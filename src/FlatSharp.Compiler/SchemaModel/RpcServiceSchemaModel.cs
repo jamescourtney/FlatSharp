@@ -208,31 +208,35 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         }
 
         // Write bind service method
-        writer.AppendLine($"public static {GrpcCore}.ServerServiceDefinition BindService({baseClassName} serviceImpl)");
+        writer.AppendLine($"public static {GrpcCore}.ServerServiceDefinition BindService({baseClassName}? serviceImpl)");
         using (writer.WithBlock())
         {
+            writer.AppendLine("#pragma warning disable CS8604");
             writer.AppendLine($"return {GrpcCore}.ServerServiceDefinition.CreateBuilder()");
             using (writer.IncreaseIndent())
             {
                 foreach (var method in this.calls)
                 {
-                    writer.AppendLine($".AddMethod({methodNameMap[method.Name]}, serviceImpl.{method.Name})");
+                    writer.AppendLine($".AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? ({this.GetServerHandlerDelegateType(method)}?)null : serviceImpl.{method.Name})");
                 }
 
                 writer.AppendLine(".Build();");
             }
+            writer.AppendLine("#pragma warning restore CS8604");
         }
 
         // Write bind service overload
         writer.AppendLine();
-        writer.AppendLine($"public static void BindService({GrpcCore}.ServiceBinderBase serviceBinder, {baseClassName} serviceImpl)");
+        writer.AppendLine($"public static void BindService({GrpcCore}.ServiceBinderBase serviceBinder, {baseClassName}? serviceImpl)");
         using (writer.WithBlock())
         {
+            writer.AppendLine("#pragma warning disable CS8604");
             foreach (var method in this.calls)
             {
                 string serverDelegate = GetServerHandlerDelegate(method);
-                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, {serverDelegate});");
+                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? ({this.GetServerHandlerDelegateType(method)}?)null : {serverDelegate});");
             }
+            writer.AppendLine("#pragma warning restore CS8604");
         }
     }
 
@@ -565,7 +569,12 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
     private string GetServerHandlerDelegate(RpcCallSchemaModel call)
     {
+        return $"new {this.GetServerHandlerDelegateType(call)}(serviceImpl.{call.Name})";
+    }
+
+    private string GetServerHandlerDelegateType(RpcCallSchemaModel call)
+    {
         string methodType = GetGrpcMethodType(call.StreamingType);
-        return $"new {GrpcCore}.{methodType}ServerMethod<{call.RequestType}, {call.ResponseType}>(serviceImpl.{call.Name})";
+        return $"{GrpcCore}.{methodType}ServerMethod<{call.RequestType}, {call.ResponseType}>";
     }
 }
