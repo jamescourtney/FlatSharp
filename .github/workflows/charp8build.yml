@@ -50,6 +50,7 @@ jobs:
       
     - name: Upload Files
       uses: actions/upload-artifact@v3
+      if: failure()
       with:
         name: generated-csharp
         path: src/tests/CompileTests/CSharp8/**/*.*
