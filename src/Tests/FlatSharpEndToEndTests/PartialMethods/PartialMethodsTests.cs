@@ -39,24 +39,3 @@ public class PartialMethods
         Assert.Equal(option, parsed.S.OnInitializedContext.Value.DeserializationOption);
     }
 }
-
-public partial class Table
-{
-    public FlatBufferDeserializationContext? OnInitializedContext { get; private set; }
-
-    partial void OnInitialized(FlatBufferDeserializationContext? context)
-    {
-        this.OnInitializedContext = context;
-    }
-}
-
-public partial class Struct
-{
-    public FlatBufferDeserializationContext? OnInitializedContext { get; private set; }
-
-    partial void OnInitialized(FlatBufferDeserializationContext? context)
-    {
-        this.OnInitializedContext = context;
-    }
-}
-

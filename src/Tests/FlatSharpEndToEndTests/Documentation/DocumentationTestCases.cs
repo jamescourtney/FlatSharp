@@ -23,7 +23,7 @@ public class DocumentationTestCases
     public DocumentationTestCases()
     {
         this.xmlDoc = new System.Xml.XmlDocument();
-        this.xmlDoc.Load("FlatSharpEndToEndTests.xml");
+        this.xmlDoc.Load("FlatSharpEndToEndTestsGenerated.xml");
     }
 
     [Fact]

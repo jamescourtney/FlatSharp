@@ -265,19 +265,3 @@ public class InputBufferTests
         }
     }
 }
-
-internal interface IMemoryTable
-{
-    ReadOnlyMemory<byte> Memory { get; set; }
-}
-
-public partial class MemoryTable : IMemoryTable
-{
-    ReadOnlyMemory<byte> IMemoryTable.Memory { get => this.Memory.Value; set => this.Memory = MemoryMarshal.AsMemory(value); }
-}
-
-public partial class ReadOnlyMemoryTable : IMemoryTable
-{
-    ReadOnlyMemory<byte> IMemoryTable.Memory { get => this.Memory.Value; set => this.Memory = value; }
-}
-

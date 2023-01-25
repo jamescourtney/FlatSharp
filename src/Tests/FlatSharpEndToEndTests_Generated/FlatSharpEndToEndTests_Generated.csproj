@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <PipelineBuild>false</PipelineBuild>
+    <PipelineBuild Condition=" '$(AppVeyorBuild)' == 'true' or '$(CoverageBuild)' == 'true' ">true</PipelineBuild>
+    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">net472;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(CoverageBuild)' == 'true' ">net7.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>FlatSharpEndToEndTestsGenerated</AssemblyName>
+    <RootNamespace>FlatSharpTests</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>annotations</Nullable>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
+    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.Core" Version="2.46.5" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
+        <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
+    </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FlatSharpSchema Include="..\FlatSharpEndToEndTests\**\*.fbs" />
+  </ItemGroup>
+    
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(PipelineBuild)' != 'true' " />
+</Project>
+
