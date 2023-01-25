@@ -42,6 +42,7 @@ jobs:
         script: |
           $fbs = (gci -r src/tests/FlatsharpEndToEndTests/*.fbs | where Name -ne "AccessModifiers.fbs") -join ";"
           dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/CompileTests/CSharp8
+          Rename-Item src/tests/CompileTests/CSharp8/FlatSharp.generated.cs src/tests/CompileTests/CSharp8/FlatSharp.cs
           
     - name: Build
       working-directory: src/tests/CompileTests/CSharp8
@@ -51,4 +52,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: generated-csharp
-        path: src/tests/CompileTests/CSharp8
+        path: src/tests/CompileTests/CSharp8/**/*.*
