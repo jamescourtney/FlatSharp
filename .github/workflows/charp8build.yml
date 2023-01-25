@@ -1,4 +1,4 @@
-name: .NET
+name: C# 8 Build Verification
 
 on:
   push:
