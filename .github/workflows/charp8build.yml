@@ -51,4 +51,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Files
-        path: ./**/*.generated.cs
+        path: src/tests/CompileTests/CSharp8
