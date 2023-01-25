@@ -12,12 +12,12 @@ attribute "fs_unsafeUnion";
 namespace Microbench;
 
 // Tests reading and writing a string.
-table StringTable (fs_serializer:"Progressive") {
+table StringTable (fs_serializer:"Lazy") {
     SingleString : string;
     Vector : [string];
 }
 
-table PrimitivesTable (fs_serializer:"Progressive") {
+table PrimitivesTable (fs_serializer:"Lazy") {
     Bool : bool;
     Byte : ubyte;
     SByte : byte;
@@ -34,7 +34,7 @@ table PrimitivesTable (fs_serializer:"Progressive") {
 struct RefStruct (fs_writeThrough) { Value : int; }
 struct ValueStruct (fs_valueStruct) { Value : int; }
 
-table StructsTable (fs_serializer:"Progressive")
+table StructsTable (fs_serializer:"Lazy")
 {
     SingleRef : RefStruct;
     SingleValue : ValueStruct (fs_writeThrough, required);
@@ -45,7 +45,7 @@ table StructsTable (fs_serializer:"Progressive")
 table StringKey { Key : string (key); }
 table IntKey { Key : int (key); }
 
-table SortedTable (fs_serializer:"Progressive")
+table SortedTable (fs_serializer:"Lazy")
 {
     Strings : [StringKey] (fs_vector:"IIndexedVector");
     Ints : [IntKey] (fs_vector:"IIndexedVector");
@@ -60,7 +60,7 @@ union UnsafeUnion (fs_unsafeUnion) { ValueStructA, ValueStructB, ValueStructC }
 union SafeUnion { ValueStructA, ValueStructB, ValueStructC }
 union MixedUnion { ValueStructA, ValueStructB, ValueStructC, Something : string }
 
-table UnionTable (fs_serializer:"Progressive")
+table UnionTable (fs_serializer:"Lazy")
 {
     Unsafe : [ UnsafeUnion ];
     Safe : [ SafeUnion ];

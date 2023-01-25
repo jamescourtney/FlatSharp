@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Linq;
+
 namespace FlatSharp.TypeModel;
 
 /// <summary>
@@ -23,6 +25,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
 {
     private ITypeModel keyTypeModel;
     private ITypeModel valueTypeModel;
+    private ITypeModel listTypeModel;
     private TableMemberModel keyMemberModel;
 
     internal IndexedVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
@@ -30,6 +33,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         this.keyTypeModel = null!;
         this.valueTypeModel = null!;
         this.keyMemberModel = null!;
+        this.listTypeModel = null!;
     }
 
     public override string LengthPropertyName => "Count";
@@ -45,6 +49,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
 
         this.keyTypeModel = this.typeModelContainer.CreateTypeModel(keyType);
         this.valueTypeModel = this.typeModelContainer.CreateTypeModel(valueType);
+        this.listTypeModel = this.typeModelContainer.CreateTypeModel(typeof(IList<>).MakeGenericType(valueType));
 
         return valueType;
     }
@@ -102,42 +107,26 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
 
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
 
-        (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateVectorItemAccessor(
-            this.ItemTypeModel,
-            this.PaddedMemberInlineSize,
-            context,
-            isEverWriteThrough);
-
-        string accessorClassName = $"{vectorClassName}<{context.InputBufferTypeName}>";
-
-        string createFlatBufferVector =
-            $@"FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate(
-                    {context.InputBufferVariableName}, 
-                    new {accessorClassName}(
-                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
-                        {context.InputBufferVariableName}),
-                    {context.RemainingDepthVariableName},
-                    {context.TableFieldContextVariableName},
-                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
-
+        string inner = $"(IIndexedVectorSource<{valueTypeName}>){context.GetParseInvocation(this.listTypeModel.ClrType)}";
         string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
+
         if (context.Options.GreedyDeserialize)
         {
             // Eager indexed vector.
-            body = $@"return GreedyIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate<{context.InputBufferTypeName}, {accessorClassName}>({createFlatBufferVector}, {mutable});";
+            body = $@"return GreedyIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate({inner}, {mutable});";
         }
         else if (context.Options.Lazy)
         {
             // Lazy indexed vector.
-            body = $@"return FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate({createFlatBufferVector});";
+            body = $@"return FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate({inner});";
         }
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            body = $@"return FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}, {accessorClassName}>.GetOrCreate({createFlatBufferVector});";
+            body = $@"return FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate({inner});";
         }
 
-        return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };
+        return new CodeGeneratedMethod(body) { IsMethodInline = true };
     }
 
     protected override string CreateLoop(
@@ -171,4 +160,6 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
     {
         return this.GetGlobalCompilableTypeName();
     }
+
+    public override IEnumerable<ITypeModel> Children => base.Children.Concat(new[] { this.listTypeModel });
 }

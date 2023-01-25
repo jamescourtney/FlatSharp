@@ -16,33 +16,40 @@
 
 namespace FlatSharp;
 
-public interface IVisitableValueVector<T>
+/// <summary>
+/// A FlatBuffer vector that can be visited.
+/// </summary>
+public interface IVisitableReferenceVector<T> where T : class
 {
-    TReturn Visit<TVisitor, TReturn>(TVisitor visitor) where TVisitor : IValueVectorVisitor<T, TReturn>;
-}
-
-public interface IValueVectorVisitor<T, TReturn>
-{
-    TReturn Visit<TVector>(TVector vector)
-        where TVector : struct, ISimpleVector<T>;
-}
-
-public interface IVisitableReferenceVector<T>
-{
-    TReturn Visit<TVisitor, TReturn>(TVisitor visitor) 
+    /// <summary>
+    /// Provides access to a FlatBuffer vector.
+    /// </summary>
+    TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
         where TVisitor : IReferenceVectorVisitor<T, TReturn>;
 }
 
-public interface IReferenceVectorVisitor<T, TReturn>
+public interface IVisitableValueVector<T> where T : struct
+{
+    TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+        where TVisitor : IValueVectorVisitor<T, TReturn>;
+}
+
+public interface IReferenceVectorVisitor<T, TReturn> where T : class
 {
     TReturn Visit<TDerived, TVector>(TVector vector)
         where TVector : struct, ISimpleVector<TDerived>
         where TDerived : T;
 }
 
-public interface ISimpleVector<out T>
+public interface IValueVectorVisitor<T, TReturn> where T : struct
+{
+    TReturn Visit<TVector>(TVector vector)
+        where TVector : struct, ISimpleVector<T>;
+}
+
+public interface ISimpleVector<T>
 {
     int Count { get; }
 
-    T this[int index] { get; }
+    T this[int index] { get; set; }
 }

@@ -75,66 +75,6 @@ public static class SortedVectorHelpers
     /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
     /// </summary>
     /// <returns>A value if found, null otherwise.</returns>
-    internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferVectorBase<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
-        where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<TTable, TTable, TInputBuffer>
-        where TTable : class, ISortableTable<TKey>
-        where TKey : notnull
-    {
-        CheckKeyNotNull(key);
-
-        if (key is string str)
-        {
-            using SimpleStringComparer cmp = new SimpleStringComparer(str);
-
-            return BinarySearchByFlatBufferKey<LazyVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>, TTable, string?, SimpleStringComparer>(
-                new LazyVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>(sortedVector),
-                sortedVector,
-                cmp);
-        }
-        else
-        {
-            return BinarySearchByFlatBufferKey<LazyVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>, TTable, TKey, NaiveComparer<TKey>>(
-                new LazyVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>(sortedVector),
-                sortedVector,
-                new NaiveComparer<TKey>(key));
-        }
-    }
-
-    /// <summary>
-    /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-    /// </summary>
-    /// <returns>A value if found, null otherwise.</returns>
-    internal static TTable? BinarySearchByFlatBufferKey<TTable, TKey, TInputBuffer, TItemAccessor>(FlatBufferProgressiveVector<TTable, TInputBuffer, TItemAccessor> sortedVector, TKey key)
-        where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<TTable, TTable, TInputBuffer>
-        where TTable : class, ISortableTable<TKey>
-        where TKey : notnull
-    {
-        CheckKeyNotNull(key);
-
-        if (key is string str)
-        {
-            using SimpleStringComparer cmp = new SimpleStringComparer(str);
-
-            return BinarySearchByFlatBufferKey<ProgressiveVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>, TTable, string?, SimpleStringComparer>(
-                new ProgressiveVectorIndexable<TTable, string?, TInputBuffer, TItemAccessor>(sortedVector),
-                sortedVector,
-                cmp);
-        }
-        else
-        {
-            return BinarySearchByFlatBufferKey<ProgressiveVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>, TTable, TKey, NaiveComparer<TKey>>(
-                new ProgressiveVectorIndexable<TTable, TKey, TInputBuffer, TItemAccessor>(sortedVector),
-                sortedVector,
-                new NaiveComparer<TKey>(key));
-        }
-    }
-
-    /// <summary>
-    /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-    /// </summary>
-    /// <returns>A value if found, null otherwise.</returns>
     public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
        where TTable : class, ISortableTable<TKey>
        where TKey : notnull
@@ -312,43 +252,6 @@ public static class SortedVectorHelpers
         T this[int index] { get; }
 
         TKey KeyAt(int index);
-    }
-
-    private struct LazyVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
-        where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
-    {
-        private readonly FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> items;
-
-        public LazyVectorIndexable(FlatBufferVectorBase<T, TInputBuffer, TItemAccessor> items)
-        {
-            this.items = items;
-        }
-
-        public T this[int index] => this.items[index];
-
-        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
-
-        public int Count => this.items.Count;
-    }
-
-    private struct ProgressiveVectorIndexable<T, TKey, TInputBuffer, TItemAccessor> : IIndexable<T, TKey>
-        where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<T, T, TInputBuffer>
-        where T : notnull
-    {
-        private readonly FlatBufferProgressiveVector<T, TInputBuffer, TItemAccessor> items;
-
-        public ProgressiveVectorIndexable(FlatBufferProgressiveVector<T, TInputBuffer, TItemAccessor> items)
-        {
-            this.items = items;
-        }
-
-        public T this[int index] => this.items[index];
-
-        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
-
-        public int Count => this.items.Count;
     }
 
     private struct ListIndexable<T, TKey> : IIndexable<T, TKey>

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2022 James Courtney
+ * Copyright 2023 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,10 @@
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Small interface for reading and writing to/from vectors. Implementations should
-/// prefer using a struct as that will enable devirtualization.
+/// Defines a set of interfaces necessary for a vector to underpin and indexed vector.
 /// </summary>
-public interface IVectorItemAccessor<in TBase, out TActual, TInputBuffer>
+public interface IIndexedVectorSource<T>
+    : IList<T>, IVisitableReferenceVector<T>, IPoolableObject
+    where T : class
 {
-    int Count { get; }
-
-    int ItemSize { get; }
-
-    TActual ParseItem(int index, TInputBuffer buffer, short remainingDepth, TableFieldContext context);
-
-    void WriteThrough(int index, TBase value, TInputBuffer inputBuffer, TableFieldContext context);
-
-    int OffsetOf(int index);
 }

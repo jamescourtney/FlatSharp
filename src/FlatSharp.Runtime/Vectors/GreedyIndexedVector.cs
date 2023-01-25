@@ -24,25 +24,24 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
 {
     private int alive;
     private readonly Dictionary<TKey, TValue> backingDictionary;
+    private IIndexedVectorSource<TValue> backingVector; // hang on until we return to pool.
     private bool mutable;
 
     private GreedyIndexedVector()
     {
         this.backingDictionary = new Dictionary<TKey, TValue>();
+        this.backingVector = null!;
         this.mutable = true;
     }
 
-    public static GreedyIndexedVector<TKey, TValue> GetOrCreate<TInputBuffer, TItemAccessor>(
-        FlatBufferVectorBase<TValue, TInputBuffer, TItemAccessor> backing,
-        bool mutable)
-        where TInputBuffer : IInputBuffer
-        where TItemAccessor : IVectorItemAccessor<TValue, TValue, TInputBuffer>
+    public static GreedyIndexedVector<TKey, TValue> GetOrCreate(IIndexedVectorSource<TValue> backing, bool mutable)
     {
         if (!ObjectPool.TryGet(out GreedyIndexedVector<TKey, TValue>? vector))
         {
             vector = new();
         }
 
+        vector.backingVector = backing;
         vector.mutable = mutable;
         vector.alive = 1;
 
@@ -52,21 +51,39 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         dict.EnsureCapacity(backing.Count);
 #endif
 
-        foreach (TValue value in backing)
-        {
-            TKey key = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter(value);
-            if (dict.TryGetValue(key, out var existingValue))
-            {
-                (existingValue as IPoolableObject)?.ReturnToPool();
-            }
-
-            dict[key] = value;
-        }
-
-        // we don't need "backing" any longer
-        backing.ReturnToPool(true);
+        backing.Accept<InitializerVistor, bool>(new InitializerVistor(dict));
 
         return vector;
+    }
+
+    private struct InitializerVistor : IReferenceVectorVisitor<TValue, bool>
+    {
+        private readonly Dictionary<TKey, TValue> dictionary;
+
+        public InitializerVistor(Dictionary<TKey, TValue> dictionary) => this.dictionary = dictionary;
+
+        public bool Visit<TDerived, TVector>(TVector vector)
+            where TDerived : TValue
+            where TVector : struct, ISimpleVector<TDerived>
+        {
+            int count = vector.Count;
+            var dictionary = this.dictionary;
+
+            for (int i = 0; i < count; ++i)
+            {
+                TDerived value = vector[i];
+                TKey key = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter(value);
+
+                if (dictionary.TryGetValue(key, out var existingValue))
+                {
+                    (existingValue as IPoolableObject)?.ReturnToPool();
+                }
+
+                dictionary[key] = value;
+            }
+
+            return true;
+        }
     }
 
     /// <summary>
@@ -200,6 +217,8 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
 
                 dict.Clear();
                 this.mutable = false;
+                this.backingVector.ReturnToPool(true);
+                this.backingVector = null!;
 
                 ObjectPool.Return(this);
             }

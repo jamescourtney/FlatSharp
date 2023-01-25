@@ -7,7 +7,7 @@
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
         <Nullable>enable</Nullable>
-        <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE</DefineConstants>
+        <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE;VECTOR_VISITORS</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
         <FlatSharpPoolable>false</FlatSharpPoolable>

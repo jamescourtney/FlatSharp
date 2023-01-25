@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// An interface implemented on buffer-backed Flatbuffer vectors. This interface is internal to FlatSharp and exposes some
 /// functionality to assist with binary searching.
 /// </summary>
-internal interface IFlatBufferDeserializedVector
+public interface IFlatBufferDeserializedVector
 {
     /// <summary>
     /// Gets the input buffer.

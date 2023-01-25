@@ -132,10 +132,6 @@ internal class DeserializeClassDefinition
             {
                 this.AddWriteThroughMethod(itemModel, context);
             }
-            else
-            {
-
-            }
         }
     }
 
