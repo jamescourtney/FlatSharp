@@ -217,7 +217,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
             {
                 foreach (var method in this.calls)
                 {
-                    writer.AppendLine($".AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? null : serviceImpl.{method.Name})");
+                    writer.AppendLine($".AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? ({this.GetServerHandlerDelegateType(method)}?)null : serviceImpl.{method.Name})");
                 }
 
                 writer.AppendLine(".Build();");
@@ -234,7 +234,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
             foreach (var method in this.calls)
             {
                 string serverDelegate = GetServerHandlerDelegate(method);
-                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? null : {serverDelegate});");
+                writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Name]}, serviceImpl == null ? ({this.GetServerHandlerDelegateType(method)}?)null : {serverDelegate});");
             }
             writer.AppendLine("#pragma warning restore CS8604");
         }
@@ -569,7 +569,12 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
     private string GetServerHandlerDelegate(RpcCallSchemaModel call)
     {
+        return $"new {this.GetServerHandlerDelegateType(call)}(serviceImpl.{call.Name})";
+    }
+
+    private string GetServerHandlerDelegateType(RpcCallSchemaModel call)
+    {
         string methodType = GetGrpcMethodType(call.StreamingType);
-        return $"new {GrpcCore}.{methodType}ServerMethod<{call.RequestType}, {call.ResponseType}>(serviceImpl.{call.Name})";
+        return $"{GrpcCore}.{methodType}ServerMethod<{call.RequestType}, {call.ResponseType}>";
     }
 }
