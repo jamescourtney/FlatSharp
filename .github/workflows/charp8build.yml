@@ -45,10 +45,10 @@ jobs:
           
     - name: Build
       working-directory: src/tests/CompileTests/CSharp8
-      run: dotnet build -c Release /p:SignAssembly=true
+      run: dotnet build -c Release
       
     - name: Upload Files
       uses: actions/upload-artifact@v2
       with:
         name: Files
-        path: ./**/FlatSharp.generated.cs
+        path: ./**/*.generated.cs
