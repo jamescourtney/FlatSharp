@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>CSharp8CompileTest</AssemblyName>
+    <RootNamespace>CSharp8CompileTest</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>annotations</Nullable>
+    <NoWarn>CS1591</NoWarn>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grpc.Core" Version="2.46.5" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+  </ItemGroup>
+</Project>
+
