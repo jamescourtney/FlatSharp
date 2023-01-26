@@ -43,5 +43,10 @@ jobs:
       
     - name: Mutate
       working-directory: src/Tests/Stryker/Tests
-      run: dotnet-stryker -p CodeGen.csproj
+      run: dotnet-stryker
       
+    - name: Upload Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Stryker Results
+        path: ./**/StrykerOutput/**/*.*
