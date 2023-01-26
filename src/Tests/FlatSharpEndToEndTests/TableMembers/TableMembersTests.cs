@@ -169,3 +169,30 @@ public partial class TableMemberTests
         }
     }
 }
+
+public interface ITypedTable<T> where T : struct
+{
+    T ItemStandard { get; set; }
+
+    T? ItemOptional { get; set; }
+
+    T ItemWithDefault { get; set; }
+
+    T ItemDeprecated { get; set; }
+
+    IList<T>? ItemList { get; set; }
+
+    IReadOnlyList<T>? ItemReadonlyList { get; set; }
+}
+
+public partial class BoolTable : ITypedTable<bool> { }
+public partial class ByteTable : ITypedTable<byte> { }
+public partial class SByteTable : ITypedTable<sbyte> { }
+public partial class ShortTable : ITypedTable<short> { }
+public partial class UShortTable : ITypedTable<ushort> { }
+public partial class IntTable : ITypedTable<int> { }
+public partial class UIntTable : ITypedTable<uint> { }
+public partial class LongTable : ITypedTable<long> { }
+public partial class ULongTable : ITypedTable<ulong> { }
+public partial class FloatTable : ITypedTable<float> { }
+public partial class DoubleTable : ITypedTable<double> { }

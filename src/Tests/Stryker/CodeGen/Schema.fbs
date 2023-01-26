@@ -1,0 +1,108 @@
+
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpStrykerTests;
+
+enum Fruit : uint
+{
+    Apple,
+    Banana,
+    Strawberry,
+    Pear
+}
+
+/// Poorly Aligned. Total Size = 10, Alignment = 4
+struct ValueStruct (fs_valueStruct)
+{
+    /// Position 0, Alignment 4
+    a : int;
+
+    /// Position 4, Alignment 1
+    b : byte;
+
+    /// Position 6, Alignment 2
+    c : [ short : 2 ] (fs_unsafeStructVector);
+}
+
+/// Poorly aligned. Total Size == 26, Alignemnt = 8
+struct RefStruct
+{
+    /// Position 0, Alignment 8
+    a : long;
+
+    /// Position 8, Alignment 4
+    b : Fruit;
+
+    /// Position 12, Alignment 1
+    c : [ byte : 2 ];
+
+    /// Position 16, Alignment 4
+    d : ValueStruct;
+}
+
+table Key
+{
+    /// Field 0
+    name : string (key, required);
+
+    /// Field 1
+    value : Fruit = Banana;
+}
+
+union FunUnion { RefStruct, ValueStruct, str : string, Key }
+
+table Root (fs_serializer)
+{
+    /// Field 0
+    fields : Fields;
+
+    /// Field 1
+    vectors : Vectors;
+}
+
+table Fields
+{
+    /// Field 0
+    ref_struct : RefStruct;
+
+    /// Field 1
+    value_struct : ValueStruct;
+
+    /// Field 2
+    memory : ubyte;
+
+    /// Field 3
+    str : string;
+
+    /// Field 4
+    union : FunUnion;
+
+    /// Field 5
+    scalar_with_default : int = 3;
+}
+
+table Vectors
+{
+    /// Field 0
+    ref_struct : [ RefStruct ];
+
+    /// Field 1
+    value_struct : [ ValueStruct ];
+
+    /// Field 2
+    memory : [ ubyte ];
+
+    /// Field 3
+    str : [ string ];
+
+    /// Field 4
+    union : [ FunUnion ];
+
+    /// Field 5
+    indexed : [ Key ] (fs_vector:"IIndexedVector");
+}

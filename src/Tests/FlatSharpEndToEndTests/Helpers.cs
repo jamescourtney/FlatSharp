@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
+using System.Threading;
+
 namespace FlatSharpEndToEndTests;
 
 public static class Helpers
 {
-    public static IEnumerable<FlatBufferDeserializationOption> AllOptions
-    {
-        get
-        {
-            yield return FlatBufferDeserializationOption.Lazy;
-            yield return FlatBufferDeserializationOption.Progressive;
-            yield return FlatBufferDeserializationOption.Greedy;
-            yield return FlatBufferDeserializationOption.GreedyMutable;
-        }
-    }
-
     public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>
     {
         return item.AllocateAndSerialize(item.Serializer);
@@ -63,5 +54,28 @@ public static class Helpers
         byte[] buffer = item.AllocateAndSerialize();
         return serializer.Parse(buffer);
     }
-}
 
+    public static T SerializeAndParse<T>(
+        this T item,
+        FlatBufferDeserializationOption option,
+        out byte[] buffer) where T : class, IFlatBufferSerializable<T>
+    {
+        buffer = item.AllocateAndSerialize();
+        return item.Serializer.Parse(buffer, option);
+    }
+
+    public static void AssertSequenceEqual(
+        Span<byte> expected,
+        Span<byte> actual)
+    {
+        Assert.Equal(expected.Length, actual.Length);
+
+        for (int i = 0; i < expected.Length; ++i)
+        {
+            if (expected[i] != actual[i])
+            {
+                throw new Exception($"Buffers differed at position {i}. Expected = {expected[i]}. Actual = {actual[i]}");
+            }
+        }
+    }
+}

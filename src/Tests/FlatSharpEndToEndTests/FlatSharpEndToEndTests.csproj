@@ -12,7 +12,10 @@
     <RootNamespace>FlatSharpTests</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>annotations</Nullable>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
@@ -37,9 +40,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
-    <ProjectReference Include="..\FlatSharpEndToEndTests_Generated\FlatSharpEndToEndTests_Generated.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <FlatSharpSchema Include="**\*.fbs" />
+  </ItemGroup>
+    
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(PipelineBuild)' != 'true' " />
 </Project>
 
