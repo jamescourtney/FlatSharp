@@ -6,6 +6,27 @@ namespace FlatSharpStrykerTests;
 
 public class UnionFieldTests
 {
+    [Fact]
+    public void InvalidConstructors()
+    {
+        Assert.Throws<ArgumentNullException>(() => new FunUnion((string)null));
+        Assert.Throws<ArgumentNullException>(() => new FunUnion((RefStruct)null));
+        Assert.Throws<ArgumentNullException>(() => new FunUnion((Key)null));
+    }
+
+    [Fact]
+    public void InvalidGetters()
+    {
+        FunUnion a = new FunUnion(new RefStruct());
+
+        Assert.Throws<InvalidOperationException>(() => a.ValueStruct);
+        Assert.Throws<InvalidOperationException>(() => a.Key);
+        Assert.Throws<InvalidOperationException>(() => a.str);
+
+        a = new FunUnion(new ValueStruct());
+        Assert.Throws<InvalidOperationException>(() => a.RefStruct);
+    }
+
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
     public void StringMember(FlatBufferDeserializationOption option)

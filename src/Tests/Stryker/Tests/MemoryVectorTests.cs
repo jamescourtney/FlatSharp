@@ -4,11 +4,11 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
-public class StringVectorFieldTests
+public class MemoryVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void StringTableField(FlatBufferDeserializationOption option)
+    public void MemoryVector(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
@@ -17,15 +17,25 @@ public class StringVectorFieldTests
         Assert.True(vectors.IsInitialized);
         Assert.True(Vectors.IsStaticInitialized);
 
-        IList<string> theBoys = vectors.Str;
-        Assert.Equal(3, theBoys.Count);
-        Assert.Equal("billy", theBoys[0]);
-        Assert.Equal("mm", theBoys[1]);
-        Assert.Equal("frenchie", theBoys[2]);
+        Memory<byte> vector = vectors.Memory.Value;
+        Assert.Equal(5, vector.Length);
+        for (int i = 0; i < vector.Length; ++i)
+        {
+            Assert.Equal(i + 1, vector.Span[i]);
+        }
 
-        Helpers.AssertMutationWorks(option, vectors, false, s => s.Str, new string[0]);
-        Helpers.AssertMutationWorks(option, false, theBoys, string.Empty);
+        Helpers.AssertMutationWorks(option, vectors, false, s => s.Memory, new byte[0]);
         Helpers.AssertSequenceEqual(expectedData, buffer);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void MemoryVector_NotPresent(FlatBufferDeserializationOption option)
+    {
+        Root root = new Root() { Vectors = new() };
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+
+        Assert.Null(parsed.Vectors.Memory);
     }
 
     private Root CreateRoot(out byte[] expectedData)
@@ -36,7 +46,7 @@ public class StringVectorFieldTests
         {
             Vectors = new()
             {
-                Str = Helpers.CreateList("billy", "mm", "frenchie")
+                Memory = new byte[] { 1, 2, 3, 4, 5, }
             }
         };
 
@@ -53,29 +63,15 @@ public class StringVectorFieldTests
             248, 255, 255, 255, // soffset to vtable
             16, 0, 0, 0,        // uoffset to vector
 
-            12, 0,              // vtable length
+            10, 0,              // vtable length
             8, 0,               // table length
             0, 0,               // field 0
             0, 0,               // field 1
-            0, 0,               // field 2 (scalar)
-            4, 0,               // field 3 (str)
+            4, 0,               // field 2 (memory)
+            0, 0,               // padding
 
-            3, 0, 0, 0,         // vector length
-            12, 0, 0, 0,
-            20, 0, 0, 0,
-            24, 0, 0, 0,
-
-            5, 0, 0, 0,
-            B('b'), B('i'), B('l'), B('l'), B('y'), 0,
-            0, 0,
-
-            2, 0, 0, 0,
-            B('m'), B('m'), 0, 0,
-
-            8, 0, 0, 0,
-            B('f'), B('r'), B('e'), B('n'), 
-            B('c'), B('h'), B('i'), B('e'),
-            0,
+            5, 0, 0, 0,         // vector length
+            1, 2, 3, 4, 5,
         };
 
         return root;

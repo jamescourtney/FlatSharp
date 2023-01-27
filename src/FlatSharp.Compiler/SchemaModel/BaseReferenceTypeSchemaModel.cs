@@ -145,6 +145,12 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
             }
 
             writer.AppendLine("#pragma warning disable CS8618"); // nullable
+
+            if (context.Options.MutationTestingMode)
+            {
+                writer.AppendLine($"[{typeof(ExcludeFromCodeCoverageAttribute).GetCompilableTypeName()}]");
+            }
+
             writer.AppendLine($"public {this.Name}()");
             using (writer.WithBlock())
             {

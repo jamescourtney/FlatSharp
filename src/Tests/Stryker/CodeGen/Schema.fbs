@@ -102,10 +102,10 @@ table Vectors
 
     /// Field 3
     str : [ string ];
-
-    /// Field 4
+    
+    /// Field 4, 5
     union : [ FunUnion ];
 
-    /// Field 5
+    /// Field 6
     indexed : [ Key ] (fs_vector:"IIndexedVector");
 }
