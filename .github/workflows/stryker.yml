@@ -35,7 +35,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/tests/Stryker/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/Stryker/CodeGen --no-auto-generated
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/Stryker/CodeGen --mutation-testing-mode
     
     - name: Build
       working-directory: src/Tests/Stryker/Tests
