@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "project": "CodeGen.csproj",
+
+    "ignore-methods": 
+    [
+      "*Assert*" // Ignore assertions.
+    ],
+
+    "reporters": [ "html", "cleartext" ]
+  }
+}
