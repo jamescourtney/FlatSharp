@@ -70,8 +70,7 @@ public static class Helpers
         Span<byte> expected,
         Span<byte> actual)
     {
-        var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
-
+        //var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
         Assert.Equal(expected.Length, actual.Length);
 
         for (int i = 0; i < expected.Length; ++i)
@@ -116,13 +115,91 @@ public static class Helpers
                 return;
 
             default:
-                Assert.Throws<NotMutableException>(new Action(() =>
+                var ex = Assert.Throws<NotMutableException>(new Action(() =>
                 {
                     var ex = Assert.Throws<TargetInvocationException>(action).InnerException;
                     throw ex;
                 }));
 
+                if (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable)
+                {
+                    Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
+                }
+
                 return;
+        }
+    }
+
+    public static void AssertMutationWorks<T>(
+        FlatBufferDeserializationOption option,
+        bool isWriteThrough,
+        IList<T> items,
+        T newValue)
+    {
+        if (option != FlatBufferDeserializationOption.Lazy)
+        {
+            T[] target = new T[items.Count];
+            items.CopyTo(target, 0);
+
+            for (int i = 0; i < items.Count; ++i)
+            {
+                Assert.Equal(i, items.IndexOf(items[i]));
+                Assert.True(items.Contains(items[i]));
+                Assert.Equal(items[i], target[i]);
+            }
+        }
+
+        for (int i = 0; i < items.Count; ++i)
+        {
+            switch (option)
+            {
+                case FlatBufferDeserializationOption.Lazy when isWriteThrough:
+                case FlatBufferDeserializationOption.Progressive when isWriteThrough:
+                case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
+                    items[i] = newValue;
+
+                    // For value types, validate that they are the same.
+                    if (typeof(T).IsValueType)
+                    {
+                        Assert.Equal<T>(newValue, items[i]);
+                    }
+                    else if (option != FlatBufferDeserializationOption.Lazy)
+                    {
+                        Assert.True(object.ReferenceEquals(newValue, items[i]));
+                    }
+
+                    break;
+
+                default:
+                    var ex = Assert.Throws<NotMutableException>(new Action(() =>
+                    {
+                        items[i] = newValue;
+                    }));
+
+                    if (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable)
+                    {
+                        Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
+                    }
+
+                    break;
+            }
+        }
+
+        if (option == FlatBufferDeserializationOption.GreedyMutable)
+        {
+            items.Clear();
+            items.Add(default);
+            items.Remove(items[0]);
+            items.Insert(0, default);
+            items.RemoveAt(0);
+        }
+        else
+        {
+            Assert.Throws<NotMutableException>(() => items.Clear());
+            Assert.Throws<NotMutableException>(() => items.Add(default));
+            Assert.Throws<NotMutableException>(() => items.Remove(items[0]));
+            Assert.Throws<NotMutableException>(() => items.Insert(0, default));
+            Assert.Throws<NotMutableException>(() => items.RemoveAt(0));
         }
     }
 
@@ -149,5 +226,83 @@ public static class Helpers
         }
 
         return item;
+    }
+
+    private static int counter;
+
+    public static IList<T> CreateList<T>(params T[] values)
+    {
+        return (Interlocked.Increment(ref counter) % 3) switch
+        {
+            0 => values,
+            1 => new List<T>(values),
+            _ => new DummyList<T>(values),
+        };
+    }
+
+    private class DummyList<T> : IList<T>, IReadOnlyList<T>
+    {
+        private readonly List<T> list = new();
+
+        public DummyList(T[] values)
+        {
+            this.list.AddRange(values);
+        }
+
+        public T this[int index] { get => ((IList<T>)list)[index]; set => ((IList<T>)list)[index] = value; }
+
+        public int Count => ((ICollection<T>)list).Count;
+
+        public bool IsReadOnly => ((ICollection<T>)list).IsReadOnly;
+
+        public void Add(T item)
+        {
+            ((ICollection<T>)list).Add(item);
+        }
+
+        public void Clear()
+        {
+            ((ICollection<T>)list).Clear();
+        }
+
+        public bool Contains(T item)
+        {
+            return ((ICollection<T>)list).Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            ((ICollection<T>)list).CopyTo(array, arrayIndex);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return ((IEnumerable<T>)list).GetEnumerator();
+        }
+
+        public int IndexOf(T item)
+        {
+            return ((IList<T>)list).IndexOf(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            ((IList<T>)list).Insert(index, item);
+        }
+
+        public bool Remove(T item)
+        {
+            return ((ICollection<T>)list).Remove(item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            ((IList<T>)list).RemoveAt(index);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)list).GetEnumerator();
+        }
     }
 }

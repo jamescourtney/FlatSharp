@@ -216,10 +216,9 @@ public class TableMemberModel : ItemMemberModel
 
             relativeOffsets.Add($@"
                 int relativeOffset{i} = {vtableVariableName}.OffsetOf<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {idx});
-                if (relativeOffset{i} == 0)
-                {{
-                    {this.GetNotPresentStatement()}
-                }}
+                bool isZero{i} = relativeOffset{i} == 0;
+                allZero &= isZero{i};
+                anyZero |= isZero{i};
             ");
 
             absoluteLocations.Add($"relativeOffset{i} + {context.OffsetVariableName}");
@@ -232,7 +231,20 @@ public class TableMemberModel : ItemMemberModel
         };
 
         return $@"
+            bool allZero = true;
+            bool anyZero = false;
+
             {string.Join("\r\n", relativeOffsets)}
+
+            if (allZero)
+            {{
+                {GetNotPresentStatement()}
+            }}
+
+            if (anyZero)
+            {{
+                throw new {typeof(System.IO.InvalidDataException).GetGlobalCompilableTypeName()}(""FlatBuffer table property '{this.FriendlyName}' was only partially included in the buffer."");
+            }}
 
             var absoluteLocations = ({string.Join(", ", absoluteLocations)});
             return {adjustedContext.GetParseInvocation(this.PropertyInfo.PropertyType)};";

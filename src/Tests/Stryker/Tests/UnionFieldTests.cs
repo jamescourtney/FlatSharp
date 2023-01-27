@@ -1,4 +1,5 @@
 ﻿using FlatSharp.Internal;
+using System.IO;
 using System.Linq.Expressions;
 
 namespace FlatSharpStrykerTests;
@@ -121,6 +122,95 @@ public class UnionFieldTests
 
         Assert.True(test.IsInitialized);
         Assert.True(Key.IsStaticInitialized);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void InvalidUnion_NoOffset(FlatBufferDeserializationOption option)
+    {
+        this.Create_InvalidUnion_NoOffset(out byte[] data);
+
+        var ex = Assert.Throws<InvalidDataException>(() =>
+        {
+            Root root = Root.Serializer.Parse(data, option);
+            FunUnion union = root.Fields.Union.Value;
+        });
+
+        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Fields.Union' was only partially included in the buffer.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void InvalidUnion_NoDiscriminator(FlatBufferDeserializationOption option)
+    {
+        this.Create_InvalidUnion_NoDiscriminator(out byte[] data);
+
+        var ex = Assert.Throws<InvalidDataException>(() =>
+        {
+            Root root = Root.Serializer.Parse(data, option);
+            FunUnion union = root.Fields.Union.Value;
+        });
+
+        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Fields.Union' was only partially included in the buffer.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void InvalidUnion_InvalidDiscriminator(FlatBufferDeserializationOption option)
+    {
+        this.Create_InvalidUnion_InvalidDiscriminator(out byte[] data);
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Root root = Root.Serializer.Parse(data, option);
+            FunUnion union = root.Fields.Union.Value;
+        });
+
+        Assert.Equal("Exception parsing union 'FlatSharpStrykerTests.FunUnion'. Discriminator = 10", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void UnionNotPresent(FlatBufferDeserializationOption option)
+    {
+        Root source = this.CreateRoot_UnionNotPresent(out byte[] expectedData);
+        Root parsed = source.SerializeAndParse(option, out byte[] buffer);
+
+        Assert.Null(parsed.Fields.Union);
+        Helpers.AssertSequenceEqual(expectedData, buffer);
+    }
+
+    private Root CreateRoot_UnionNotPresent(out byte[] expectedData)
+    {
+        RefStruct vs = new()
+        {
+            A = 3,
+            B = Fruit.Apple,
+            __flatsharp__C_0 = -1,
+            __flatsharp__C_1 = -2,
+            E = default,
+        };
+
+        Root root = new()
+        {
+            Fields = new()
+        };
+
+        expectedData = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Fields subtable.
+
+            // Vtable for Root (2 bytes padding)
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+
+            252, 255, 255, 255, // soffset to vtable
+            4, 0, 4, 0          // vtable
+        };
+
+        return root;
     }
 
     private Root CreateRoot_RefStructMember(out byte[] expectedData)
@@ -275,7 +365,6 @@ public class UnionFieldTests
         return root;
     }
 
-
     private Root CreateRoot_KeyMember(out byte[] expectedData)
     {
         static byte B(char c) => (byte)c;
@@ -325,5 +414,83 @@ public class UnionFieldTests
         };
 
         return root;
+    }
+
+    private void Create_InvalidUnion_NoOffset(out byte[] data)
+    {
+        data = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Fields subtable.
+
+            // Vtable for Root (2 bytes padding)
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+
+            250, 255, 255, 255, // soffset to vtable
+            4, 0,               // ubyte discriminator, padding
+
+            14, 0,              // vtable length
+            5, 0,               // table length
+            0, 0,               // field 0
+            0, 0,               // field 1
+            0, 0,               // field 2 (scalar)
+            0, 0,               // field 3 (str)
+            4, 0,               // field 4 (discriminator)
+        };
+    }
+
+    private void Create_InvalidUnion_NoDiscriminator(out byte[] data)
+    {
+        data = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Fields subtable.
+
+            // Vtable for Root (2 bytes padding)
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+
+            248, 255, 255, 255, // soffset to vtable
+            4, 0, 0, 0,         // union offset
+
+            16, 0,              // vtable length
+            5, 0,               // table length
+            0, 0,               // field 0
+            0, 0,               // field 1
+            0, 0,               // field 2 (scalar)
+            0, 0,               // field 3 (str)
+            0, 0,               // field 4 (discriminator)
+            4, 0,               // field 5 (offset)
+        };
+    }
+
+    private void Create_InvalidUnion_InvalidDiscriminator(out byte[] data)
+    {
+        data = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Fields subtable.
+
+            // Vtable for Root (2 bytes padding)
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+
+            246, 255, 255, 255, // soffset to vtable
+            4, 0, 0, 0,         // union offset
+            10, 0,              // discriminator + padding
+
+            16, 0,              // vtable length
+            5, 0,               // table length
+            0, 0,               // field 0
+            0, 0,               // field 1
+            0, 0,               // field 2 (scalar)
+            0, 0,               // field 3 (str)
+            8, 0,               // field 4 (discriminator)
+            4, 0,               // field 5 (offset)
+        };
     }
 }

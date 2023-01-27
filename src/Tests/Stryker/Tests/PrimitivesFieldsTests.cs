@@ -46,6 +46,19 @@ public class PrimitivesFieldsTests
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void ScalarTableField_WithoutDefaultValue(FlatBufferDeserializationOption option)
+    {
+        Root root = CreateRoot_NotDefault(out byte[] expectedData);
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+        Fields fields = parsed.Fields;
+
+        Assert.Equal(root.Fields.ScalarWithDefault, fields.ScalarWithDefault);
+        Helpers.AssertMutationWorks(option, fields, false, s => s.ScalarWithDefault, 8);
+        Helpers.AssertSequenceEqual(expectedData, buffer);
+    }
+
     [Fact]
     public void ProgressiveStringTableField()
     {
@@ -110,6 +123,42 @@ public class PrimitivesFieldsTests
             5, 0, 0, 0,         // string length
             B('h'), B('e'), B('l'), B('l'),
             B('o'), 0
+        };
+
+        return root;
+    }
+
+    private Root CreateRoot_NotDefault(out byte[] expectedData)
+    {
+        Root root = new()
+        {
+            Fields = new()
+            {
+                ScalarWithDefault = 1,
+            }
+        };
+
+        expectedData = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Fields subtable.
+
+            // Vtable for Root (2 bytes padding)
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+
+            248, 255, 255, 255, // soffset to vtable
+            1, 0, 0, 0,         // scalar
+            18, 0,              // vtable length
+            8, 0,               // table length
+            0, 0,               // field 0
+            0, 0,               // field 1
+            0, 0,               // field 2 (scalar)
+            0, 0,               // field 3 (str)
+            0, 0,               // field 4
+            0, 0,               // field 5
+            4, 0,               // field 6
         };
 
         return root;
