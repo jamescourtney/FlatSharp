@@ -4,7 +4,7 @@
 
     "ignore-methods": 
     [
-      "*Assert*" // Ignore assertions.
+      "FlatSharp.Internal.FlatSharpInternal.AssertSizeOf" // Ignore assertions.
     ],
 
     "reporters": [ "html", "cleartext" ]

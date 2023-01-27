@@ -19,30 +19,33 @@ enum Fruit : uint
 /// Poorly Aligned. Total Size = 10, Alignment = 4
 struct ValueStruct (fs_valueStruct)
 {
-    /// Position 0, Alignment 4
+    /// Position 0, Length 4, Alignment 4
     a : int;
 
-    /// Position 4, Alignment 1
+    /// Position 4, Length 1, Alignment 1
     b : byte;
 
-    /// Position 6, Alignment 2
+    /// Position 6, Length 4, Alignment 2
     c : [ short : 2 ] (fs_unsafeStructVector);
 }
 
 /// Poorly aligned. Total Size == 26, Alignemnt = 8
 struct RefStruct
 {
-    /// Position 0, Alignment 8
-    a : long;
+    /// Position 0, Length 8, Alignment 8, WriteThrough = true
+    a : long (fs_writeThrough);
 
-    /// Position 8, Alignment 4
+    /// Position 8, Length 4, Alignment 4, WriteThrough = false
     b : Fruit;
 
-    /// Position 12, Alignment 1
-    c : [ byte : 2 ];
+    /// Position 12, Length 2, Alignment 1, WriteThrough = true
+    c : [ byte : 2 ] (fs_writeThrough);
 
-    /// Position 16, Alignment 4
-    d : ValueStruct;
+    /// Position 14, length 2, Alignment 1, WriteThrough = false
+    d : [ byte : 2 ];
+
+    /// Position 16, Length 10, Alignment 4, WriteThrough = false
+    e : ValueStruct;
 }
 
 table Key

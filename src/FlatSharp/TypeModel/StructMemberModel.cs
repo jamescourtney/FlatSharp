@@ -70,7 +70,7 @@ public class StructMemberModel : ItemMemberModel
     {
         context = context with
         {
-            OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}",
+            OffsetVariableName = $"{context.OffsetVariableName}{GetOffsetAdjustment(this.Offset)}",
         };
 
         return $"return {context.GetParseInvocation(this.ItemTypeModel.ClrType)};";
@@ -82,9 +82,19 @@ public class StructMemberModel : ItemMemberModel
     {
         context = context with
         {
-            OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}"
+            OffsetVariableName = $"{context.OffsetVariableName}{GetOffsetAdjustment(this.Offset)}"
         };
 
         return context.GetSerializeInvocation(this.ItemTypeModel.ClrType) + ";";
+    }
+
+    private static string GetOffsetAdjustment(int offset)
+    {
+        if (offset == 0)
+        {
+            return string.Empty;
+        }
+
+        return $"+ {offset}";
     }
 }

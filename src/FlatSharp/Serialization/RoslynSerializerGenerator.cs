@@ -485,6 +485,7 @@ $@"
             internal class {resolvedName.name} : {nameof(IGeneratedSerializer<byte>)}<{rootType.GetGlobalCompilableTypeName()}>
             {{    
                 // Method generated to help AOT compilers make good decisions about generics.
+                [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
                 public void __AotHelper()
                 {{
                     this.Write<ISpanWriter>(default!, new byte[10], default!, default!);
@@ -657,12 +658,13 @@ $@"
            rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
            (a, b) =>
            {
-               if (a.Body != null)
+               // Ignore empty methods.
+               if (b.Body == null || b.Body.Statements.Count == 0)
                {
-                   return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+                   return a;
                }
 
-               return a;
+               return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
            });
 
         // Add checked{} to constructors.
@@ -670,7 +672,12 @@ $@"
             rootNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>(),
             (a, b) =>
             {
-                return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+                // Ignore empty methods.
+                if (b.Body == null || b.Body.Statements.Count == 0)
+                {
+                    return a;
+                }
+                return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
             });
 
         // Add checked{} to property accessors.
@@ -678,11 +685,11 @@ $@"
             rootNode.DescendantNodes().OfType<AccessorDeclarationSyntax>(),
             (a, b) =>
             {
-                if (b.Body == null)
+                // Ignore empty methods.
+                if (b.Body == null || b.Body.Statements.Count == 0)
                 {
                     return a;
                 }
-
                 return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
             });
 

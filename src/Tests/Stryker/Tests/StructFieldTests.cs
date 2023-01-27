@@ -1,4 +1,7 @@
-﻿namespace FlatSharpStrykerTests;
+﻿using FlatSharp.Internal;
+using System.Linq.Expressions;
+
+namespace FlatSharpStrykerTests;
 
 public class StructFieldTests
 {
@@ -69,37 +72,11 @@ public class StructFieldTests
     [ClassData(typeof(DeserializationOptionClassData))]
     public void ReferenceStructTableField(FlatBufferDeserializationOption option)
     {
-        ValueStruct vs = new()
-        {
-            A = 4,
-            B = 3,
-        };
-
-        vs.C(0) = 1;
-        vs.C(1) = 2;
-
-        RefStruct rs = new()
-        {
-            A = 12,
-            B = Fruit.Pear,
-            D = vs
-        };
-
-        rs.C[0] = 2;
-        rs.C[1] = 3;
+        Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Assert.Throws<IndexOutOfRangeException>(() => rs.C[-1] = 4);
-        Assert.Throws<IndexOutOfRangeException>(() => rs.C[3] = 4);
-
-        Root root = new Root
-        {
-            Fields = new()
-            {
-                RefStruct = rs,
-            }
-        };
-
-        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+        Assert.Throws<IndexOutOfRangeException>(() => rs.D[3] = 4);
 
         Assert.NotNull(parsed.Fields);
         Assert.Null(parsed.Vectors);
@@ -110,14 +87,122 @@ public class StructFieldTests
         Assert.Equal(rs.B, rsParsed.B);
         Assert.Equal(rs.C[0], rsParsed.C[0]);
         Assert.Equal(rs.C[1], rsParsed.C[1]);
+        Assert.Equal(rs.D[0], rsParsed.D[0]);
+        Assert.Equal(rs.D[1], rsParsed.D[1]);
 
-        ValueStruct vsParsed = rsParsed.D;
+        ValueStruct vsParsed = rsParsed.E;
         Assert.Equal(vs.A, vsParsed.A);
         Assert.Equal(vs.B, vsParsed.B);
         Assert.Equal(vs.C(0), vsParsed.C(0));
         Assert.Equal(vs.C(1), vsParsed.C(1));
 
-        byte[] expectedBytes = new byte[]
+        Helpers.AssertSequenceEqual(expectedBytes, buffer);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void ReferenceStructWriteThrough(FlatBufferDeserializationOption option)
+    {
+        Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+
+        RefStruct rsp = parsed.Fields.RefStruct;
+
+        Helpers.AssertMutationWorks(option, rsp, true, rsp => rsp.A, 10);
+        Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.B, Fruit.Strawberry);
+        Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.E, new ValueStruct());
+
+        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 10, true, x => x.C[0], (x, y) => x.C[0] = y);
+        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 11, true, x => x.C[1], (x, y) => x.C[1] = y);
+        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 13, false, x => x.D[0], (x, y) => x.D[0] = y);
+        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 14, false, x => x.D[1], (x, y) => x.D[1] = y);
+
+        var parsed2 = Root.Serializer.Parse(buffer, option);
+
+        Assert.Equal(rsp.A, parsed2.Fields.RefStruct.A);
+        Assert.Equal(rsp.C[0], parsed2.Fields.RefStruct.C[0]);
+        Assert.Equal(rsp.C[1], parsed2.Fields.RefStruct.C[1]);
+    }
+
+    [Fact]
+    public void ProgressiveFieldLoads()
+    {
+        static T LoadAndVerify<P, T>(int index, bool expected, P parent, Func<P, T> getter)
+        {
+            Assert.False(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
+            Assert.Equal(expected, ((IFlatBufferProgressiveObject)parent).IsFieldPresent(index));
+
+            T item = getter(parent);
+
+            for (int i = 0; i < 10; ++i)
+            {
+                Assert.True(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
+                T next = getter(parent);
+
+                if (typeof(T).IsValueType)
+                {
+                    Assert.Equal(item, next);
+                }
+                else
+                {
+                    Assert.True(object.ReferenceEquals(item, next));
+                }
+            }
+
+            return item;
+        }
+
+        Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
+        Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
+
+        IFlatBufferProgressiveObject progressive = (IFlatBufferProgressiveObject)parsed;
+
+        Fields fields = LoadAndVerify(0, true, parsed, p => p.Fields);
+        Assert.NotNull(fields);
+
+        {
+            RefStruct @ref = LoadAndVerify(0, true, fields, f => f.RefStruct);
+            Assert.NotNull(@ref);
+
+            Assert.Equal(root.Fields.RefStruct.A, LoadAndVerify(0, true, @ref, r => r.A));
+            Assert.Equal(root.Fields.RefStruct.B, LoadAndVerify(1, true, @ref, r => r.B));
+
+            LoadAndVerify(6, true, @ref, r => r.E);
+        }
+    }
+
+    private static Root CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBuffer)
+    {
+        vs = new()
+        {
+            A = 4,
+            B = 3,
+        };
+
+        vs.C(0) = 1;
+        vs.C(1) = 2;
+
+        rs = new()
+        {
+            A = 12,
+            B = Fruit.Pear,
+            E = vs
+        };
+
+        rs.C[0] = 2;
+        rs.C[1] = 3;
+        rs.D[0] = 4;
+        rs.D[1] = 5;
+
+        Root root = new Root
+        {
+            Fields = new()
+            {
+                RefStruct = rs,
+            }
+        };
+
+        expectedBuffer = new byte[]
         {
             4, 0, 0, 0,         // offset to table start
             248, 255, 255, 255, // soffset to vtable.
@@ -132,7 +217,7 @@ public class StructFieldTests
             12, 0, 0, 0,        // refStruct.A (ulong)
             0, 0, 0, 0,
             3, 0, 0, 0,         // refStruct.Fruit (pear)
-            2, 3, 0, 0,         // refStruct.C[0,1], padding
+            2, 3, 4, 5,         // refStruct.C[0,1], refStruct.D[0,1]
             4, 0, 0, 0,         // valuestruct.a
             3, 0,               // valuestruct.b, padding
             1, 0,               // valuestruct.c[0]
@@ -143,6 +228,6 @@ public class StructFieldTests
             4, 0,               // field 0
         };
 
-        Helpers.AssertSequenceEqual(expectedBytes, buffer);
+        return root;
     }
 }
