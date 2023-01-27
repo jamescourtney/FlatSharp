@@ -30,9 +30,11 @@ public class StructFieldTests
         };
 
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+        Fields fields = parsed.Fields;
 
-        Assert.NotNull(parsed.Fields);
+        Assert.NotNull(fields);
         Assert.Null(parsed.Vectors);
+
         Assert.NotNull(parsed.Fields.ValueStruct);
 
         ValueStruct vsParsed = parsed.Fields.ValueStruct.Value;
@@ -42,7 +44,7 @@ public class StructFieldTests
         Assert.Equal(vs.C(0), vsParsed.C(0));
         Assert.Equal(vs.C(1), vsParsed.C(1));
 
-        byte[] expectedBytes = new byte[]
+        byte[] expectedBytes =
         {
             4, 0, 0, 0,         // offset to table start
             248, 255, 255, 255, // soffset to vtable.
@@ -65,6 +67,7 @@ public class StructFieldTests
         };
 
         Helpers.AssertSequenceEqual(expectedBytes, buffer);
+        Helpers.AssertMutationWorks(option, fields, false, p => p.ValueStruct, default);
     }
 
 
@@ -97,6 +100,7 @@ public class StructFieldTests
         Assert.Equal(vs.C(1), vsParsed.C(1));
 
         Helpers.AssertSequenceEqual(expectedBytes, buffer);
+        Helpers.AssertMutationWorks(option, parsed.Fields, false, p => p.RefStruct, new RefStruct());
     }
 
     [Theory]
@@ -128,9 +132,16 @@ public class StructFieldTests
     public void ReferenceStructOnDeserialized(FlatBufferDeserializationOption option)
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
-        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
-        RefStruct rsp = parsed.Fields.RefStruct;
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+        Fields fields = parsed.Fields;
+        RefStruct rsp = fields.RefStruct;
+
+        Assert.True(parsed.IsInitialized);
+        Assert.True(Root.IsStaticInitialized);
+
+        Assert.True(fields.IsInitialized);
+        Assert.True(Fields.IsStaticInitialized);
 
         Assert.True(rsp.IsInitialized);
         Assert.True(RefStruct.IsStaticInitialized);
@@ -139,48 +150,23 @@ public class StructFieldTests
     [Fact]
     public void ProgressiveFieldLoads()
     {
-        static T LoadAndVerify<P, T>(int index, bool expected, P parent, Func<P, T> getter)
-        {
-            Assert.False(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
-            Assert.Equal(expected, ((IFlatBufferProgressiveObject)parent).IsFieldPresent(index));
-
-            T item = getter(parent);
-
-            for (int i = 0; i < 10; ++i)
-            {
-                Assert.True(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
-                T next = getter(parent);
-
-                if (typeof(T).IsValueType)
-                {
-                    Assert.Equal(item, next);
-                }
-                else
-                {
-                    Assert.True(object.ReferenceEquals(item, next));
-                }
-            }
-
-            return item;
-        }
-
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
         Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
 
         IFlatBufferProgressiveObject progressive = (IFlatBufferProgressiveObject)parsed;
 
-        Fields fields = LoadAndVerify(0, true, parsed, p => p.Fields);
+        Fields fields = Helpers.TestProgressiveFieldLoad(0, true, parsed, p => p.Fields);
         Assert.NotNull(fields);
 
         {
-            RefStruct @ref = LoadAndVerify(0, true, fields, f => f.RefStruct);
-            Assert.Equal(root.Fields.RefStruct.A, LoadAndVerify(0, true, @ref, r => r.A));
-            Assert.Equal(root.Fields.RefStruct.B, LoadAndVerify(1, true, @ref, r => r.B));
-            Assert.Equal(root.Fields.RefStruct.C[0], LoadAndVerify(2, true, @ref, r => r.__flatsharp__C_0));
-            Assert.Equal(root.Fields.RefStruct.C[1], LoadAndVerify(3, true, @ref, r => r.__flatsharp__C_1));
-            Assert.Equal(root.Fields.RefStruct.D[0], LoadAndVerify(4, true, @ref, r => r.__flatsharp__D_0));
-            Assert.Equal(root.Fields.RefStruct.D[1], LoadAndVerify(5, true, @ref, r => r.__flatsharp__D_1));
-            LoadAndVerify(6, true, @ref, r => r.E);
+            RefStruct @ref = Helpers.TestProgressiveFieldLoad(0, true, fields, f => f.RefStruct);
+            Assert.Equal(root.Fields.RefStruct.A, Helpers.TestProgressiveFieldLoad(0, true, @ref, r => r.A));
+            Assert.Equal(root.Fields.RefStruct.B, Helpers.TestProgressiveFieldLoad(1, true, @ref, r => r.B));
+            Assert.Equal(root.Fields.RefStruct.C[0], Helpers.TestProgressiveFieldLoad(2, true, @ref, r => r.__flatsharp__C_0));
+            Assert.Equal(root.Fields.RefStruct.C[1], Helpers.TestProgressiveFieldLoad(3, true, @ref, r => r.__flatsharp__C_1));
+            Assert.Equal(root.Fields.RefStruct.D[0], Helpers.TestProgressiveFieldLoad(4, true, @ref, r => r.__flatsharp__D_0));
+            Assert.Equal(root.Fields.RefStruct.D[1], Helpers.TestProgressiveFieldLoad(5, true, @ref, r => r.__flatsharp__D_1));
+            Helpers.TestProgressiveFieldLoad(6, true, @ref, r => r.E);
         }
     }
 

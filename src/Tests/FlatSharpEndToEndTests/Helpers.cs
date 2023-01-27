@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using FlatSharp.Internal;
 using System.Linq.Expressions;
 using System.Threading;
 
@@ -69,6 +70,8 @@ public static class Helpers
         Span<byte> expected,
         Span<byte> actual)
     {
+        var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
+
         Assert.Equal(expected.Length, actual.Length);
 
         for (int i = 0; i < expected.Length; ++i)
@@ -123,38 +126,28 @@ public static class Helpers
         }
     }
 
-
-    public static void AssertMutationWorks<TSource, TProperty>(
-        FlatBufferDeserializationOption option,
-        TSource parent,
-        TProperty newValue,
-        bool isWriteThrough,
-        Func<TSource, TProperty> getValue,
-        Action<TSource, TProperty> setValue)
+    public static T TestProgressiveFieldLoad<P, T>(int index, bool expected, P parent, Func<P, T> getter)
     {
-        switch (option)
+        Assert.False(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
+        Assert.Equal(expected, ((IFlatBufferProgressiveObject)parent).IsFieldPresent(index));
+
+        T item = getter(parent);
+
+        for (int i = 0; i < 10; ++i)
         {
-            case FlatBufferDeserializationOption.Lazy when isWriteThrough:
-            case FlatBufferDeserializationOption.Progressive when isWriteThrough:
-            case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
-                setValue(parent, newValue);
-                TProperty readValue = getValue(parent);
+            Assert.True(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
+            T next = getter(parent);
 
-                // For value types, validate that they are the same.
-                if (typeof(TProperty).IsValueType)
-                {
-                    Assert.Equal<TProperty>(newValue, readValue);
-                }
-                else if (option != FlatBufferDeserializationOption.Lazy)
-                {
-                    Assert.True(object.ReferenceEquals(newValue, readValue));
-                }
-
-                return;
-
-            default:
-                Assert.Throws<NotMutableException>(() => setValue(parent, newValue));
-                return;
+            if (typeof(T).IsValueType)
+            {
+                Assert.Equal(item, next);
+            }
+            else
+            {
+                Assert.True(object.ReferenceEquals(item, next));
+            }
         }
+
+        return item;
     }
 }
