@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Linq.Expressions;
 using System.Threading;
 
 namespace FlatSharpEndToEndTests;
@@ -76,6 +77,84 @@ public static class Helpers
             {
                 throw new Exception($"Buffers differed at position {i}. Expected = {expected[i]}. Actual = {actual[i]}");
             }
+        }
+    }
+
+    public static void AssertMutationWorks<TSource, TProperty>(
+        FlatBufferDeserializationOption option,
+        TSource parent,
+        bool isWriteThrough,
+        Expression<Func<TSource, TProperty>> propertyLambda,
+        TProperty newValue)
+    {
+        MemberExpression member = propertyLambda.Body as MemberExpression;
+        PropertyInfo propInfo = member.Member as PropertyInfo;
+        Action action = () => propInfo.SetMethod.Invoke(parent, new object[] { newValue });
+
+        switch (option)
+        {
+            case FlatBufferDeserializationOption.Lazy when isWriteThrough:
+            case FlatBufferDeserializationOption.Progressive when isWriteThrough:
+            case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
+                action();
+
+                // For value types, validate that they are the same.
+                if (typeof(TProperty).IsValueType)
+                {
+                    TProperty readValue = (TProperty)propInfo.GetMethod.Invoke(parent, null);
+                    Assert.Equal<TProperty>(newValue, readValue);
+                }
+                else if (option != FlatBufferDeserializationOption.Lazy)
+                {
+                    TProperty readValue = (TProperty)propInfo.GetMethod.Invoke(parent, null);
+                    Assert.True(object.ReferenceEquals(newValue, readValue));
+                }
+
+                return;
+
+            default:
+                Assert.Throws<NotMutableException>(new Action(() =>
+                {
+                    var ex = Assert.Throws<TargetInvocationException>(action).InnerException;
+                    throw ex;
+                }));
+
+                return;
+        }
+    }
+
+
+    public static void AssertMutationWorks<TSource, TProperty>(
+        FlatBufferDeserializationOption option,
+        TSource parent,
+        TProperty newValue,
+        bool isWriteThrough,
+        Func<TSource, TProperty> getValue,
+        Action<TSource, TProperty> setValue)
+    {
+        switch (option)
+        {
+            case FlatBufferDeserializationOption.Lazy when isWriteThrough:
+            case FlatBufferDeserializationOption.Progressive when isWriteThrough:
+            case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
+                setValue(parent, newValue);
+                TProperty readValue = getValue(parent);
+
+                // For value types, validate that they are the same.
+                if (typeof(TProperty).IsValueType)
+                {
+                    Assert.Equal<TProperty>(newValue, readValue);
+                }
+                else if (option != FlatBufferDeserializationOption.Lazy)
+                {
+                    Assert.True(object.ReferenceEquals(newValue, readValue));
+                }
+
+                return;
+
+            default:
+                Assert.Throws<NotMutableException>(() => setValue(parent, newValue));
+                return;
         }
     }
 }

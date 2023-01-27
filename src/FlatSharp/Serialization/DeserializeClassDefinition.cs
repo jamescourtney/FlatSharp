@@ -284,6 +284,7 @@ internal class DeserializeClassDefinition
         }
 
         string interfaceGlobalName = typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName();
+        bool isProgressive = this.options.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 
         return
         $@"
@@ -292,7 +293,7 @@ internal class DeserializeClassDefinition
                 , {interfaceGlobalName}
                 , {typeof(IPoolableObject).GetGlobalCompilableTypeName()}
                 , {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}
-
+                {(isProgressive ? $", {typeof(IFlatBufferProgressiveObject).GetGlobalCompilableTypeName()}" : string.Empty)}
                 where TInputBuffer : IInputBuffer
             {{
                 private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {CtorContextVariableName} 
@@ -324,10 +325,63 @@ internal class DeserializeClassDefinition
                     set => this.{IsRootVariableName} = value;
                 }}
 
+                {(
+                  this.options.DeserializationOption == FlatBufferDeserializationOption.Progressive
+                  ? this.ImplementProgressiveReflectionMethods()
+                  : string.Empty
+                )}
+
                 {string.Join("\r\n", this.propertyOverrides)}
                 {string.Join("\r\n", this.readMethods)}
             }}
         ";
+    }
+
+    protected virtual string ImplementProgressiveReflectionMethods()
+    {
+        FlatSharpInternal.Assert(this.options.DeserializationOption == FlatBufferDeserializationOption.Progressive, "expecting progressive");
+
+        string interfaceName = typeof(IFlatBufferProgressiveObject).GetGlobalCompilableTypeName();
+
+        string isLoaded = this.options.DeserializationOption switch
+        {
+            FlatBufferDeserializationOption.Lazy => "return false;",
+            FlatBufferDeserializationOption.Greedy or FlatBufferDeserializationOption.GreedyMutable => "return true;",
+            FlatBufferDeserializationOption.Progressive =>
+                string.Join("\r\n",
+                    this.itemModels
+                    .Select(
+                        imm => $"if (index == {imm.Index}) {{ return ({GetHasValueFieldName(imm)} & {GetHasValueFieldMask(imm)}) != 0; }}")
+                    .Concat(new[] { "return false;" })),
+            _ => string.Empty, // won't compile
+        };
+
+        if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
+        {
+            return $$"""
+                [{{typeof(ExcludeFromCodeCoverageAttribute).GetCompilableTypeName()}}]
+                bool {{interfaceName}}.IsFieldPresent(int index) => {{vtableAccessor}}.OffsetOf(this.{{InputBufferVariableName}}, index) != 0;
+
+                [{{typeof(ExcludeFromCodeCoverageAttribute).GetCompilableTypeName()}}]
+                bool {{interfaceName}}.IsFieldLoaded(int index)
+                {
+                    {{isLoaded}}
+                }
+                """;
+        }
+        else
+        {
+            return $$"""
+                [{{typeof(ExcludeFromCodeCoverageAttribute).GetCompilableTypeName()}}]
+                bool {{interfaceName}}.IsFieldPresent(int index) => true;
+                
+                [{{typeof(ExcludeFromCodeCoverageAttribute).GetCompilableTypeName()}}]
+                bool {{interfaceName}}.IsFieldLoaded(int index)
+                {
+                    {{isLoaded}}
+                }
+                """;
+        }
     }
 
     protected virtual string GetSetterBody(ItemMemberModel itemModel)
@@ -538,9 +592,7 @@ internal class DeserializeClassDefinition
 
     protected static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 
-    protected static string GetHasValueFieldName(int index) => $"__mask{index}";
-
-    protected static string GetHasValueFieldName(ItemMemberModel itemModel) => GetHasValueFieldName(itemModel.Index / 8);
+    protected static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__mask{itemModel.Index / 8}";
 
     protected static string GetHasValueFieldMask(ItemMemberModel itemModel) => $"(byte){1 << (itemModel.Index % 8)}";
 
