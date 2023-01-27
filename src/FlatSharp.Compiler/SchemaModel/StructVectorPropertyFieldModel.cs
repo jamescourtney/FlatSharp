@@ -55,7 +55,7 @@ public record StructVectorPropertyFieldModel
                 $"{field.Name}[{i}]",
                 modifiedAttributes)
             {
-                ProtectedGetter = true,
+                ProtectedGetter = FlatSharpCompiler.CommandLineOptions?.MutationTestingMode != true,
             };
 
             propertyModels.Add(model);

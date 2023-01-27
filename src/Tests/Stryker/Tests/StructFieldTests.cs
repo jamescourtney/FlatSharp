@@ -110,18 +110,30 @@ public class StructFieldTests
 
         Helpers.AssertMutationWorks(option, rsp, true, rsp => rsp.A, 10);
         Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.B, Fruit.Strawberry);
+        Helpers.AssertMutationWorks(option, rsp, true, rsp => rsp.__flatsharp__C_0, (sbyte)3);
+        Helpers.AssertMutationWorks(option, rsp, true, rsp => rsp.__flatsharp__C_1, (sbyte)6);
+        Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.__flatsharp__D_0, (sbyte)3);
+        Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.__flatsharp__D_1, (sbyte)6);
         Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.E, new ValueStruct());
-
-        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 10, true, x => x.C[0], (x, y) => x.C[0] = y);
-        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 11, true, x => x.C[1], (x, y) => x.C[1] = y);
-        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 13, false, x => x.D[0], (x, y) => x.D[0] = y);
-        Helpers.AssertMutationWorks<RefStruct, sbyte>(option, rsp, 14, false, x => x.D[1], (x, y) => x.D[1] = y);
 
         var parsed2 = Root.Serializer.Parse(buffer, option);
 
         Assert.Equal(rsp.A, parsed2.Fields.RefStruct.A);
         Assert.Equal(rsp.C[0], parsed2.Fields.RefStruct.C[0]);
         Assert.Equal(rsp.C[1], parsed2.Fields.RefStruct.C[1]);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void ReferenceStructOnDeserialized(FlatBufferDeserializationOption option)
+    {
+        Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+
+        RefStruct rsp = parsed.Fields.RefStruct;
+
+        Assert.True(rsp.IsInitialized);
+        Assert.True(RefStruct.IsStaticInitialized);
     }
 
     [Fact]
@@ -162,11 +174,12 @@ public class StructFieldTests
 
         {
             RefStruct @ref = LoadAndVerify(0, true, fields, f => f.RefStruct);
-            Assert.NotNull(@ref);
-
             Assert.Equal(root.Fields.RefStruct.A, LoadAndVerify(0, true, @ref, r => r.A));
             Assert.Equal(root.Fields.RefStruct.B, LoadAndVerify(1, true, @ref, r => r.B));
-
+            Assert.Equal(root.Fields.RefStruct.C[0], LoadAndVerify(2, true, @ref, r => r.__flatsharp__C_0));
+            Assert.Equal(root.Fields.RefStruct.C[1], LoadAndVerify(3, true, @ref, r => r.__flatsharp__C_1));
+            Assert.Equal(root.Fields.RefStruct.D[0], LoadAndVerify(4, true, @ref, r => r.__flatsharp__D_0));
+            Assert.Equal(root.Fields.RefStruct.D[1], LoadAndVerify(5, true, @ref, r => r.__flatsharp__D_1));
             LoadAndVerify(6, true, @ref, r => r.E);
         }
     }
