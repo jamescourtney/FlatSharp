@@ -92,7 +92,7 @@ jobs:
             --use-source-link `
             --format opencover `
             --target "dotnet" `
-            --output pooling.coverage.xml `
+            --output stryker.coverage.xml `
             --targetargs "src/FlatSharp.Compiler/bin/Debug/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/Stryker/CodeGen --mutation-testing-mode"
       
     - name: Test
