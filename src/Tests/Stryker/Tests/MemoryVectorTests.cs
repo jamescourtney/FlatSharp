@@ -40,8 +40,6 @@ public class MemoryVectorTests
 
     private Root CreateRoot(out byte[] expectedData)
     {
-        static byte B(char c) => (byte)c;
-
         Root root = new()
         {
             Vectors = new()
