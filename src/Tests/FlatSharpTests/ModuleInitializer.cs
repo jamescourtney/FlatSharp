@@ -24,7 +24,9 @@ namespace FlatSharpTests
         [ModuleInitializer]
         public static void AssemblyInitialize()
         {
+#if NETCOREAPP
             RoslynSerializerGenerator.EnableStrictValidation = true;
+#endif
         }
     }
 }
