@@ -71,7 +71,7 @@ public static class Helpers
         Span<byte> expected,
         Span<byte> actual)
     {
-        var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
+        //var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
         Assert.Equal(expected.Length, actual.Length);
 
         for (int i = 0; i < expected.Length; ++i)
