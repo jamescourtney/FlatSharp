@@ -115,6 +115,11 @@ public class FlatSharpCompiler
                     try
                     {
                         cSharp = CreateCSharp(bfbs, inputHash, options);
+
+                        if (options.MutationTestingMode)
+                        {
+                            cSharp = cSharp.Replace("BitConverter", "MockBitConverter");
+                        }
                     }
                     catch (Exception ex)
                     {

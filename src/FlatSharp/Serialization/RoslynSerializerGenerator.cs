@@ -624,8 +624,14 @@ $@"
         string serializerBody = string.Empty;
         if (typeModel.SchemaType == FlatBufferSchemaType.Table)
         {
-            // Generate a serializer as well.
-            (serializerBody, _) = ImplementInterfaceMethod(typeModel.ClrType, resolver);
+            TableTypeModel? tableModel = typeModel as TableTypeModel;
+            FlatSharpInternal.Assert(tableModel is not null, "expecting table");
+
+            if (tableModel.ShouldBuildISerializer)
+            {
+                // Generate a serializer as well.
+                (serializerBody, _) = ImplementInterfaceMethod(typeModel.ClrType, resolver);
+            }
         }
 
         string @class =

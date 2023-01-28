@@ -16,6 +16,7 @@
 
 using FlatSharp.Internal;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 
 namespace FlatSharpEndToEndTests;
@@ -89,6 +90,29 @@ public static class Helpers
         Expression<Func<TSource, TProperty>> propertyLambda,
         TProperty newValue)
     {
+        Assert.True(parent is IFlatBufferDeserializedObject);
+
+        {
+            var dobj = (IFlatBufferDeserializedObject)parent;
+
+            Assert.Equal(option, dobj.DeserializationContext.DeserializationOption);
+            Assert.Equal(typeof(TSource), dobj.TableOrStructType);
+
+            switch (option)
+            {
+                case FlatBufferDeserializationOption.Greedy:
+                case FlatBufferDeserializationOption.GreedyMutable:
+                    Assert.False(dobj.CanSerializeWithMemoryCopy);
+                    Assert.Null(dobj.InputBuffer);
+                    break;
+
+                default:
+                    Assert.True(dobj.CanSerializeWithMemoryCopy);
+                    Assert.NotNull(dobj.InputBuffer);
+                    break;
+            }
+        }
+
         MemberExpression member = propertyLambda.Body as MemberExpression;
         PropertyInfo propInfo = member.Member as PropertyInfo;
         Action action = () => propInfo.SetMethod.Invoke(parent, new object[] { newValue });
@@ -205,14 +229,39 @@ public static class Helpers
 
     public static T TestProgressiveFieldLoad<P, T>(int index, bool expected, P parent, Func<P, T> getter)
     {
-        Assert.False(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
-        Assert.Equal(expected, ((IFlatBufferProgressiveObject)parent).IsFieldPresent(index));
+        IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)parent;
 
-        T item = getter(parent);
+        int maskNum = index / 8;
+        byte bitMask = (byte)(1 << (index % 8));
+
+        FieldInfo mask = parent.GetType().GetField($"__mask{maskNum}", BindingFlags.NonPublic | BindingFlags.Instance);
+        FieldInfo vtable = parent.GetType().GetField("__vtable", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        bool IsFieldLoaded()
+        {
+            byte value = (byte)mask.GetValue(parent);
+            return (value & bitMask) != 0;
+        }
+
+        bool IsFieldPresent()
+        {
+            if (typeof(P).GetCustomAttribute<FlatBufferStructAttribute>() is not null)
+            {
+                return true;
+            }
+
+            IVTable vt = (IVTable)vtable.GetValue(parent);
+            return vt.OffsetOf(obj.InputBuffer!, index) != 0;
+        }
+
+        Assert.False(IsFieldLoaded());
+        Assert.Equal(expected, IsFieldPresent());
 
         for (int i = 0; i < 10; ++i)
         {
-            Assert.True(((IFlatBufferProgressiveObject)parent).IsFieldLoaded(index));
+            T item = getter(parent);
+
+            Assert.True(IsFieldLoaded());
             T next = getter(parent);
 
             if (typeof(T).IsValueType)
@@ -225,7 +274,7 @@ public static class Helpers
             }
         }
 
-        return item;
+        return getter(parent);
     }
 
     private static int counter;

@@ -86,10 +86,12 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
         string fileId = string.Empty;
         if (this.Schema.RootTable?.Name == this.FullName && !string.IsNullOrEmpty(this.Schema.FileIdentifier))
         {
-            fileId = $"{nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.Schema.FileIdentifier}\"";
+            fileId = $", {nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.Schema.FileIdentifier}\"";
         }
 
-        string attribute = $"[FlatBufferTable({fileId})]";
+        string emitSerializer = $"{nameof(FlatBufferTableAttribute.BuildSerializer)} = {(this.Attributes.DeserializationOption is not null ? "true" : "false")}";
+
+        string attribute = $"[FlatBufferTable({emitSerializer}{fileId})]";
 
         writer.AppendSummaryComment(this.Documentation);
         writer.AppendLine(attribute);

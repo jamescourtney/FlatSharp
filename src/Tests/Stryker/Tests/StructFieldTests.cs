@@ -9,65 +9,77 @@ public class StructFieldTests
     [ClassData(typeof(DeserializationOptionClassData))]
     public void ValueStructTableField(FlatBufferDeserializationOption option)
     {
-        ValueStruct vs = new()
+        try
         {
-            A = 4,
-            B = 3,
-        };
-
-        vs.C(0) = 1;
-        vs.C(1) = 2;
-
-        Assert.Throws<IndexOutOfRangeException>(() => vs.C(2) = 4);
-        Assert.Throws<IndexOutOfRangeException>(() => vs.C(-1) = 4);
-
-        Root root = new Root
-        {
-            Fields = new()
+            for (int i = 0; i < 2; ++i)
             {
-                ValueStruct = vs,
+                MockBitConverter.IsLittleEndian = i == 0;
+
+                ValueStruct vs = new()
+                {
+                    A = 4,
+                    B = 3,
+                };
+
+                vs.C(0) = 1;
+                vs.C(1) = 2;
+
+                Assert.Throws<IndexOutOfRangeException>(() => vs.C(2) = 4);
+                Assert.Throws<IndexOutOfRangeException>(() => vs.C(-1) = 4);
+
+                Root root = new Root
+                {
+                    Fields = new()
+                    {
+                        ValueStruct = vs,
+                    }
+                };
+
+                Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+                Fields fields = parsed.Fields;
+
+                Assert.NotNull(fields);
+                Assert.Null(parsed.Vectors);
+
+                Assert.NotNull(parsed.Fields.ValueStruct);
+
+                ValueStruct vsParsed = parsed.Fields.ValueStruct.Value;
+
+                Assert.Equal(vs.A, vsParsed.A);
+                Assert.Equal(vs.B, vsParsed.B);
+                Assert.Equal(vs.C(0), vsParsed.C(0));
+                Assert.Equal(vs.C(1), vsParsed.C(1));
+
+                byte[] expectedBytes =
+                {
+                    4, 0, 0, 0,         // offset to table start
+                    248, 255, 255, 255, // soffset to vtable.
+                    12, 0, 0, 0,        // uoffset to field 0 (fields table)
+                    6, 0,               // vtable length
+                    8, 0,               // table length
+                    4, 0,               // offset of field 0
+                    0, 0,               // padding
+
+                    242, 255, 255, 255, // soffset to vtable
+                    4, 0, 0, 0,         // valuestruct.a
+                    3, 0,               // valuestruct.b, padding
+                    1, 0,               // valuestruct.c[0]
+                    2, 0,               // valuestruct.c[1]
+
+                    8, 0,               // vtable length
+                    14, 0,              // table length
+                    0, 0,               // field 0 (not present)
+                    4, 0,               // field 1
+                };
+
+                Helpers.AssertSequenceEqual(expectedBytes, buffer);
+                Helpers.AssertMutationWorks(option, fields, false, p => p.ValueStruct, default);
             }
-        };
-
-        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
-        Fields fields = parsed.Fields;
-
-        Assert.NotNull(fields);
-        Assert.Null(parsed.Vectors);
-
-        Assert.NotNull(parsed.Fields.ValueStruct);
-
-        ValueStruct vsParsed = parsed.Fields.ValueStruct.Value;
-
-        Assert.Equal(vs.A, vsParsed.A);
-        Assert.Equal(vs.B, vsParsed.B);
-        Assert.Equal(vs.C(0), vsParsed.C(0));
-        Assert.Equal(vs.C(1), vsParsed.C(1));
-
-        byte[] expectedBytes =
+        }
+        finally
         {
-            4, 0, 0, 0,         // offset to table start
-            248, 255, 255, 255, // soffset to vtable.
-            12, 0, 0, 0,        // uoffset to field 0 (fields table)
-            6, 0,               // vtable length
-            8, 0,               // table length
-            4, 0,               // offset of field 0
-            0, 0,               // padding
-
-            242, 255, 255, 255, // soffset to vtable
-            4, 0, 0, 0,         // valuestruct.a
-            3, 0,               // valuestruct.b, padding
-            1, 0,               // valuestruct.c[0]
-            2, 0,               // valuestruct.c[1]
-
-            8, 0,               // vtable length
-            14, 0,              // table length
-            0, 0,               // field 0 (not present)
-            4, 0,               // field 1
-        };
-
-        Helpers.AssertSequenceEqual(expectedBytes, buffer);
-        Helpers.AssertMutationWorks(option, fields, false, p => p.ValueStruct, default);
+            MockBitConverter.IsLittleEndian = BitConverter.IsLittleEndian;
+        }
     }
 
 
@@ -152,8 +164,6 @@ public class StructFieldTests
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
         Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
-
-        IFlatBufferProgressiveObject progressive = (IFlatBufferProgressiveObject)parsed;
 
         Fields fields = Helpers.TestProgressiveFieldLoad(0, true, parsed, p => p.Fields);
         Assert.NotNull(fields);

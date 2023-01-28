@@ -1,4 +1,5 @@
 ﻿using FlatSharp.Internal;
+using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
 
@@ -55,6 +56,114 @@ public class IndexedVectorTests
 
         Assert.Null(vectors.Indexed);
         Helpers.AssertSequenceEqual(expectedData, buffer);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void KeyNotSet_Serialize(FlatBufferDeserializationOption option)
+    {
+        Key key = new Key { Name = "fred", Value = Fruit.Apple };
+
+        Root root = new()
+        {
+            Vectors = new()
+            {
+                Indexed = new IndexedVector<string, Key>
+                {
+                    { key }
+                }
+            }
+        };
+
+        key.Name = null!;
+
+        var ex = Assert.Throws<InvalidOperationException>(() => root.SerializeAndParse(option));
+        Assert.Equal("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was not set.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void KeyNotSet_Parse(FlatBufferDeserializationOption option)
+    {
+        // missing required field.
+        byte[] data =
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,
+            12, 0, 0, 0,
+
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+
+            246, 255, 255, 255,
+            24, 0, 0, 0,
+            4, 0,
+
+            16, 0, 9, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            8, 0, 4, 0,
+
+            0, 0,
+
+            248, 255, 255, 255,
+            0, 0, 0, 0,
+
+            8, 0, 8, 0,
+            0, 0, 4, 0,
+        };
+
+        var ex = Assert.Throws<InvalidDataException>(() =>
+        {
+            var root = Root.Serializer.Parse(data, option);
+            string name = root.Fields.Union.Value.Key.Name;
+        });
+
+        Assert.Equal("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was missing from the buffer.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void Big(FlatBufferDeserializationOption option)
+    {
+        Root root = new Root
+        {
+            Vectors = new()
+            {
+                Indexed = new IndexedVector<string, Key>(),
+            }
+        };
+
+        List<string> expectedKeys = new();
+        for (int i = 0; i < 1000; ++i)
+        {
+            Key key = new() { Name = Guid.NewGuid().ToString("n"), Value = Fruit.Apple };
+            expectedKeys.Add(key.Name);
+            root.Vectors.Indexed.Add(key);
+        }
+
+        Root parsed = root.SerializeAndParse(option, out byte[] buffer);
+
+        var parsedIndexed = parsed.Vectors.Indexed;
+
+        for (int i = 0; i < expectedKeys.Count; ++i)
+        {
+            Assert.True(parsedIndexed.ContainsKey(expectedKeys[i]));
+            Assert.NotNull(parsedIndexed[expectedKeys[i]]);
+            Assert.True(parsedIndexed.TryGetValue(expectedKeys[i], out Key key));
+            Assert.NotNull(key);
+            Assert.Equal(expectedKeys[i], key.Name);
+        }
+
+        for (int i = 0; i < expectedKeys.Count; ++i)
+        {
+            string unexpectedKey = Guid.NewGuid().ToString("n");
+
+            Assert.False(parsedIndexed.ContainsKey(unexpectedKey));
+            Assert.Throws<KeyNotFoundException>(() => parsedIndexed[unexpectedKey]);
+            Assert.False(parsedIndexed.TryGetValue(unexpectedKey, out Key key));
+            Assert.Null(key);
+        }
     }
 
     private Root CreateRoot(out byte[] expectedData)
@@ -115,10 +224,10 @@ public class IndexedVectorTests
             8, 0, 4, 0,
 
             1, 0, 0, 0,
-            B('a'), 0, 0, 0,   
+            B('a'), 0, 0, 0,
 
             248, 255, 255, 255,  // non-shared vtable. (banana is default)
-            12, 0, 0, 0, 
+            12, 0, 0, 0,
 
             6, 0, 8, 0,          // vtable
             4, 0, 0, 0,
