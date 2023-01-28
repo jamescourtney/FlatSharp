@@ -30,7 +30,7 @@ internal static partial class FlatBufferVectorHelpers
 
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
-
+        
         string classDef =
 $$""""
     internal sealed class {{className}}<TInputBuffer>
@@ -93,15 +93,14 @@ $$""""
             {
                 if (System.Threading.Interlocked.Exchange(ref this.inUse, 0) != 0)
                 {
-                    {{(
-                        !itemTypeModel.ClrType.IsValueType && typeof(IPoolableObject).IsAssignableFrom(itemTypeModel.ClrType)
-                      ? $$"""
-                            foreach (var item in this.list)
-                            {
-                              item.ReturnToPool(true);
-                            }
-                          """
-                      : string.Empty
+                    {{If(
+                      !itemTypeModel.ClrType.IsValueType && typeof(IPoolableObject).IsAssignableFrom(itemTypeModel.ClrType),
+                      $$"""
+                        foreach (var item in this.list)
+                        {
+                            item.ReturnToPool(true);
+                        }
+                        """
                     )}}
 
                     this.list.Clear();
@@ -125,21 +124,18 @@ $$""""
 
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateMutation()
-        {
-            {{(
-                // only need to check if this field is ever write through.
-                isEverWriteThrough
-              ? $$"""
-                    if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
-                    {
-                        {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowNotMutableException)}}();
-                    }
-                  """
-              : string.Empty
-            )}}
-        }
+        {{If(isEverWriteThrough,
+        $$"""
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void ValidateMutation()
+            {
+                if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
+                {
+                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowNotMutableException)}}();
+                }
+            }
+          """
+        )}}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{baseTypeName}} GetItem(int index) => this.list[index];
@@ -147,41 +143,41 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetItem(int index, {{baseTypeName}} value)
         {
-            this.ValidateMutation();
+            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
             this.list[index] = value;
         }
 
         public void Add({{baseTypeName}} item)
         {
-            this.ValidateMutation();
+            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
             this.list.Add(item);
         }
 
         public void Clear()
         {
-            this.ValidateMutation();
+            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
             this.list.Clear();
         }
 
         public void Insert(int index, {{baseTypeName}} item)
         {
-            this.ValidateMutation();
+            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
             this.list.Insert(index, item);
         }
 
         public void RemoveAt(int index)
         {
-            this.ValidateMutation();
+            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
             this.list.RemoveAt(index);
         }
 
         public bool Remove({{baseTypeName}} item)
         {
-            this.ValidateMutation();
+            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
             return this.list.Remove(item);
         }
 
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "GetItem")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, baseTypeName)}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, baseTypeName, "GetItem", "SetItem")}}
     }
 """";

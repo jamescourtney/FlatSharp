@@ -240,7 +240,7 @@ $$""""
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }
 
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "ProgressiveGet")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "ProgressiveGet", "ProgressiveSet")}}
     }

@@ -57,66 +57,25 @@ internal static partial class FlatBufferVectorHelpers
 
     public static string CreateCommonReadOnlyVectorMethods(
         ITypeModel itemTypeModel,
-        string uncheckedReadMethodName)
+        string derivedTypeName)
     {
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string nullableReference = GetNullableReferenceAnnotation(itemTypeModel);
 
         return $$"""
-                public bool Contains({{baseTypeName}}{{nullableReference}} item) => this.IndexOf(item) >= 0;
+            public bool Contains({{baseTypeName}}{{nullableReference}} item) => this.IndexOf(item) >= 0;
                  
-                public int IndexOf({{baseTypeName}}{{nullableReference}} item)
-                {
-                {{(
-                    itemTypeModel.ClrType.IsValueType
-                  ? string.Empty
-                  : $$"""
-                      // FlatBuffer vectors are not allowed to have null by definition.
-                      if (item is null)
-                      {
-                        return -1;
-                      }
-                      """
-                )}}
+            public int IndexOf({{baseTypeName}}{{nullableReference}} item)
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this), item);
                  
-                    int count = this.Count;
-                    for (int i = 0; i < count; ++i)
-                    {
-                        var parsed = this.{{uncheckedReadMethodName}}(i);
-                        if (item.Equals(parsed))
-                        {
-                            return i;
-                        }
-                    }
+            public void CopyTo({{baseTypeName}}[]? array, int arrayIndex) 
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.CopyTo<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this), array, arrayIndex);
                  
-                    return -1;
-                }
+            public IEnumerator<{{baseTypeName}}> GetEnumerator()
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.GetEnumerator<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this));
                  
-                public void CopyTo({{baseTypeName}}[]? array, int arrayIndex)
-                {
-                    if (array is null)
-                    {
-                        throw new ArgumentNullException(nameof(array));
-                    }
-                 
-                    var count = this.Count;
-                    for (int i = 0; i < count; ++i)
-                    {
-                        array[arrayIndex + i] = this.{{uncheckedReadMethodName}}(i);
-                    }
-                }
-                 
-                public IEnumerator<{{baseTypeName}}> GetEnumerator()
-                {
-                    int count = this.Count;
-                    for (int i = 0; i < count; ++i)
-                    {
-                        yield return this.{{uncheckedReadMethodName}}(i);
-                    }
-                }
-                 
-                System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this.GetEnumerator();
-                """;
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this.GetEnumerator();
+            """;
     }
 
     private static string CreateIFlatBufferDeserializedVectorMethods(

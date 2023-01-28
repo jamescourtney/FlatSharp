@@ -135,7 +135,7 @@ $$""""
         private {{derivedTypeName}} GetItem(int index) => this.list[index];
         private void SetItem(int index, {{baseTypeName}} value) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
 
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "GetItem")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "GetItem", "SetItem")}}
     }

@@ -252,7 +252,7 @@ $$""""
         }
 
         {{CreateWriteThroughMethod(itemTypeModel, inlineSize, context, isEverWriteThrough)}}
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "ProgressiveGet")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateIFlatBufferDeserializedVectorMethods(inlineSize, context.InputBufferVariableName, context.OffsetVariableName, "ProgressiveGet")}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "InlineProgressiveGet", "InlineProgressiveSet")}}

@@ -180,7 +180,7 @@ $$""""
             return this.list.Remove(item);
         }
 
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "GetItem")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, baseTypeName)}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, baseTypeName, "GetItem", "SetItem")}}
     }
 """";

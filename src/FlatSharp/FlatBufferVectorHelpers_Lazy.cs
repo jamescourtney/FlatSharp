@@ -123,7 +123,7 @@ $$""""
         }
 
         {{CreateWriteThroughMethod(itemTypeModel, inlineSize, context, isEverWriteThrough)}}
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "UnsafeParseItem")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateIFlatBufferDeserializedVectorMethods(inlineSize, context.InputBufferVariableName, context.OffsetVariableName, "SafeParseItem")}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "SafeParseItem", "WriteThrough")}}

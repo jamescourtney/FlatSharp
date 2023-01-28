@@ -138,7 +138,7 @@ $$""""
             {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
         }
 
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, "UnsafeParseItem")}}
+        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "SafeParseItem", "WriteThrough")}}
     }
