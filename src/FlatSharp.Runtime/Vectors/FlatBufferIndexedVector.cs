@@ -28,7 +28,7 @@ public class FlatBufferIndexedVector<TKey, TValue>
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
-    private IIndexedVectorSource<TValue> list;
+    private IList<TValue> list;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private FlatBufferIndexedVector()
@@ -36,7 +36,7 @@ public class FlatBufferIndexedVector<TKey, TValue>
     {
     }
 
-    public static FlatBufferIndexedVector<TKey, TValue> GetOrCreate(IIndexedVectorSource<TValue> list)
+    public static FlatBufferIndexedVector<TKey, TValue> GetOrCreate(IList<TValue> list)
     {
         if (!ObjectPool.TryGet<FlatBufferIndexedVector<TKey, TValue>>(out var item))
         {
@@ -125,7 +125,7 @@ public class FlatBufferIndexedVector<TKey, TValue>
             var vec = Interlocked.Exchange(ref this.list!, null);
             if (vec is not null)
             {
-                vec.ReturnToPool(true);
+                (vec as IPoolableObject)?.ReturnToPool(true);
                 ObjectPool.Return(this);
             }
         }

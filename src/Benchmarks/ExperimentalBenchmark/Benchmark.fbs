@@ -8,6 +8,7 @@ attribute "fs_sortedVector";
 attribute "fs_unsafeExternal";
 attribute "fs_memoryMarshal";
 attribute "fs_vector";
+attribute "fs_writeThrough";
 
 namespace BenchmarkCore;
 
@@ -18,7 +19,7 @@ struct ValueStruct (fs_valueStruct)
 
 struct RefStruct
 {
-    a : int;
+    a : int (fs_writeThrough);
 }
 
 table Outer (fs_serializer:"Lazy")

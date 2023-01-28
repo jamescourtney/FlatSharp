@@ -143,35 +143,6 @@ namespace Microbench
             return sum;
         }
 
-#if VECTOR_VISITORS
-        [Benchmark]
-        public int Parse_StructTable_VecRef_FastVisitor()
-        {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef, this.Option);
-            var vecRef = (IVisitableReferenceVector<RefStruct>)st.VecRef!;
-            return vecRef.Accept<VecRefVisitor, int>(new());
-        }
-
-        private struct VecRefVisitor : IReferenceVectorVisitor<RefStruct, int>
-        {
-            public int Visit<TDerived, TVector>(TVector vector)
-                where TDerived : RefStruct
-                where TVector : struct, ISimpleVector<TDerived>
-            {
-                int sum = 0;
-                int count = vector.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = vector[i];
-                    sum += item.Value;
-                }
-
-                return sum;
-            }
-        }
-#endif
-
         [Benchmark]
         public void Parse_StructTable_VecRef_WriteThrough()
         {
@@ -183,43 +154,13 @@ namespace Microbench
             for (int i = 0; i < count; ++i)
             {
                 var item = vecRef[i];
-                item.Value++;
+                item.Value = (item.Value) + 1;
                 //item.TryReturnToPool();
             }
 
             //vecRef.TryReturnToPool();
             st.TryReturnToPool();
         }
-
-
-#if VECTOR_VISITORS
-        [Benchmark]
-        public void Parse_StructTable_VecRef_FastVisitor_WriteThrough()
-        {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef, this.Option);
-            var vecRef = (IVisitableReferenceVector<RefStruct>)st.VecRef!;
-            vecRef.Accept<VecRefVisitor_WriteThrough, bool>(new());
-            st.TryReturnToPool();
-        }
-
-        private struct VecRefVisitor_WriteThrough : IReferenceVectorVisitor<RefStruct, bool>
-        {
-            public bool Visit<TDerived, TVector>(TVector vector)
-                where TDerived : RefStruct
-                where TVector : struct, ISimpleVector<TDerived>
-            {
-                int count = vector.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    TDerived item = vector[i];
-                    item.Value++;
-                }
-
-                return true;
-            }
-        }
-#endif
 
         [Benchmark]
         public int Parse_StructTable_VecValue()
@@ -241,34 +182,6 @@ namespace Microbench
             return sum;
         }
 
-#if VECTOR_VISITORS
-        [Benchmark]
-        public int Parse_StructTable_VecValue_FastVisitor()
-        {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue, this.Option);
-            var vecValue = (IVisitableValueVector<ValueStruct>)st.VecValue!;
-            return vecValue.Accept<VecValueVisitor, int>(new());
-        }
-
-        private struct VecValueVisitor : IValueVectorVisitor<ValueStruct, int>
-        {
-            public int Visit<TVector>(TVector vector)
-                where TVector : struct, ISimpleVector<ValueStruct>
-            {
-                int sum = 0;
-                int count = vector.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = vector[i];
-                    sum += item.Value;
-                }
-
-                return sum;
-            }
-        }
-#endif
-
         [Benchmark]
         public void Parse_StructTable_VecValue_WriteThrough()
         {
@@ -287,34 +200,6 @@ namespace Microbench
             //vecValue.TryReturnToPool();
             st.TryReturnToPool();
         }
-
-#if VECTOR_VISITORS
-        [Benchmark]
-        public void Parse_StructTable_VecValue_FastVisitor_WriteThrough()
-        {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue, this.Option);
-            var vecValue = (IVisitableValueVector<ValueStruct>)st.VecValue!;
-            vecValue.Accept<VecValueVisitor_WriteThrough, bool>(new());
-        }
-
-        private struct VecValueVisitor_WriteThrough : IValueVectorVisitor<ValueStruct, bool>
-        {
-            public bool Visit<TVector>(TVector vector)
-                where TVector : struct, ISimpleVector<ValueStruct>
-            {
-                int count = vector.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = vector[i];
-                    item.Value++;
-                    vector[i] = item;
-                }
-
-                return true;
-            }
-        }
-#endif
 
         [Benchmark]
         public int ParseAndTraverse_SafeUnionVector()

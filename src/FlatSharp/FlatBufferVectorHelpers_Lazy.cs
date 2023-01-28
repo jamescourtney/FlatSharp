@@ -42,8 +42,6 @@ $$""""
         , IReadOnlyList<{{baseTypeName}}>
         , IFlatBufferDeserializedVector
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
-        {{IfNot(itemTypeModel.ClrType.IsValueType, $", IIndexedVectorSource<{baseTypeName}>")}}
         where TInputBuffer : IInputBuffer
     {
         private int {{context.OffsetVariableName}};
@@ -126,7 +124,6 @@ $$""""
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateIFlatBufferDeserializedVectorMethods(inlineSize, context.InputBufferVariableName, context.OffsetVariableName, "SafeParseItem")}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "SafeParseItem", "WriteThrough")}}
     }
 """";
 

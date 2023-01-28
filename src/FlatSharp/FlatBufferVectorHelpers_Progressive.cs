@@ -42,8 +42,6 @@ $$""""
         , IReadOnlyList<{{baseTypeName}}>
         , IFlatBufferDeserializedVector
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
-        {{IfNot(itemTypeModel.ClrType.IsValueType, $", IIndexedVectorSource<{baseTypeName}>")}}
         where TInputBuffer : IInputBuffer
     {
         private const uint ChunkSize = 32;
@@ -250,7 +248,6 @@ $$""""
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateIFlatBufferDeserializedVectorMethods(inlineSize, context.InputBufferVariableName, context.OffsetVariableName, "ProgressiveGet")}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "InlineProgressiveGet", "InlineProgressiveSet")}}
     }
 """";
 

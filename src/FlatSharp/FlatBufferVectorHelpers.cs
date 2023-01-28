@@ -66,13 +66,13 @@ internal static partial class FlatBufferVectorHelpers
             public bool Contains({{baseTypeName}}{{nullableReference}} item) => this.IndexOf(item) >= 0;
                  
             public int IndexOf({{baseTypeName}}{{nullableReference}} item)
-                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this), item);
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf(this, item);
                  
             public void CopyTo({{baseTypeName}}[]? array, int arrayIndex) 
-                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.CopyTo<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this), array, arrayIndex);
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.CopyTo(this, array, arrayIndex);
                  
             public IEnumerator<{{baseTypeName}}> GetEnumerator()
-                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.GetEnumerator<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this));
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.GetEnumerator(this);
                  
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this.GetEnumerator();
             """;
@@ -115,52 +115,6 @@ internal static partial class FlatBufferVectorHelpers
               public void Insert(int index, {{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               public void RemoveAt(int index) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               public bool Remove({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              """;
-    }
-
-    private static string CreateVisitorMethods(
-        ITypeModel itemTypeModel,
-        string className,
-        string baseTypeName,
-        string derivedTypeName,
-        string indexedCheckedReadMethod,
-        string indexCheckedWriteMethod)
-    {
-        return
-            $$"""
-              {{(
-                  itemTypeModel.ClrType.IsValueType
-                ? $$"""
-                    public TReturn Accept<TVisitor, TReturn>(TVisitor visitor) where TVisitor : IValueVectorVisitor<{{baseTypeName}}, TReturn>
-                        => visitor.Visit<SimpleVector>(new SimpleVector(this));
-                    """
-                : $$"""
-                    public TReturn Accept<TVisitor, TReturn>(TVisitor visitor) where TVisitor : IReferenceVectorVisitor<{{baseTypeName}}, TReturn>
-                        => visitor.Visit<{{derivedTypeName}}, SimpleVector>(new SimpleVector(this));
-                    """
-              )}}
-              
-              private struct SimpleVector : ISimpleVector<{{derivedTypeName}}>
-              {
-                  private readonly {{className}}<TInputBuffer> vector;
-              
-                  public SimpleVector({{className}}<TInputBuffer> vector)
-                  {
-                      this.vector = vector;
-                      this.Count = vector.Count;
-                  }
-              
-                  public int Count { get; }
-              
-                  public {{derivedTypeName}} this[int index] 
-                  {
-                      [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                      get => this.vector.{{indexedCheckedReadMethod}}(index);
-              
-                      [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                      set => this.vector.{{indexCheckedWriteMethod}}(index, value);
-                  }
-              }
               """;
     }
 

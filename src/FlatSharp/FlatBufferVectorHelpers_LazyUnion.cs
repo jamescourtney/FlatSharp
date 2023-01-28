@@ -41,7 +41,6 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
         where TInputBuffer : IInputBuffer
     {
         private int discriminatorVectorOffset;
@@ -140,7 +139,6 @@ $$""""
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "SafeParseItem", "WriteThrough")}}
     }
 """";
 

@@ -39,7 +39,6 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
         where TInputBuffer : IInputBuffer
     {
         private const uint ChunkSize = 8;
@@ -242,7 +241,6 @@ $$""""
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "ProgressiveGet", "ProgressiveSet")}}
     }
 """";
 
