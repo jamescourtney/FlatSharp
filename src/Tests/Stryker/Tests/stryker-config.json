@@ -7,6 +7,7 @@
       "FlatSharp.Internal.FlatSharpInternal.AssertSizeOf" // Ignore assertions.
     ],
 
-    "reporters": [ "html", "cleartext" ]
+    "reporters": [ "html", "cleartext" ],
+    "thresholds": { "high": 90, "low": 80, "break": 80 }
   }
 }
