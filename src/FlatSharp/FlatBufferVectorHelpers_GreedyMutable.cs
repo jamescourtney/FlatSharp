@@ -131,7 +131,7 @@ $$""""
             {
                 if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
                 {
-                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowNotMutableException)}}();
+                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowGreedyMutableWriteThroughNotSupportedException)}}();
                 }
             }
           """

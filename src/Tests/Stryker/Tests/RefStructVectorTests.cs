@@ -8,7 +8,7 @@ public class RefStructVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void Present(FlatBufferDeserializationOption option)
+    public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] actualData);
@@ -31,10 +31,18 @@ public class RefStructVectorTests
             Assert.Equal(r.C[1], p.C[1]);
             Assert.Equal(r.D[0], p.D[0]);
             Assert.Equal(r.D[1], p.D[1]);
+
+            Assert.Equal(r.C.ToArray()[0], p.C.ToArray()[0]);
+            Assert.Equal(r.D.ToArray()[0], p.D.ToArray()[0]);
+
+            Assert.Same(p.D, p.D);
+            Assert.Same(p.C, p.C);
         }
 
         Helpers.AssertSequenceEqual(expectedData, actualData);
-    }
+        Helpers.AssertMutationWorks(option, parsed.Vectors, false, v => v.RefStruct, new List<RefStruct>());
+        Helpers.ValidateListVector(option, false, vsp, new RefStruct());
+    });
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
@@ -50,8 +58,8 @@ public class RefStructVectorTests
     private Root CreateRoot(out byte[] expectedData)
     {
         var rs1 = new RefStruct { A = 1, B = Fruit.Banana };
-        rs1.C.CopyFrom(new sbyte[] { 3, 4 }.AsSpan());
-        rs1.D.CopyFrom(new List<sbyte> { 5, 6, });
+        rs1.C.CopyFrom(new sbyte[] { 3, 4 }.ToList());
+        rs1.D.CopyFrom(new sbyte[] { 5, 6, }.AsSpan());
 
         var rs2 = new RefStruct { A = 7, B = Fruit.Pear };
         rs2.C.CopyFrom(new sbyte[] { 9, 10 }.AsSpan());

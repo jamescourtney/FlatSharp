@@ -8,13 +8,38 @@ namespace FlatSharpStrykerTests;
 
 public class FullTreeTests
 {
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void RootMutations(FlatBufferDeserializationOption option)
+    {
+        Root root = this.CreateRoot().SerializeAndParse(option);
+
+        Helpers.AssertMutationWorks(option, root, false, r => r.Fields, new Fields());
+        Helpers.AssertMutationWorks(option, root, false, r => r.Vectors, new Vectors());
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void VectorFieldMutations(FlatBufferDeserializationOption option)
+    {
+        Vectors vectors = this.CreateRoot().SerializeAndParse(option).Vectors;
+
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Indexed, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Memory, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.RefStruct, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Str, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Table, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Union, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.ValueStruct, null);
+    }
+
     [Fact]
     public void GetMaxSize()
     {
         Root root = this.CreateRoot();
         int maxSize = Root.Serializer.GetMaxSize(root);
 
-        Assert.Equal(730, maxSize);
+        Assert.Equal(898, maxSize);
     }
 
     [Theory]
@@ -40,8 +65,10 @@ public class FullTreeTests
             Verify(rv.RefStruct, cv.RefStruct, Verify);
             Verify(rv.ValueStruct, cv.ValueStruct, Verify);
             Verify(rv.Str, cv.Str, Assert.Equal);
-            Verify(rv.Union, cv.Union, Assert.Equal);
+            Verify(rv.Union, cv.Union, Verify);
             Verify(rv.Indexed, cv.Indexed, Verify);
+            Verify(rv.Memory, cv.Memory, Verify);
+            Verify(rv.Table, cv.Table, Verify);
         }
 
         {
@@ -96,6 +123,11 @@ public class FullTreeTests
         {
             action(a.Value, b.Value);
         }
+    }
+
+    private static void Verify(Memory<byte> a, Memory<byte> b)
+    {
+        Assert.True(a.Span.SequenceEqual(b.Span));
     }
 
     private static void Verify(ValueStruct a, ValueStruct b)
@@ -198,8 +230,9 @@ public class FullTreeTests
                 Memory = new byte[] { 1, 2, 3, 4, },
                 RefStruct = Helpers.CreateList(CreateRefStruct(), CreateRefStruct()),
                 Str = Helpers.CreateList("abc", "def"),
-                Union = Helpers.CreateList(new FunUnion("hi"), new FunUnion(new ValueStruct())),
+                Union = Helpers.CreateList(new FunUnion("hi"), new FunUnion(new ValueStruct()), new FunUnion(new RefStruct())),
                 ValueStruct = Helpers.CreateList(CreateRefStruct().E, CreateRefStruct().E),
+                Table = Helpers.CreateList(new Key() { Name = "bar" }, new Key() { Name = "foo" }),
             },
         };
     }

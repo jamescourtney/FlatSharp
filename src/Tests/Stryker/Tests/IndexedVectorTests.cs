@@ -40,6 +40,7 @@ public class IndexedVectorTests
         Assert.False(vector.ContainsKey("z"));
         Assert.False(vector.TryGetValue("z", out _));
 
+        Helpers.AssertMutationWorks(option, vectors, false, v => v.Indexed, new IndexedVector<string, Key>());
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 

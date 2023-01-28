@@ -518,6 +518,7 @@ $@"
                     throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                 }}
 
+                [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
                 public {resolvedName.name}()
                 {{
                     string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;

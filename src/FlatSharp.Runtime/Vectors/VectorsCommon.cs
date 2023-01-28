@@ -24,7 +24,7 @@ namespace FlatSharp.Internal;
 public static class VectorsCommon
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T, TDerived, TVector>(TVector visitable, T? item)
+    public static int IndexOf<T, TDerived, TVector>(TVector vector, T? item)
         where TVector : ISimpleVector<TDerived>
         where TDerived : T
     {
@@ -36,10 +36,10 @@ public static class VectorsCommon
             }
         }
 
-        int count = visitable.Count;
+        int count = vector.Count;
         for (int i = 0; i < count; ++i)
         {
-            if (item!.Equals(visitable[i]))
+            if (item!.Equals(vector[i]))
             {
                 return i;
             }

@@ -114,11 +114,7 @@ internal static partial class FlatBufferVectorHelpers
               public void Clear() => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               public void Insert(int index, {{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               public void RemoveAt(int index) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              public bool Remove({{baseTypeName}} item)
-              {
-                  {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-                  return false;
-              }
+              public bool Remove({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               """;
     }
 

@@ -225,23 +225,18 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InlineProgressiveSet(int index, {{baseTypeName}} value)
         {
-            {{(
-                itemTypeModel.ClrType.IsValueType
-              // value types can just be assigned directly.
-              ? $$"""
+            {{If(itemTypeModel.ClrType.IsValueType,
+                 // value types can just be assigned directly.
+                 $$"""
                     {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
                     uint uindex = (uint)index;
                     GetAddress(uindex, out uint rowIndex, out uint colIndex);
                     var items = this.items;
                     var row = this.GetOrCreateRow(items, rowIndex);
                     row[colIndex] = value;
-                    this.WriteThrough(index, value);
-                  """
-              // Reference type write through happens *within* the object, not the vector.
-              : $$"""
-                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
                   """
             )}}
+            this.WriteThrough(index, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
