@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net7.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>FlatSharpStrykerTests</AssemblyName>
+    <RootNamespace>FlatSharpStrykerTests</RootNamespace>
+    <Nullable>annotations</Nullable>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\FlatSharpEndToEndTests\DeserializationOptionClassData.cs" Link="DeserializationOptionClassData.cs" />
+    <Compile Include="..\..\FlatSharpEndToEndTests\Helpers.cs" Link="Helpers.cs" />
+    <Compile Include="..\..\FlatSharpEndToEndTests\Utf8StringComparer.cs" Link="Utf8StringComparer.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.utility" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\CodeGen\CodeGen.csproj" />
+  </ItemGroup>
+
+</Project>
+

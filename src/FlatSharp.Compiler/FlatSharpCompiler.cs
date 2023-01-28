@@ -32,6 +32,8 @@ public class FlatSharpCompiler
 {
     public const string FailureMessage = "// !! FLATSHARP CODE GENERATION FAILED. THIS FILE MAY CONTAIN INCOMPLETE OR INACCURATE DATA !!";
 
+    internal static CompilerOptions? CommandLineOptions { get; private set; }
+
     private static string AssemblyVersion => typeof(ISchemaMutator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
     [ExcludeFromCodeCoverage]
@@ -44,6 +46,7 @@ public class FlatSharpCompiler
             CommandLine.Parser.Default.ParseArguments<CompilerOptions>(args)
                 .WithParsed(x =>
                 {
+                    CommandLineOptions = x;
                     exitCode = RunCompiler(x);
                 });
         }
@@ -83,7 +86,12 @@ public class FlatSharpCompiler
         }
 
         // Read existing file to see if we even need to do any work.
-        const string outputFileName = "FlatSharp.generated.cs";
+        string outputFileName = options.MutationTestingMode switch
+        {
+            true => "FlatSharp.cs",
+            false => "FlatSharp.generated.cs",
+        };
+
         string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
 
         try
@@ -107,6 +115,11 @@ public class FlatSharpCompiler
                     try
                     {
                         cSharp = CreateCSharp(bfbs, inputHash, options);
+
+                        if (options.MutationTestingMode)
+                        {
+                            cSharp = cSharp.Replace("BitConverter", "MockBitConverter");
+                        }
                     }
                     catch (Exception ex)
                     {

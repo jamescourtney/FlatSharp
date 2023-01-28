@@ -172,8 +172,6 @@ $@"
         string body = $@"
             byte discriminator = {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
             int offsetLocation = {context.OffsetVariableName}.offset1;
-            if (discriminator != 0 && offsetLocation == 0)
-                throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
 
             switch (discriminator)
             {{

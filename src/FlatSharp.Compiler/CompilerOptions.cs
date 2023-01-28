@@ -49,4 +49,8 @@ public record CompilerOptions
 
     [Option("instrument", Hidden = true, Default = false)]
     public bool Instrument { get; set; }
+
+    // Suppress auto generated markers for mutation testing.
+    [Option("mutation-testing-mode", Hidden = true, Default = false)]
+    public bool MutationTestingMode { get; set; }
 }

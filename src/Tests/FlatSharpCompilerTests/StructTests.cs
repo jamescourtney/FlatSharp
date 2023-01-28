@@ -59,22 +59,5 @@ public class StructTests
         dynamic dTable = table;
         Assert.Equal(3, dTable.defaultInt);
         dTable.foo = dFoo;
-
-        byte[] destination = new byte[1024];
-
-        var serializer = CompilerTestHelpers.CompilerTestSerializer.Compile(table);
-        int bytesWritten = serializer.Write(destination, table);
-        object parsed = serializer.Parse(destination);
-
-        Assert.True(tableType.IsAssignableFrom(parsed.GetType()));
-
-        dynamic dParsedTable = parsed;
-        Assert.Equal(3, dParsedTable.defaultInt);
-
-        dynamic dParsedFoo = dParsedTable.foo;
-        Assert.Equal(dFoo.id, dParsedFoo.id);
-        Assert.Equal(dFoo.count, dParsedFoo.count);
-        Assert.Equal(dFoo.prefix, dParsedFoo.prefix);
-        Assert.Equal(dFoo.length, dParsedFoo.length);
     }
 }

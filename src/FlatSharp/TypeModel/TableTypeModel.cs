@@ -110,6 +110,11 @@ public class TableTypeModel : RuntimeTypeModel
     public TableMemberModel? KeyMember { get; private set; }
 
     /// <summary>
+    /// If we should build an ISerailizer implementation for this type.
+    /// </summary>
+    public bool ShouldBuildISerializer => this.attribute.BuildSerializer;
+
+    /// <summary>
     /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
     /// Does not consider alignment of the table, but does consider worst-case alignment of the members.
     /// </summary>
