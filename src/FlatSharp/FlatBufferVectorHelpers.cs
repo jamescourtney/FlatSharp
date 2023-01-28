@@ -66,11 +66,11 @@ internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public {className}(int offset, TInputBuffer buffer)
     {{
-        this.count = checked((int)buffer.ReadUInt(offset));
+        this.count = (int)buffer.ReadUInt(offset);
 
         // Advance to the start of the element at index 0. Easiest to do this once
         // in the .ctor than repeatedly for each index.
-        this.offset = checked(offset + sizeof(uint));
+        this.offset = offset + sizeof(uint);
     }}
 
     public int ItemSize => {inlineSize};

@@ -81,9 +81,6 @@ public record class FlatBufferSerializerOptions
     /// <summary>
     /// Indicates if the object is immutable OR changes to the object are guaranteed to be written back to the buffer.
     /// </summary>
-    /// <remarks>
-    /// VectorCacheMutable is not eligible here, since only some changes are written back.
-    /// </remarks>
     public bool CanSerializeWithMemoryCopy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
                                               this.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 

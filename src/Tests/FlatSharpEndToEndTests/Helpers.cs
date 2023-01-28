@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
+using FlatSharp.Internal;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Threading;
+
 namespace FlatSharpEndToEndTests;
 
 public static class Helpers
 {
-    public static IEnumerable<FlatBufferDeserializationOption> AllOptions
-    {
-        get
-        {
-            yield return FlatBufferDeserializationOption.Lazy;
-            yield return FlatBufferDeserializationOption.Progressive;
-            yield return FlatBufferDeserializationOption.Greedy;
-            yield return FlatBufferDeserializationOption.GreedyMutable;
-        }
-    }
-
     public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>
     {
         return item.AllocateAndSerialize(item.Serializer);
@@ -63,5 +57,301 @@ public static class Helpers
         byte[] buffer = item.AllocateAndSerialize();
         return serializer.Parse(buffer);
     }
-}
 
+    public static T SerializeAndParse<T>(
+        this T item,
+        FlatBufferDeserializationOption option,
+        out byte[] buffer) where T : class, IFlatBufferSerializable<T>
+    {
+        buffer = item.AllocateAndSerialize();
+        return item.Serializer.Parse(buffer, option);
+    }
+
+    public static void AssertSequenceEqual(
+        Span<byte> expected,
+        Span<byte> actual)
+    {
+        //var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
+        Assert.Equal(expected.Length, actual.Length);
+
+        for (int i = 0; i < expected.Length; ++i)
+        {
+            if (expected[i] != actual[i])
+            {
+                throw new Exception($"Buffers differed at position {i}. Expected = {expected[i]}. Actual = {actual[i]}");
+            }
+        }
+    }
+
+    public static void AssertMutationWorks<TSource, TProperty>(
+        FlatBufferDeserializationOption option,
+        TSource parent,
+        bool isWriteThrough,
+        Expression<Func<TSource, TProperty>> propertyLambda,
+        TProperty newValue)
+    {
+        Assert.True(parent is IFlatBufferDeserializedObject);
+
+        {
+            var dobj = (IFlatBufferDeserializedObject)parent;
+
+            Assert.Equal(option, dobj.DeserializationContext.DeserializationOption);
+            Assert.Equal(typeof(TSource), dobj.TableOrStructType);
+
+            switch (option)
+            {
+                case FlatBufferDeserializationOption.Greedy:
+                case FlatBufferDeserializationOption.GreedyMutable:
+                    Assert.False(dobj.CanSerializeWithMemoryCopy);
+                    Assert.Null(dobj.InputBuffer);
+                    break;
+
+                default:
+                    Assert.True(dobj.CanSerializeWithMemoryCopy);
+                    Assert.NotNull(dobj.InputBuffer);
+                    break;
+            }
+        }
+
+        MemberExpression member = propertyLambda.Body as MemberExpression;
+        PropertyInfo propInfo = member.Member as PropertyInfo;
+        Action action = () => propInfo.SetMethod.Invoke(parent, new object[] { newValue });
+
+        switch (option)
+        {
+            case FlatBufferDeserializationOption.Lazy when isWriteThrough:
+            case FlatBufferDeserializationOption.Progressive when isWriteThrough:
+            case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
+                action();
+
+                // For value types, validate that they are the same.
+                if (typeof(TProperty).IsValueType)
+                {
+                    TProperty readValue = (TProperty)propInfo.GetMethod.Invoke(parent, null);
+                    Assert.Equal<TProperty>(newValue, readValue);
+                }
+                else if (option != FlatBufferDeserializationOption.Lazy)
+                {
+                    TProperty readValue = (TProperty)propInfo.GetMethod.Invoke(parent, null);
+                    Assert.True(object.ReferenceEquals(newValue, readValue));
+                }
+
+                return;
+
+            default:
+                var ex = Assert.Throws<NotMutableException>(new Action(() =>
+                {
+                    var ex = Assert.Throws<TargetInvocationException>(action).InnerException;
+                    throw ex;
+                }));
+
+                if (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable)
+                {
+                    Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
+                }
+
+                return;
+        }
+    }
+
+    public static void AssertMutationWorks<T>(
+        FlatBufferDeserializationOption option,
+        bool isWriteThrough,
+        IList<T> items,
+        T newValue)
+    {
+        if (option != FlatBufferDeserializationOption.Lazy)
+        {
+            T[] target = new T[items.Count];
+            items.CopyTo(target, 0);
+
+            for (int i = 0; i < items.Count; ++i)
+            {
+                Assert.Equal(i, items.IndexOf(items[i]));
+                Assert.True(items.Contains(items[i]));
+                Assert.Equal(items[i], target[i]);
+            }
+        }
+
+        for (int i = 0; i < items.Count; ++i)
+        {
+            switch (option)
+            {
+                case FlatBufferDeserializationOption.Lazy when isWriteThrough:
+                case FlatBufferDeserializationOption.Progressive when isWriteThrough:
+                case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
+                    items[i] = newValue;
+
+                    // For value types, validate that they are the same.
+                    if (typeof(T).IsValueType)
+                    {
+                        Assert.Equal<T>(newValue, items[i]);
+                    }
+                    else if (option != FlatBufferDeserializationOption.Lazy)
+                    {
+                        Assert.True(object.ReferenceEquals(newValue, items[i]));
+                    }
+
+                    break;
+
+                default:
+                    var ex = Assert.Throws<NotMutableException>(new Action(() =>
+                    {
+                        items[i] = newValue;
+                    }));
+
+                    if (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable)
+                    {
+                        Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
+                    }
+
+                    break;
+            }
+        }
+
+        if (option == FlatBufferDeserializationOption.GreedyMutable)
+        {
+            items.Clear();
+            items.Add(default);
+            items.Remove(items[0]);
+            items.Insert(0, default);
+            items.RemoveAt(0);
+        }
+        else
+        {
+            Assert.Throws<NotMutableException>(() => items.Clear());
+            Assert.Throws<NotMutableException>(() => items.Add(default));
+            Assert.Throws<NotMutableException>(() => items.Remove(items[0]));
+            Assert.Throws<NotMutableException>(() => items.Insert(0, default));
+            Assert.Throws<NotMutableException>(() => items.RemoveAt(0));
+        }
+    }
+
+    public static T TestProgressiveFieldLoad<P, T>(int index, bool expected, P parent, Func<P, T> getter)
+    {
+        IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)parent;
+
+        int maskNum = index / 8;
+        byte bitMask = (byte)(1 << (index % 8));
+
+        FieldInfo mask = parent.GetType().GetField($"__mask{maskNum}", BindingFlags.NonPublic | BindingFlags.Instance);
+        FieldInfo vtable = parent.GetType().GetField("__vtable", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        bool IsFieldLoaded()
+        {
+            byte value = (byte)mask.GetValue(parent);
+            return (value & bitMask) != 0;
+        }
+
+        bool IsFieldPresent()
+        {
+            if (typeof(P).GetCustomAttribute<FlatBufferStructAttribute>() is not null)
+            {
+                return true;
+            }
+
+            IVTable vt = (IVTable)vtable.GetValue(parent);
+            return vt.OffsetOf(obj.InputBuffer!, index) != 0;
+        }
+
+        Assert.False(IsFieldLoaded());
+        Assert.Equal(expected, IsFieldPresent());
+
+        for (int i = 0; i < 10; ++i)
+        {
+            T item = getter(parent);
+
+            Assert.True(IsFieldLoaded());
+            T next = getter(parent);
+
+            if (typeof(T).IsValueType)
+            {
+                Assert.Equal(item, next);
+            }
+            else
+            {
+                Assert.True(object.ReferenceEquals(item, next));
+            }
+        }
+
+        return getter(parent);
+    }
+
+    private static int counter;
+
+    public static IList<T> CreateList<T>(params T[] values)
+    {
+        return (Interlocked.Increment(ref counter) % 3) switch
+        {
+            0 => values,
+            1 => new List<T>(values),
+            _ => new DummyList<T>(values),
+        };
+    }
+
+    private class DummyList<T> : IList<T>, IReadOnlyList<T>
+    {
+        private readonly List<T> list = new();
+
+        public DummyList(T[] values)
+        {
+            this.list.AddRange(values);
+        }
+
+        public T this[int index] { get => ((IList<T>)list)[index]; set => ((IList<T>)list)[index] = value; }
+
+        public int Count => ((ICollection<T>)list).Count;
+
+        public bool IsReadOnly => ((ICollection<T>)list).IsReadOnly;
+
+        public void Add(T item)
+        {
+            ((ICollection<T>)list).Add(item);
+        }
+
+        public void Clear()
+        {
+            ((ICollection<T>)list).Clear();
+        }
+
+        public bool Contains(T item)
+        {
+            return ((ICollection<T>)list).Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            ((ICollection<T>)list).CopyTo(array, arrayIndex);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return ((IEnumerable<T>)list).GetEnumerator();
+        }
+
+        public int IndexOf(T item)
+        {
+            return ((IList<T>)list).IndexOf(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            ((IList<T>)list).Insert(index, item);
+        }
+
+        public bool Remove(T item)
+        {
+            return ((ICollection<T>)list).Remove(item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            ((IList<T>)list).RemoveAt(index);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)list).GetEnumerator();
+        }
+    }
+}

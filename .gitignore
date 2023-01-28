@@ -17,3 +17,4 @@
 /src/Tests/FlatSharpEndToEndTests/FlatSharpEndToEndTests.xml
 /src/Tests/FlatSharpEndToEndTests/FlatSharp.generated.cs
 /src/Benchmarks/ExperimentalBenchmark/FlatSharp.generated.cs
+/src/Tests/FlatSharpEndToEndTests_Generated/FlatSharpEndToEndTestsGenerated.xml

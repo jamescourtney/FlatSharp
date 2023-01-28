@@ -51,12 +51,6 @@ public class IncludeTests
             PropertyInfo tableB = aType.GetProperty("TableB");
 
             Assert.Equal(bType, tableB.PropertyType);
-
-            var compiled = CompilerTestHelpers.CompilerTestSerializer.Compile(aType);
-
-            byte[] data = new byte[100];
-            compiled.Write(data, Activator.CreateInstance(aType));
-            compiled.Parse(data);
         });
     }
 
@@ -139,12 +133,6 @@ public class IncludeTests
             Assert.Equal(bType, tableB.PropertyType);
             Assert.Equal(cType, tableC.PropertyType);
             Assert.Equal(dType, tableD.PropertyType);
-
-            var compiled = CompilerTestHelpers.CompilerTestSerializer.Compile(aType);
-
-            byte[] data = new byte[100];
-            compiled.Write(data, Activator.CreateInstance(aType));
-            compiled.Parse(data);
         });
     }
 

@@ -284,6 +284,7 @@ internal class DeserializeClassDefinition
         }
 
         string interfaceGlobalName = typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName();
+        bool isProgressive = this.options.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 
         return
         $@"
@@ -292,7 +293,6 @@ internal class DeserializeClassDefinition
                 , {interfaceGlobalName}
                 , {typeof(IPoolableObject).GetGlobalCompilableTypeName()}
                 , {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}
-
                 where TInputBuffer : IInputBuffer
             {{
                 private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {CtorContextVariableName} 
@@ -329,7 +329,6 @@ internal class DeserializeClassDefinition
             }}
         ";
     }
-
     protected virtual string GetSetterBody(ItemMemberModel itemModel)
     {
         List<string> setterLines = new List<string>();
@@ -538,9 +537,7 @@ internal class DeserializeClassDefinition
 
     protected static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 
-    protected static string GetHasValueFieldName(int index) => $"__mask{index}";
-
-    protected static string GetHasValueFieldName(ItemMemberModel itemModel) => GetHasValueFieldName(itemModel.Index / 8);
+    protected static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__mask{itemModel.Index / 8}";
 
     protected static string GetHasValueFieldMask(ItemMemberModel itemModel) => $"(byte){1 << (itemModel.Index % 8)}";
 

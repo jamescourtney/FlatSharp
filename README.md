@@ -14,7 +14,7 @@ All FlatSharp packages are published on nuget.org:
 - **FlatSharp.Runtime**: The runtime library. You always need this.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
 
-FlatSharp is a mature library and has been shipped to production at Microsoft, Unity3D, and others. Full status can be found at [ProjectStatus.md](ProjectStatus.md).
+FlatSharp is a mature library and has been shipped to production at Microsoft, Unity3D, and others. Full status can be found at [ProjectStatus.md](ProjectStatus.md). FlatSharp is [extensively tested](https://github.com/jamescourtney/FlatSharp/wiki/Testing), using Mutation Testing, Code Coverage, Oracle Testing, and other techniques to ensure the library doesn't regress.
 
 ### Getting Started
 If you're completely new to FlatBuffers, take a minute to look over [the FlatBuffer overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview). Additionally, it's worth the time to understand the different elements of [FlatBuffer schemas](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).

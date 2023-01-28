@@ -26,4 +26,9 @@ public class FlatBufferTableAttribute : Attribute
     /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
     /// </summary>
     public string? FileIdentifier { get; set; }
+
+    /// <summary>
+    /// Indicates that a serializer should be built for the given table.
+    /// </summary>
+    public bool BuildSerializer { get; set; } = true;
 }

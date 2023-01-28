@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microbench.6.3.3", "Benchma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharpPoolableEndToEndTests", "Tests\FlatSharpPoolableEndToEndTests\FlatSharpPoolableEndToEndTests.csproj", "{7E55A248-4BBD-48AD-B27D-A7E0E705DC89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlatSharp.UnityPolyfills", "FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj", "{E439E4AF-B948-4E6C-8791-1830619EB35B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.UnityPolyfills", "FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj", "{E439E4AF-B948-4E6C-8791-1830619EB35B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
