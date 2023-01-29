@@ -116,7 +116,7 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} UnsafeParseItem(int index)
         {
-            int {{context.OffsetVariableName}} = this.offset + ({{inlineSize}} * index);
+            int {{context.OffsetVariableName}} = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }
 

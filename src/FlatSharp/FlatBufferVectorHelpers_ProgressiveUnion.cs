@@ -31,6 +31,7 @@ internal static partial class FlatBufferVectorHelpers
         string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
 
         string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
+        int chunkSize = itemTypeModel.ClrType.IsValueType ? 8 : 32;
 
         string classDef =
 $$""""
@@ -41,7 +42,7 @@ $$""""
         , IPoolableObject
         where TInputBuffer : IInputBuffer
     {
-        private const uint ChunkSize = 8;
+        private const uint ChunkSize = {{chunkSize}};
 
         private int discriminatorVectorOffset;
         private int offsetVectorOffset;
@@ -173,28 +174,31 @@ $$""""
             var row = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Rent((int)ChunkSize);
             items[rowIndex] = row;
 
-            {{(
-                // For value types -- we can't rely on null to tell
+             {{ // For value types -- we can't rely on null to tell
                 // us if the value is allocated or not, so just greedily
                 // allocate the whole chunk. Chunks are relatively
                 // small, so the overhead here is not enormous, and there
                 // is no extra allocation since this is a value type.
-                itemTypeModel.ClrType.IsValueType
-                ? $$"""
-                    int count = this.count;
-                    int rowStartIndex = (int)(ChunkSize * rowIndex);
-
-                    for (int i = 0; i < ChunkSize; ++i)
+                // Unchecked is considered safe here since we have already
+                // validated indexes.
+                If(itemTypeModel.ClrType.IsValueType,
+                  $$"""
+                    unchecked
                     {
-                        int targetIndex = rowStartIndex + i;
-                        if (targetIndex >= count)
+                        int absoluteStartIndex = (int)({{GetEfficientMultiply(chunkSize, "rowIndex")}});
+                        int copyCount = {{chunkSize}};
+                        int remainingItems = this.count - absoluteStartIndex;
+                        if (remainingItems < {{chunkSize}})
                         {
-                            break;
+                            copyCount = remainingItems;
                         }
-                        row[i] = this.UnsafeParseItem(targetIndex);
+
+                        for (int i = 0; i < copyCount; ++i)
+                        {
+                            row[i] = this.UnsafeParseItem(i + absoluteStartIndex);
+                        }
                     }
                     """
-                : string.Empty
             )}}
 
             return row;
@@ -211,11 +215,9 @@ $$""""
             var row = this.GetOrCreateRow(items, rowIndex);
             var item = row[colIndex];
 
-            {{(
-                // Initialize the reference type if null.
-                itemTypeModel.ClrType.IsValueType
-              ? string.Empty
-              : $$"""
+            {{  // Initialize the reference type if null.
+                IfNot(itemTypeModel.ClrType.IsValueType,
+                $$"""
                     if (item is null)
                     {
                         item = this.UnsafeParseItem(index);
@@ -235,7 +237,7 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} UnsafeParseItem(int index)
         {
-            var {{context.OffsetVariableName}} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + (sizeof(uint) * index));
+            var {{context.OffsetVariableName}} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + ({{GetEfficientMultiply(sizeof(uint), "index")}}));
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }
 

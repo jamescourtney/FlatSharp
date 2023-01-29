@@ -16,6 +16,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -78,6 +79,30 @@ internal static partial class FlatBufferVectorHelpers
             """;
     }
 
+    private static string GetEfficientMultiply(
+        int inlineSize,
+        string indexVariableName)
+    {
+        FlatSharpInternal.Assert(inlineSize != 0, "invalid inline size");
+        bool isPowerOf2 = (inlineSize & (inlineSize - 1)) == 0;
+        if (!isPowerOf2)
+        {
+            // Slow multiply.
+            return $"{inlineSize} * {indexVariableName}";
+        }
+
+        int mask = inlineSize;
+        int shift = 0;
+        while (mask > 1)
+        {
+            mask >>= 1;
+            shift++;
+        }
+
+        FlatSharpInternal.Assert((1 << shift) == inlineSize, $"expected to recompute inlinesize. Expected = {inlineSize}, Actual = {(1 << shift)}");
+        return $"{indexVariableName} << {shift}";
+    }
+
     private static string CreateIFlatBufferDeserializedVectorMethods(
         int inlineSize,
         string inputBufferVariableName,
@@ -95,7 +120,7 @@ internal static partial class FlatBufferVectorHelpers
             int IFlatBufferDeserializedVector.OffsetOf(int index)
             {
                 {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.Count);
-                return this.{{offsetVariableName}} + ({{inlineSize}} * index);
+                return this.{{offsetVariableName}} + ({{GetEfficientMultiply(inlineSize, "index")}});
             }
             """;
     }
@@ -137,7 +162,7 @@ internal static partial class FlatBufferVectorHelpers
                     {nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowNotMutableException)}();
                 }}
 
-                int offset = this.offset + ({inlineSize} * index);
+                int offset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
                 Span<byte> {serializeContext.SpanVariableName} = {context.InputBufferVariableName}.GetSpan().Slice(offset, {inlineSize});
 
                 {serializeContext.GetSerializeInvocation(itemTypeModel.ClrType)};
