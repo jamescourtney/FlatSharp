@@ -20,6 +20,8 @@ public class IndexedVectorTests
 
         IIndexedVector<string, Key> vector = vectors.Indexed;
 
+        Assert.Equal(option != FlatBufferDeserializationOption.GreedyMutable, vector.IsReadOnly);
+
         var expected = root.Vectors.Indexed.ToArray();
 
         foreach (var pair in expected)
@@ -40,6 +42,7 @@ public class IndexedVectorTests
         Assert.False(vector.ContainsKey("z"));
         Assert.False(vector.TryGetValue("z", out _));
 
+        Helpers.AssertMutationWorks(option, vectors, false, v => v.Indexed, new IndexedVector<string, Key>());
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
@@ -79,6 +82,28 @@ public class IndexedVectorTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => root.SerializeAndParse(option));
         Assert.Equal("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was not set.", ex.Message);
+    }
+
+    [Fact]
+    public void NullItem_Serialize()
+    {
+        Root root = new() 
+        { 
+            Vectors = new()
+            {
+                Indexed = new IndexedVector<string, Key>()
+            } 
+        };
+
+        // shoudln't be possible, but let's test our defensiveness.
+        var backingDictionary = (Dictionary<string, Key>)typeof(IndexedVector<string, Key>).GetField("backingDictionary", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(root.Vectors.Indexed);
+        backingDictionary["foo"] = null;
+
+        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+
+        ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
     }
 
     [Theory]

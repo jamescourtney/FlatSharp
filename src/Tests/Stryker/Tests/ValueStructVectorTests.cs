@@ -8,7 +8,7 @@ public class ValueStructVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void Present(FlatBufferDeserializationOption option)
+    public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] actualData);
@@ -32,7 +32,9 @@ public class ValueStructVectorTests
         }
 
         Helpers.AssertSequenceEqual(expectedData, actualData);
-    }
+        Helpers.AssertMutationWorks(option, parsed.Vectors, false, v => v.ValueStruct, new List<ValueStruct>());
+        Helpers.ValidateListVector(option, true, vsp, new ValueStruct());
+    });
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
@@ -43,6 +45,71 @@ public class ValueStructVectorTests
 
         Assert.Null(root.Vectors.ValueStruct);
         Helpers.AssertSequenceEqual(expectedData, actualData);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void Big(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
+    {
+        Root root = new Root { Vectors = new() { ValueStruct = new List<ValueStruct>() } };
+
+        for (int i = 0; i < 1000; ++i)
+        {
+            root.Vectors.ValueStruct.Add(new ValueStruct { A = i });
+        }
+
+        Root parsed = root.SerializeAndParse(option, out byte[] actualData);
+        IList<ValueStruct> parsedList = parsed.Vectors.ValueStruct;
+
+        for (int i = 0; i < 1000; ++i)
+        {
+            Assert.Equal(root.Vectors.ValueStruct[i].A, parsedList[i].A);
+        }
+    });
+
+    [Theory]
+    [InlineData(FlatBufferDeserializationOption.Lazy)]
+    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    public void WriteThroughValidation(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
+    {
+        Root root = new Root { Vectors = new() { ValueStruct = new List<ValueStruct> { new ValueStruct { A = 1 }, new ValueStruct { A = 2 } } } };
+        Root parsed1 = root.SerializeAndParse(option, out byte[] rawData);
+
+        Assert.Equal(1, parsed1.Vectors.ValueStruct[0].A);
+        Assert.Equal(2, parsed1.Vectors.ValueStruct[1].A);
+
+        parsed1.Vectors.ValueStruct[0] = new() { A = 5 };
+        parsed1.Vectors.ValueStruct[1] = new() { A = 10 };
+
+        Assert.Throws<IndexOutOfRangeException>(() => parsed1.Vectors.ValueStruct[-1] = default);
+
+        Assert.Equal(5, parsed1.Vectors.ValueStruct[0].A);
+        Assert.Equal(10, parsed1.Vectors.ValueStruct[1].A);
+
+        Root parsed2 = Root.Serializer.Parse(rawData, option);
+        Assert.Equal(5, parsed2.Vectors.ValueStruct[0].A);
+        Assert.Equal(10, parsed2.Vectors.ValueStruct[1].A);
+    });
+
+    [Fact]
+    public void ProgressiveClear()
+    {
+        Root root = new Root { Vectors = new() { ValueStruct = new[] { new ValueStruct { A = 1, B = 2 } } } };
+
+        Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var buffer);
+
+        var vectors = parsed.Vectors.ValueStruct;
+
+        // Load item 0 into memory.
+        Assert.Equal(1, vectors[0].A);
+        Assert.Equal(2, vectors[0].B);
+
+        // Clear the span.
+        buffer.AsSpan().Clear();
+
+        // Verify item 0 is still cached.
+        Assert.Equal(1, vectors[0].A);
+        Assert.Equal(2, vectors[0].B);
     }
 
     private Root CreateRoot(out byte[] expectedData)

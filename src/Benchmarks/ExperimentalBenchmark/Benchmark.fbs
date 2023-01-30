@@ -8,30 +8,22 @@ attribute "fs_sortedVector";
 attribute "fs_unsafeExternal";
 attribute "fs_memoryMarshal";
 attribute "fs_vector";
+attribute "fs_writeThrough";
 
 namespace BenchmarkCore;
 
-struct ExternalVector3(fs_unsafeExternal:"System.Numerics.Vector3", fs_valueStruct)
+struct ValueStruct (fs_valueStruct)
 {
-    X : float32;
-    Y : float32;
-    Z : float32;
+    a : int;
 }
 
-struct ExternalVectorAvx2(fs_unsafeExternal:"System.Numerics.Vector<float>", fs_valueStruct)
+struct RefStruct
 {
-    Data : [ float32 : 4 ];
-}
-
-table Item
-{
-    Key : string (key, required);
-    Value : int;
-    Vec3 : ExternalVector3;
-    AVX : ExternalVectorAvx2;
+    a : int (fs_writeThrough);
 }
 
 table Outer (fs_serializer:"Lazy")
 {
-    Items : [ Item ] (fs_vector:"IIndexedVector");
+    value_items : [ ValueStruct ];
+    ref_items : [ RefStruct ];
 }

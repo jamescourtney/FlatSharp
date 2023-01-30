@@ -8,13 +8,38 @@ namespace FlatSharpStrykerTests;
 
 public class FullTreeTests
 {
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void RootMutations(FlatBufferDeserializationOption option)
+    {
+        Root root = this.CreateRoot().SerializeAndParse(option);
+
+        Helpers.AssertMutationWorks(option, root, false, r => r.Fields, new Fields());
+        Helpers.AssertMutationWorks(option, root, false, r => r.Vectors, new Vectors());
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void VectorFieldMutations(FlatBufferDeserializationOption option)
+    {
+        Vectors vectors = this.CreateRoot().SerializeAndParse(option).Vectors;
+
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Indexed, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Memory, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.RefStruct, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Str, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Table, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Union, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.ValueStruct, null);
+    }
+
     [Fact]
     public void GetMaxSize()
     {
         Root root = this.CreateRoot();
         int maxSize = Root.Serializer.GetMaxSize(root);
 
-        Assert.Equal(730, maxSize);
+        Assert.Equal(898, maxSize);
     }
 
     [Theory]
@@ -22,8 +47,10 @@ public class FullTreeTests
     public void Clone(FlatBufferDeserializationOption option)
     {
         Root root = this.CreateRoot().SerializeAndParse(option);
-
         Root copy = new Root(root);
+
+        Assert.True(root.IsInitialized);
+        Assert.True(copy.IsInitialized);
 
         Assert.NotSame(root, copy);
         Assert.Equal(typeof(Root), copy.GetType());
@@ -36,12 +63,16 @@ public class FullTreeTests
             Assert.NotSame(rv, cv);
             Assert.NotSame(rv.GetType(), cv.GetType());
             Assert.Equal(typeof(Vectors), cv.GetType());
+            Assert.True(rv.IsInitialized);
+            Assert.True(cv.IsInitialized);
 
             Verify(rv.RefStruct, cv.RefStruct, Verify);
             Verify(rv.ValueStruct, cv.ValueStruct, Verify);
             Verify(rv.Str, cv.Str, Assert.Equal);
-            Verify(rv.Union, cv.Union, Assert.Equal);
+            Verify(rv.Union, cv.Union, Verify);
             Verify(rv.Indexed, cv.Indexed, Verify);
+            Verify(rv.Memory, cv.Memory, Verify);
+            Verify(rv.Table, cv.Table, Verify);
         }
 
         {
@@ -49,6 +80,8 @@ public class FullTreeTests
             Fields cf = copy.Fields;
 
             Assert.NotSame(rf, cf);
+            Assert.True(rf.IsInitialized);
+            Assert.True(cf.IsInitialized);
             Assert.NotSame(rf.GetType(), cf.GetType());
             Assert.Equal(typeof(Fields), cf.GetType());
 
@@ -98,6 +131,11 @@ public class FullTreeTests
         }
     }
 
+    private static void Verify(Memory<byte> a, Memory<byte> b)
+    {
+        Assert.True(a.Span.SequenceEqual(b.Span));
+    }
+
     private static void Verify(ValueStruct a, ValueStruct b)
     {
         Assert.Equal(a.A, b.A);
@@ -137,6 +175,8 @@ public class FullTreeTests
     private static void Verify(Key a, Key b)
     {
         Assert.NotSame(a, b);
+        Assert.True(a.IsInitialized);
+        Assert.True(b.IsInitialized);
         Assert.Equal(a.Name, b.Name);
         Assert.Equal(a.Value, b.Value);
     }
@@ -144,12 +184,18 @@ public class FullTreeTests
     private static void Verify(RefStruct a, RefStruct b)
     {
         Assert.NotSame(a, b);
+        Assert.True(a.IsInitialized);
+        Assert.True(b.IsInitialized);
         Assert.Equal(a.A, b.A);
         Assert.Equal(a.B, b.B);
         Assert.Equal(a.C[0], b.C[0]);
         Assert.Equal(a.C[1], b.C[1]);
         Assert.Equal(a.D[0], b.D[0]);
         Assert.Equal(a.D[1], b.D[1]);
+
+        Assert.Equal(new[] { a.C[0], a.C[1] }, b.C);
+        Assert.Equal(new[] { a.D[0], a.D[1] }, b.D);
+
         Verify(a.E, b.E);
     }
 
@@ -198,8 +244,9 @@ public class FullTreeTests
                 Memory = new byte[] { 1, 2, 3, 4, },
                 RefStruct = Helpers.CreateList(CreateRefStruct(), CreateRefStruct()),
                 Str = Helpers.CreateList("abc", "def"),
-                Union = Helpers.CreateList(new FunUnion("hi"), new FunUnion(new ValueStruct())),
+                Union = Helpers.CreateList(new FunUnion("hi"), new FunUnion(new ValueStruct()), new FunUnion(new RefStruct())),
                 ValueStruct = Helpers.CreateList(CreateRefStruct().E, CreateRefStruct().E),
+                Table = Helpers.CreateList(new Key() { Name = "bar" }, new Key() { Name = "foo" }),
             },
         };
     }

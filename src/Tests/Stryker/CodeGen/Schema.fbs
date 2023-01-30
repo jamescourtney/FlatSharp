@@ -8,7 +8,7 @@ attribute "fs_sharedString";
 
 namespace FlatSharpStrykerTests;
 
-enum Fruit : uint
+enum Fruit : int
 {
     Apple,
     Banana,
@@ -74,7 +74,7 @@ table Fields
     ref_struct : RefStruct;
 
     /// Field 1
-    value_struct : ValueStruct;
+    value_struct : ValueStruct; // TODO: writethrough
 
     /// Field 2
     memory : ubyte;
@@ -95,7 +95,7 @@ table Vectors
     ref_struct : [ RefStruct ];
 
     /// Field 1
-    value_struct : [ ValueStruct ];
+    value_struct : [ ValueStruct ] (fs_writeThrough);
 
     /// Field 2
     memory : [ ubyte ];
@@ -108,4 +108,7 @@ table Vectors
 
     /// Field 6
     indexed : [ Key ] (fs_vector:"IIndexedVector");
+
+    /// Field 7
+    table : [ Key ];
 }

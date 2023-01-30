@@ -15,6 +15,7 @@
  */
 
 using FlatSharp.Internal;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -23,6 +24,14 @@ namespace FlatSharpEndToEndTests;
 
 public static class Helpers
 {
+    public static void Repeat(Action action, int times = 5)
+    {
+        for (int i = 0; i < times; ++i)
+        {
+            action();
+        }
+    }
+
     public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>
     {
         return item.AllocateAndSerialize(item.Serializer);
@@ -154,24 +163,71 @@ public static class Helpers
         }
     }
 
-    public static void AssertMutationWorks<T>(
+    public static void ValidateListVector<T>(
         FlatBufferDeserializationOption option,
         bool isWriteThrough,
         IList<T> items,
         T newValue)
     {
-        if (option != FlatBufferDeserializationOption.Lazy)
+        // This can be lots of things: NotMutable, ArgumentOfRange, IndexOutOfRange, etc.
+        Assert.ThrowsAny<Exception>(() => items[-1]);
+        Assert.ThrowsAny<Exception>(() => items[items.Count]);
+        Assert.ThrowsAny<Exception>(() => items[-1] = default);
+        Assert.ThrowsAny<Exception>(() => items[items.Count] = default);
+        
+        if (items is IFlatBufferDeserializedVector vec)
+        {
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(-1));
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(items.Count));
+
+            for (int i = 0; i < vec.Count; ++i)
+            {
+                Assert.Equal(vec.OffsetOf(i), vec.OffsetBase + (i * vec.ItemSize));
+            }
+
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.ItemAt(-1));
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.ItemAt(items.Count));
+        }
+
         {
             T[] target = new T[items.Count];
             items.CopyTo(target, 0);
 
-            for (int i = 0; i < items.Count; ++i)
+            Assert.Equal(items.Count, target.Length);
+
+            if (option != FlatBufferDeserializationOption.Lazy || typeof(T).IsPrimitive || typeof(T) == typeof(string))
             {
-                Assert.Equal(i, items.IndexOf(items[i]));
-                Assert.True(items.Contains(items[i]));
-                Assert.Equal(items[i], target[i]);
+                for (int i = 0; i < items.Count; ++i)
+                {
+                    if (typeof(T).IsValueType || option == FlatBufferDeserializationOption.Lazy)
+                    {
+                        Assert.Equal(items[i], target[i]);
+                    }
+                    else
+                    {
+#pragma warning disable xUnit2005 // Do not use identity check on value type
+                        Assert.Same(items[i], items[i]);
+#pragma warning restore xUnit2005 // Do not use identity check on value type
+                    }
+
+                    Assert.Equal(i, items.IndexOf(items[i]));
+                    Assert.True(items.Contains(items[i]));
+                }
+            }
+            else if (!typeof(T).IsValueType)
+            {
+                for (int i = 0; i < items.Count; ++i)
+                {
+                    Assert.NotEqual(i, items.IndexOf(items[i]));
+                    Assert.False(items.Contains(items[i]));
+                    Assert.NotEqual(items[i], target[i]);
+                }
             }
         }
+
+        Assert.Equal(
+            items.IsReadOnly,
+            option != FlatBufferDeserializationOption.GreedyMutable);
 
         for (int i = 0; i < items.Count; ++i)
         {
@@ -209,13 +265,22 @@ public static class Helpers
             }
         }
 
-        if (option == FlatBufferDeserializationOption.GreedyMutable)
+        if (option == FlatBufferDeserializationOption.GreedyMutable && !isWriteThrough)
         {
             items.Clear();
+            Assert.Empty(items);
+
             items.Add(default);
+            Assert.Single(items);
+
             items.Remove(items[0]);
+            Assert.Empty(items);
+
             items.Insert(0, default);
+            Assert.Single(items);
+
             items.RemoveAt(0);
+            Assert.Empty(items);
         }
         else
         {

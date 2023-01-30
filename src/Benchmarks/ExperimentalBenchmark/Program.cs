@@ -29,32 +29,83 @@ using System.Runtime.CompilerServices;
 
 namespace BenchmarkCore
 {
+    public class IterationTests
+    {
+        public const int Length = 1000;
+        public byte[] buffer;
+
+        [Params(FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Progressive)]
+        public FlatBufferDeserializationOption Option { get; set; }
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            var outer = new Outer { RefItems = new List<RefStruct>(), ValueItems = new List<ValueStruct>(), };
+
+            for (int i = 0; i < Length; ++i)
+            {
+                outer.RefItems.Add(new RefStruct { A = i });
+                outer.ValueItems.Add(new ValueStruct { A = i });
+            }
+
+
+            buffer = new byte[Outer.Serializer.GetMaxSize(outer)];
+            Outer.Serializer.Write(buffer, outer);
+        }
+
+        [Benchmark]
+        public int RefNormalTraversal()
+        {
+            var outer = Outer.Serializer.Parse(buffer, this.Option);
+
+            int sum = 0;
+            IList<RefStruct> items = outer.RefItems!;
+
+            for (int i = 0; i < Length; ++i)
+            {
+                var item = items[i];
+                item.A += 3;
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public int ValueNormalTraversal()
+        {
+            var outer = Outer.Serializer.Parse(buffer, this.Option);
+
+            int sum = 0;
+            IList<ValueStruct> items = outer.ValueItems!;
+
+            if (items is null)
+            {
+                return sum;
+            }
+
+            for (int i = 0; i < Length; ++i)
+            {
+                sum += items[i].A;
+            }
+
+            return sum;
+        }
+    }
+
     public class Program
     {
         public static void Main(string[] args)
         {
-            IndexedVector<string, Item> values = new();
-            for (int i = 0; i < 10000; ++i)
+            //BenchmarkRunner.Run(typeof(Program).Assembly);
+            IterationTests t = new();
+
+            t.Option = FlatBufferDeserializationOption.Lazy;
+            t.Setup();
+
+            while (true)
             {
-                string key = Guid.NewGuid().ToString();
-                Item item = new Item() { Key = key, Value = i, Vec3 = new Vector3(i), AVX = new Vector<float>(i) };
-                values.Add(item);
+                t.RefNormalTraversal();
             }
-
-            Outer outer = new Outer { Items = values };
-
-            byte[] buffer = new byte[Outer.Serializer.GetMaxSize(outer)];
-            Outer.Serializer.Write(buffer, outer);
-
-            var parsed = Outer.Serializer.Parse(buffer);
-
-            int sum = 0;
-            foreach (var kvp in values)
-            {
-                sum += parsed.Items[kvp.Key].Value;
-            }
-
-            Console.WriteLine(sum);
         }
     }
 }

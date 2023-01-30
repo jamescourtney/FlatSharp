@@ -518,6 +518,7 @@ $@"
                     throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                 }}
 
+                [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
                 public {resolvedName.name}()
                 {{
                     string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
@@ -733,6 +734,7 @@ $@"
         }
 
         string clrType = typeModel.GetGlobalCompilableTypeName();
+        string parsedType = typeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
 
         // If we require depth tracking due to the schema, inject the if statement and the decrement instruction.
         string depthCheck = string.Empty;
@@ -747,7 +749,7 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static {clrType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
+            internal static {parsedType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
                 short {context.RemainingDepthVariableName}

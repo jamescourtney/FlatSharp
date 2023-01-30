@@ -30,30 +30,37 @@ public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        var (classDef, className) = FlatBufferVectorHelpers.CreateVectorOfUnionItemAccessor(
-            this.ItemTypeModel,
-            context);
+        Func<ITypeModel, ParserCodeGenContext, (string classDef, string className)>? createVector = context.Options.DeserializationOption switch
+        {
+            FlatBufferDeserializationOption.Lazy => FlatBufferVectorHelpers.CreateLazyUnionVector,
+            FlatBufferDeserializationOption.Progressive => FlatBufferVectorHelpers.CreateProgressiveUnionVector,
+            FlatBufferDeserializationOption.Greedy => FlatBufferVectorHelpers.CreateGreedyUnionVector,
+            FlatBufferDeserializationOption.GreedyMutable => FlatBufferVectorHelpers.CreateGreedyMutableUnionVector,
+            _ => null,
+        };
 
-        string itemAccessorTypeName = $"{className}<{context.InputBufferTypeName}>";
+        FlatSharpInternal.Assert(createVector is not null, "unexpected deserialization mode");
 
-        string createFlatBufferVector =
-            $@"FlatBufferVectorBase<{this.ItemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}, {itemAccessorTypeName}>.GetOrCreate(
-                    {context.InputBufferVariableName}, 
-                    new {itemAccessorTypeName}(
-                        {context.InputBufferVariableName},
-                        {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
-                        {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1)),
+        (string classDef, string className) = createVector(this.ItemTypeModel, context);
+
+        string body =
+           $@"
+                var offsets = 
+                (
+                    {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0),
+                    {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1)
+                );
+
+                return {className}<{context.InputBufferTypeName}>.GetOrCreate(
+                    {context.InputBufferVariableName},
+                    ref offsets,
                     {context.RemainingDepthVariableName},
-                    {context.TableFieldContextVariableName},
-                    {typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{context.Options.DeserializationOption})";
+                    {context.TableFieldContextVariableName});";
 
-        return new CodeGeneratedMethod(ListVectorTypeModel.CreateParseBody(
-            this.ItemTypeModel,
-            createFlatBufferVector,
-            itemAccessorTypeName,
-            context))
-        { 
-            ClassDefinition = classDef
+        return new CodeGeneratedMethod(body)
+        {
+            ClassDefinition = classDef,
+            IsMethodInline = true,
         };
     }
 
@@ -66,5 +73,10 @@ public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
             "List vector of union must be IList or IReadOnlyList.");
 
         return this.ClrType.GetGenericArguments()[0];
+    }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return this.GetGlobalCompilableTypeName();
     }
 }

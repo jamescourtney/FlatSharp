@@ -132,10 +132,6 @@ internal class DeserializeClassDefinition
             {
                 this.AddWriteThroughMethod(itemModel, context);
             }
-            else
-            {
-
-            }
         }
     }
 
@@ -288,7 +284,7 @@ internal class DeserializeClassDefinition
 
         return
         $@"
-            private sealed class {this.ClassName}<TInputBuffer> 
+            internal sealed class {this.ClassName}<TInputBuffer> 
                 : {typeModel.GetGlobalCompilableTypeName()}
                 , {interfaceGlobalName}
                 , {typeof(IPoolableObject).GetGlobalCompilableTypeName()}
@@ -339,7 +335,7 @@ internal class DeserializeClassDefinition
             {
                 FlatSharpInternal.Assert(options.DeserializationOption == FlatBufferDeserializationOption.Progressive, "Expecting progressive");
                 setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
-                setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
+                setterLines.Add($"{typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.CombineMask)}(ref this.{GetHasValueFieldName(itemModel)}, {GetHasValueFieldMask(itemModel)});");
             }
 
             setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableAccessor});");
@@ -384,7 +380,7 @@ internal class DeserializeClassDefinition
                 if ((this.{GetHasValueFieldName(itemModel)} & {GetHasValueFieldMask(itemModel)}) == 0)
                 {{
                     this.{GetFieldName(itemModel)} = {readUnderlyingInvocation};
-                    this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};
+                    {typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.CombineMask)}(ref this.{GetHasValueFieldName(itemModel)}, {GetHasValueFieldMask(itemModel)});
                 }}
                 return this.{GetFieldName(itemModel)};
             ";

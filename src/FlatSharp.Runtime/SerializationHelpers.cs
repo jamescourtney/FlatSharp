@@ -62,6 +62,15 @@ public static class SerializationHelpers
     }
 
     /// <summary>
+    /// Applies a bitwise OR to the operands.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void CombineMask(ref byte source, byte mask)
+    {
+        source |= mask;
+    }
+
+    /// <summary>
     /// Returns the number of padding bytes to be added to the given offset to acheive the given alignment.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

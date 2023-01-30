@@ -180,10 +180,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
             return inputBuffer.Length;
         }
 
-#if DEBUG
-        int expectedMaxSize = this.GetMaxSize(item);
-#endif
-
         var serializationContext = SerializationContext.ThreadLocalContext.Value!;
         serializationContext.Reset(destination.Length);
 
@@ -213,11 +209,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
             ex.SizeNeeded = this.GetMaxSize(item);
             throw;
         }
-
-#if DEBUG
-        Trace.WriteLine($"Serialized Size: {serializationContext.Offset + 1}, Max Size: {expectedMaxSize}");
-        Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
-#endif
 
         return serializationContext.Offset;
     }

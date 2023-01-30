@@ -169,4 +169,9 @@ public class NullableTypeModel : RuntimeTypeModel
             IsMethodInline = true,
         };
     }
+
+    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    {
+        return this.ClrType.GetGlobalCompilableTypeName();
+    }
 }

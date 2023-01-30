@@ -15,153 +15,165 @@
  */
 
 using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace FlatSharp.TypeModel;
 
-internal static class FlatBufferVectorHelpers
+internal static partial class FlatBufferVectorHelpers
 {
-    public static (string classDef, string className) CreateVectorItemAccessor(
+    private static string If(bool condition, string value)
+    {
+        if (condition)
+        {
+            return value;
+        }
+
+        return string.Empty;
+    }
+
+    private static string IfNot(bool condition, string value)
+    {
+        return If(!condition, value);
+    }
+
+    private static string CreateVectorClassName(ITypeModel itemModel, FlatBufferDeserializationOption option)
+    {
+        // Horribly inefficient
+        using SHA256 sha = SHA256.Create();
+        byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(itemModel.GetCompilableTypeName()));
+        Guid g = new Guid(hash.Take(16).ToArray());
+
+        return $"GeneratedVector_{g:n}_{option}";
+    }
+
+    private static string GetNullableReferenceAnnotation(ITypeModel model)
+    {
+        return model.ClrType.IsValueType
+             ? string.Empty
+             : "?";
+    }
+
+    public static string CreateCommonReadOnlyVectorMethods(
+        ITypeModel itemTypeModel,
+        string derivedTypeName)
+    {
+        string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
+        string nullableReference = GetNullableReferenceAnnotation(itemTypeModel);
+
+        return $$"""
+            public bool Contains({{baseTypeName}}{{nullableReference}} item) => this.IndexOf(item) >= 0;
+                 
+            public int IndexOf({{baseTypeName}}{{nullableReference}} item)
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf(this, item);
+                 
+            public void CopyTo({{baseTypeName}}[]? array, int arrayIndex) 
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.CopyTo(this, array, arrayIndex);
+                 
+            public IEnumerator<{{baseTypeName}}> GetEnumerator()
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.GetEnumerator(this);
+                 
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this.GetEnumerator();
+            """;
+    }
+
+    private static string GetEfficientMultiply(
+        int inlineSize,
+        string indexVariableName)
+    {
+        FlatSharpInternal.Assert(inlineSize != 0, "invalid inline size");
+        bool isPowerOf2 = (inlineSize & (inlineSize - 1)) == 0;
+        if (!isPowerOf2)
+        {
+            // Slow multiply.
+            return $"{inlineSize} * {indexVariableName}";
+        }
+
+        int mask = inlineSize;
+        int shift = 0;
+        while (mask > 1)
+        {
+            mask >>= 1;
+            shift++;
+        }
+
+        FlatSharpInternal.Assert((1 << shift) == inlineSize, $"expected to recompute inlinesize. Expected = {inlineSize}, Actual = {(1 << shift)}");
+        return $"{indexVariableName} << {shift}";
+    }
+
+    private static string CreateIFlatBufferDeserializedVectorMethods(
+        int inlineSize,
+        string inputBufferVariableName,
+        string offsetVariableName,
+        string checkedParseItemMethodName)
+    {
+        return
+          $$"""
+            IInputBuffer IFlatBufferDeserializedVector.InputBuffer => this.{{inputBufferVariableName}};
+            
+            int IFlatBufferDeserializedVector.ItemSize => {{inlineSize}};
+
+            int IFlatBufferDeserializedVector.OffsetBase => this.{{offsetVariableName}};
+                
+            object IFlatBufferDeserializedVector.ItemAt(int index) => this.{{checkedParseItemMethodName}}(index)!;
+            
+            int IFlatBufferDeserializedVector.OffsetOf(int index)
+            {
+                {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.Count);
+                return this.{{offsetVariableName}} + ({{GetEfficientMultiply(inlineSize, "index")}});
+            }
+            """;
+    }
+
+    private static string CreateImmutableVectorMethods(
+        ITypeModel itemTypeModel)
+    {
+        string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
+        string nullableReference = GetNullableReferenceAnnotation(itemTypeModel);
+
+        return
+            $$"""
+              public bool IsReadOnly => true;
+
+              public void Add({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+              public void Clear() => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+              public void Insert(int index, {{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+              public void RemoveAt(int index) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+              public bool Remove({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+              """;
+    }
+
+    public static string CreateWriteThroughMethod(
         ITypeModel itemTypeModel,
         int inlineSize,
         ParserCodeGenContext context,
         bool isEverWriteThrough)
     {
-        string className = $"ItemAccessor_{Guid.NewGuid():n}";
-        string itemTypeName = itemTypeModel.GetGlobalCompilableTypeName();
-
-        context = context with
-        {
-            InputBufferTypeName = "TInputBuffer",
-            InputBufferVariableName = "buffer",
-            IsOffsetByRef = false,
-            TableFieldContextVariableName = "fieldContext",
-            RemainingDepthVariableName = "remainingDepth",
-        };
-
-        var serializeContext = context.GetWriteThroughContext("data", "item", "0");
-        string writeThroughBody = $"throw new NotMutableException(\"FlatBufferVector does not support mutation.\");";
+        string writeThroughBody = $"{nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowInlineNotMutableException)}();";
         if (isEverWriteThrough)
         {
+            var serializeContext = context.GetWriteThroughContext("data", "value", "0");
+
             writeThroughBody = @$"
-                if (!context.WriteThrough)
+                if (!{context.TableFieldContextVariableName}.WriteThrough)
                 {{
-                    {writeThroughBody}
+                    {nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowNotMutableException)}();
                 }}
 
-                int offset = checked(this.offset + ({inlineSize} * index));
-                Span<byte> {serializeContext.SpanVariableName} = inputBuffer.GetSpan().Slice(offset, {inlineSize});
+                int offset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
+                Span<byte> {serializeContext.SpanVariableName} = {context.InputBufferVariableName}.GetSpan().Slice(offset, {inlineSize});
 
                 {serializeContext.GetSerializeInvocation(itemTypeModel.ClrType)};
             ";
         }
 
-        string body = $@"
-
-internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
-    where {context.InputBufferTypeName} : IInputBuffer
-{{
-    private readonly int offset;
-    private readonly int count;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public {className}(int offset, TInputBuffer buffer)
-    {{
-        this.count = (int)buffer.ReadUInt(offset);
-
-        // Advance to the start of the element at index 0. Easiest to do this once
-        // in the .ctor than repeatedly for each index.
-        this.offset = offset + sizeof(uint);
-    }}
-
-    public int ItemSize => {inlineSize};
-
-    public int Count => this.count;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
-    {{
-        int {context.OffsetVariableName} = this.offset + ({inlineSize} * index);
-        item = {context.GetParseInvocation(itemTypeModel.ClrType)};
-    }}
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteThrough(int index, {itemTypeName} {serializeContext.ValueVariableName}, {context.InputBufferTypeName} inputBuffer, TableFieldContext context)
-    {{
-        {writeThroughBody}
-    }}
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int OffsetOf(int index) => this.offset + ({inlineSize} * index);
-}}";
-        return (body, className);
-    }
-
-    public static (string classDef, string className) CreateVectorOfUnionItemAccessor(
-        ITypeModel typeModel,
-        ParserCodeGenContext context)
-    {
-        string className = $"FlatBufferUnionVectorAccessor_{Guid.NewGuid():n}";
-        string itemTypeName = typeModel.GetGlobalCompilableTypeName();
-
-        context = context with
-        {
-            InputBufferTypeName = "TInputBuffer",
-            InputBufferVariableName = "memory",
-            IsOffsetByRef = true,
-            TableFieldContextVariableName = "fieldContext",
-            OffsetVariableName = "temp",
-            RemainingDepthVariableName = "remainingDepth",
-        };
-
-        string classDef = $@"
-
-internal struct {className}<{context.InputBufferTypeName}> : IVectorItemAccessor<{itemTypeName}, {context.InputBufferTypeName}>
-    where {context.InputBufferTypeName} : IInputBuffer
-{{
-    private readonly int discriminatorVectorOffset;
-    private readonly int offsetVectorOffset;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public {className}(
-        {context.InputBufferTypeName} memory,
-        int discriminatorOffset,
-        int offsetVectorOffset)
-    {{
-        uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
-        uint offsetCount = memory.ReadUInt(offsetVectorOffset);
-
-        if (discriminatorCount != offsetCount)
-        {{
-            throw new {typeof(InvalidDataException).GetGlobalCompilableTypeName()}($""Union vector had mismatched number of discriminators and offsets."");
-        }}
-
-        this.Count = (int)offsetCount;
-        this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
-        this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
-    }}
-
-    public int Count {{ get; }}
-
-    public int ItemSize => throw new NotImplementedException();
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParseItem(int index, {context.InputBufferTypeName} {context.InputBufferVariableName}, short {context.RemainingDepthVariableName}, TableFieldContext {context.TableFieldContextVariableName}, out {itemTypeName} item)
-    {{
-        var {context.OffsetVariableName} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + (index * sizeof(int)));
-        item = {context.GetParseInvocation(typeModel.ClrType)};
-    }}
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteThrough(int index, {itemTypeName} value, {context.InputBufferTypeName} inputBuffer, TableFieldContext context)
-    {{
-        throw new NotMutableException();
-    }}
-
-    public int OffsetOf(int index) => throw new NotImplementedException();
-}}
-";
-
-
-        return (classDef, className);
+        return $@"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void UnsafeWriteThrough(int index, {itemTypeModel.GetGlobalCompilableTypeName()} value) 
+        {{ 
+            {writeThroughBody} 
+        }}";
     }
 }

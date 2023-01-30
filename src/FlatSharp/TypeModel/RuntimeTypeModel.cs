@@ -190,4 +190,6 @@ public abstract class RuntimeTypeModel : ITypeModel
     {
         return new[] { this.ClrType };
     }
+
+    public abstract string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName);
 }

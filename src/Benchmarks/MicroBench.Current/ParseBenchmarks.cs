@@ -23,17 +23,23 @@ namespace Microbench
 
     public class ParseBenchmarks
     {
+        [Params(FlatBufferDeserializationOption.Lazy,
+                FlatBufferDeserializationOption.Progressive,
+                FlatBufferDeserializationOption.Greedy,
+                FlatBufferDeserializationOption.GreedyMutable)]
+        public FlatBufferDeserializationOption Option { get; set; }
+
         [Benchmark]
         public int Parse_StringTable_SingleString()
         {
-            return ParseAndTraverse(StringTable.Serializer.Parse(Constants.Buffers.StringTable_WithString));
+            return ParseAndTraverse(StringTable.Serializer.Parse(Constants.Buffers.StringTable_WithString, this.Option));
         }
 
         // Subtracting the vector results below from this should give the approximate overhead of using a vector.
         [Benchmark]
         public int Parse_StringTable_SingleString_Repeated()
         {
-            StringTable table = StringTable.Serializer.Parse(Constants.Buffers.StringTable_WithString);
+            StringTable table = StringTable.Serializer.Parse(Constants.Buffers.StringTable_WithString, this.Option);
 
             int length = 0;
             for (int i = 0; i < Constants.VectorLength; ++i)
@@ -49,31 +55,31 @@ namespace Microbench
         [Benchmark]
         public int Parse_StringTable_Vector()
         {
-            return ParseAndTraverse(StringTable.Serializer.Parse(Constants.Buffers.StringTable_WithVector));
+            return ParseAndTraverse(StringTable.Serializer.Parse(Constants.Buffers.StringTable_WithVector, this.Option));
         }
 
         [Benchmark]
         public int Parse_StringTable_Empty()
         {
-            return ParseAndTraverse(StringTable.Serializer.Parse(Constants.Buffers.Stringtable_Empty));
+            return ParseAndTraverse(StringTable.Serializer.Parse(Constants.Buffers.Stringtable_Empty, this.Option));
         }
 
         [Benchmark]
         public int Parse_PrimitivesTable_Empty()
         {
-            return ParseAndTraverse(PrimitivesTable.Serializer.Parse(Constants.Buffers.PrimitivesTable_Empty));
+            return ParseAndTraverse(PrimitivesTable.Serializer.Parse(Constants.Buffers.PrimitivesTable_Empty, this.Option));
         }
 
         [Benchmark]
         public int Parse_PrimitivesTable_Full()
         {
-            return ParseAndTraverse(PrimitivesTable.Serializer.Parse(Constants.Buffers.PrimitivesTable_Full));
+            return ParseAndTraverse(PrimitivesTable.Serializer.Parse(Constants.Buffers.PrimitivesTable_Full, this.Option));
         }
 
         [Benchmark]
         public int Parse_StructTable_SingleRef()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleRef);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleRef, this.Option);
             var singleRef = st.SingleRef!;
 
             int result = singleRef.Value;
@@ -87,7 +93,7 @@ namespace Microbench
         [Benchmark]
         public void Parse_StructTable_SingleRef_WriteThrough()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleRef);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleRef, this.Option);
             var singleRef = st.SingleRef!;
             singleRef.Value = 3;
 
@@ -98,7 +104,7 @@ namespace Microbench
         [Benchmark]
         public int Parse_StructTable_SingleValue()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleValue);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleValue, this.Option);
             var value = st.SingleValue.Value;
 
             st.TryReturnToPool();
@@ -109,7 +115,7 @@ namespace Microbench
         [Benchmark]
         public void Parse_StructTable_SingleValue_WriteThrough()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleValue);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_SingleValue, this.Option);
             st.SingleValue = new ValueStruct { Value = 3 };
 
             st.TryReturnToPool();
@@ -118,7 +124,7 @@ namespace Microbench
         [Benchmark]
         public int Parse_StructTable_VecRef()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef, this.Option);
             int sum = 0;
 
             var vecRef = st.VecRef!;
@@ -140,7 +146,7 @@ namespace Microbench
         [Benchmark]
         public void Parse_StructTable_VecRef_WriteThrough()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecRef, this.Option);
 
             var vecRef = st.VecRef!;
             int count = vecRef.Count;
@@ -148,7 +154,7 @@ namespace Microbench
             for (int i = 0; i < count; ++i)
             {
                 var item = vecRef[i];
-                item.Value++;
+                item.Value = (item.Value) + 1;
                 //item.TryReturnToPool();
             }
 
@@ -159,7 +165,7 @@ namespace Microbench
         [Benchmark]
         public int Parse_StructTable_VecValue()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue, this.Option);
             int sum = 0;
 
             var vecValue = st.VecValue!;
@@ -179,7 +185,7 @@ namespace Microbench
         [Benchmark]
         public void Parse_StructTable_VecValue_WriteThrough()
         {
-            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue);
+            var st = StructsTable.Serializer.Parse(Constants.Buffers.StructTable_VecValue, this.Option);
 
             var vecValue = st.VecValue!;
             int count = vecValue.Count;
@@ -198,7 +204,7 @@ namespace Microbench
         [Benchmark]
         public int ParseAndTraverse_SafeUnionVector()
         {
-            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Safe);
+            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Safe, this.Option);
             var vector = st.Safe;
             int count = vector!.Count;
 
@@ -218,7 +224,7 @@ namespace Microbench
         [Benchmark]
         public int ParseAndTraverse_UnsafeUnionVector()
         {
-            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Unsafe);
+            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Unsafe, this.Option);
             var vector = st.Unsafe;
             int count = vector!.Count;
 
@@ -238,7 +244,7 @@ namespace Microbench
         [Benchmark]
         public int ParseAndTraverse_MixedUnionVector()
         {
-            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Mixed);
+            var st = UnionTable.Serializer.Parse(Constants.Buffers.UnionTable_Mixed, this.Option);
             var vector = st.Mixed;
             int count = vector!.Count;
 

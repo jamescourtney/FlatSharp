@@ -1,4 +1,5 @@
 ﻿using FlatSharp.Internal;
+using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
 
@@ -8,7 +9,7 @@ public class RefStructVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void Present(FlatBufferDeserializationOption option)
+    public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] actualData);
@@ -31,10 +32,18 @@ public class RefStructVectorTests
             Assert.Equal(r.C[1], p.C[1]);
             Assert.Equal(r.D[0], p.D[0]);
             Assert.Equal(r.D[1], p.D[1]);
+
+            Assert.Equal(r.C.ToArray()[0], p.C.ToArray()[0]);
+            Assert.Equal(r.D.ToArray()[0], p.D.ToArray()[0]);
+
+            Assert.Same(p.D, p.D);
+            Assert.Same(p.C, p.C);
         }
 
         Helpers.AssertSequenceEqual(expectedData, actualData);
-    }
+        Helpers.AssertMutationWorks(option, parsed.Vectors, false, v => v.RefStruct, new List<RefStruct>());
+        Helpers.ValidateListVector(option, false, vsp, new RefStruct());
+    });
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
@@ -47,11 +56,29 @@ public class RefStructVectorTests
         Helpers.AssertSequenceEqual(expectedData, actualData);
     }
 
+    [Fact]
+    public void WithNull() => Helpers.Repeat(() =>
+    {
+        Root root = new()
+        {
+            Vectors = new()
+            {
+                RefStruct = Helpers.CreateList((RefStruct)null),
+            }
+        };
+
+        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+
+        // no exception here. Reason is that structs are constant size, so we don't traverse the vector to figure out the max size.
+        int maxSize = Root.Serializer.GetMaxSize(root);
+    });
+
     private Root CreateRoot(out byte[] expectedData)
     {
         var rs1 = new RefStruct { A = 1, B = Fruit.Banana };
-        rs1.C.CopyFrom(new sbyte[] { 3, 4 }.AsSpan());
-        rs1.D.CopyFrom(new List<sbyte> { 5, 6, });
+        rs1.C.CopyFrom(new sbyte[] { 3, 4 }.ToList());
+        rs1.D.CopyFrom(new sbyte[] { 5, 6, }.AsSpan());
 
         var rs2 = new RefStruct { A = 7, B = Fruit.Pear };
         rs2.C.CopyFrom(new sbyte[] { 9, 10 }.AsSpan());

@@ -17,6 +17,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="SimpleLazyReferenceVector.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Update="TypeModel\ScalarTypeModels.tt">
             <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
             <Generator>TextTemplatingFileGenerator</Generator>

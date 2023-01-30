@@ -218,6 +218,8 @@ public class TableMemberModel : ItemMemberModel
                 int relativeOffset{i} = {vtableVariableName}.OffsetOf<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {idx});
                 bool isZero{i} = relativeOffset{i} == 0;
                 allZero &= isZero{i};
+
+                {StrykerSuppressor.SuppressNextLine("assignment")}
                 anyZero |= isZero{i};
             ");
 
