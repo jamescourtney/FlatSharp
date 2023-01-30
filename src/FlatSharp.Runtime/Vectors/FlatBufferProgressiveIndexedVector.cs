@@ -28,7 +28,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     where TKey : notnull
 {
     private readonly Dictionary<TKey, TValue?> backingDictionary = new();
-    private IIndexedVectorSource<TValue> backingVector;
+    private IList<TValue> backingVector;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private FlatBufferProgressiveIndexedVector()
@@ -36,7 +36,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     {
     }
 
-    public static FlatBufferProgressiveIndexedVector<TKey, TValue> GetOrCreate(IIndexedVectorSource<TValue> items)
+    public static FlatBufferProgressiveIndexedVector<TKey, TValue> GetOrCreate(IList<TValue> items)
     {
         if (!ObjectPool.TryGet<FlatBufferProgressiveIndexedVector<TKey, TValue>>(out var item))
         {
@@ -157,7 +157,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
             var backingVector = Interlocked.Exchange(ref this.backingVector!, null);
             if (backingVector is not null)
             {
-                backingVector.ReturnToPool(true);
+                (backingVector as IPoolableObject)?.ReturnToPool(true);
                 this.backingDictionary.Clear();
 
                 ObjectPool.Return(this);

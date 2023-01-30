@@ -38,7 +38,7 @@ namespace Microbench
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
                 .WithLaunchCount(1)
-                .WithWarmupCount(2)
+                .WithWarmupCount(3)
                 .WithIterationCount(6)
                 .WithRuntime(CoreRuntime.Core70);
                 //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
@@ -55,8 +55,8 @@ namespace Microbench
                  //.AddHardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)
                  .AddJob(job.DontEnforcePowerPlan());
 
-            //summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
-            //summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(SerializeBenchmarks), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(ParseBenchmarks), config));
             summaries.Add(BenchmarkRunner.Run(typeof(SortedVectorBenchmarks), config));
             //summaries.Add(BenchmarkRunner.Run(typeof(VTableBenchmarks), config));
 

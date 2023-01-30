@@ -9,7 +9,7 @@ public class UnionVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void UnionVector(FlatBufferDeserializationOption option)
+    public void UnionVector(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
@@ -90,7 +90,8 @@ public class UnionVectorTests
         }
 
         Helpers.AssertSequenceEqual(expectedData, buffer);
-    }
+        Helpers.ValidateListVector(option, false, unions, new FunUnion("foo"));
+    });
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
@@ -133,6 +134,36 @@ public class UnionVectorTests
         });
 
         Assert.Equal("Union vector had mismatched number of discriminators and offsets.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void UnionVector_Invalid_NoOffsetVector(FlatBufferDeserializationOption option)
+    {
+        CreateInvalid_NoOffsetVector(out byte[] buffer);
+
+        var ex = Assert.Throws<InvalidDataException>(() =>
+        {
+            var item = Root.Serializer.Parse(buffer, option);
+            var x = item.Vectors.Union[0];
+        });
+
+        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Vectors.Union' was only partially included in the buffer.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void UnionVector_Invalid_NoDiscriminatorVector(FlatBufferDeserializationOption option)
+    {
+        CreateInvalid_NoOffsetVector(out byte[] buffer);
+
+        var ex = Assert.Throws<InvalidDataException>(() =>
+        {
+            var item = Root.Serializer.Parse(buffer, option);
+            var x = item.Vectors.Union[0];
+        });
+
+        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Vectors.Union' was only partially included in the buffer.", ex.Message);
     }
 
     [Theory]
@@ -324,6 +355,72 @@ public class UnionVectorTests
             0, 0,               // field 2 (memory)
             0, 0,               // field 3 (stirng)
             4, 0,               // field 4 (union vector discriminators)
+            8, 0,               // field 5 (union vector offsets)
+
+            3, 0, 0, 0,
+            1, 2, 3, 0,         // discriminators
+
+            1, 0, 0, 0,         // union offsets
+            0, 0, 0, 0,
+        };
+    }
+
+    private void CreateInvalid_NoOffsetVector(out byte[] expectedData)
+    {
+        expectedData = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Vectors subtable.
+
+            // Vtable for Root
+            8, 0, 8, 0,
+            0, 0, 4, 0,
+
+            244, 255, 255, 255, // soffset to vtable
+            24, 0, 0, 0,        // uoffset to union discriminators
+            28, 0, 0, 0,        // uoffset to union offsets
+
+            16, 0,              // vtable length
+            12, 0,              // table length
+            0, 0,               // field 0
+            0, 0,               // field 1
+            0, 0,               // field 2 (memory)
+            0, 0,               // field 3 (stirng)
+            4, 0,               // field 4 (union vector discriminators)
+            0, 0,               // field 5 (union vector offsets)
+
+            3, 0, 0, 0,
+            1, 2, 3, 0,         // discriminators
+
+            1, 0, 0, 0,         // union offsets
+            0, 0, 0, 0,
+        };
+    }
+
+    private void CreateInvalid_NoDiscriminatorVector(out byte[] expectedData)
+    {
+        expectedData = new byte[]
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,       // soffset to vtable
+            12, 0, 0, 0,              // uoffset to Vectors subtable.
+
+            // Vtable for Root
+            8, 0, 8, 0,
+            0, 0, 4, 0,
+
+            244, 255, 255, 255, // soffset to vtable
+            24, 0, 0, 0,        // uoffset to union discriminators
+            28, 0, 0, 0,        // uoffset to union offsets
+
+            16, 0,              // vtable length
+            12, 0,              // table length
+            0, 0,               // field 0
+            0, 0,               // field 1
+            0, 0,               // field 2 (memory)
+            0, 0,               // field 3 (stirng)
+            0, 0,               // field 4 (union vector discriminators)
             8, 0,               // field 5 (union vector offsets)
 
             3, 0, 0, 0,

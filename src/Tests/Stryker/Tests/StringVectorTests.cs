@@ -8,7 +8,7 @@ public class StringVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void StringTableField(FlatBufferDeserializationOption option)
+    public void StringTableField(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
@@ -24,9 +24,9 @@ public class StringVectorTests
         Assert.Equal("frenchie", theBoys[2]);
 
         Helpers.AssertMutationWorks(option, vectors, false, s => s.Str, new string[0]);
-        Helpers.AssertMutationWorks(option, false, theBoys, string.Empty);
+        Helpers.ValidateListVector(option, false, theBoys, string.Empty);
         Helpers.AssertSequenceEqual(expectedData, buffer);
-    }
+    });
 
     private Root CreateRoot(out byte[] expectedData)
     {

@@ -95,19 +95,13 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        bool isEverWriteThrough = ValidateWriteThrough(
-            writeThroughSupported: false,
-            this,
-            context.AllFieldContexts,
-            context.Options);
-
         string body;
         string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
         string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
 
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
 
-        string inner = $"(IIndexedVectorSource<{valueTypeName}>){context.GetParseInvocation(this.listTypeModel.ClrType)}";
+        string inner = context.GetParseInvocation(this.listTypeModel.ClrType);
         string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
 
         if (context.Options.GreedyDeserialize)

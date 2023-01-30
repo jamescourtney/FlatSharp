@@ -8,7 +8,7 @@ public class ValueStructVectorTests
 {
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
-    public void Present(FlatBufferDeserializationOption option)
+    public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] actualData);
@@ -32,7 +32,9 @@ public class ValueStructVectorTests
         }
 
         Helpers.AssertSequenceEqual(expectedData, actualData);
-    }
+        Helpers.AssertMutationWorks(option, parsed.Vectors, false, v => v.ValueStruct, new List<ValueStruct>());
+        Helpers.ValidateListVector(option, true, vsp, new ValueStruct());
+    });
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]

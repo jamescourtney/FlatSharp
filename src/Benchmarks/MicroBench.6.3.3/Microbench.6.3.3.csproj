@@ -3,7 +3,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net7.0</TargetFrameworks>
+        <TargetFramework>net7.0</TargetFramework>
         <DelaySign>false</DelaySign>
         <SignAssembly>false</SignAssembly>
         <Nullable>enable</Nullable>

@@ -34,14 +34,20 @@ public static class VectorUtilities
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowInlineNotMutableException()
+    public static bool ThrowInlineNotMutableException()
     {
         throw new NotMutableException("FlatBufferVector does not support this operation.");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void ThrowNotMutableException()
+    public static bool ThrowNotMutableException()
     {
         throw new NotMutableException("FlatBufferVector does not support this operation.");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static void ThrowGreedyMutableWriteThroughNotSupportedException()
+    {
+        throw new NotMutableException("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.");
     }
 }

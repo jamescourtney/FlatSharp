@@ -38,8 +38,6 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
-        {{IfNot(itemTypeModel.ClrType.IsValueType, $", IIndexedVectorSource<{baseTypeName}>")}}
         where TInputBuffer : IInputBuffer
     {
         private TableFieldContext {{context.TableFieldContextVariableName}};
@@ -131,7 +129,7 @@ $$""""
             {
                 if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
                 {
-                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowNotMutableException)}}();
+                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowGreedyMutableWriteThroughNotSupportedException)}}();
                 }
             }
           """
@@ -178,7 +176,6 @@ $$""""
         }
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, baseTypeName)}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, baseTypeName, "GetItem", "SetItem")}}
     }
 """";
 

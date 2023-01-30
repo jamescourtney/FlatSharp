@@ -4,7 +4,12 @@
 
     "ignore-methods": 
     [
-      "FlatSharp.Internal.FlatSharpInternal.AssertSizeOf" // Ignore assertions.
+      "FlatSharp.Internal.FlatSharpInternal.AssertSizeOf", // Ignore assertions.
+      "TableFieldContext.ctor"
+    ],
+
+    "ignore-mutations": [
+      "checked"
     ],
 
     "reporters": [ "html", "cleartext" ],

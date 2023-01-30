@@ -61,14 +61,10 @@ namespace BenchmarkCore
             int sum = 0;
             IList<RefStruct> items = outer.RefItems!;
 
-            if (items is null)
-            {
-                return sum;
-            }
-
             for (int i = 0; i < Length; ++i)
             {
-                sum += items[i].A;
+                var item = items[i];
+                item.A += 3;
             }
 
             return sum;
@@ -94,57 +90,6 @@ namespace BenchmarkCore
 
             return sum;
         }
-
-        [Benchmark]
-        public int RefFancyTraversal()
-        {
-            var outer = Outer.Serializer.Parse(buffer, this.Option);
-            IVisitableReferenceVector<RefStruct> vec = (IVisitableReferenceVector<RefStruct>)outer.RefItems;
-            return vec.Accept<RefVisitor, int>(new RefVisitor());
-        }
-
-        [Benchmark]
-        public int ValueFancyTraversal()
-        {
-            var outer = Outer.Serializer.Parse(buffer, this.Option);
-            IVisitableValueVector<ValueStruct> vec = (IVisitableValueVector<ValueStruct>)outer.ValueItems;
-            return vec.Accept<ValueVisitor, int>(new ValueVisitor());
-        }
-
-        private struct RefVisitor : IReferenceVectorVisitor<RefStruct, int>
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Visit<TDerived, TVector>(TVector vector)
-                where TDerived : RefStruct
-                where TVector : struct, ISimpleVector<TDerived>
-            {
-                int sum = 0;
-                for (int i = 0; i < vector.Count; ++i)
-                {
-                    TDerived item = vector[i];
-                    sum += item.A;
-                    sum += 3;
-                }
-
-                return sum;
-            }
-        }
-
-        private struct ValueVisitor : IValueVectorVisitor<ValueStruct, int>
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Visit<TVector>(TVector vector)
-                where TVector : struct, ISimpleVector<ValueStruct>
-            {
-                int sum = 0;
-                for (int i = 0; i < vector.Count; ++i)
-                {
-                    sum += vector[i].A;
-                }
-
-                return sum;
-            }
-        }
     }
 
     public class Program
@@ -154,12 +99,12 @@ namespace BenchmarkCore
             //BenchmarkRunner.Run(typeof(Program).Assembly);
             IterationTests t = new();
 
-            t.Option = FlatBufferDeserializationOption.Progressive;
+            t.Option = FlatBufferDeserializationOption.Lazy;
             t.Setup();
 
             while (true)
             {
-                t.RefFancyTraversal();
+                t.RefNormalTraversal();
             }
         }
     }

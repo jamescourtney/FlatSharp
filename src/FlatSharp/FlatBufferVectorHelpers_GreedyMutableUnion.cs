@@ -38,7 +38,6 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
         where TInputBuffer : IInputBuffer
     {
         private readonly List<{{baseTypeName}}> list;
@@ -181,7 +180,6 @@ $$""""
         }
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, baseTypeName)}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, baseTypeName, "GetItem", "SetItem")}}
     }
 """";
 

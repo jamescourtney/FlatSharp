@@ -42,8 +42,6 @@ $$""""
         , IReadOnlyList<{{baseTypeName}}>
         , IFlatBufferDeserializedVector
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
-        {{IfNot(itemTypeModel.ClrType.IsValueType, $", IIndexedVectorSource<{baseTypeName}>")}}
         where TInputBuffer : IInputBuffer
     {
         private int {{context.OffsetVariableName}};
@@ -118,7 +116,7 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} UnsafeParseItem(int index)
         {
-            int {{context.OffsetVariableName}} = this.offset + ({{inlineSize}} * index);
+            int {{context.OffsetVariableName}} = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }
 
@@ -126,7 +124,6 @@ $$""""
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateIFlatBufferDeserializedVectorMethods(inlineSize, context.InputBufferVariableName, context.OffsetVariableName, "SafeParseItem")}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "SafeParseItem", "WriteThrough")}}
     }
 """";
 

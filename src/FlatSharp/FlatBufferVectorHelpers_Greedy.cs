@@ -40,8 +40,6 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
-        {{IfNot(itemTypeModel.ClrType.IsValueType, $", IIndexedVectorSource<{baseTypeName}>")}}
         where TInputBuffer : IInputBuffer
     {
         private readonly List<{{derivedTypeName}}> list;
@@ -122,7 +120,6 @@ $$""""
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "GetItem", "SetItem")}}
     }
 """";
 

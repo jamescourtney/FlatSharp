@@ -34,6 +34,8 @@ internal static partial class FlatBufferVectorHelpers
 
         string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
 
+        int chunkSize = 32;
+
         string classDef =
 $$""""
     internal sealed class {{className}}<TInputBuffer>
@@ -42,11 +44,9 @@ $$""""
         , IReadOnlyList<{{baseTypeName}}>
         , IFlatBufferDeserializedVector
         , IPoolableObject
-        , IVisitable{{(itemTypeModel.ClrType.IsValueType ? "Value" : "Reference")}}Vector<{{baseTypeName}}>
-        {{IfNot(itemTypeModel.ClrType.IsValueType, $", IIndexedVectorSource<{baseTypeName}>")}}
         where TInputBuffer : IInputBuffer
     {
-        private const uint ChunkSize = 32;
+        private const uint ChunkSize = {{chunkSize}};
 
         private int {{context.OffsetVariableName}};
         private int count;
@@ -163,52 +163,53 @@ $$""""
             var row = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Rent((int)ChunkSize);
             items[rowIndex] = row;
 
-            {{(
+            {{
                 // For value types -- we can't rely on null to tell
                 // us if the value is allocated or not, so just greedily
                 // allocate the whole chunk. Chunks are relatively
                 // small, so the overhead here is not enormous, and there
                 // is no extra allocation since this is a value type.
-                itemTypeModel.ClrType.IsValueType
-                ? $$"""
-                    int count = this.count;
-                    int rowStartIndex = (int)(ChunkSize * rowIndex);
-
-                    for (int i = 0; i < ChunkSize; ++i)
+                // Unchecked is considered safe here since we have already
+                // validated indexes.
+                If(itemTypeModel.ClrType.IsValueType,
+                  $$"""
+                    unchecked
                     {
-                        int targetIndex = rowStartIndex + i;
-                        if (targetIndex >= count)
+                        int absoluteStartIndex = (int)({{GetEfficientMultiply(chunkSize, "rowIndex")}});
+                        int copyCount = {{chunkSize}};
+                        int remainingItems = this.count - absoluteStartIndex;
+                        if (remainingItems < {{chunkSize}})
                         {
-                            break;
+                            copyCount = remainingItems;
                         }
-                        row[i] = this.UnsafeParseItem(targetIndex);
+
+                        int offset = this.offset + ({{GetEfficientMultiply(inlineSize, "absoluteStartIndex")}});
+                        for (int i = 0; i < copyCount; ++i)
+                        {
+                            row[i] = this.UnsafeParseFromOffset(offset);
+                            offset += {{inlineSize}};
+                        }
                     }
                     """
-                : string.Empty
             )}}
 
             return row;
         }
 
-        private {{derivedTypeName}} ProgressiveGet(int index) => InlineProgressiveGet(index);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private {{derivedTypeName}} InlineProgressiveGet(int index)
+        private {{derivedTypeName}} ProgressiveGet(int index)
         {
             {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
 
-            uint uindex = (uint)index;
+            uint uindex = unchecked((uint)index);
             GetAddress(uindex, out uint rowIndex, out uint colIndex);
 
             var items = this.items;
             var row = this.GetOrCreateRow(items, rowIndex);
             var item = row[colIndex];
 
-            {{(
-                // Initialize the reference type if null.
-                itemTypeModel.ClrType.IsValueType
-              ? string.Empty
-              : $$"""
+            {{  // Initialize the reference type if null.
+                IfNot(itemTypeModel.ClrType.IsValueType,
+                $$"""
                     if (item is null)
                     {
                         item = this.UnsafeParseItem(index);
@@ -225,29 +226,29 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InlineProgressiveSet(int index, {{baseTypeName}} value)
         {
-            {{(
-                itemTypeModel.ClrType.IsValueType
-              // value types can just be assigned directly.
-              ? $$"""
+            {{If(itemTypeModel.ClrType.IsValueType,
+                 // value types can just be assigned directly.
+                 $$"""
                     {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
                     uint uindex = (uint)index;
                     GetAddress(uindex, out uint rowIndex, out uint colIndex);
-                    var items = this.items;
-                    var row = this.GetOrCreateRow(items, rowIndex);
+                    var row = this.GetOrCreateRow(this.items, rowIndex);
                     row[colIndex] = value;
-                    this.WriteThrough(index, value);
-                  """
-              // Reference type write through happens *within* the object, not the vector.
-              : $$"""
-                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
                   """
             )}}
+            this.WriteThrough(index, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} UnsafeParseItem(int index)
         {
-            int {{context.OffsetVariableName}} = this.offset + ({{inlineSize}} * index);
+            int offset = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
+            return UnsafeParseFromOffset(offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private {{derivedTypeName}} UnsafeParseFromOffset(int {{context.OffsetVariableName}})
+        {
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }
 
@@ -255,7 +256,6 @@ $$""""
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
         {{CreateIFlatBufferDeserializedVectorMethods(inlineSize, context.InputBufferVariableName, context.OffsetVariableName, "ProgressiveGet")}}
-        {{CreateVisitorMethods(itemTypeModel, className, baseTypeName, derivedTypeName, "InlineProgressiveGet", "InlineProgressiveSet")}}
     }
 """";
 

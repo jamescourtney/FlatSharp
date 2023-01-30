@@ -16,6 +16,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -66,16 +67,40 @@ internal static partial class FlatBufferVectorHelpers
             public bool Contains({{baseTypeName}}{{nullableReference}} item) => this.IndexOf(item) >= 0;
                  
             public int IndexOf({{baseTypeName}}{{nullableReference}} item)
-                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this), item);
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf(this, item);
                  
             public void CopyTo({{baseTypeName}}[]? array, int arrayIndex) 
-                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.CopyTo<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this), array, arrayIndex);
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.CopyTo(this, array, arrayIndex);
                  
             public IEnumerator<{{baseTypeName}}> GetEnumerator()
-                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.GetEnumerator<{{baseTypeName}}, {{derivedTypeName}}, SimpleVector>(new SimpleVector(this));
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.GetEnumerator(this);
                  
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this.GetEnumerator();
             """;
+    }
+
+    private static string GetEfficientMultiply(
+        int inlineSize,
+        string indexVariableName)
+    {
+        FlatSharpInternal.Assert(inlineSize != 0, "invalid inline size");
+        bool isPowerOf2 = (inlineSize & (inlineSize - 1)) == 0;
+        if (!isPowerOf2)
+        {
+            // Slow multiply.
+            return $"{inlineSize} * {indexVariableName}";
+        }
+
+        int mask = inlineSize;
+        int shift = 0;
+        while (mask > 1)
+        {
+            mask >>= 1;
+            shift++;
+        }
+
+        FlatSharpInternal.Assert((1 << shift) == inlineSize, $"expected to recompute inlinesize. Expected = {inlineSize}, Actual = {(1 << shift)}");
+        return $"{indexVariableName} << {shift}";
     }
 
     private static string CreateIFlatBufferDeserializedVectorMethods(
@@ -95,7 +120,7 @@ internal static partial class FlatBufferVectorHelpers
             int IFlatBufferDeserializedVector.OffsetOf(int index)
             {
                 {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.Count);
-                return this.{{offsetVariableName}} + ({{inlineSize}} * index);
+                return this.{{offsetVariableName}} + ({{GetEfficientMultiply(inlineSize, "index")}});
             }
             """;
     }
@@ -114,57 +139,7 @@ internal static partial class FlatBufferVectorHelpers
               public void Clear() => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               public void Insert(int index, {{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               public void RemoveAt(int index) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              public bool Remove({{baseTypeName}} item)
-              {
-                  {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-                  return false;
-              }
-              """;
-    }
-
-    private static string CreateVisitorMethods(
-        ITypeModel itemTypeModel,
-        string className,
-        string baseTypeName,
-        string derivedTypeName,
-        string indexedCheckedReadMethod,
-        string indexCheckedWriteMethod)
-    {
-        return
-            $$"""
-              {{(
-                  itemTypeModel.ClrType.IsValueType
-                ? $$"""
-                    public TReturn Accept<TVisitor, TReturn>(TVisitor visitor) where TVisitor : IValueVectorVisitor<{{baseTypeName}}, TReturn>
-                        => visitor.Visit<SimpleVector>(new SimpleVector(this));
-                    """
-                : $$"""
-                    public TReturn Accept<TVisitor, TReturn>(TVisitor visitor) where TVisitor : IReferenceVectorVisitor<{{baseTypeName}}, TReturn>
-                        => visitor.Visit<{{derivedTypeName}}, SimpleVector>(new SimpleVector(this));
-                    """
-              )}}
-              
-              private struct SimpleVector : ISimpleVector<{{derivedTypeName}}>
-              {
-                  private readonly {{className}}<TInputBuffer> vector;
-              
-                  public SimpleVector({{className}}<TInputBuffer> vector)
-                  {
-                      this.vector = vector;
-                      this.Count = vector.Count;
-                  }
-              
-                  public int Count { get; }
-              
-                  public {{derivedTypeName}} this[int index] 
-                  {
-                      [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                      get => this.vector.{{indexedCheckedReadMethod}}(index);
-              
-                      [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                      set => this.vector.{{indexCheckedWriteMethod}}(index, value);
-                  }
-              }
+              public bool Remove({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
               """;
     }
 
@@ -187,7 +162,7 @@ internal static partial class FlatBufferVectorHelpers
                     {nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowNotMutableException)}();
                 }}
 
-                int offset = this.offset + ({inlineSize} * index);
+                int offset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
                 Span<byte> {serializeContext.SpanVariableName} = {context.InputBufferVariableName}.GetSpan().Slice(offset, {inlineSize});
 
                 {serializeContext.GetSerializeInvocation(itemTypeModel.ClrType)};

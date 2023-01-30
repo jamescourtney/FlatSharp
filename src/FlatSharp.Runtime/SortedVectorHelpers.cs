@@ -54,7 +54,6 @@ public static class SortedVectorHelpers
     {
         CheckKeyNotNull(key);
 
-
         if (key is string str)
         {
             using SimpleStringComparer cmp = new SimpleStringComparer(str);
@@ -138,34 +137,9 @@ public static class SortedVectorHelpers
                 new RawIndexableVector<TTable>(vector, keyIndex),
                 ssc);
         }
-        else if (realVector is IVisitableReferenceVector<TTable> visitable)
-        {
-            return visitable.Accept<GenericBinarySearchVisitor<TTable, TKey, TComparer>, TTable?>(new(comparer));
-        }
         else
         {
             return GenericBinarySearch<TIndexable, TTable, TKey, TComparer>(indexable, comparer);
-        }
-    }
-
-    private struct GenericBinarySearchVisitor<T, TKey, TComparer> : IReferenceVectorVisitor<T, T?>
-        where TComparer : struct, ISimpleComparer<TKey>
-        where T : class
-    {
-        private TComparer comparer;
-
-        public GenericBinarySearchVisitor(TComparer comparer)
-        {
-            this.comparer = comparer;
-        }
-
-        public T? Visit<TDerived, TVector>(TVector vector)
-            where TDerived : T
-            where TVector : struct, ISimpleVector<TDerived>
-        {
-            return GenericBinarySearch<VisitableIndexable<TVector, T, TDerived, TKey>, T, TKey, TComparer>(
-                new(vector),
-                this.comparer);
         }
     }
 
@@ -302,24 +276,6 @@ public static class SortedVectorHelpers
         private readonly IReadOnlyList<T> items;
 
         public ReadOnlyListIndexable(IReadOnlyList<T> items)
-        {
-            this.items = items;
-        }
-
-        public T this[int index] => this.items[index];
-
-        public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
-
-        public int Count => this.items.Count;
-    }
-
-    private struct VisitableIndexable<TVector, T, TDerived, TKey> : IIndexable<T, TKey>
-        where TVector : ISimpleVector<TDerived>
-        where TDerived : T
-    {
-        private readonly TVector items;
-
-        public VisitableIndexable(TVector items)
         {
             this.items = items;
         }

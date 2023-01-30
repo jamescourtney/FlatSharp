@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Threading;
-
 namespace FlatSharp.Internal;
 
 /// <summary>
@@ -24,9 +22,7 @@ namespace FlatSharp.Internal;
 public static class VectorsCommon
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T, TDerived, TVector>(TVector visitable, T? item)
-        where TVector : ISimpleVector<TDerived>
-        where TDerived : T
+    public static int IndexOf<T>(IList<T> vector, T? item)
     {
         if (!typeof(T).IsValueType)
         {
@@ -36,10 +32,10 @@ public static class VectorsCommon
             }
         }
 
-        int count = visitable.Count;
+        int count = vector.Count;
         for (int i = 0; i < count; ++i)
         {
-            if (item!.Equals(visitable[i]))
+            if (item!.Equals(vector[i]))
             {
                 return i;
             }
@@ -49,9 +45,7 @@ public static class VectorsCommon
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void CopyTo<T, TDerived, TVector>(TVector vector, T[]? array, int arrayIndex)
-        where TVector : ISimpleVector<TDerived>
-        where TDerived : T
+    public static void CopyTo<T>(IList<T> vector, T[]? array, int arrayIndex)
     {
         if (array is null)
         {
@@ -66,9 +60,7 @@ public static class VectorsCommon
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> GetEnumerator<T, TDerived, TVector>(TVector vector)
-        where TVector : ISimpleVector<TDerived>
-        where TDerived : T
+    public static IEnumerator<T> GetEnumerator<T>(IList<T> vector)
     {
         int count = vector.Count;
         for (int i = 0; i < count; ++i)
