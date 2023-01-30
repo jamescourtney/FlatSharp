@@ -47,6 +47,32 @@ public class UnionFieldTests
         Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, default);
     }
 
+    [Fact]
+    public void BrokenUnion()
+    {
+        Root root = new() { Fields = new() { Union = new FunUnion() } };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => Root.Serializer.GetMaxSize(root));
+        Assert.Equal("Exception determining type of union. Discriminator = 0", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.Equal("Unexpected discriminator. Unions must be initialized.", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => new FunUnion().Accept<Visitor, bool>(new Visitor()));
+        Assert.Equal("Unexpected discriminator: 0", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => new Root(root));
+        Assert.Equal("Unexpected union discriminator", ex.Message);
+    }
+
+    private struct Visitor : FunUnion.Visitor<bool>
+    {
+        public bool Visit(RefStruct item) => true;
+        public bool Visit(ValueStruct item) => true;
+        public bool Visit(string item) => true;
+        public bool Visit(Key item) => true;
+    }
+
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
     public void ValueStructMember(FlatBufferDeserializationOption option)

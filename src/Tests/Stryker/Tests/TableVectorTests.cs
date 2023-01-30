@@ -61,6 +61,23 @@ public class TableVectorTests
         Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
     });
 
+    [Fact]
+    public void ProgressiveSingleRead() => Helpers.Repeat(() =>
+    {
+        Root root = new() { Vectors = new() { Table = new[] { new Key() { Name = "foo", Value = Fruit.Strawberry } } } };
+        Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
+
+        Key item = parsed.Vectors.Table[0];
+
+        Assert.Equal("foo", item.Name);
+        Assert.Same(item.Name, item.Name);
+        Assert.Equal(Fruit.Strawberry, item.Value);
+
+        buffer.AsSpan().Clear();
+
+        Assert.Equal(Fruit.Strawberry, item.Value);
+    });
+
     private Root CreateRoot(out byte[] expectedData)
     {
         static byte B(char c) => (byte)c;

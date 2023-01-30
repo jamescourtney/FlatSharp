@@ -8,7 +8,7 @@ attribute "fs_sharedString";
 
 namespace FlatSharpStrykerTests;
 
-enum Fruit : uint
+enum Fruit : int
 {
     Apple,
     Banana,

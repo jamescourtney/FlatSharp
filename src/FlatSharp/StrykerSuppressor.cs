@@ -27,7 +27,7 @@ public static class StrykerSuppressor
         set;
     }
 
-    public static string BitConverterTypeName => IsEnabled ? "BitConverter" : "MockBitConverter";
+    public static string BitConverterTypeName => IsEnabled ? "MockBitConverter" : "BitConverter";
 
     public static string SuppressNextLine(string condition = "all")
     {

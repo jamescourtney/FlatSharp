@@ -599,6 +599,7 @@ $@"
         int vTableLength = this.GetVTableLength(index + i);
 
         string prepareBlock = $@"
+            {StrykerSuppressor.SuppressNextLine("assignment")}
             currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
             {OffsetVariableName(index, i)} = currentOffset;
             currentOffset += {layout.InlineSize};";
@@ -616,6 +617,7 @@ $@"
                 else
                 {
                     setVtableBlock = $@"
+                        {StrykerSuppressor.SuppressNextLine("equality")}
                         if ({vTableLength} > vtableLength)
                         {{
                             vtableLength = {vTableLength};

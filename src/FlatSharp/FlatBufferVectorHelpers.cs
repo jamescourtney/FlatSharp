@@ -157,8 +157,6 @@ internal static partial class FlatBufferVectorHelpers
             var serializeContext = context.GetWriteThroughContext("data", "value", "0");
 
             writeThroughBody = @$"
-                {nameof(VectorUtilities)}.{nameof(VectorUtilities.CheckIndex)}(index, this.count);
-
                 if (!{context.TableFieldContextVariableName}.WriteThrough)
                 {{
                     {nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowNotMutableException)}();
@@ -173,7 +171,7 @@ internal static partial class FlatBufferVectorHelpers
 
         return $@"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteThrough(int index, {itemTypeModel.GetGlobalCompilableTypeName()} value) 
+        private void UnsafeWriteThrough(int index, {itemTypeModel.GetGlobalCompilableTypeName()} value) 
         {{ 
             {writeThroughBody} 
         }}";

@@ -182,6 +182,8 @@ $$""""
                         int absoluteStartIndex = (int)({{GetEfficientMultiply(chunkSize, "rowIndex")}});
                         int copyCount = {{chunkSize}};
                         int remainingItems = this.count - absoluteStartIndex;
+
+                        {{StrykerSuppressor.SuppressNextLine("equality")}}
                         if (remainingItems < {{chunkSize}})
                         {
                             copyCount = remainingItems;
@@ -230,17 +232,19 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InlineProgressiveSet(int index, {{baseTypeName}} value)
         {
+            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
             {{If(itemTypeModel.ClrType.IsValueType,
                  // value types can just be assigned directly.
+                 // Note: vector write through is not allowed for reference types, 
+                 // so the below will simply throw.
                  $$"""
-                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
                     uint uindex = (uint)index;
                     GetAddress(uindex, out uint rowIndex, out uint colIndex);
                     var row = this.GetOrCreateRow(this.items, rowIndex);
                     row[colIndex] = value;
                   """
             )}}
-            this.WriteThrough(index, value);
+            this.UnsafeWriteThrough(index, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

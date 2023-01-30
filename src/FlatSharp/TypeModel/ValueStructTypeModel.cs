@@ -145,6 +145,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         // For little endian architectures, we can do the equivalent of a reinterpret_cast operation. This will be
         // generally faster than reading fields individually, since we will read entire words.
         string body = $@"
+            {StrykerSuppressor.SuppressNextLine("boolean")}
             if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
             {{
                 var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
@@ -186,6 +187,8 @@ public class ValueStructTypeModel : RuntimeTypeModel
         {
             body = $@"
                 {slice}
+                
+                {StrykerSuppressor.SuppressNextLine("boolean")}
                 if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
                 {{
                     {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});

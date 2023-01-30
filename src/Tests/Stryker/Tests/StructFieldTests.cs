@@ -139,6 +139,28 @@ public class StructFieldTests
         Assert.Equal(rsp.C[1], parsed2.Fields.RefStruct.C[1]);
     }
 
+    [Fact]
+    public void ReferenceStructWriteThrough_Progressive()
+    {
+        Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
+        Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
+
+        RefStruct rsp = parsed.Fields.RefStruct;
+
+        // write first.
+        rsp.A = 4;
+        rsp.C[0] = 6;
+        rsp.C[1] = 7;
+
+        // clear buffer
+        buffer.AsSpan().Clear();
+
+        // now read. Expect the same values back.
+        Assert.Equal(4, rsp.A);
+        Assert.Equal(6, rsp.C[0]);
+        Assert.Equal(7, rsp.C[1]);
+    }
+
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
     public void ReferenceStructOnDeserialized(FlatBufferDeserializationOption option)

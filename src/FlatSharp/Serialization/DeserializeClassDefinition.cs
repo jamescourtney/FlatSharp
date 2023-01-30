@@ -335,7 +335,7 @@ internal class DeserializeClassDefinition
             {
                 FlatSharpInternal.Assert(options.DeserializationOption == FlatBufferDeserializationOption.Progressive, "Expecting progressive");
                 setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
-                setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
+                setterLines.Add($"{typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.CombineMask)}(ref this.{GetHasValueFieldName(itemModel)}, {GetHasValueFieldMask(itemModel)});");
             }
 
             setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableAccessor});");
@@ -380,8 +380,7 @@ internal class DeserializeClassDefinition
                 if ((this.{GetHasValueFieldName(itemModel)} & {GetHasValueFieldMask(itemModel)}) == 0)
                 {{
                     this.{GetFieldName(itemModel)} = {readUnderlyingInvocation};
-                    {StrykerSuppressor.SuppressNextLine("assignment")}
-                    this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};
+                    {typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.CombineMask)}(ref this.{GetHasValueFieldName(itemModel)}, {GetHasValueFieldMask(itemModel)});
                 }}
                 return this.{GetFieldName(itemModel)};
             ";

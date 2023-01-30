@@ -1,7 +1,9 @@
 ﻿using FlatSharp.Internal;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
+using Xunit.Sdk;
 
 namespace FlatSharpStrykerTests;
 
@@ -45,6 +47,34 @@ public class StringVectorTests
 
         ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
         Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+    });
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void Big(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
+    {
+        Root root = new Root { Vectors = new() { Str = new List<string>() } };
+
+        for (int i = 0; i < 1000; ++i)
+        {
+            root.Vectors.Str.Add(i.ToString());
+        }
+
+        Root parsed = root.SerializeAndParse(option, out byte[] actualData);
+        IList<string> parsedList = parsed.Vectors.Str;
+
+        for (int i = 0; i < 1000; ++i)
+        {
+            Assert.Equal(root.Vectors.Str[i], parsedList[i]);
+
+            Action<string, string> assert = option switch
+            {
+                FlatBufferDeserializationOption.Lazy => Assert.NotSame,
+                _ => Assert.Same,
+            };
+
+            assert(parsedList[i], parsedList[i]);
+        }
     });
 
     private Root CreateRoot(out byte[] expectedData)
