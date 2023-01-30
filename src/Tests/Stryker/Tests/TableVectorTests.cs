@@ -51,6 +51,16 @@ public class TableVectorTests
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
+    [Fact]
+    public void WithNull() => Helpers.Repeat(() =>
+    {
+        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], CreateRoot_WithNullItem()));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+
+        ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(CreateRoot_WithNullItem()));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+    });
+
     private Root CreateRoot(out byte[] expectedData)
     {
         static byte B(char c) => (byte)c;
@@ -134,7 +144,6 @@ public class TableVectorTests
         return root;
     }
 
-
     private Root CreateRoot_Missing(out byte[] expectedData)
     {
         Root root = new()
@@ -159,5 +168,16 @@ public class TableVectorTests
         };
 
         return root;
+    }
+
+    private Root CreateRoot_WithNullItem()
+    {
+        return new()
+        {
+            Vectors = new()
+            {
+                Table = Helpers.CreateList((Key)null),
+            }
+        };
     }
 }

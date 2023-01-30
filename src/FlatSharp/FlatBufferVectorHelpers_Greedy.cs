@@ -60,8 +60,10 @@ $$""""
             {{context.OffsetVariableName}} += sizeof(int);
 
             if (ObjectPool.TryGet(out {{className}}<TInputBuffer>? list))
+            {{StrykerSuppressor.SuppressNextLine("block")}}
             {
     #if NET6_0_OR_GREATER
+                {{StrykerSuppressor.SuppressNextLine("statement")}}
                 list.list.EnsureCapacity(count);
     #endif
             }
@@ -83,6 +85,7 @@ $$""""
             return list;
         }
 
+        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
         public void ReturnToPool(bool force)
         {
             if (force)

@@ -174,6 +174,20 @@ public static class Helpers
         Assert.ThrowsAny<Exception>(() => items[items.Count]);
         Assert.ThrowsAny<Exception>(() => items[-1] = default);
         Assert.ThrowsAny<Exception>(() => items[items.Count] = default);
+        
+        if (items is IFlatBufferDeserializedVector vec)
+        {
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(-1));
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(items.Count));
+
+            for (int i = 0; i < vec.Count; ++i)
+            {
+                Assert.Equal(vec.OffsetOf(i), vec.OffsetBase + (i * vec.ItemSize));
+            }
+
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.ItemAt(-1));
+            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.ItemAt(items.Count));
+        }
 
         {
             T[] target = new T[items.Count];
@@ -185,9 +199,19 @@ public static class Helpers
             {
                 for (int i = 0; i < items.Count; ++i)
                 {
+                    if (typeof(T).IsValueType || option == FlatBufferDeserializationOption.Lazy)
+                    {
+                        Assert.Equal(items[i], target[i]);
+                    }
+                    else
+                    {
+#pragma warning disable xUnit2005 // Do not use identity check on value type
+                        Assert.Same(items[i], items[i]);
+#pragma warning restore xUnit2005 // Do not use identity check on value type
+                    }
+
                     Assert.Equal(i, items.IndexOf(items[i]));
                     Assert.True(items.Contains(items[i]));
-                    Assert.Equal(items[i], target[i]);
                 }
             }
             else if (!typeof(T).IsValueType)

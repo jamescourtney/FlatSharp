@@ -76,7 +76,10 @@ $$""""
             item.{{context.InputBufferVariableName}} = memory;
             item.{{context.TableFieldContextVariableName}} = fieldContext;
             item.{{context.RemainingDepthVariableName}} = remainingDepth;
-            item.items = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}[]?>.Shared.Rent((int)((item.count / ChunkSize) + 1));
+
+            {{StrykerSuppressor.SuppressNextLine()}}
+            int progressiveMinLength = (int)(item.count / ChunkSize) + 1;
+            item.items = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}[]?>.Shared.Rent(progressiveMinLength);
             item.inUse = 1;
 
             return item;
@@ -92,6 +95,7 @@ $$""""
     
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
+        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
         public void ReturnToPool(bool force = false)
         {
             if (this.DeserializationOption.ShouldReturnToPool(force))

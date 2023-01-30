@@ -71,8 +71,10 @@ $$""""
             ovo += sizeof(uint);
 
             if (ObjectPool.TryGet(out {{className}}<TInputBuffer>? list))
+            {{StrykerSuppressor.SuppressNextLine("block")}}
             {
     #if NET6_0_OR_GREATER
+                {{StrykerSuppressor.SuppressNextLine("statement")}}
                 list.list.EnsureCapacity(discriminatorCount);
     #endif
             }
@@ -98,6 +100,7 @@ $$""""
             return list;
         }
 
+        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
         public void ReturnToPool(bool force)
         {
             if (force)

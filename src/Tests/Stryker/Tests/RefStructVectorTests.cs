@@ -1,4 +1,5 @@
 ﻿using FlatSharp.Internal;
+using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
 
@@ -54,6 +55,24 @@ public class RefStructVectorTests
         Assert.Null(root.Vectors.RefStruct);
         Helpers.AssertSequenceEqual(expectedData, actualData);
     }
+
+    [Fact]
+    public void WithNull() => Helpers.Repeat(() =>
+    {
+        Root root = new()
+        {
+            Vectors = new()
+            {
+                RefStruct = Helpers.CreateList((RefStruct)null),
+            }
+        };
+
+        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+
+        // no exception here. Reason is that structs are constant size, so we don't traverse the vector to figure out the max size.
+        int maxSize = Root.Serializer.GetMaxSize(root);
+    });
 
     private Root CreateRoot(out byte[] expectedData)
     {

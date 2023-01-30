@@ -30,6 +30,23 @@ internal static partial class FlatBufferVectorHelpers
 
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
+
+        string IfMutable(string str)
+        {
+            if (isEverWriteThrough)
+            {
+                return $$"""
+                        if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
+                        {
+                            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowGreedyMutableWriteThroughNotSupportedException)}}();
+                        }
+
+                        {{str}}
+                        """;
+            }
+
+            return str;
+        }
         
         string classDef =
 $$""""
@@ -61,8 +78,10 @@ $$""""
             {{context.OffsetVariableName}} += sizeof(int);
 
             if (ObjectPool.TryGet(out {{className}}<TInputBuffer>? list))
+            {{StrykerSuppressor.SuppressNextLine("block")}}
             {
     #if NET6_0_OR_GREATER
+                {{StrykerSuppressor.SuppressNextLine("statement")}}
                 list.list.EnsureCapacity(count);
     #endif
             }
@@ -85,6 +104,7 @@ $$""""
             return list;
         }
 
+        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
         public void ReturnToPool(bool force)
         {
             if (force)
@@ -122,57 +142,38 @@ $$""""
 
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
-        {{If(isEverWriteThrough,
-        $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private void ValidateMutation()
-            {
-                if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
-                {
-                    {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowGreedyMutableWriteThroughNotSupportedException)}}();
-                }
-            }
-          """
-        )}}
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{baseTypeName}} GetItem(int index) => this.list[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetItem(int index, {{baseTypeName}} value)
         {
-            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
-            this.list[index] = value;
+            {{IfMutable("this.list[index] = value;")}}
         }
 
         public void Add({{baseTypeName}} item)
         {
-            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
-            this.list.Add(item);
+            {{IfMutable("this.list.Add(item);")}}
         }
 
         public void Clear()
         {
-            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
-            this.list.Clear();
+            {{IfMutable("this.list.Clear();")}}
         }
 
         public void Insert(int index, {{baseTypeName}} item)
         {
-            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
-            this.list.Insert(index, item);
+            {{IfMutable("this.list.Insert(index, item);")}}
         }
 
         public void RemoveAt(int index)
         {
-            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
-            this.list.RemoveAt(index);
+            {{IfMutable("this.list.RemoveAt(index);")}}
         }
 
         public bool Remove({{baseTypeName}} item)
         {
-            {{If(isEverWriteThrough, "this.ValidateMutation();")}}
-            return this.list.Remove(item);
+            {{IfMutable("return this.list.Remove(item);")}}
         }
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, baseTypeName)}}

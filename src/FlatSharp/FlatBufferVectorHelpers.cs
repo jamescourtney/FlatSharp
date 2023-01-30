@@ -114,6 +114,8 @@ internal static partial class FlatBufferVectorHelpers
             IInputBuffer IFlatBufferDeserializedVector.InputBuffer => this.{{inputBufferVariableName}};
             
             int IFlatBufferDeserializedVector.ItemSize => {{inlineSize}};
+
+            int IFlatBufferDeserializedVector.OffsetBase => this.{{offsetVariableName}};
                 
             object IFlatBufferDeserializedVector.ItemAt(int index) => this.{{checkedParseItemMethodName}}(index)!;
             

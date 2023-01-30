@@ -47,8 +47,10 @@ public class FullTreeTests
     public void Clone(FlatBufferDeserializationOption option)
     {
         Root root = this.CreateRoot().SerializeAndParse(option);
-
         Root copy = new Root(root);
+
+        Assert.True(root.IsInitialized);
+        Assert.True(copy.IsInitialized);
 
         Assert.NotSame(root, copy);
         Assert.Equal(typeof(Root), copy.GetType());
@@ -61,6 +63,8 @@ public class FullTreeTests
             Assert.NotSame(rv, cv);
             Assert.NotSame(rv.GetType(), cv.GetType());
             Assert.Equal(typeof(Vectors), cv.GetType());
+            Assert.True(rv.IsInitialized);
+            Assert.True(cv.IsInitialized);
 
             Verify(rv.RefStruct, cv.RefStruct, Verify);
             Verify(rv.ValueStruct, cv.ValueStruct, Verify);
@@ -76,6 +80,8 @@ public class FullTreeTests
             Fields cf = copy.Fields;
 
             Assert.NotSame(rf, cf);
+            Assert.True(rf.IsInitialized);
+            Assert.True(cf.IsInitialized);
             Assert.NotSame(rf.GetType(), cf.GetType());
             Assert.Equal(typeof(Fields), cf.GetType());
 
@@ -169,6 +175,8 @@ public class FullTreeTests
     private static void Verify(Key a, Key b)
     {
         Assert.NotSame(a, b);
+        Assert.True(a.IsInitialized);
+        Assert.True(b.IsInitialized);
         Assert.Equal(a.Name, b.Name);
         Assert.Equal(a.Value, b.Value);
     }
@@ -176,12 +184,18 @@ public class FullTreeTests
     private static void Verify(RefStruct a, RefStruct b)
     {
         Assert.NotSame(a, b);
+        Assert.True(a.IsInitialized);
+        Assert.True(b.IsInitialized);
         Assert.Equal(a.A, b.A);
         Assert.Equal(a.B, b.B);
         Assert.Equal(a.C[0], b.C[0]);
         Assert.Equal(a.C[1], b.C[1]);
         Assert.Equal(a.D[0], b.D[0]);
         Assert.Equal(a.D[1], b.D[1]);
+
+        Assert.Equal(new[] { a.C[0], a.C[1] }, b.C);
+        Assert.Equal(new[] { a.D[0], a.D[1] }, b.D);
+
         Verify(a.E, b.E);
     }
 

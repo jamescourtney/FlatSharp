@@ -99,6 +99,7 @@ $$""""
     
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
+        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
         public void ReturnToPool(bool force = false)
         {
             if (this.DeserializationOption.ShouldReturnToPool(force))

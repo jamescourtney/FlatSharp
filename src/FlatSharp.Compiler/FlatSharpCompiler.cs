@@ -79,19 +79,19 @@ public class FlatSharpCompiler
             Console.Error.WriteLine("FlatSharp compiler: No output directory specified.");
             return -1;
         }
-        
+
         if (!string.IsNullOrEmpty(options.UnityAssemblyPath) && !File.Exists(options.UnityAssemblyPath))
         {
             Console.Error.WriteLine("FlatSharp compiler: Unity assembly path specified does not exist.");
             return -1;
         }
 
-        // Read existing file to see if we even need to do any work.
-        string outputFileName = options.MutationTestingMode switch
+        string outputFileName = "FlatSharp.generated.cs";
+        if (options.MutationTestingMode)
         {
-            true => "FlatSharp.cs",
-            false => "FlatSharp.generated.cs",
-        };
+            StrykerSuppressor.IsEnabled = true;
+            outputFileName = "FlatSharp.cs";
+        }
 
         string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
 
@@ -116,30 +116,6 @@ public class FlatSharpCompiler
                     try
                     {
                         cSharp = CreateCSharp(bfbs, inputHash, options);
-
-                        if (options.MutationTestingMode)
-                        {
-                            string[] patterns =
-                            {
-                                @"\s*this\.__mask\d+\s*\|=\s*\(byte\)\d+;",
-                                @".+AssertSizeOf.+",
-                            };
-
-                            foreach (var pattern in patterns)
-                            {
-                                Regex progressiveMaskRegex = new Regex(pattern, RegexOptions.Compiled);
-                                cSharp = progressiveMaskRegex.Replace(cSharp, m =>
-                                {
-                                    return $$"""
-                                         {{Environment.NewLine}}//Stryker disable once all
-                                         {{m.Value}}
-                                       """;
-                                });
-                            }
-
-                            cSharp = cSharp.Replace("BitConverter", "MockBitConverter");
-
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -568,7 +544,7 @@ public class FlatSharpCompiler
             }
 
             ErrorContext.Current.ThrowIfHasErrors();
-            
+
             Assembly[] additionalRefs = BuildAdditionalReferences(options);
 
             foreach (var step in steps)
@@ -679,7 +655,7 @@ public class FlatSharpCompiler
             references.AddRange(additionalReferences);
         if (options.UnityAssemblyPath is not null)
             references.Add(Assembly.LoadFrom(options.UnityAssemblyPath));
-        
+
         return references.ToArray();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FlatSharp.Internal;
+using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
 
@@ -26,6 +27,24 @@ public class StringVectorTests
         Helpers.AssertMutationWorks(option, vectors, false, s => s.Str, new string[0]);
         Helpers.ValidateListVector(option, false, theBoys, string.Empty);
         Helpers.AssertSequenceEqual(expectedData, buffer);
+    });
+
+    [Fact]
+    public void WithNull() => Helpers.Repeat(() =>
+    {
+        Root root = new()
+        {
+            Vectors = new()
+            {
+                Str = Helpers.CreateList((string)null),
+            }
+        };
+
+        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+
+        ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
+        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
     });
 
     private Root CreateRoot(out byte[] expectedData)

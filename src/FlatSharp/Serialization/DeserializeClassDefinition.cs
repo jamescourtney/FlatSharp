@@ -380,6 +380,7 @@ internal class DeserializeClassDefinition
                 if ((this.{GetHasValueFieldName(itemModel)} & {GetHasValueFieldMask(itemModel)}) == 0)
                 {{
                     this.{GetFieldName(itemModel)} = {readUnderlyingInvocation};
+                    {StrykerSuppressor.SuppressNextLine("assignment")}
                     this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};
                 }}
                 return this.{GetFieldName(itemModel)};

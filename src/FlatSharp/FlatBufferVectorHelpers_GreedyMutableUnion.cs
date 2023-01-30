@@ -69,8 +69,10 @@ $$""""
             ovo += sizeof(uint);
 
             if (ObjectPool.TryGet(out {{className}}<TInputBuffer>? list))
+            {{StrykerSuppressor.SuppressNextLine("block")}}
             {
     #if NET6_0_OR_GREATER
+                {{StrykerSuppressor.SuppressNextLine("statement")}}
                 list.list.EnsureCapacity(discriminatorCount);
     #endif
             }
@@ -96,6 +98,7 @@ $$""""
             return list;
         }
 
+        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
         public void ReturnToPool(bool force)
         {
             if (force)
@@ -135,47 +138,36 @@ $$""""
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateMutation()
-        {
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{baseTypeName}} GetItem(int index) => this.list[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetItem(int index, {{baseTypeName}} value)
         {
-            this.ValidateMutation();
             this.list[index] = value;
         }
 
         public void Add({{baseTypeName}} item)
         {
-            this.ValidateMutation();
             this.list.Add(item);
         }
 
         public void Clear()
         {
-            this.ValidateMutation();
             this.list.Clear();
         }
 
         public void Insert(int index, {{baseTypeName}} item)
         {
-            this.ValidateMutation();
             this.list.Insert(index, item);
         }
 
         public void RemoveAt(int index)
         {
-            this.ValidateMutation();
             this.list.RemoveAt(index);
         }
 
         public bool Remove({{baseTypeName}} item)
         {
-            this.ValidateMutation();
             return this.list.Remove(item);
         }
 

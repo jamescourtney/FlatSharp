@@ -140,6 +140,9 @@ internal static class CSharpHelpers
     internal static string GetAssertSizeOfStatement(ITypeModel model, object size)
     {
         string globalName = model.GetGlobalCompilableTypeName();
-        return $"{typeof(FlatSharpInternal).GetGlobalCompilableTypeName()}.AssertSizeOf<{globalName}>({size});";
+        return $$"""
+                 {{StrykerSuppressor.SuppressNextLine()}}
+                 {{typeof(FlatSharpInternal).GetGlobalCompilableTypeName()}}.AssertSizeOf<{{globalName}}>({{size}});
+                """;
     }
 }
