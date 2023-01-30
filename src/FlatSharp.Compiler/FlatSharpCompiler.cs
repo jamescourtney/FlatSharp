@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 using CommandLine;
@@ -118,7 +119,26 @@ public class FlatSharpCompiler
 
                         if (options.MutationTestingMode)
                         {
+                            string[] patterns =
+                            {
+                                @"\s*this\.__mask\d+\s*\|=\s*\(byte\)\d+;",
+                                @".+AssertSizeOf.+",
+                            };
+
+                            foreach (var pattern in patterns)
+                            {
+                                Regex progressiveMaskRegex = new Regex(pattern, RegexOptions.Compiled);
+                                cSharp = progressiveMaskRegex.Replace(cSharp, m =>
+                                {
+                                    return $$"""
+                                         {{Environment.NewLine}}//Stryker disable once all
+                                         {{m.Value}}
+                                       """;
+                                });
+                            }
+
                             cSharp = cSharp.Replace("BitConverter", "MockBitConverter");
+
                         }
                     }
                     catch (Exception ex)
