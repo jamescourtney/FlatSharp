@@ -73,7 +73,16 @@ public class StructFieldTests
                 };
 
                 Helpers.AssertSequenceEqual(expectedBytes, buffer);
-                Helpers.AssertMutationWorks(option, fields, false, p => p.ValueStruct, default);
+                Helpers.AssertMutationWorks(option, fields, false, p => p.ValueStruct, new ValueStruct(), (a, b) =>
+                {
+                    var av = a.Value;
+                    var bv = b.Value;
+
+                    Assert.Equal(av.A, bv.A);
+                    Assert.Equal(av.B, bv.B);
+                    Assert.Equal(av.C(0), bv.C(0));
+                    Assert.Equal(av.C(1), bv.C(1));
+                });
             }
         }
         finally
@@ -82,6 +91,27 @@ public class StructFieldTests
         }
     }
 
+    [Fact]
+    public void ValueStructTableField_ProgressiveClear()
+    {
+        Root root = new Root() { Fields = new() { ValueStruct = new ValueStruct { A = 5 } } }.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
+
+        var fields = root.Fields;
+        Assert.Equal(5, fields.ValueStruct.Value.A);
+        buffer.AsSpan().Clear();
+        Assert.Equal(5, fields.ValueStruct.Value.A);
+    }
+
+    [Fact]
+    public void ValueStructStructField_ProgressiveClear()
+    {
+        Root root = new Root() { Fields = new() { RefStruct = new() { E = new ValueStruct { A = 5 } } } }.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
+
+        var fields = root.Fields.RefStruct;
+        Assert.Equal(5, fields.E.A);
+        buffer.AsSpan().Clear();
+        Assert.Equal(5, fields.E.A);
+    }
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
@@ -130,7 +160,13 @@ public class StructFieldTests
         Helpers.AssertMutationWorks(option, rsp, true, rsp => rsp.__flatsharp__C_1, (sbyte)6);
         Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.__flatsharp__D_0, (sbyte)3);
         Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.__flatsharp__D_1, (sbyte)6);
-        Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.E, new ValueStruct());
+        Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.E, new ValueStruct(), (a, b) =>
+        {
+            Assert.Equal(a.A, b.A);
+            Assert.Equal(a.B, b.B);
+            Assert.Equal(a.C(0), b.C(0));
+            Assert.Equal(a.C(1), b.C(1));
+        });
 
         var parsed2 = Root.Serializer.Parse(buffer, option);
 

@@ -1,5 +1,6 @@
 ﻿using FlatSharp.Internal;
 using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 
 namespace FlatSharpStrykerTests;
@@ -35,6 +36,31 @@ public class ValueStructVectorTests
         Helpers.AssertMutationWorks(option, parsed.Vectors, false, v => v.ValueStruct, new List<ValueStruct>());
         Helpers.ValidateListVector(option, true, vsp, new ValueStruct());
     });
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void WriteThroughDisabled(FlatBufferDeserializationOption option)
+    {
+        if (option == FlatBufferDeserializationOption.Greedy)
+        {
+            // Greedy is special because writethrough has no bearing on it, so it does not store an
+            // internal field context.
+            return;
+        }
+
+        Root root = CreateRoot(out _);
+        Root parsed = root.SerializeAndParse(option);
+
+        IList<ValueStruct> list = parsed.Vectors.ValueStruct;
+        FieldInfo field = list.GetType().GetField("fieldContext", BindingFlags.NonPublic | BindingFlags.Instance);
+        TableFieldContext context = (TableFieldContext)field.GetValue(list);
+
+        Assert.True(context.WriteThrough);
+        context = new TableFieldContext(context.FullName, context.SharedString, writeThrough: false);
+        field.SetValue(list, context);
+
+        Helpers.ValidateListVector(option, false, list, new ValueStruct());
+    }
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]

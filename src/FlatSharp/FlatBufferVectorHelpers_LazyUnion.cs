@@ -92,7 +92,11 @@ $$""""
         public {{baseTypeName}} this[int index]
         {
             get => this.SafeParseItem(index);
-            set => this.WriteThrough(index, value);
+            set
+            {
+                {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
+                this.WriteThrough(index, value);
+            }
         }
 
         public int Count => this.count;

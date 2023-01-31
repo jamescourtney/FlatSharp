@@ -64,7 +64,8 @@ internal static partial class FlatBufferVectorHelpers
         string nullableReference = GetNullableReferenceAnnotation(itemTypeModel);
 
         return $$"""
-            public bool Contains({{baseTypeName}}{{nullableReference}} item) => this.IndexOf(item) >= 0;
+            public bool Contains({{baseTypeName}}{{nullableReference}} item)
+                => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.Contains(this, item);
                  
             public int IndexOf({{baseTypeName}}{{nullableReference}} item)
                 => {{typeof(VectorsCommon).GetGlobalCompilableTypeName()}}.IndexOf(this, item);
@@ -84,6 +85,7 @@ internal static partial class FlatBufferVectorHelpers
         string indexVariableName)
     {
         FlatSharpInternal.Assert(inlineSize != 0, "invalid inline size");
+
         bool isPowerOf2 = (inlineSize & (inlineSize - 1)) == 0;
         if (!isPowerOf2)
         {

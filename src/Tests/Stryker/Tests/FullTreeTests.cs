@@ -22,15 +22,37 @@ public class FullTreeTests
     [ClassData(typeof(DeserializationOptionClassData))]
     public void VectorFieldMutations(FlatBufferDeserializationOption option)
     {
+        static void AssertMemoryEqual(Memory<byte>? a, Memory<byte>? b)
+        {
+            Assert.Equal(a is null, b is null);
+            if (a is null)
+            {
+                return;
+            }
+
+            Helpers.AssertSequenceEqual(a.Value.Span, b.Value.Span);
+        }
+
         Vectors vectors = this.CreateRoot().SerializeAndParse(option).Vectors;
 
         Helpers.AssertMutationWorks(option, vectors, false, r => r.Indexed, null);
-        Helpers.AssertMutationWorks(option, vectors, false, r => r.Memory, null);
+        Helpers.AssertMutationWorks(option, vectors, false, r => r.Memory, null, AssertMemoryEqual);
         Helpers.AssertMutationWorks(option, vectors, false, r => r.RefStruct, null);
         Helpers.AssertMutationWorks(option, vectors, false, r => r.Str, null);
         Helpers.AssertMutationWorks(option, vectors, false, r => r.Table, null);
         Helpers.AssertMutationWorks(option, vectors, false, r => r.Union, null);
         Helpers.AssertMutationWorks(option, vectors, false, r => r.ValueStruct, null);
+    }
+
+    [Fact]
+    public void VectorFieldTests_ProgressiveClear()
+    {
+        Vectors vectors = this.CreateRoot().SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] data).Vectors;
+        Helpers.AssertSequenceEqual(new byte[] { 1, 2, 3, 4, }, vectors.Memory.Value.Span);
+
+        data.AsSpan().Clear();
+
+        Helpers.AssertSequenceEqual(new byte[] { 0, 0, 0, 0, }, vectors.Memory.Value.Span);
     }
 
     [Fact]

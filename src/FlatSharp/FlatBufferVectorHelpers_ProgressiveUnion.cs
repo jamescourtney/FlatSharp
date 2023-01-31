@@ -192,6 +192,8 @@ $$""""
                         int absoluteStartIndex = (int)({{GetEfficientMultiply(chunkSize, "rowIndex")}});
                         int copyCount = {{chunkSize}};
                         int remainingItems = this.count - absoluteStartIndex;
+
+                        {{StrykerSuppressor.SuppressNextLine("equality")}}
                         if (remainingItems < {{chunkSize}})
                         {
                             copyCount = remainingItems;
@@ -235,6 +237,7 @@ $$""""
 
         private void ProgressiveSet(int index, {{baseTypeName}} value)
         {
+            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
             {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
         }
 

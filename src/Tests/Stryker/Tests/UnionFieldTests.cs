@@ -27,6 +27,19 @@ public class UnionFieldTests
         Assert.Throws<InvalidOperationException>(() => a.RefStruct);
     }
 
+    [Fact]
+    public void ProgressiveClear()
+    {
+        Root parsed = new Root { Fields = new() { Union = new FunUnion("hi") } }.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
+
+        Fields f = parsed.Fields;
+        Assert.Equal("hi", f.Union.Value.str);
+
+        buffer.AsSpan().Clear();
+
+        Assert.Equal("hi", f.Union.Value.str);
+    }
+
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
     public void StringMember(FlatBufferDeserializationOption option)
@@ -44,7 +57,13 @@ public class UnionFieldTests
         Assert.True(union.TryGet(out string str));
         Assert.Equal("hello", str);
 
-        Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, default);
+        Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, new FunUnion(string.Empty), (a, b) =>
+        {
+            var av = a.Value;
+            var bv = b.Value;
+            Assert.Equal(av.Discriminator, bv.Discriminator);
+            Assert.Equal(av.str, bv.str);
+        });
     }
 
     [Fact]

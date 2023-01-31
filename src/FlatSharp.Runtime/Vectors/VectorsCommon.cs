@@ -22,6 +22,12 @@ namespace FlatSharp.Internal;
 public static class VectorsCommon
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Contains<T>(IList<T> vector, T? item)
+    {
+        return IndexOf<T>(vector, item) >= 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T>(IList<T> vector, T? item)
     {
         if (!typeof(T).IsValueType)

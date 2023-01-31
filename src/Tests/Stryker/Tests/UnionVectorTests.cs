@@ -95,6 +95,46 @@ public class UnionVectorTests
 
     [Theory]
     [ClassData(typeof(DeserializationOptionClassData))]
+    public void Big(FlatBufferDeserializationOption option)
+    {
+        const int ChunkSize = 8; // this test needs to exercise some edge scenarios that require knowing the chunk size of the union vectors.
+
+        Random r = new Random();
+
+        for (int test = 1; test < 10; ++test)
+        {
+            List<FunUnion> expected = new();
+
+            for (int i = 0; i < (ChunkSize * test) + 1; ++i)
+            {
+                FunUnion union = (r.Next() % 4) switch
+                {
+                    0 => new(new Key { Name = i.ToString() }),
+                    1 => new(new RefStruct { A = i }),
+                    2 => new(new ValueStruct { A = i }),
+                    3 => new(i.ToString()),
+                    _ => throw new Exception(),
+                };
+
+                expected.Add(union);
+            }
+
+            Root root = new Root { Vectors = new() { Union = expected } }.SerializeAndParse(option);
+            IList<FunUnion> parsed = root.Vectors.Union;
+
+            Assert.Equal(expected.Count, parsed.Count);
+            for (int i = 0; i < expected.Count; ++i)
+            {
+                FunUnion e = expected[i];
+                FunUnion p = parsed[i];
+
+                Assert.Equal(e.Discriminator, p.Discriminator);
+            }
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
     public void UnionVector_Invalid_MissingOffset(FlatBufferDeserializationOption option)
     {
         CreateInvalid_MissingOffset(out byte[] buffer);
