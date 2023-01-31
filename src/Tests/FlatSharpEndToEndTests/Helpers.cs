@@ -16,9 +16,11 @@
 
 using FlatSharp.Internal;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
+using Xunit.Abstractions;
 
 namespace FlatSharpEndToEndTests;
 
@@ -97,7 +99,8 @@ public static class Helpers
         TSource parent,
         bool isWriteThrough,
         Expression<Func<TSource, TProperty>> propertyLambda,
-        TProperty newValue)
+        TProperty newValue,
+        Action<TProperty, TProperty>? assertEqual = null)
     {
         Assert.True(parent is IFlatBufferDeserializedObject);
 
@@ -124,33 +127,26 @@ public static class Helpers
 
         MemberExpression member = propertyLambda.Body as MemberExpression;
         PropertyInfo propInfo = member.Member as PropertyInfo;
-        Action action = () => propInfo.SetMethod.Invoke(parent, new object[] { newValue });
+
+        Func<TProperty> get = () => (TProperty)propInfo.GetMethod.Invoke(parent, null);
+        Action set = () => propInfo.SetMethod.Invoke(parent, new object[] { newValue });
+
+        // should be equal to itself to start with.
+        AssertEquality(option, get(), get(), assertEqual);
 
         switch (option)
         {
             case FlatBufferDeserializationOption.Lazy when isWriteThrough:
             case FlatBufferDeserializationOption.Progressive when isWriteThrough:
             case FlatBufferDeserializationOption.GreedyMutable when isWriteThrough is false:
-                action();
-
-                // For value types, validate that they are the same.
-                if (typeof(TProperty).IsValueType)
-                {
-                    TProperty readValue = (TProperty)propInfo.GetMethod.Invoke(parent, null);
-                    Assert.Equal<TProperty>(newValue, readValue);
-                }
-                else if (option != FlatBufferDeserializationOption.Lazy)
-                {
-                    TProperty readValue = (TProperty)propInfo.GetMethod.Invoke(parent, null);
-                    Assert.True(object.ReferenceEquals(newValue, readValue));
-                }
-
+                set();
+                AssertEquality(option, newValue, get(), assertEqual);
                 return;
 
             default:
                 var ex = Assert.Throws<NotMutableException>(new Action(() =>
                 {
-                    var ex = Assert.Throws<TargetInvocationException>(action).InnerException;
+                    var ex = Assert.Throws<TargetInvocationException>(set).InnerException;
                     throw ex;
                 }));
 
@@ -169,12 +165,8 @@ public static class Helpers
         IList<T> items,
         T newValue)
     {
-        // This can be lots of things: NotMutable, ArgumentOfRange, IndexOutOfRange, etc.
-        Assert.ThrowsAny<Exception>(() => items[-1]);
-        Assert.ThrowsAny<Exception>(() => items[items.Count]);
-        Assert.ThrowsAny<Exception>(() => items[-1] = default);
-        Assert.ThrowsAny<Exception>(() => items[items.Count] = default);
-        
+        CheckRangeExceptions(option, isWriteThrough, items);
+
         if (items is IFlatBufferDeserializedVector vec)
         {
             Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(-1));
@@ -417,6 +409,54 @@ public static class Helpers
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)list).GetEnumerator();
+        }
+    }
+
+    private static void AssertEquality<T>(FlatBufferDeserializationOption option, T a, T b, Action<T, T>? assertEqual)
+    {
+        if (assertEqual is null)
+        {
+            if (typeof(T).IsValueType && (typeof(T).IsPrimitive || typeof(T).IsEnum))
+            {
+                assertEqual = (a, b) => Assert.Equal(a, b);
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                assertEqual = (a, b) => Assert.Equal(a, b);
+            }
+        }
+
+        if (!typeof(T).IsValueType && option != FlatBufferDeserializationOption.Lazy)
+        {
+            Assert.True(object.ReferenceEquals(a, b));
+        }
+
+        assertEqual?.Invoke(a, b);
+    }
+
+    private static void CheckRangeExceptions<T>(FlatBufferDeserializationOption option, bool isWriteThrough, IList<T> list)
+    {
+        if (option == FlatBufferDeserializationOption.Lazy || option == FlatBufferDeserializationOption.Progressive)
+        {
+            Assert.Throws<IndexOutOfRangeException>(() => list[-1]);
+            Assert.Throws<IndexOutOfRangeException>(() => list[list.Count]);
+            Assert.Throws<IndexOutOfRangeException>(() => list[-1] = default);
+            Assert.Throws<IndexOutOfRangeException>(() => list[list.Count] = default);
+        }
+        else if (option == FlatBufferDeserializationOption.Greedy
+             || (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable))
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[list.Count]);
+            Assert.Throws<NotMutableException>(() => list[-1] = default);
+            Assert.Throws<NotMutableException>(() => list[list.Count] = default);
+        }
+        else
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[list.Count]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1] = default);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[list.Count] = default);
         }
     }
 }
