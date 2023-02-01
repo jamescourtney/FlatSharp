@@ -98,10 +98,10 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 FlatSharp *does* use some techniques such as `MemoryMarshal.Read` on certain hot paths, but these usages are narrowly scoped and well tested.
 
 ### Performance & Benchmarks
-FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 7.0, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).
+FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 7.0 with PGO disabled, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).
 
 The benchmarks test 4 different serialization frameworks, all using default settings:
-- FlatSharp -- 7.0.0
+- FlatSharp -- 7.1.0
 - Protobuf.NET -- 3.1.22
 - Google's C# Flatbuffers -- 22.10.26
 - Message Pack C# -- 2.4.35
@@ -116,22 +116,23 @@ This data shows the mean time it takes to serialize a typical message containing
 
 | Library                         | Time     | Relative Performance | Data Size |
 |---------------------------------|----------|----------------------|-----------|
-| FlatSharp                       | 1,212    | 100%                 | 3085      |
-| Message Pack C#                 | 2,506    | 207%                 | 2497      |
-| Google Flatbuffers              | 5,262    | 434%                 | 3312      |
-| Google Flatbuffers (Object API) | 5,675    | 468%                 | 3312      |
-| Protobuf.NET                    | 8,212    | 678%                 | 2646      |
+| FlatSharp                       | 981 ns   | 100%                 | 3085      |
+| Message Pack C#                 | 2,021    | 205%                 | 2497      |
+| Google Flatbuffers              | 4,299    | 433%                 | 3312      |
+| Google Flatbuffers (Object API) | 4,498    | 453%                 | 3312      |
+| Protobuf.NET                    | 5,695    | 574%                 | 2646      |
 
 #### Deserialization
 How much time does it take to parse and then fully enumerate the message from the serialization benchmark?
 | Library                         | Time     | Relative Performance |
 |---------------------------------|----------|----------------------|
-| FlatSharp (Optimized)           | 1,681 ns | 89%                  |
-| FlatSharp (Default)             | 1,896    | 100%                 |
-| Message Pack C#                 | 4,877    | 257%                 |
-| Google Flatbuffers              | 4,587    | 242%                 |
-| Google Flatbuffers (Object API) | 7,394    | 390%                 |
-| Protobuf.NET                    | 8,466    | 447%                 |
+| FlatSharp                       | 1,404 ns | 100%                 |
+| Message Pack C#                 | 3,363    | 240%                 |
+| Google Flatbuffers              | 3,820    | 272%                 |
+| Google Flatbuffers (Object API) | 5,585    | 419%                 |
+| Protobuf.NET                    | 6,169    | 439%                 |
+
+Finally, FlatSharp scales quite well when used with [PGO](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-1/#dynamic-pgo). Both serialization and parse performance improve by ~20% with this feature enabled.
 
 ### License
 FlatSharp is licensed under Apache 2.0.
