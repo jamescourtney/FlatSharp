@@ -98,7 +98,7 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 FlatSharp *does* use some techniques such as `MemoryMarshal.Read` on certain hot paths, but these usages are narrowly scoped and well tested.
 
 ### Performance & Benchmarks
-FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 7.0, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).
+FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 7.0 with PGO disabled, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).
 
 The benchmarks test 4 different serialization frameworks, all using default settings:
 - FlatSharp -- 7.1.0
@@ -126,7 +126,7 @@ This data shows the mean time it takes to serialize a typical message containing
 How much time does it take to parse and then fully enumerate the message from the serialization benchmark?
 | Library                         | Time     | Relative Performance |
 |---------------------------------|----------|----------------------|
-| FlatSharp                       | 1,404    | 100%                 |
+| FlatSharp                       | 1,404 ns | 100%                 |
 | Message Pack C#                 | 3,363    | 240%                 |
 | Google Flatbuffers              | 3,820    | 272%                 |
 | Google Flatbuffers (Object API) | 5,585    | 419%                 |
