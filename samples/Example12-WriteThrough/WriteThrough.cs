@@ -15,6 +15,7 @@
  */
 
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Text;
@@ -59,10 +60,7 @@ public class WriteThroughSample : IFlatSharpSample
 
         {
             // Each block is 128 bytes. For a 1MB filter, we need 8192 blocks.
-            BloomFilter filter = new BloomFilter(1024 * 1024 / 128)
-            { 
-                Blocks = new List<Block>() 
-            };
+            BloomFilter filter = new BloomFilter(1024 * 1024 / 128);
 
             // Write our bloom filter out to an array. It should be about 1MB in size.
             rawData = new byte[BloomFilter.Serializer.GetMaxSize(filter)];
@@ -180,6 +178,7 @@ public partial class BloomFilter
     // use murmur3 or something appropriate for this use case :)
     private readonly HashAlgorithm[] hashAlgorithms = new HashAlgorithm[] { SHA256.Create(), SHA1.Create(), MD5.Create() };
 
+    [SetsRequiredMembers]
     public BloomFilter(int blockCount)
     {
         this.Blocks = new List<Block>(blockCount);

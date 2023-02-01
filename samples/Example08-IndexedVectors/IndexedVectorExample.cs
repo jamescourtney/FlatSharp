@@ -69,7 +69,7 @@ public class IndexedVectorsExample : IFlatSharpSample
         // Note that Progressive, Lazy, and Greedy will all parse IndexedVectors to different
         // concrete types.
         Assert.True(
-            parsedTable.Users!.GetType().GetGenericTypeDefinition() == typeof(FlatSharp.Internal.FlatBufferIndexedVector<,,,>).GetGenericTypeDefinition(),
+            parsedTable.Users!.GetType().GetGenericTypeDefinition() == typeof(FlatSharp.Internal.FlatBufferIndexedVector<,>).GetGenericTypeDefinition(),
             "Parsed indexed vectors have a different implementation");
 
         foreach (string key in new[] { "1", "2", "3", "4", "5" })
