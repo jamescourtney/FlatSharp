@@ -1,4 +1,4 @@
-name: Mutation Testing
+name: Mutation Testing (Generated Code)
 
 on:
   push:
