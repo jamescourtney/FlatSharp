@@ -38,7 +38,7 @@ jobs:
           dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/FlatSharpEndToEndTests
     
     - name: Mutate
-      working-directory: src/Tests/Stryker/FlatsharpEndToEndTests
+      working-directory: src/Tests/FlatsharpEndToEndTests
       run: dotnet-stryker
       
     - name: Upload Results
