@@ -25,6 +25,7 @@ public class EnumSchemaModel : BaseSchemaModel
     private readonly Dictionary<string, EnumVal> nameValueMap;
     private readonly string underlyingType;
     private readonly IEnumerable<string>? documentation;
+    private readonly FlatBufferEnum @enum;
 
     private EnumSchemaModel(Schema.Schema schema, FlatBufferEnum @enum) : base(schema, @enum.Name, new FlatSharpAttributes(@enum.Attributes))
     {
@@ -37,6 +38,7 @@ public class EnumSchemaModel : BaseSchemaModel
         this.documentation = @enum.Documentation;
         this.DeclaringFile = @enum.DeclarationFile;
         this.FriendlyName = @enum.OriginalName ?? @enum.Name;
+        this.@enum = @enum;
 
         this.AttributeValidator.ExternValidator = _ => AttributeValidationResult.Valid;
     }
@@ -79,7 +81,14 @@ public class EnumSchemaModel : BaseSchemaModel
                     writer.AppendSummaryComment(item.Value.Documentation);
                 }
 
-                writer.AppendLine($"{item.Key} = {item.Value.Value},");
+                if (this.@enum.UnderlyingType.BaseType == BaseType.ULong)
+                {
+                    writer.AppendLine($"{item.Key} = {(ulong)item.Value.Value},");
+                }
+                else
+                {
+                    writer.AppendLine($"{item.Key} = {item.Value.Value},");
+                }
             }
         }
     }
