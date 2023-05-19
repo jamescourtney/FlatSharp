@@ -145,6 +145,11 @@ public abstract class RuntimeTypeModel : ITypeModel
 
     public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
+    public virtual CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        return new CodeGeneratedMethod($"return {CSharpHelpers.GetOKValidationResult()};");
+    }
+
     public virtual string? CreateExtraClasses() => null;
 
     public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
@@ -192,4 +197,20 @@ public abstract class RuntimeTypeModel : ITypeModel
     }
 
     public abstract string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName);
+
+    protected CodeGeneratedMethod GetFixedSizeItemValidateBody(
+        ValidateCodeGenContext context,
+        int fixedSize)
+    {
+        string body = $@"
+            if ({context.OffsetVariableName} + {fixedSize} >= {context.SpanVariableName}.Length)
+            {{
+                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.FixedSizeElementOverflows))};
+            }}
+
+            return {CSharpHelpers.GetOKValidationResult()};
+        ";
+
+        return new CodeGeneratedMethod(body);
+    }
 }

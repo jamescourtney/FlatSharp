@@ -148,6 +148,63 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
         return new CodeGeneratedMethod(body);
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        string loop = string.Empty;
+
+        if (!this.ItemTypeModel.SerializesInline)
+        {
+            loop = $@"
+                for (int i = 0; i < count; ++i)
+                {{
+                    uint itemOffset = {context.OffsetVariableName} + {CSharpHelpers.GetGlobalCompilableTypeName(typeof(ScalarSpanReader))}.{nameof(ScalarSpanReader.ReadUInt)}({context.SpanVariableName}.Slice({context.OffsetVariableName}));
+                    
+                    if (itemOffset < maxOffset)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.InvalidOffset))};
+                    }}
+
+                    if (itemOffset + {context.OffsetVariableName} >= {context.SpanVariableName}.Length)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.InvalidUOffset))};
+                    }}
+
+                    var innerResult = {context.GetValidateInvocation(this.ItemTypeModel.ClrType)};
+                    if (!innerResult.Success)
+                    {{
+                        return innerResult;
+                    }}
+
+                    {context.OffsetVariableName} += {this.PaddedMemberInlineSize};
+                }}
+            ";
+        }
+
+        string body = $@"
+            uint count = {CSharpHelpers.GetGlobalCompilableTypeName(typeof(ScalarSpanReader))}.{nameof(ScalarSpanReader.ReadUInt)}({context.SpanVariableName}.Slice({context.OffsetVariableName}));
+            
+            if (count > int.MaxValue)
+            {{
+                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VectorNumberOfItemsTooLarge))};
+            }}
+
+            {context.OffsetVariableName} += sizeof(int); // uoffset
+            // {context.OffsetVariableName} += SerializationHelpers.GetAlignmentError({context.OffsetVariableName}, {this.ItemTypeModel.PhysicalLayout[0].Alignment});
+
+            int maxOffset = {context.OffsetVariableName} + ((int)count * {this.PaddedMemberInlineSize});
+            if (maxOffset >= {context.SpanVariableName}.Length)
+            {{
+                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VectorOverflows))};
+            }}
+
+            {loop}
+
+            return {CSharpHelpers.GetOKValidationResult()};
+        ";
+
+        return new(body);
+    }
+
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         var type = this.ClrType;

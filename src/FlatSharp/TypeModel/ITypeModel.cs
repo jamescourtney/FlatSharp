@@ -156,6 +156,11 @@ public interface ITypeModel
     CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
     /// <summary>
+    /// Implements a method to validate the the buffer.
+    /// </summary>
+    CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context);
+
+    /// <summary>
     /// Creates any extra classes, if necessary.
     /// </summary>
     string? CreateExtraClasses();

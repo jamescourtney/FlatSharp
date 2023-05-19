@@ -34,4 +34,10 @@ public static class ValidationErrors
     public const string NullItemInVector = "The vector contained a null item.";
 
     public const string InvalidUOffset = "The UOffset was invalid. Expected to be at least 4.";
+
+    public const string FixedSizeElementOverflows = "Fixed-size element runs beyond the end of the buffer.";
+
+    public const string VectorNumberOfItemsTooLarge = "The number of vector items was too large.";
+
+    public const string VectorOverflows = "Vector elements run beyond the end of the buffer.";
 }

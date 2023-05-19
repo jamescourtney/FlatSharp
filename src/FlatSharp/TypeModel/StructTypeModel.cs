@@ -181,6 +181,11 @@ public class StructTypeModel : RuntimeTypeModel
         };
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        return base.GetFixedSizeItemValidateBody(context, this.inlineSize);
+    }
+
     public override void Initialize()
     {
         base.Initialize();

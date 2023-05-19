@@ -454,6 +454,7 @@ $@"
         }
 
         {
+            var parts = resolver.ResolveValidate(typeModel);
             string firstCheck = $@"
                 if (data.Length < 12)
                 {{
@@ -488,7 +489,7 @@ $@"
 
                     {firstCheck}
 
-                    return {CSharpHelpers.GetOKValidationResult()};
+                    return {parts.@namespace}.{parts.className}.{parts.methodName}(data, 0);
                 }}
             ";
 
@@ -636,9 +637,11 @@ $@"
         var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, resolver, this.options, this.typeModelContainer, allContextsMap);
         var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, resolver, this.typeModelContainer, this.options, allContextsMap);
         var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
+        var validateContext = new ValidateCodeGenContext("span", "offset", resolver, options, this.typeModelContainer, allContextsMap);
 
         CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
         CodeGeneratedMethod writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
+        CodeGeneratedMethod validateMethod = typeModel.CreateValidateMethodBody(validateContext);
 
         List<string> methods = new();
 
@@ -647,6 +650,9 @@ $@"
 
         methods.Add(this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext));
         methods.Add(writeMethod.ClassDefinition ?? string.Empty);
+
+        methods.Add(this.GenerateValidateMethod(typeModel, validateMethod, validateContext));
+        methods.Add(validateMethod.ClassDefinition ?? string.Empty);
 
         if (typeModel.IsParsingInvariant)
         {
@@ -751,9 +757,19 @@ $@"
         return rootNode;
     }
 
-    /// <summary>
-    /// Gets a method to serialize the given type with the given body.
-    /// </summary>
+    private string GenerateValidateMethod(ITypeModel typeModel, CodeGeneratedMethod method, ValidateCodeGenContext context)
+    {
+        string declaration =
+$@"
+            {method.GetMethodImplAttribute()}
+            internal static ValidationResult {context.MethodNameResolver.ResolveValidate(typeModel).methodName}(ReadOnlySpan<byte> {context.SpanVariableName}, int {context.OffsetVariableName})
+            {{
+                {method.MethodBody}
+            }}";
+
+        return declaration;
+    }
+
     private string GenerateGetMaxSizeMethod(ITypeModel typeModel, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
     {
         string tableFieldContextParameter = string.Empty;

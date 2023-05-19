@@ -160,6 +160,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
         return new CodeGeneratedMethod(body);
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        return base.GetFixedSizeItemValidateBody(context, this.inlineSize);
+    }
+
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         if (this.isExternal)
