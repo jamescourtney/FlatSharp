@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2023 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,20 @@ namespace FlatSharp.CodeGen;
 /// <summary>
 /// Code gen context for serialization methods.
 /// </summary>
-public record GetMaxSizeCodeGenContext
+public record ValidateCodeGenContext
 {
-    public GetMaxSizeCodeGenContext(
-        string valueVariableName,
-        string tableFieldContextVariableName,
+    public ValidateCodeGenContext(
+        string spanVariableName,
+        string offsetVariableName,
+        string outReasonVariableName,
         IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
-        this.ValueVariableName = valueVariableName;
-        this.TableFieldContextVariableName = tableFieldContextVariableName;
+        this.SpanVariableName = spanVariableName;
+        this.OffsetVariableName = offsetVariableName;
+        this.OutReasonVariableName = outReasonVariableName;
         this.MethodNameResolver = methodNameResolver;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
@@ -41,14 +43,19 @@ public record GetMaxSizeCodeGenContext
     }
 
     /// <summary>
-    /// The variable name of the current value to serialize.
+    /// The variable name of the Input Buffer.
     /// </summary>
-    public string ValueVariableName { get; init; }
+    public string SpanVariableName { get; init; }
 
     /// <summary>
     /// The variable name of the table field context. Optional.
     /// </summary>
-    public string TableFieldContextVariableName { get; init; }
+    public string OffsetVariableName { get; init; }
+
+    /// <summary>
+    /// The variable name of the "out string reason" argument.
+    /// </summary>
+    public string OutReasonVariableName { get; init; }
 
     /// <summary>
     /// The type model container.
@@ -73,18 +80,12 @@ public record GetMaxSizeCodeGenContext
     /// <summary>
     /// Gets a get max size invocation for the given type.
     /// </summary>
-    public string GetMaxSizeInvocation(Type type)
+    public string GetValidateInvocation(Type type)
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
-        var parts = this.MethodNameResolver.ResolveGetMaxSize(typeModel);
-        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.ValueVariableName}");
-
-        if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Validate))
-        {
-            sb.Append($", {this.TableFieldContextVariableName}");
-        }
-
+        var parts = this.MethodNameResolver.ResolveValidate(typeModel);
+        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.SpanVariableName}, {this.OffsetVariableName}, out {this.OutReasonVariableName}");
         sb.Append(")");
         return sb.ToString();
     }

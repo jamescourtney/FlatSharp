@@ -145,4 +145,28 @@ internal static class CSharpHelpers
                  {{typeof(FlatSharpInternal).GetGlobalCompilableTypeName()}}.AssertSizeOf<{{globalName}}>({{size}});
                 """;
     }
+
+    internal static string GetValidationResultError(string validationErrorFieldName, string? field = null)
+    {
+        if (string.IsNullOrEmpty(field))
+        {
+            field = "string.Empty";
+        }
+        else
+        {
+            field = $"\"{field}\"";
+        }
+
+        return $@"new {GetCompilableTypeName(typeof(ValidationResult))}()
+            {{
+                {nameof(ValidationResult.Message)} = {GetCompilableTypeName(typeof(ValidationErrors))}.{validationErrorFieldName},
+                {nameof(ValidationResult.Success)} = false,
+                {nameof(ValidationResult.Field)} = {field},
+            }}";
+    }
+
+    internal static string GetOKValidationResult()
+    {
+        return $"{GetCompilableTypeName(typeof(ValidationResult))}.{nameof(ValidationResult.OK)}";
+    }
 }

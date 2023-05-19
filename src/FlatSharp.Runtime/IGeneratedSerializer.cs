@@ -56,6 +56,11 @@ public interface IGeneratedSerializer<T>
     int GetMaxSize(T item);
 
     /// <summary>
+    /// Validates the given input, performing range and alignment checks.
+    /// </summary>
+    ValidationResult Validate<TInputBuffer>(TInputBuffer input) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
     /// </summary>
     T ParseLazy<TInputBuffer>(

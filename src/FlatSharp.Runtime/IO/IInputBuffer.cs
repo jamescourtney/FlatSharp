@@ -114,6 +114,12 @@ public interface IInputBuffer
     Memory<byte> GetMemory();
 
     /// <summary>
+    /// Invokes the Validate methods on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows
+    /// passing generic parameters.
+    /// </summary>
+    ValidationResult InvokeValidate<TItem>(IGeneratedSerializer<TItem> serializer);
+
+    /// <summary>
     /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
     /// generic parameters.
     /// </summary>

@@ -30,8 +30,9 @@ public enum TableFieldContextRequirements
     Serialize = 1,
     Parse = 2,
     GetMaxSize = 4,
+    Validate = 8,
 
-    All = Serialize | Parse | GetMaxSize,
+    All = Serialize | Parse | GetMaxSize | Validate,
 }
 
 /// <summary>

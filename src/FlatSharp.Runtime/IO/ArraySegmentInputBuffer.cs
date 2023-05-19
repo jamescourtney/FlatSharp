@@ -135,6 +135,10 @@ public struct ArraySegmentInputBuffer : IInputBuffer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValidationResult InvokeValidate<TItem>(IGeneratedSerializer<TItem> serializer)
+        => serializer.Validate(this);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
         => serializer.ParseLazy(this, in arguments);
 

@@ -453,6 +453,48 @@ $@"
             bodyParts.Add(methodText);
         }
 
+        {
+            string firstCheck = $@"
+                if (data.Length < 12)
+                {{
+                    return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.BufferLessThanMinLength))};
+                }}
+            ";
+
+            if (typeModel.TryGetFileIdentifier(out string? fileId))
+            {
+                firstCheck = $@"
+                    if (data.Length < 16)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.BufferLessThanMinLength))};
+                    }}
+                    
+                    if (data[7] != {(byte)fileId[3]} ||
+                        data[6] != {(byte)fileId[2]} ||
+                        data[5] != {(byte)fileId[1]} ||
+                        data[4] != {(byte)fileId[0]})
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.WrongFileIdentifier))};
+                    }}
+                ";
+            }
+
+            string methodText =
+            $@"
+                public ValidationResult Validate<TInputBuffer>(TInputBuffer buffer)
+                    where TInputBuffer : IInputBuffer
+                {{
+                    ReadOnlySpan<byte> data = buffer.GetReadOnlySpan();
+
+                    {firstCheck}
+
+                    return {CSharpHelpers.GetOKValidationResult()};
+                }}
+            ";
+
+            bodyParts.Add(methodText);
+        }
+
         var pairs = new[]
         {
             (nameof(IGeneratedSerializer<bool>.ParseGreedy), FlatBufferDeserializationOption.Greedy),
@@ -514,6 +556,12 @@ $@"
                     this.ParseGreedyMutable<ReadOnlyMemoryInputBuffer>(default!, default);
                     this.ParseGreedyMutable<ArrayInputBuffer>(default!, default);
                     this.ParseGreedyMutable<ArraySegmentInputBuffer>(default!, default);
+
+                    this.Validate<IInputBuffer>(default!);
+                    this.Validate<MemoryInputBuffer>(default!);
+                    this.Validate<ReadOnlyMemoryInputBuffer>(default!);
+                    this.Validate<ArrayInputBuffer>(default!);
+                    this.Validate<ArraySegmentInputBuffer>(default!);
 
                     throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                 }}

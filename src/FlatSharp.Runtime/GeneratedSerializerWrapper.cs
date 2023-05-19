@@ -94,6 +94,16 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         };
     }
 
+    public ValidationResult Validate<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
+    {
+        return this.innerSerializer.Validate(buffer);
+    }
+
+    ValidationResult ISerializer.Validate<TInputBuffer>(TInputBuffer buffer)
+    {
+        return this.Validate(buffer);
+    }
+
     public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
     {
         return this.Parse(buffer, this.option);

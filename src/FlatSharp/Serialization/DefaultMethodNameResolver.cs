@@ -47,6 +47,11 @@ public class DefaultMethodNameResolver : IMethodNameResolver
         return (this.GetGlobalNamespace(type), HelperClassName, "GetMaxSize");
     }
 
+    public (string @namespace, string className, string methodName) ResolveValidate(ITypeModel type)
+    {
+        return (this.GetGlobalNamespace(type), HelperClassName, "Validate");
+    }
+
     public (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, ITypeModel type)
     {
         if (type.IsParsingInvariant)

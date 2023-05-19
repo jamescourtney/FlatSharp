@@ -29,6 +29,8 @@ public interface IMethodNameResolver
 
     (string @namespace, string className, string methodName) ResolveGetMaxSize(ITypeModel type);
 
+    (string @namespace, string className, string methodName) ResolveValidate(ITypeModel type);
+
     (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, ITypeModel type);
 
     (string @namespace, string className, string methodName) ResolveSerialize(ITypeModel type);

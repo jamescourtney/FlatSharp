@@ -48,6 +48,11 @@ public interface ISerializer
     int GetMaxSize(object item);
 
     /// <summary>
+    /// Validates the given buffer, performing range and alignment checks.
+    /// </summary>
+    ValidationResult Validate<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+
+    /// <summary>
     /// Parses the given buffer as an instance of this ISerializer's type.
     /// </summary>
     /// <param name="buffer">The input buffer.</param>
@@ -84,6 +89,11 @@ public interface ISerializer<T>
     /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
     /// </summary>
     int GetMaxSize(T item);
+
+    /// <summary>
+    /// Validates the given buffer, performing range, alignment, and length checks.
+    /// </summary>
+    ValidationResult Validate<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
 
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/>.
