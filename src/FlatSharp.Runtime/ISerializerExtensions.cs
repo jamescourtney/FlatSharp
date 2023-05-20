@@ -218,4 +218,56 @@ public static class ISerializerExtensions
 
         return bytesWritten;
     }
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate(this ISerializer serializer, byte[] buffer)
+        => serializer.Validate(new ArrayInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate<T>(this ISerializer<T> serializer, byte[] buffer)
+        where T : class
+        => serializer.Validate(new ArrayInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate(this ISerializer serializer, ArraySegment<byte> buffer)
+        => serializer.Validate(new ArraySegmentInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer)
+        where T : class
+        => serializer.Validate(new ArraySegmentInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate(this ISerializer serializer, Memory<byte> buffer)
+        => serializer.Validate(new MemoryInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate<T>(this ISerializer<T> serializer, Memory<byte> buffer)
+        where T : class
+        => serializer.Validate(new MemoryInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate(this ISerializer serializer, ReadOnlyMemory<byte> buffer)
+        => serializer.Validate(new ReadOnlyMemoryInputBuffer(buffer));
+
+    /// <summary>
+    /// Validates the given buffer.
+    /// </summary>
+    public static ValidationResult Validate<T>(this ISerializer<T> serializer, ReadOnlyMemory<byte> buffer)
+        where T : class
+        => serializer.Validate(new ReadOnlyMemoryInputBuffer(buffer));
 }

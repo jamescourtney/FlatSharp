@@ -149,6 +149,11 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
         };
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        return base.GetFixedSizeItemValidateBody(context, this.size);
+    }
+
     public override string FormatDefaultValueAsLiteral(object? defaultValue)
     {
         if (defaultValue is not null)

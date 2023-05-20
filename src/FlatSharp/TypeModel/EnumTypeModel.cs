@@ -105,6 +105,15 @@ public class EnumTypeModel : RuntimeTypeModel
         };
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        string body = $@"
+            return {context.GetValidateInvocation(this.underlyingTypeModel.ClrType)};
+        ";
+
+        return new CodeGeneratedMethod(body);
+    }
+
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         Type underlyingType = this.underlyingTypeModel.ClrType;

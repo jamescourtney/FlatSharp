@@ -1,0 +1,20 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_valueStruct";
+attribute "fs_fileId";
+
+namespace FlatSharpEndToEndTests.Validation;
+
+struct ValueStruct
+{
+    value : ulong;
+}
+
+table ValidationTable (fs_fileId:"ABCD", fs_serializer:"Lazy")
+{
+    single_string : string;
+    vector_string : [ string ];
+
+    single_value_struct : ValueStruct;
+    vector_value_struct : [ ValueStruct ];
+}

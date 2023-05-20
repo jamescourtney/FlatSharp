@@ -158,6 +158,39 @@ public class StringTypeModel : RuntimeTypeModel
         };
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        string body = $@"
+            if (!{context.InputBufferVariableName}.TryFollowUOffset(ref {context.OffsetVariableName}, out ValidationResult error))
+            {{
+                return error;
+            }}
+            
+            uint count = {context.InputBufferVariableName}.ReadUInt({context.OffsetVariableName});
+            if (count > int.MaxValue)
+            {{
+                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.String_TooLong))};
+            }}
+
+            {context.OffsetVariableName} += sizeof(int); // count
+
+            int maxOffset = {context.OffsetVariableName} + (int)count;
+            if (maxOffset >= {context.InputBufferVariableName}.Length)
+            {{
+                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.String_Overflows))};
+            }}
+
+            if ({context.InputBufferVariableName}.ReadByte(maxOffset) != 0)
+            {{
+                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.NoNullTerminator))};
+            }}
+
+            return {CSharpHelpers.GetOKValidationResult()};
+        ";
+
+        return new(body);
+    }
+
     public override bool TryGetSpanComparerType(out Type comparerType)
     {
         comparerType = typeof(StringSpanComparer);

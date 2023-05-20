@@ -157,16 +157,15 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
             loop = $@"
                 for (int i = 0; i < count; ++i)
                 {{
-                    uint itemOffset = {context.OffsetVariableName} + {CSharpHelpers.GetGlobalCompilableTypeName(typeof(ScalarSpanReader))}.{nameof(ScalarSpanReader.ReadUInt)}({context.SpanVariableName}.Slice({context.OffsetVariableName}));
-                    
-                    if (itemOffset < maxOffset)
+                    if ({context.OffsetVariableName} >= maxOffset)
                     {{
                         return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.InvalidOffset))};
                     }}
 
-                    if (itemOffset + {context.OffsetVariableName} >= {context.SpanVariableName}.Length)
+                    int itemOffset = {context.OffsetVariableName};
+                    if (!{context.InputBufferVariableName}.TryFollowUOffset(ref itemOffset, out error))
                     {{
-                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.InvalidUOffset))};
+                        return error;
                     }}
 
                     var innerResult = {context.GetValidateInvocation(this.ItemTypeModel.ClrType)};
@@ -181,18 +180,23 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
         }
 
         string body = $@"
-            uint count = {CSharpHelpers.GetGlobalCompilableTypeName(typeof(ScalarSpanReader))}.{nameof(ScalarSpanReader.ReadUInt)}({context.SpanVariableName}.Slice({context.OffsetVariableName}));
+            
+            if (!{context.InputBufferVariableName}.TryFollowUOffset(ref {context.OffsetVariableName}, out ValidationResult error))
+            {{
+                return error;
+            }}
+            
+            uint count = {context.InputBufferVariableName}.ReadUInt({context.OffsetVariableName});
             
             if (count > int.MaxValue)
             {{
                 return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VectorNumberOfItemsTooLarge))};
             }}
 
-            {context.OffsetVariableName} += sizeof(int); // uoffset
-            // {context.OffsetVariableName} += SerializationHelpers.GetAlignmentError({context.OffsetVariableName}, {this.ItemTypeModel.PhysicalLayout[0].Alignment});
+            {context.OffsetVariableName} += sizeof(int); // count
 
             int maxOffset = {context.OffsetVariableName} + ((int)count * {this.PaddedMemberInlineSize});
-            if (maxOffset >= {context.SpanVariableName}.Length)
+            if (maxOffset >= {context.InputBufferVariableName}.Length)
             {{
                 return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VectorOverflows))};
             }}

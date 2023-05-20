@@ -802,6 +802,77 @@ $@"
         };
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        List<string> parts = new();
+
+        foreach (var field in this.IndexToMemberMap)
+        {
+            int index = field.Key;
+            TableMemberModel member = field.Value;
+
+            var itemContext = context with
+            {
+                OffsetVariableName = $"fieldOffset + {context.OffsetVariableName}"
+            };
+
+
+            parts.Add($@"
+                fieldOffset = vtable.OffsetOf({context.InputBufferVariableName}, {index});
+                if (fieldOffset != 0)
+                {{
+                    if (fieldOffset + {member.ItemTypeModel.PhysicalLayout[0].InlineSize} > tableLength)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VTable_FieldBeyondTableBoundary))};
+                    }}
+
+                    result = {itemContext.GetValidateInvocation(member.ItemTypeModel.ClrType)};
+                }}
+            ");
+
+            if (member.IsRequired)
+            {
+                // If the item is required, then validate that it exists
+                parts.Add($@"
+                    else
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.Table_MissingRequiredField))};
+                    }}
+                ");
+            }
+
+            parts.Add($@"
+                if (!result.Success)
+                {{
+                    return result;
+                }}
+            ");
+        }
+
+        if (parts.Count > 0)
+        {
+            parts.Insert(0, "\r\nint fieldOffset;\r\n");
+        }
+
+        string body = $@"
+            if (!ValidationHelpers.TryFollowUOffset({context.InputBufferVariableName}, ref {context.OffsetVariableName}, out var result))
+            {{
+                return result;
+            }}
+
+            if (!ValidationHelpers.TryValidateVTable({context.InputBufferVariableName}, {context.OffsetVariableName}, out var vtable, out ushort tableLength, out result))
+            {{
+                return result;
+            }}
+
+            {string.Join("\r\n", parts)}
+
+            return {CSharpHelpers.GetOKValidationResult()};
+        ";
+
+        return new(body);
+    }
+
     public override string? CreateExtraClasses()
     {
         List<string> tableContextInitializations = new();

@@ -26,15 +26,17 @@ public struct VTableGeneric : IVTable
 
     public int MaxSupportedIndex => 255;
 
+    public nuint Count => this.count;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTableGeneric item)
+    public static void Create<TInputBuffer>(TInputBuffer buffer, int tableOffset, out VTableGeneric item)
         where TInputBuffer : IInputBuffer
     {
         checked
         {
             item = new VTableGeneric();
 
-            buffer.InitializeVTable(offset, out item.offset, out item.count, out _);
+            buffer.InitializeVTable(tableOffset, out item.offset, out item.count, out _);
             item.offset += 2 * sizeof(ushort); // skip past vtable length and table length
         }
     }

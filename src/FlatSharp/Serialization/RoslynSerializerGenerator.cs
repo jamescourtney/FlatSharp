@@ -456,7 +456,7 @@ $@"
         {
             var parts = resolver.ResolveValidate(typeModel);
             string firstCheck = $@"
-                if (data.Length < 12)
+                if (buffer.Length < 12)
                 {{
                     return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.BufferLessThanMinLength))};
                 }}
@@ -465,15 +465,15 @@ $@"
             if (typeModel.TryGetFileIdentifier(out string? fileId))
             {
                 firstCheck = $@"
-                    if (data.Length < 16)
+                    if (buffer.Length < 16)
                     {{
                         return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.BufferLessThanMinLength))};
                     }}
                     
-                    if (data[7] != {(byte)fileId[3]} ||
-                        data[6] != {(byte)fileId[2]} ||
-                        data[5] != {(byte)fileId[1]} ||
-                        data[4] != {(byte)fileId[0]})
+                    if (buffer.ReadByte(7) != {(byte)fileId[3]} ||
+                        buffer.ReadByte(6) != {(byte)fileId[2]} ||
+                        buffer.ReadByte(5) != {(byte)fileId[1]} ||
+                        buffer.ReadByte(4) != {(byte)fileId[0]})
                     {{
                         return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.WrongFileIdentifier))};
                     }}
@@ -485,11 +485,9 @@ $@"
                 public ValidationResult Validate<TInputBuffer>(TInputBuffer buffer)
                     where TInputBuffer : IInputBuffer
                 {{
-                    ReadOnlySpan<byte> data = buffer.GetReadOnlySpan();
-
                     {firstCheck}
 
-                    return {parts.@namespace}.{parts.className}.{parts.methodName}(data, 0);
+                    return {parts.@namespace}.{parts.className}.{parts.methodName}(buffer, 0);
                 }}
             ";
 
@@ -760,12 +758,14 @@ $@"
     private string GenerateValidateMethod(ITypeModel typeModel, CodeGeneratedMethod method, ValidateCodeGenContext context)
     {
         string declaration =
-$@"
+        $@"
             {method.GetMethodImplAttribute()}
-            internal static ValidationResult {context.MethodNameResolver.ResolveValidate(typeModel).methodName}(ReadOnlySpan<byte> {context.SpanVariableName}, int {context.OffsetVariableName})
+            internal static ValidationResult {context.MethodNameResolver.ResolveValidate(typeModel).methodName}<TInputBuffer>(TInputBuffer {context.InputBufferVariableName}, int {context.OffsetVariableName})
+                where TInputBuffer : IInputBuffer
             {{
                 {method.MethodBody}
-            }}";
+            }}
+        ";
 
         return declaration;
     }

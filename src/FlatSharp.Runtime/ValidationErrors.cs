@@ -39,5 +39,19 @@ public static class ValidationErrors
 
     public const string VectorNumberOfItemsTooLarge = "The number of vector items was too large.";
 
+    public const string String_TooLong = "A string was too large.";
+
+    public const string String_Overflows = "A string overflows the buffer";
+
     public const string VectorOverflows = "Vector elements run beyond the end of the buffer.";
+
+    public const string VTable_OddLength = "VTable had odd length. VTables should always have even lengths.";
+
+    public const string VTable_TableLengthTooShort = "Table length too short. Tables must have at least length 4.";
+
+    public const string VTable_TooShort = "VTables must be at least 4 bytes.";
+
+    public const string VTable_FieldBeyondTableBoundary = "Table field indexed past table boundary";
+
+    public const string Table_MissingRequiredField = "Table missing required field";
 }

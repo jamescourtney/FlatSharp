@@ -32,7 +32,7 @@ public record ValidateCodeGenContext
         TypeModelContainer typeModelContainer,
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
-        this.SpanVariableName = spanVariableName;
+        this.InputBufferVariableName = spanVariableName;
         this.OffsetVariableName = offsetVariableName;
         this.MethodNameResolver = methodNameResolver;
         this.Options = options;
@@ -43,7 +43,7 @@ public record ValidateCodeGenContext
     /// <summary>
     /// The variable name of the Input Buffer.
     /// </summary>
-    public string SpanVariableName { get; init; }
+    public string InputBufferVariableName { get; init; }
 
     /// <summary>
     /// The variable name of the table field context. Optional.
@@ -78,7 +78,7 @@ public record ValidateCodeGenContext
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
         var parts = this.MethodNameResolver.ResolveValidate(typeModel);
-        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.SpanVariableName}, {this.OffsetVariableName}");
+        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.InputBufferVariableName}, {this.OffsetVariableName}");
         sb.Append(")");
         return sb.ToString();
     }
