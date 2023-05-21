@@ -813,9 +813,23 @@ $@"
 
             var itemContext = context with
             {
-                OffsetVariableName = $"fieldOffset + {context.OffsetVariableName}"
+                OffsetVariableName = "fieldOffset"
             };
 
+            // Add a check to follow a uoffset and ensure it points beyond the boundaries of the table.
+            string followCheck = string.Empty;
+            if (!member.ItemTypeModel.SerializesInline)
+            {
+                followCheck = $@"
+                    {{
+                        int temp = fieldOffset;
+                        if ({context.InputBufferVariableName}.TryFollowUOffset(ref temp, out result) && temp < {context.OffsetVariableName} + tableLength)
+                        {{
+                            return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.UOffset_ContainedWithinParentObject))};
+                        }}
+                    }}
+                ";
+            }
 
             parts.Add($@"
                 fieldOffset = vtable.OffsetOf({context.InputBufferVariableName}, {index});
@@ -825,6 +839,10 @@ $@"
                     {{
                         return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VTable_FieldBeyondTableBoundary))};
                     }}
+
+                    fieldOffset += {context.OffsetVariableName};
+
+                    {followCheck}
 
                     result = {itemContext.GetValidateInvocation(member.ItemTypeModel.ClrType)};
                 }}

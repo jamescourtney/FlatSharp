@@ -29,9 +29,9 @@ public static class ValidationErrors
 
     public const string InvalidLength = "The length points beyond the end of the buffer.";
 
-    public const string NoNullTerminator = "The string was not null-terminated.";
+    public const string UOffset_ContainedWithinParentObject = "The UOffset is not large enough to escape the parent object.";
 
-    public const string NullItemInVector = "The vector contained a null item.";
+    public const string NoNullTerminator = "The string was not null-terminated.";
 
     public const string InvalidUOffset = "The UOffset was invalid. Expected to be at least 4.";
 

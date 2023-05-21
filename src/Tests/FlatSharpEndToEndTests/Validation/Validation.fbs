@@ -10,7 +10,7 @@ struct ValueStruct
     value : ulong;
 }
 
-table ValidationTable (fs_fileId:"ABCD", fs_serializer:"Lazy")
+table ValidationTable (fs_serializer:"Lazy")
 {
     single_string : string;
     vector_string : [ string ];
@@ -18,3 +18,6 @@ table ValidationTable (fs_fileId:"ABCD", fs_serializer:"Lazy")
     single_value_struct : ValueStruct;
     vector_value_struct : [ ValueStruct ];
 }
+
+root_type ValidationTable;
+file_identifier "ABCD";

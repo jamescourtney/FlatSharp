@@ -157,15 +157,15 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
             loop = $@"
                 for (int i = 0; i < count; ++i)
                 {{
-                    if ({context.OffsetVariableName} >= maxOffset)
-                    {{
-                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.InvalidOffset))};
-                    }}
-
                     int itemOffset = {context.OffsetVariableName};
                     if (!{context.InputBufferVariableName}.TryFollowUOffset(ref itemOffset, out error))
                     {{
                         return error;
+                    }}
+
+                    if (itemOffset < maxOffset)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.UOffset_ContainedWithinParentObject))};
                     }}
 
                     var innerResult = {context.GetValidateInvocation(this.ItemTypeModel.ClrType)};

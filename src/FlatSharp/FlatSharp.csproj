@@ -7,9 +7,6 @@
         <RootNamespace>FlatSharp</RootNamespace>
         <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
         <Nullable>annotations</Nullable>
-
-        <!-- Suppress warnings about explicit references to .net standard. -->
-        <NoWarn>NETSDK1023;NU5104</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
