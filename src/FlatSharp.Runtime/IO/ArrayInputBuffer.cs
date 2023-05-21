@@ -25,6 +25,7 @@ public struct ArrayInputBuffer : IInputBuffer
 {
     private readonly byte[] memory;
 
+    [DebuggerStepThrough]
     public ArrayInputBuffer(byte[] buffer)
     {
         this.memory = buffer;

@@ -25,6 +25,7 @@ public struct ArraySegmentInputBuffer : IInputBuffer
 {
     private readonly ArraySegmentPointer pointer;
 
+    [DebuggerStepThrough]
     public ArraySegmentInputBuffer(ArraySegment<byte> memory)
     {
         this.pointer = new ArraySegmentPointer { segment = memory };

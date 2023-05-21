@@ -31,6 +31,7 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
 
     private readonly MemoryPointer pointer;
 
+    [DebuggerStepThrough]
     public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory, bool isPinned = false)
     {
         this.pointer = new MemoryPointer { memory = memory, isPinned = isPinned };
