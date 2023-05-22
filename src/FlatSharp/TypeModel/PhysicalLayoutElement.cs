@@ -24,13 +24,16 @@ namespace FlatSharp.TypeModel;
 /// </summary>
 public class PhysicalLayoutElement
 {
-    public PhysicalLayoutElement(int size, int alignment)
+    public PhysicalLayoutElement(int size, int alignment, bool isUOffset)
     {
         this.InlineSize = size;
         this.Alignment = alignment;
+        this.IsUOffset = isUOffset;
     }
 
     public int InlineSize { get; }
 
     public int Alignment { get; }
+
+    public bool IsUOffset { get; }
 }

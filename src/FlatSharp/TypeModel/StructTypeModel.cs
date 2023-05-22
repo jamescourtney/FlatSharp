@@ -46,7 +46,7 @@ public class StructTypeModel : RuntimeTypeModel
     /// Layout of the vtable.
     /// </summary>
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
-        new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.inlineSize, this.maxAlignment) }.ToImmutableArray();
+        new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.inlineSize, this.maxAlignment, false) }.ToImmutableArray();
 
     /// <summary>
     /// Structs are composed of scalars.

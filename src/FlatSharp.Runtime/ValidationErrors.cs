@@ -53,5 +53,7 @@ public static class ValidationErrors
 
     public const string VTable_FieldBeyondTableBoundary = "Table field indexed past table boundary";
 
+    public const string VTable_MultiPart_NotAllPresent = "Multi-part VTable table field was only partially present.";
+
     public const string Table_MissingRequiredField = "Table missing required field";
 }

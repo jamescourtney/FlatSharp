@@ -635,7 +635,7 @@ $@"
         var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, resolver, this.options, this.typeModelContainer, allContextsMap);
         var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, resolver, this.typeModelContainer, this.options, allContextsMap);
         var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
-        var validateContext = new ValidateCodeGenContext("span", "offset", resolver, options, this.typeModelContainer, allContextsMap);
+        var validateContext = new ValidateCodeGenContext("span", "offset", isOffsetByRef, resolver, options, this.typeModelContainer, allContextsMap);
 
         CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
         CodeGeneratedMethod writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
@@ -760,7 +760,9 @@ $@"
         string declaration =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static ValidationResult {context.MethodNameResolver.ResolveValidate(typeModel).methodName}<TInputBuffer>(TInputBuffer {context.InputBufferVariableName}, int {context.OffsetVariableName})
+            internal static ValidationResult {context.MethodNameResolver.ResolveValidate(typeModel).methodName}<TInputBuffer>(
+                TInputBuffer {context.InputBufferVariableName},
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName})
                 where TInputBuffer : IInputBuffer
             {{
                 {method.MethodBody}

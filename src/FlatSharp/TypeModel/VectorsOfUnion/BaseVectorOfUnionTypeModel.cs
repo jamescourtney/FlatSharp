@@ -39,8 +39,8 @@ public abstract class BaseVectorOfUnionTypeModel : RuntimeTypeModel
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
         new PhysicalLayoutElement[]
         {
-            new PhysicalLayoutElement(sizeof(uint), sizeof(uint)),  // discriminator vector
-            new PhysicalLayoutElement(sizeof(uint), sizeof(uint)),  // offset vector
+            new PhysicalLayoutElement(sizeof(uint), sizeof(uint), true),  // discriminator vector
+            new PhysicalLayoutElement(sizeof(uint), sizeof(uint), true),  // offset vector
         }.ToImmutableArray();
 
     /// <summary>

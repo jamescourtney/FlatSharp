@@ -57,7 +57,7 @@ public class TableTypeModel : RuntimeTypeModel
     /// <summary>
     /// Layout when in a vtable.
     /// </summary>
-    public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
+    public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint), true) }.ToImmutableArray();
 
     /// <summary>
     /// Tables can have vectors and other arbitrary data.
@@ -808,68 +808,7 @@ $@"
 
         foreach (var field in this.IndexToMemberMap)
         {
-            int index = field.Key;
-            TableMemberModel member = field.Value;
-
-            var itemContext = context with
-            {
-                OffsetVariableName = "fieldOffset"
-            };
-
-            // Add a check to follow a uoffset and ensure it points beyond the boundaries of the table.
-            string followCheck = string.Empty;
-            if (!member.ItemTypeModel.SerializesInline)
-            {
-                followCheck = $@"
-                    {{
-                        int temp = fieldOffset;
-                        if ({context.InputBufferVariableName}.TryFollowUOffset(ref temp, out result) && temp < {context.OffsetVariableName} + tableLength)
-                        {{
-                            return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.UOffset_ContainedWithinParentObject))};
-                        }}
-                    }}
-                ";
-            }
-
-            parts.Add($@"
-                fieldOffset = vtable.OffsetOf({context.InputBufferVariableName}, {index});
-                if (fieldOffset != 0)
-                {{
-                    if (fieldOffset + {member.ItemTypeModel.PhysicalLayout[0].InlineSize} > tableLength)
-                    {{
-                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VTable_FieldBeyondTableBoundary))};
-                    }}
-
-                    fieldOffset += {context.OffsetVariableName};
-
-                    {followCheck}
-
-                    result = {itemContext.GetValidateInvocation(member.ItemTypeModel.ClrType)};
-                }}
-            ");
-
-            if (member.IsRequired)
-            {
-                // If the item is required, then validate that it exists
-                parts.Add($@"
-                    else
-                    {{
-                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.Table_MissingRequiredField))};
-                    }}
-                ");
-            }
-
-            parts.Add($@"
-                if (!result.Success)
-                {{
-                    return result;
-                }}
-            ");
-        }
-
-        if (parts.Count > 0)
-        {
-            parts.Insert(0, "\r\nint fieldOffset;\r\n");
+            this.AddSingleWidthVTableValidateBlock(parts, field.Key, field.Value, context);
         }
 
         string body = $@"
@@ -889,6 +828,148 @@ $@"
         ";
 
         return new(body);
+    }
+
+    private void AddSingleWidthVTableValidateBlock(List<string> blocks, int index, TableMemberModel member, ValidateCodeGenContext context)
+    {
+        ITypeModel itemTypeModel = member.ItemTypeModel;
+
+        var itemContext = context with
+        {
+            OffsetVariableName = "fieldOffset",
+            IsOffsetByRef = itemTypeModel.PhysicalLayout.Length > 1,
+        };
+
+        List<string> blockParts = new();
+        List<string> fieldOffsets = new();
+
+        for (int i = 0; i < itemTypeModel.PhysicalLayout.Length; ++i)
+        {
+            PhysicalLayoutElement layoutElement = itemTypeModel.PhysicalLayout[i];
+
+            fieldOffsets.Add($"fieldOffset{i}");
+
+            string followCheck = string.Empty;
+            if (layoutElement.IsUOffset)
+            {
+                // ensure the uoffset does not point to a location within the table we're currently in.
+                followCheck = $@"
+                    int temp = fieldOffset{i};
+                    if ({context.InputBufferVariableName}.TryFollowUOffset(ref temp, out result) && temp < {context.OffsetVariableName} + tableLength)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.UOffset_ContainedWithinParentObject))};
+                    }}
+                ";
+            }
+
+            blockParts.Add($@"
+            int fieldOffset{i} = vtable.OffsetOf({context.InputBufferVariableName}, {index});
+            {{
+                if (fieldOffset{i} != 0)
+                {{
+                    anyPart = true;
+                    if (fieldOffset{i} + {layoutElement.InlineSize} > tableLength)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VTable_FieldBeyondTableBoundary))};
+                    }}
+
+                    fieldOffset{i} += {context.OffsetVariableName};
+
+                    {followCheck}
+                }}
+                else
+                {{
+                    allParts = false;
+                }}
+            }}
+            ");
+        }
+
+        blocks.Add($@"
+            {{
+                bool allParts = true;
+                bool anyPart = false;
+
+                {string.Join("\r\n", blockParts)}
+
+                if (allParts != anyPart)
+                {{
+                    return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VTable_MultiPart_NotAllPresent))};
+                }}
+
+                if (allParts)
+                {{
+                    var fieldOffset = ({string.Join(",", fieldOffsets)});
+                    result = {itemContext.GetValidateInvocation(member.ItemTypeModel.ClrType)};
+                }}
+
+                if (!result.Success)
+                {{
+                    return result;
+                }}
+            }}
+        ");
+    }
+
+    private void AddMultiWidthVTableValidateBlock(List<string> blocks, int index, TableMemberModel member, ValidateCodeGenContext context)
+    {
+        ITypeModel itemTypeModel = member.ItemTypeModel;
+        FlatSharpInternal.Assert(itemTypeModel.PhysicalLayout.Length > 1, "Expected multi-width physical layout.");
+        FlatSharpInternal.Assert(!itemTypeModel.SerializesInline, "Did not expect inline serialization");
+
+        var itemContext = context with
+        {
+            OffsetVariableName = "fieldOffsets",
+            IsOffsetByRef = true,
+        };
+
+        // Add a check to follow a uoffset and ensure it points beyond the boundaries of the table.
+        string followCheck = $@"
+            {{
+                int temp = fieldOffset;
+                if ({context.InputBufferVariableName}.TryFollowUOffset(ref temp, out result) && temp < {context.OffsetVariableName} + tableLength)
+                {{
+                    return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.UOffset_ContainedWithinParentObject))};
+                }}
+            }}
+        ";
+
+        blocks.Add($@"
+            {{
+                int fieldOffset = vtable.OffsetOf({context.InputBufferVariableName}, {index});
+                if (fieldOffset != 0)
+                {{
+                    if (fieldOffset + {member.ItemTypeModel.PhysicalLayout[0].InlineSize} > tableLength)
+                    {{
+                        return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VTable_FieldBeyondTableBoundary))};
+                    }}
+
+                    fieldOffset += {context.OffsetVariableName};
+
+                    {followCheck}
+
+                    result = {itemContext.GetValidateInvocation(member.ItemTypeModel.ClrType)};
+                }}
+            }}
+        ");
+
+        if (member.IsRequired)
+        {
+            // If the item is required, then validate that it exists
+            blocks.Add($@"
+                else
+                {{
+                    return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.Table_MissingRequiredField))};
+                }}
+            ");
+        }
+
+        blocks.Add($@"
+            if (!result.Success)
+            {{
+                return result;
+            }}
+        ");
     }
 
     public override string? CreateExtraClasses()

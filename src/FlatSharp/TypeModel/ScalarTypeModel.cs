@@ -41,7 +41,7 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     /// <summary>
     /// Layout when in a vtable.
     /// </summary>
-    public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.size, this.size) }.ToImmutableArray();
+    public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.size, this.size, false) }.ToImmutableArray();
 
     /// <summary>
     /// Scalars are not sensitive to deserialization mode.

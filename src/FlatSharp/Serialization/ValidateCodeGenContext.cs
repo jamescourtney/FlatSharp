@@ -27,6 +27,7 @@ public record ValidateCodeGenContext
     public ValidateCodeGenContext(
         string spanVariableName,
         string offsetVariableName,
+        bool isOffsetByRef,
         IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
@@ -34,6 +35,7 @@ public record ValidateCodeGenContext
     {
         this.InputBufferVariableName = spanVariableName;
         this.OffsetVariableName = offsetVariableName;
+        this.IsOffsetByRef = isOffsetByRef;
         this.MethodNameResolver = methodNameResolver;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
@@ -49,6 +51,11 @@ public record ValidateCodeGenContext
     /// The variable name of the table field context. Optional.
     /// </summary>
     public string OffsetVariableName { get; init; }
+
+    /// <summary>
+    /// Indicates if the offset is passed by ref.
+    /// </summary>
+    public bool IsOffsetByRef { get; init; }
 
     /// <summary>
     /// The type model container.
@@ -77,8 +84,14 @@ public record ValidateCodeGenContext
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
+        string byRef = string.Empty;
+        if (this.IsOffsetByRef)
+        {
+            byRef = "ref ";
+        }
+
         var parts = this.MethodNameResolver.ResolveValidate(typeModel);
-        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.InputBufferVariableName}, {this.OffsetVariableName}");
+        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.InputBufferVariableName}, {byRef}{this.OffsetVariableName}");
         sb.Append(")");
         return sb.ToString();
     }

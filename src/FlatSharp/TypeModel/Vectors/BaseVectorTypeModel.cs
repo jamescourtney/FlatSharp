@@ -41,7 +41,7 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
     /// Layout of the vtable.
     /// </summary>
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
-        new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
+        new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint), true) }.ToImmutableArray();
 
     /// <summary>
     /// Vectors are arbitrary in length.

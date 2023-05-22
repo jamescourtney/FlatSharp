@@ -43,8 +43,8 @@ public class UnionTypeModel : RuntimeTypeModel
     public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
         new[]
         {
-            new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
-            new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
+            new PhysicalLayoutElement(sizeof(byte), sizeof(byte), false),
+            new PhysicalLayoutElement(sizeof(uint), sizeof(uint), true)
         }.ToImmutableArray();
 
     /// <summary>
