@@ -5,7 +5,12 @@ attribute "fs_fileId";
 
 namespace FlatSharpEndToEndTests.Validation;
 
-struct ValueStruct
+struct ValueStruct (fs_valueStruct)
+{
+    value : ulong;
+}
+
+struct RefStruct
 {
     value : ulong;
 }
@@ -16,7 +21,7 @@ table ValidationTable (fs_serializer:"Lazy")
     vector_string : [ string ];
 
     single_value_struct : ValueStruct;
-    vector_value_struct : [ ValueStruct ];
+    vector_value_struct : [ RefStruct ];
 }
 
 root_type ValidationTable;
