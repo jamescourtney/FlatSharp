@@ -25,7 +25,7 @@ public static class ValidationErrors
 
     public const string WrongFileIdentifier = "The file identifier was mismatched or incorrect.";
 
-    public const string InvalidOffset = "The offset points beyond the end of the buffer.";
+    public const string InvalidOffset = "The offset points outside of the buffer.";
 
     public const string InvalidLength = "The length points beyond the end of the buffer.";
 

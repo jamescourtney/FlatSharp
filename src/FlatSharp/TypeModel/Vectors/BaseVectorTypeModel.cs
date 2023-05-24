@@ -196,7 +196,7 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
             {context.OffsetVariableName} += sizeof(int); // count
 
             int maxOffset = {context.OffsetVariableName} + ((int)count * {this.PaddedMemberInlineSize});
-            if (maxOffset >= {context.InputBufferVariableName}.Length)
+            if (maxOffset > {context.InputBufferVariableName}.Length)
             {{
                 return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.VectorOverflows))};
             }}

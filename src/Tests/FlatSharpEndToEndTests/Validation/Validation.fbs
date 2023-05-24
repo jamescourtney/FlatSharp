@@ -22,6 +22,8 @@ table ValidationTable (fs_serializer:"Lazy")
 
     single_value_struct : ValueStruct;
     vector_value_struct : [ RefStruct ];
+
+    table_vector : [ ValidationTable ];
 }
 
 root_type ValidationTable;

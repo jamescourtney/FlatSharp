@@ -197,6 +197,48 @@ public class TableValidations
     }
 
     [Fact]
+    public void Invalid_VTable_Offset_Negative()
+    {
+        byte[] data =
+        {
+            8, 0, 0, 0,
+            (byte)'A', (byte)'B', (byte)'C', (byte)'D',
+            100, 0, 0, 0, // soffset to vtable (before buffer).
+            12, 0, 0, 0, // uoffset to string
+            6, 0, 6, 0, // vtable length, table length
+            4, 0, 0, 0, // offset of field 0, padding
+            16, 0, 0, 0, // string length
+            (byte)'e', (byte)'f', (byte)'g', (byte)'h', // content
+            0,
+        };
+
+        var result = ValidationTable.Serializer.Validate(data);
+        Assert.False(result.Success);
+        Assert.Equal(ValidationErrors.InvalidOffset, result.Message);
+    }
+
+    [Fact]
+    public void Invalid_VTable_Offset_Positive()
+    {
+        byte[] data =
+        {
+            8, 0, 0, 0,
+            (byte)'A', (byte)'B', (byte)'C', (byte)'D',
+            0, 0xFC, 0xFF, 0xFF, // soffset to vtable (after buffer).
+            12, 0, 0, 0, // uoffset to string
+            6, 0, 6, 0, // vtable length, table length
+            4, 0, 0, 0, // offset of field 0, padding
+            16, 0, 0, 0, // string length
+            (byte)'e', (byte)'f', (byte)'g', (byte)'h', // content
+            0,
+        };
+
+        var result = ValidationTable.Serializer.Validate(data);
+        Assert.False(result.Success);
+        Assert.Equal(ValidationErrors.InvalidOffset, result.Message);
+    }
+
+    [Fact]
     public void Buffer_Too_Short()
     {
         var result = ValidationTable.Serializer.Validate(new byte[15]);
