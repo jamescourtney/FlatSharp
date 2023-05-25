@@ -203,12 +203,7 @@ public abstract class RuntimeTypeModel : ITypeModel
         int fixedSize)
     {
         string body = $@"
-            if ({context.OffsetVariableName} + {fixedSize} >= {context.InputBufferVariableName}.Length)
-            {{
-                return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.FixedSizeElementOverflows))};
-            }}
-
-            return {CSharpHelpers.GetOKValidationResult()};
+            return ValidationHelpers.ValidateFixedSizeItemAtOffset({context.InputBufferVariableName}, {context.OffsetVariableName}, {fixedSize});
         ";
 
         return new CodeGeneratedMethod(body);

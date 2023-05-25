@@ -32,7 +32,8 @@ public static class ValidationHelpers
         vtable = default;
         tableLength = 0;
 
-        if (!TryValidateOffset(buffer, tableOffset, out error))
+        error = ValidateFixedSizeItemAtOffset(buffer, tableOffset, sizeof(int)); // soffset to vtable
+        if (!error.Success)
         {
             return false;
         }
@@ -40,7 +41,8 @@ public static class ValidationHelpers
         int vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
         const int MinVTableLength = 4;
 
-        if (!TryValidateOffset(buffer, vtableOffset + MinVTableLength, out error))
+        error = ValidateFixedSizeItemAtOffset(buffer, vtableOffset, MinVTableLength);
+        if (!error.Success)
         {
             return false;
         }
@@ -49,6 +51,12 @@ public static class ValidationHelpers
         if (vtableLength % 2 != 0)
         {
             error = new() { Message = ValidationErrors.VTable_OddLength };
+            return false;
+        }
+
+        error = ValidateFixedSizeItemAtOffset(buffer, vtableOffset, vtableLength);
+        if (!error.Success)
+        {
             return false;
         }
 
@@ -67,7 +75,8 @@ public static class ValidationHelpers
 
         VTableGeneric.Create(buffer, tableOffset, out vtable);
 
-        if (!TryValidateOffset(buffer, tableOffset + tableLength, out error))
+        error = ValidateFixedSizeItemAtOffset(buffer, tableOffset, tableLength);
+        if (!error.Success)
         {
             return false;
         }
@@ -76,26 +85,15 @@ public static class ValidationHelpers
         return true;
     }
 
-    public static bool TryValidateOffset<TInputBuffer>(TInputBuffer buffer, int offset, out ValidationResult result)
-        where TInputBuffer : IInputBuffer
-    {
-        result = ValidationResult.OK;
-
-        if ((uint)offset >= buffer.Length)
-        {
-            result = new()
-            {
-                Message = ValidationErrors.InvalidOffset,
-            };
-        }
-
-        return result.Success;
-    }
-
     public static bool TryFollowUOffset<TBuffer>(this TBuffer buffer, ref int offset, out ValidationResult error)
         where TBuffer : IInputBuffer
     {
-        error = ValidationResult.OK;
+        error = ValidateFixedSizeItemAtOffset(buffer, offset, sizeof(uint));
+        if (!error.Success)
+        {
+            return false;
+        }
+
         uint uoffset = buffer.ReadUInt(offset);
 
         // Catch offsets too big and too small.
@@ -120,5 +118,30 @@ public static class ValidationHelpers
         }
 
         return error.Success;
+    }
+
+    public static ValidationResult ValidateFixedSizeItemAtOffset<TBuffer>(this TBuffer buffer, int offset, ushort size)
+        where TBuffer : IInputBuffer
+    {
+        uint uoffset = (uint)offset;
+        if (uoffset >= buffer.Length)
+        {
+            return new ValidationResult()
+            {
+                Message = ValidationErrors.InvalidOffset,
+                Success = false,
+            };
+        }
+
+        if (uoffset + size > buffer.Length)
+        {
+            return new ValidationResult()
+            {
+                Message = ValidationErrors.FixedSizeElementOverflows,
+                Success = false,
+            };
+        }
+
+        return ValidationResult.OK;
     }
 }

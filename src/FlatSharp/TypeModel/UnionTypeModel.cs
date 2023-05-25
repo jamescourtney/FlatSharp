@@ -351,6 +351,54 @@ $@"
         return new CodeGeneratedMethod(body);
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        List<string> switchCases = new List<string>();
+        for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+        {
+            var elementModel = this.UnionElementTypeModel[i];
+            var unionIndex = i + 1;
+
+            var caseContext = context with
+            {
+                OffsetVariableName = "itemOffset",
+                IsOffsetByRef = false,
+            };
+
+            string @case =
+            $@"
+                case {unionIndex}:
+                    return {caseContext.GetValidateInvocation(elementModel.ClrType)};
+            ";
+
+            switchCases.Add(@case);
+        }
+
+        string validateBlock = $@"
+            int discOffset = {context.OffsetVariableName}.offset0;
+            int itemOffset = {context.OffsetVariableName}.offset1;
+            
+            if (!ValidationHelpers.TryFollowUOffset({context.InputBufferVariableName}, ref itemOffset, out var result))
+            {{
+                return result;
+            }}
+
+            result = ValidationHelpers.ValidateFixedSizeItemAtOffset({context.InputBufferVariableName}, discOffset, sizeof(byte));
+            if (!result.Success)
+            {{
+                return result;
+            }}
+
+            switch ({context.InputBufferVariableName}.ReadByte(discOffset))
+            {{
+                {string.Join("\r\n", switchCases)}
+                default: 
+                    return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.Union_UnknownDiscriminator))};
+            }}";
+
+        return new CodeGeneratedMethod(validateBlock);
+    }
+
     public override void Initialize()
     {
         // Look for the actual FlatBufferUnion.
