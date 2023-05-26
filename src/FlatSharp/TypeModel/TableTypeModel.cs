@@ -808,7 +808,7 @@ $@"
 
         foreach (var field in this.IndexToMemberMap)
         {
-            this.AddSingleWidthVTableValidateBlock(parts, field.Key, field.Value, context);
+            this.AddVTableValidateBlock(parts, field.Key, field.Value, context);
         }
 
         string body = $@"
@@ -830,7 +830,7 @@ $@"
         return new(body);
     }
 
-    private void AddSingleWidthVTableValidateBlock(List<string> blocks, int index, TableMemberModel member, ValidateCodeGenContext context)
+    private void AddVTableValidateBlock(List<string> blocks, int index, TableMemberModel member, ValidateCodeGenContext context)
     {
         ITypeModel itemTypeModel = member.ItemTypeModel;
 
@@ -863,7 +863,7 @@ $@"
             }
 
             blockParts.Add($@"
-            int fieldOffset{i} = vtable.OffsetOf({context.InputBufferVariableName}, {index});
+            int fieldOffset{i} = vtable.OffsetOf({context.InputBufferVariableName}, {index + i});
             {{
                 if (fieldOffset{i} != 0)
                 {{

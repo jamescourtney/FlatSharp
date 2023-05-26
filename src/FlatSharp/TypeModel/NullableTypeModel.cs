@@ -131,6 +131,17 @@ public class NullableTypeModel : RuntimeTypeModel
         };
     }
 
+    public override CodeGeneratedMethod CreateValidateMethodBody(ValidateCodeGenContext context)
+    {
+        string innerValidate = context.GetValidateInvocation(this.underlyingType);
+        string body = $"return {innerValidate};";
+
+        return new CodeGeneratedMethod(body)
+        {
+            IsMethodInline = true,
+        };
+    }
+
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
         string innerParse = context.GetParseInvocation(this.underlyingType);

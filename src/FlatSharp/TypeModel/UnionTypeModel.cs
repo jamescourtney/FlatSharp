@@ -366,10 +366,17 @@ $@"
             };
 
             string @case =
-            $@"
-                case {unionIndex}:
-                    return {caseContext.GetValidateInvocation(elementModel.ClrType)};
-            ";
+            $$"""
+                case {{unionIndex}}:
+                    {{( elementModel.SerializesInline 
+                        ? $@"if (!ValidationHelpers.TryFollowUOffset({context.InputBufferVariableName}, ref itemOffset, out result))
+                          {{
+                             return result;
+                          }}
+                          "
+                       : string.Empty )}}
+                    return {{caseContext.GetValidateInvocation(elementModel.ClrType)}};
+            """;
 
             switchCases.Add(@case);
         }
@@ -378,12 +385,7 @@ $@"
             int discOffset = {context.OffsetVariableName}.offset0;
             int itemOffset = {context.OffsetVariableName}.offset1;
             
-            if (!ValidationHelpers.TryFollowUOffset({context.InputBufferVariableName}, ref itemOffset, out var result))
-            {{
-                return result;
-            }}
-
-            result = ValidationHelpers.ValidateFixedSizeItemAtOffset({context.InputBufferVariableName}, discOffset, sizeof(byte));
+            var result = ValidationHelpers.ValidateFixedSizeItemAtOffset({context.InputBufferVariableName}, discOffset, sizeof(byte));
             if (!result.Success)
             {{
                 return result;

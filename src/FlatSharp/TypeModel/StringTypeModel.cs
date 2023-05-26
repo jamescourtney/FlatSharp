@@ -165,8 +165,14 @@ public class StringTypeModel : RuntimeTypeModel
             {{
                 return error;
             }}
+
+            error = ValidationHelpers.ValidateFixedSizeItemAtOffset({context.InputBufferVariableName}, {context.OffsetVariableName}, sizeof(int));
+            if (!error.Success)
+            {{
+                return error;
+            }}
             
-            uint count = {context.InputBufferVariableName}.ReadUInt({context.OffsetVariableName});
+            int count = {context.InputBufferVariableName}.ReadInt({context.OffsetVariableName});
             if (count > int.MaxValue)
             {{
                 return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.String_TooLong))};
@@ -174,13 +180,13 @@ public class StringTypeModel : RuntimeTypeModel
 
             {context.OffsetVariableName} += sizeof(int); // count
 
-            int maxOffset = {context.OffsetVariableName} + (int)count;
-            if (maxOffset >= {context.InputBufferVariableName}.Length)
+            error = ValidationHelpers.ValidateFixedSizeItemAtOffset({context.InputBufferVariableName}, {context.OffsetVariableName}, count + 1);
+            if (!error.Success)
             {{
                 return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.String_Overflows))};
             }}
 
-            if ({context.InputBufferVariableName}.ReadByte(maxOffset) != 0)
+            if ({context.InputBufferVariableName}.ReadByte(offset + count) != 0)
             {{
                 return {CSharpHelpers.GetValidationResultError(nameof(ValidationErrors.NoNullTerminator))};
             }}

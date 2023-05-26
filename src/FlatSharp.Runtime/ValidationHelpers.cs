@@ -120,20 +120,18 @@ public static class ValidationHelpers
         return error.Success;
     }
 
-    public static ValidationResult ValidateFixedSizeItemAtOffset<TBuffer>(this TBuffer buffer, int offset, ushort size)
+    public static ValidationResult ValidateFixedSizeItemAtOffset<TBuffer>(this TBuffer buffer, int offset, uint size)
         where TBuffer : IInputBuffer
     {
-        uint uoffset = (uint)offset;
-        if (uoffset >= buffer.Length)
-        {
-            return new ValidationResult()
-            {
-                Message = ValidationErrors.InvalidOffset,
-                Success = false,
-            };
-        }
+        // Technique from System.Span.cs from .NET:
 
-        if (uoffset + size > buffer.Length)
+        // Since start and length are both 32-bit, their sum can be computed across a 64-bit domain
+        // without loss of fidelity. The cast to uint before the cast to ulong ensures that the
+        // extension from 32- to 64-bit is zero-extending rather than sign-extending. The end result
+        // of this is that if either input is negative or if the input sum overflows past Int32.MaxValue,
+        // that information is captured correctly in the comparison against the backing _length field.
+
+        if ((ulong)(uint)offset + (ulong)size > (ulong)(uint)buffer.Length)
         {
             return new ValidationResult()
             {
@@ -143,5 +141,12 @@ public static class ValidationHelpers
         }
 
         return ValidationResult.OK;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValidationResult ValidateFixedSizeItemAtOffset<TBuffer>(this TBuffer buffer, int offset, int size)
+        where TBuffer : IInputBuffer
+    {
+        return ValidateFixedSizeItemAtOffset(buffer, offset, (uint)size);
     }
 }

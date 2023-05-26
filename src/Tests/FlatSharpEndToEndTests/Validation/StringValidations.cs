@@ -42,6 +42,24 @@ public class StringValidations
     }
 
     [Fact]
+    public void UOffset_Points_Outside_Buffer()
+    {
+        byte[] data =
+        {
+            8, 0, 0, 0,
+            (byte)'A', (byte)'B', (byte)'C', (byte)'D',
+            248, 255, 255, 255, // soffset to vtable
+            12, 0, 0, 0, // uoffset to string
+            6, 0, 8, 0, // vtable length, table length
+            4, 0, 0, 0, // offset of field 0, padding
+            4, 0,       // string length (truncated)
+        };
+
+        var result = ValidationTable.Serializer.Validate(data);
+        Assert.False(result.Success);
+    }
+
+    [Fact]
     public void No_Null_Terminator()
     {
         byte[] data =
