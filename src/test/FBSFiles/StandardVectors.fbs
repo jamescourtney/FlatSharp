@@ -1,0 +1,20 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sortedVector";
+
+namespace FlatSharpEndToEndTests.Vectors.Standard;
+
+table StandardVectorTable (fs_serializer)
+{
+    implicit_string_list : [ string ];
+    explicit_string_list : [ string ] (fs_vector:"IList");
+    read_only_string_list : [ string ] (fs_vector:"IReadOnlyList");
+
+    implicit_memory : [ ubyte ];
+    explicit_memory : [ ubyte ] (fs_vector:"Memory");
+    read_only_memory : [ ubyte ] (fs_vector:"ReadOnlyMemory");
+}

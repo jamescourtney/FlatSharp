@@ -1,0 +1,26 @@
+﻿namespace FlatSharpEndToEndTests.DefaultValues;
+
+enum Int64Enum : long {
+   NegOne = -1,
+   LongMax = 9223372036854775807
+}
+
+enum UInt64Enum : ulong {
+   Zero = 0,
+   Max = 18446744073709551615
+}
+
+table Defaults
+{
+   EnumLongNegOne : Int64Enum = NegOne;
+   EnumLongMax : Int64Enum = LongMax;
+
+   EnumULongZero : UInt64Enum = Zero;
+   EnumULongMax : UInt64Enum = Max;
+
+   LongNegOne : long = -1;
+   LongMax : long = 9223372036854775807;
+
+   ULongZero : ulong = 0;
+   ULongMax : ulong = 18446744073709551615;
+}

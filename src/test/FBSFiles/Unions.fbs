@@ -1,0 +1,28 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_sharedString";
+attribute "fs_rpcInterface";
+attribute "fs_valueStruct";
+attribute "fs_unsafeUnion";
+attribute "fs_unsafeExternal";
+
+namespace FlatSharpEndToEndTests.Unions;
+
+struct A { V : uint; }
+struct B { V : uint; }
+struct C { V : uint; }
+struct D { V : uint; }
+
+union MyUnion { A, B, C, D }
+
+struct ValueStructInt (fs_valueStruct) { Value : int; }
+struct ValueStructVec3 (fs_valueStruct) { X : float32; Y : float32; Z : float32; }
+struct ValueStructExtCorrectSize (fs_valueStruct, fs_unsafeExternal:"System.Numerics.Vector3") { Temp : [ float32 : 3 ]; }
+struct ValueStructExtWrongSize (fs_valueStruct, fs_unsafeExternal:"System.Numerics.Vector<byte>") { Temp : [ ubyte : 4 ]; }
+
+union UnsafeUnion (fs_unsafeUnion) { ValueStructInt, ValueStructVec3, ExtCorrect : ValueStructExtCorrectSize, ExtWrong : ValueStructExtWrongSize }
+
+table Container (fs_serializer) {
+    Value : [MyUnion];
+    Unsafe : UnsafeUnion;
+}

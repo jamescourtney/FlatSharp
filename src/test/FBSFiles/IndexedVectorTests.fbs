@@ -1,0 +1,27 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpEndToEndTests.ClassLib.IndexedVectorTests;
+
+table Container (fs_serializer)
+{
+    StringVector : [ StringKey ] (fs_vector:"IIndexedVector");
+    IntVector : [ IntKey ] (fs_vector:"IIndexedVector");
+}
+
+table StringKey
+{
+    Key : string (key);
+    Value : string;
+}
+
+table IntKey
+{
+    Key : int (key);
+    Value : string;
+}

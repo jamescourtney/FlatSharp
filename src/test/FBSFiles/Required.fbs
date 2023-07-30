@@ -1,0 +1,35 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_valueStruct";
+
+namespace FlatSharpEndToEndTests.Required;
+
+struct RefStruct
+{
+    A : int;
+}
+
+struct ValueStruct (fs_valueStruct)
+{
+    A : int;
+}
+
+table RequiredTable (fs_serializer)
+{
+    A : string (required);
+    B : [ string ] (required);
+    C : NonRequiredTable (required);
+    D : [ ubyte ] (required);
+    E : RefStruct (required);
+    F : ValueStruct (required);
+}
+
+table NonRequiredTable (fs_serializer)
+{
+    A : string;
+    B : [ string ];
+    C : NonRequiredTable;
+    D : [ ubyte ];
+    E : RefStruct;
+    F : ValueStruct;
+}

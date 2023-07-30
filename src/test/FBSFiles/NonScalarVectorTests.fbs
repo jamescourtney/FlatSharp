@@ -1,0 +1,33 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+
+namespace FlatSharpEndToEndTests.ClassLib.NonScalarVectorTests;
+
+struct InnerStruct
+{
+    Value : int;
+}
+
+table InnerTable
+{
+    Value : string;
+}
+
+table Root (fs_serializer)
+{
+    TableVector : [ InnerTable ];
+    StructVector : [ InnerStruct ];
+    StringVector : [ string ];
+}
+
+table RootReadOnly (fs_serializer)
+{
+    TableVector : [ InnerTable ] (fs_vector:"IReadOnlyList");
+    StructVector : [ InnerStruct ] (fs_vector:"IReadOnlyList");
+    StringVector : [ string ] (fs_vector:"IReadOnlyList");
+}

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="FlatSharp.Runtime" Version="7.1.1" />
+    </ItemGroup>
+
+    <Target Name="FBSCompile" BeforeTargets="ResolveAssemblyReferences">
+        <MSBuild Projects="$(MSBuildThisFileDirectory)..\FBSFiles\FBSFiles.csproj" />
+    </Target>
+
+    <ItemGroup>
+        <Reference Include="..\FBSFiles\bin\$(Configuration)\$(TargetFramework)\FBSFiles.dll" />
+    </ItemGroup>
+
+</Project>

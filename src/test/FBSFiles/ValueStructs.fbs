@@ -1,0 +1,85 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+
+namespace FlatSharpEndToEndTests.ValueStructs;
+
+union TestUnion { RefStruct, ValueStruct, InnerValueStruct }
+
+table WriteThroughTable (fs_serializer:"Lazy")
+{
+    Points : [ Vec3 ] (fs_writeThrough);
+    Point : Vec3 (fs_writeThrough, required);
+}
+
+struct Vec3 (fs_valueStruct)
+{
+    X : float;
+    Y : float;
+    Z : float;
+}
+
+table RootTable (fs_serializer:"GreedyMutable") {
+    refStruct : RefStruct;
+    valueStruct : ValueStruct;
+    valueStructVector : [ValueStruct];
+    union : TestUnion;
+    vectorOfUnion : [TestUnion];
+    requiredValueStruct : ValueStruct (required);
+    str : string;
+}
+
+struct InnerValueStruct (fs_valueStruct) {
+    A : float;
+}
+
+struct ValueStruct (fs_valueStruct) {
+    A : ubyte;
+    B : int;
+    C : long;
+    D : [ ubyte : 16 ];
+    Inner : InnerValueStruct;
+}
+
+struct RefStruct {
+    A : int;
+    VS : ValueStruct;
+}
+
+struct ValueUnsafeStructVector_Byte (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [ubyte : 16] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_UShort (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [ushort : 16] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_UInt (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [uint : 16] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_ULong (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [ulong : 16] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_Float (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [float : 16] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_Double (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [double : 16] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
