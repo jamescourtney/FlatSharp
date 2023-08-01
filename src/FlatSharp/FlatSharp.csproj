@@ -9,7 +9,7 @@
         <Nullable>annotations</Nullable>
 
         <!-- Suppress warnings about explicit references to .net standard. -->
-        <NoWarn>NETSDK1023;NU5104</NoWarn>
+        <NoWarn>$(NoWarn);NETSDK1023;NU5104</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">

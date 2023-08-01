@@ -99,6 +99,9 @@
             <FlatSharpPoolable>false</FlatSharpPoolable>
         </PropertyGroup>
 
+        <PropertyGroup Condition=" '$(FlatSharpDeserializers)' == '' ">
+            <FlatSharpDeserializers>All</FlatSharpDeserializers>
+        </PropertyGroup>
 
         <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' == '' ">
             <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
@@ -117,11 +120,11 @@
         </ProcessFlatSharpSchema>
 
         <Message
-            Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
+            Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --deserializers $(FlatSharpDeserializers) --output $(IntermediateOutputPath)"
             Importance="high" />
 
         <Exec
-            Command="dotnet &quot;$(CompilerPath)&quot; --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
+            Command="dotnet &quot;$(CompilerPath)&quot; --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --deserializers $(FlatSharpDeserializers) --output $(IntermediateOutputPath)"
             CustomErrorRegularExpression=".*" />
 
         <ItemGroup>

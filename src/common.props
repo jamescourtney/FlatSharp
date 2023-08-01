@@ -5,6 +5,7 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <LangVersion>11.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS8032</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(SignAssembly)' != 'false' ">
@@ -13,8 +14,8 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>7.1.1</Version>
-    <PackageVersion>7.1.1</PackageVersion>
+    <Version>7.2.0</Version>
+    <PackageVersion>7.2.0</PackageVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
     <Description>FlatSharp is a fast, idiomatic implementation of the FlatBuffer binary format.</Description>
