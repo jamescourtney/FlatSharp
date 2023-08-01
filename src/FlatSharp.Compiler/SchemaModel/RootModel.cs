@@ -148,7 +148,7 @@ public class RootModel
     {
         var options = new FlatBufferSerializerOptions();
         var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
-        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver(), context.Options.Deserializers.ToOptions());
+        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver(), context.Options.Deserializers);
 
         writer.AppendLine(helper);
     }

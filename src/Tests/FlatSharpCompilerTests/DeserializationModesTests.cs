@@ -19,11 +19,11 @@ namespace FlatSharpTests.Compiler;
 public class DeserializationModesTests
 {
     [Theory]
-    [InlineData(CommandLineDeserializationFlags.Lazy)]
-    [InlineData(CommandLineDeserializationFlags.Progressive)]
-    [InlineData(CommandLineDeserializationFlags.Greedy)]
-    [InlineData(CommandLineDeserializationFlags.GreedyMutable)]
-    public void Only_Single_Mode(CommandLineDeserializationFlags singleOption)
+    [InlineData(FlatBufferDeserializationOption.Lazy)]
+    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    [InlineData(FlatBufferDeserializationOption.Greedy)]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+    public void Only_Single_Mode(FlatBufferDeserializationOption singleOption)
     {
         string fbs = $@"
             {MetadataHelpers.AllAttributes}
@@ -31,7 +31,7 @@ public class DeserializationModesTests
             table Blah ({MetadataKeys.SerializerKind}) {{ foo : string; }}
         ";
 
-        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new() { Deserializers = singleOption });
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new() { Deserializers = new[] { singleOption } });
         Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.Blah");
         Assert.NotNull(t);
 
@@ -41,15 +41,15 @@ public class DeserializationModesTests
 
         serializer.Write(buffer, item);
 
-        foreach (CommandLineDeserializationFlags option in new[] { CommandLineDeserializationFlags.Lazy, CommandLineDeserializationFlags.Progressive, CommandLineDeserializationFlags.Greedy, CommandLineDeserializationFlags.GreedyMutable })
+        foreach (FlatBufferDeserializationOption option in Enum.GetValues<FlatBufferDeserializationOption>())
         {
             if (option == singleOption)
             {
-                serializer.Parse(buffer, option.ToOption());
+                serializer.Parse(buffer, option);
             }
             else
             {
-                var ex = Assert.Throws<NotImplementedException>(() => serializer.Parse(buffer, option.ToOption()));
+                var ex = Assert.Throws<NotImplementedException>(() => serializer.Parse(buffer, option));
                 Assert.Equal($"Deserializer type '{option}' was excluded from generation at compile time.", ex.Message);
             }
         }
@@ -64,8 +64,8 @@ public class DeserializationModesTests
             table Blah ({MetadataKeys.SerializerKind}) {{ foo : string; }}
         ";
 
-        (_, string singleOption) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(fbs, new() { Deserializers = CommandLineDeserializationFlags.Lazy });
-        (_, string allOptions) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(fbs, new() { Deserializers = CommandLineDeserializationFlags.All });
+        (_, string singleOption) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(fbs, new() { Deserializers = new[] { FlatBufferDeserializationOption.Lazy } });
+        (_, string allOptions) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(fbs, new() { Deserializers = Enum.GetValues<FlatBufferDeserializationOption>().Distinct().ToList() });
 
         Assert.True(singleOption.Length < allOptions.Length);
     }
