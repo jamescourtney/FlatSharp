@@ -110,7 +110,7 @@ public class FlatSharpCompiler
                 {
                     List<byte[]> bfbs = GetBfbs(options);
 
-                    string inputHash = ComputeInputHash(bfbs);
+                    string inputHash = ComputeInputHash(bfbs, options);
 
                     if (IsInputUnchanged(outputFullPath, inputHash))
                     {
@@ -230,21 +230,30 @@ public class FlatSharpCompiler
     }
 
     [ExcludeFromCodeCoverage]
-    private static string ComputeInputHash(List<byte[]> bfbs)
+    private static string ComputeInputHash(List<byte[]> bfbs, CompilerOptions options)
     {
+        static void MergeHashes(byte[] hash, byte[] temp)
+        {
+            for (int i = 0; i < temp.Length; ++i)
+            {
+                hash[i] ^= temp[i];
+            }
+        }
+
         string inputHash = AssemblyVersion;
+
         using (var hash = SHA256.Create())
         {
             // Use the assembly hash as the base; this means each build will change the hash for the same schema.
             byte[] hashBytes = hash.ComputeHash(File.ReadAllBytes(typeof(FlatSharpCompiler).Assembly.Location));
 
+            // Supplement with command line options.
+            MergeHashes(hashBytes, hash.ComputeHash(Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(options))));
+
+            // Merge each of the schema files.
             foreach (var schema in bfbs)
             {
-                var tempHash = hash.ComputeHash(schema);
-                for (int i = 0; i < 32; ++i)
-                {
-                    hashBytes[i] ^= tempHash[i];
-                }
+                MergeHashes(hashBytes, hash.ComputeHash(schema));
             }
 
             inputHash += "." + Convert.ToBase64String(hashBytes);
