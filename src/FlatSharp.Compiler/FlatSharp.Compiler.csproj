@@ -12,7 +12,7 @@
     <Nullable>annotations</Nullable>
 
     <!-- NU5127: Nuget package doesn't contain any frameworks. This is intentional. -->
-    <NoWarn>CS3021;3021;NU5127</NoWarn>
+    <NoWarn>$(NoWarn);CS3021;3021;NU5127</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">

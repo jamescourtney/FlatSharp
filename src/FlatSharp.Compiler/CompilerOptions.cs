@@ -15,11 +15,14 @@
  */
 
 using CommandLine;
+using System.Linq;
 
 namespace FlatSharp.Compiler;
 
 public record CompilerOptions
 {
+    private IList<FlatBufferDeserializationOption>? deserializers;
+
     [Option('i', "input", HelpText = "FBS input file", Required = true, Separator = ';')]
     public IEnumerable<string> InputFiles { get; set; } = Array.Empty<string>();
 
@@ -38,14 +41,34 @@ public record CompilerOptions
     [Option("gen-poolable", Hidden = false, Default = false, HelpText = "EXPERIMENTAL: Generate extra code to enable object pooling for allocation reductions.")]
     public bool? GeneratePoolableObjects { get; set; }
 
+    [Option("deserializers", Hidden = false, HelpText = "Specifies deserializers for FlatSharp to generate. Can help to reduce size of generated code.", Separator = ';')]
+    public IList<FlatBufferDeserializationOption> Deserializers
+    {
+        get
+        {
+            if (this.deserializers == null || this.deserializers.Count == 0)
+            {
+                return Enum.GetValues<FlatBufferDeserializationOption>().Distinct().ToList();
+            }
+
+            return this.deserializers;
+        }
+        set
+        {
+            this.deserializers = value;
+        }
+    }
+
+    [Option("unity-assembly-path", HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
+    public string? UnityAssemblyPath { get; set; }
+
+    // Hidden options for tests / debugging
+
     [Option("flatc-path", Hidden = true)]
     public string? FlatcPath { get; set; }
 
     [Option("debug", Hidden = true, Default = false)]
     public bool Debug { get; set; }
-    
-    [Option("unity-assembly-path", HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
-    public string? UnityAssemblyPath { get; set; }
 
     [Option("instrument", Hidden = true, Default = false)]
     public bool Instrument { get; set; }
