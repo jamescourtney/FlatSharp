@@ -44,12 +44,18 @@ public class FlatSharpCompiler
 
         try
         {
-            CommandLine.Parser.Default.ParseArguments<CompilerOptions>(args)
-                .WithParsed(x =>
-                {
-                    CommandLineOptions = x;
-                    exitCode = RunCompiler(x);
-                });
+            Parser parser = new(with =>
+            {
+                with.HelpWriter = Console.Error;
+                with.CaseInsensitiveEnumValues = true;
+            });
+
+            parser.ParseArguments<CompilerOptions>(args)
+                  .WithParsed(x =>
+                   {
+                       CommandLineOptions = x;
+                       exitCode = RunCompiler(x);
+                   });
         }
         catch (Exception ex)
         {
