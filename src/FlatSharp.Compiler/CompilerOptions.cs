@@ -39,7 +39,7 @@ public record CompilerOptions
     public bool? NullableWarnings { get; set; }
 
     [Option("gen-poolable", Hidden = false, Default = false, HelpText = "EXPERIMENTAL: Generate extra code to enable object pooling for allocation reductions.")]
-    public bool? GeneratePoolableObjects { get; set; }
+    public bool GeneratePoolableObjects { get; set; }
 
     [Option("deserializers", Hidden = false, HelpText = "Specifies deserializers for FlatSharp to generate. Can help to reduce size of generated code.", Separator = ';')]
     public IList<FlatBufferDeserializationOption> Deserializers
@@ -58,6 +58,12 @@ public record CompilerOptions
             this.deserializers = value;
         }
     }
+
+    [Option("class-definitions-only", Hidden = false, HelpText = "Emits only class and data definitions. No serializers.")]
+    public bool ClassDefinitionsOnly { get; set; }
+
+    [Option("input-files-only", Hidden = false, HelpText = "Only outputs type definitions for expicitely passed input files. Does not process any included files.")]
+    public bool SpecifiedFilesOnly { get; set; }
 
     [Option("unity-assembly-path", HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
     public string? UnityAssemblyPath { get; set; }

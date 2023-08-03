@@ -102,7 +102,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
         {
             writer.AppendLine(": object");
 
-            if (context.Options.GeneratePoolableObjects == true)
+            if (context.Options.GeneratePoolableObjects)
             {
                 writer.AppendLine(", IPoolableObject");
             }

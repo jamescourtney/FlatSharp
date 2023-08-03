@@ -78,7 +78,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         writer.AppendLine($"public partial class {this.Name}");
         writer.AppendLine($"    : object");
 
-        if (context.Options.GeneratePoolableObjects == true)
+        if (context.Options.GeneratePoolableObjects)
         {
             writer.AppendLine($"    , IPoolableObject");
         }
