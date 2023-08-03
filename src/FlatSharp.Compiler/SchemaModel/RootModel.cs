@@ -32,7 +32,7 @@ public class RootModel
 
     private readonly HashSet<string> inputFiles = new();
 
-    public RootModel(AdvancedFeatures advancedFeatures, string inputFile)
+    public RootModel(AdvancedFeatures advancedFeatures, string? inputFile = null)
     {
         if ((advancedFeatures & ~SupportedAdvancedFeatures) != AdvancedFeatures.None)
         {
@@ -40,7 +40,10 @@ public class RootModel
             throw new InvalidFbsFileException($"FBS schema contains advanced features that FlatSharp does not yet support.");
         }
 
-        this.inputFiles.Add(inputFile);
+        if (inputFile is not null)
+        {
+            this.inputFiles.Add(inputFile);
+        }
     }
 
     public void UnionWith(RootModel other)

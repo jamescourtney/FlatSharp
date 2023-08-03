@@ -543,7 +543,7 @@ public class FlatSharpCompiler
                 CodeWritingPass.SerializerAndRpcGeneration,
             };
 
-            RootModel rootModel = new(Schema.AdvancedFeatures.None, string.Empty);
+            RootModel rootModel = new(Schema.AdvancedFeatures.None);
             List<Func<string, string>> postProcessTransforms = new();
 
             var mutators = new ISchemaMutator[]
