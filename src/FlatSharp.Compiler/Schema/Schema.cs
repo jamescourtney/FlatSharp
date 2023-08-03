@@ -60,12 +60,12 @@ public class Schema
     [FlatBufferItem(6)]
     public virtual AdvancedFeatures AdvancedFeatures { get; set; }
 
-    [FlatBufferItem(7)]
-    public virtual IIndexedVector<string, SchemaFile>? FbsFiles { get; set; }
+    [FlatBufferItem(7, Required = true)]
+    public virtual IIndexedVector<string, SchemaFile> FbsFiles { get; set; } = new IndexedVector<string, SchemaFile>();
 
-    public RootModel ToRootModel(CompilerOptions options)
+    public RootModel ToRootModel(CompilerOptions options, string fbsPath)
     {
-        RootModel model = new RootModel(this.AdvancedFeatures);
+        RootModel model = new RootModel(this.AdvancedFeatures, fbsPath);
 
         foreach (var @enum in this.Enums)
         {

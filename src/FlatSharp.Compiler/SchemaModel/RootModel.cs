@@ -16,6 +16,8 @@
 
 using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
+using Microsoft.CodeAnalysis.FlowAnalysis;
+using System.Linq;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -28,13 +30,17 @@ public class RootModel
 
     private readonly Dictionary<string, BaseSchemaModel> elements = new();
 
-    public RootModel(AdvancedFeatures advancedFeatures)
+    private readonly HashSet<string> inputFiles = new();
+
+    public RootModel(AdvancedFeatures advancedFeatures, string inputFile)
     {
         if ((advancedFeatures & ~SupportedAdvancedFeatures) != AdvancedFeatures.None)
         {
             // bail immediately. We can't make any progress.
             throw new InvalidFbsFileException($"FBS schema contains advanced features that FlatSharp does not yet support.");
         }
+
+        this.inputFiles.Add(inputFile);
     }
 
     public void UnionWith(RootModel other)
@@ -54,6 +60,8 @@ public class RootModel
                 this.elements[kvp.Key] = kvp.Value;
             }
         }
+
+        this.inputFiles.UnionWith(other.inputFiles);
     }
 
     public void AddElement(BaseSchemaModel model)
@@ -118,6 +126,7 @@ public class RootModel
             writer.AppendLine("#nullable enable annotations");
         }
 
+
         if (context.CompilePass > CodeWritingPass.PropertyModeling && context.PreviousAssembly is not null)
         {
             context.FullyQualifiedCloneMethodName = CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
@@ -126,21 +135,32 @@ public class RootModel
                 context.PreviousAssembly,
                 context.TypeModelContainer);
 
-            HashSet<Type> seenTypes = new();
-            foreach (var item in this.elements.Values)
+            if (!context.Options.ClassDefinitionsOnly)
             {
-                item.TraverseTypeModel(context, seenTypes);
-            }
+                HashSet<Type> seenTypes = new();
 
-            foreach (Type t in seenTypes)
-            {
-                WriteHelperClass(t, context, writer);
+                foreach (var item in this.elements.Values)
+                {
+                    item.TraverseTypeModel(context, seenTypes);
+                }
+
+                foreach (Type t in seenTypes)
+                {
+                    WriteHelperClass(t, context, writer);
+                }
             }
         }
 
         foreach (var item in this.elements.Values)
         {
-            item.WriteCode(writer, context);
+            bool emit = context.Options.SpecifiedFilesOnly == false
+                     || this.inputFiles.Contains(item.DeclaringFile)
+                     || context.CompilePass < CodeWritingPass.LastPass;
+
+            if (emit)
+            {
+                item.WriteCode(writer, context);
+            }
         }
     }
 

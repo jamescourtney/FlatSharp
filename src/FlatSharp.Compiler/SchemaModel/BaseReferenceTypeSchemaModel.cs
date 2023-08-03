@@ -179,7 +179,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     private void EmitPoolableObject(CodeWriter writer, CompileContext context)
     {
-        if (context.Options.GeneratePoolableObjects == true)
+        if (context.Options.GeneratePoolableObjects)
         {
             writer.AppendLine("/// <inheritdoc />");
             writer.AppendLine("public virtual void ReturnToPool(bool unsafeForce = false)");

@@ -90,37 +90,46 @@
     </ItemGroup>
 
     <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences" Condition=" '@(FlatSharpSchema)' != '' ">
+        <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
+            <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
+        </ProcessFlatSharpSchema>
+        
+        <!-- find compiler and set base command -->
+        <PropertyGroup>
+            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
+            <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
+            <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)</CompilerCommand>
+        </PropertyGroup>
+
+        <!-- Initialize FlatSharpNullable if not set -->
         <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
             <FlatSharpNullable>false</FlatSharpNullable>
             <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
         </PropertyGroup>
 
-        <PropertyGroup Condition=" '$(FlatSharpPoolable)' == '' ">
-            <FlatSharpPoolable>false</FlatSharpPoolable>
+        <!-- Append nullability to command line -->
+        <PropertyGroup>
+            <CompilerCommand>$(CompilerCommand) --nullable-warnings $(FlatSharpNullable)</CompilerCommand>
+        </PropertyGroup>
+
+        <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
+            <CompilerCommand>$(CompilerCommand) --gen-poolable</CompilerCommand>
         </PropertyGroup>
 
         <PropertyGroup Condition=" '$(FlatSharpDeserializers)' != '' ">
-            <FlatSharpDeserializers>--deserializers &quot;$(FlatSharpDeserializers)&quot;</FlatSharpDeserializers>
+            <CompilerCommand>$(CompilerCommand) --deserializers &quot;$(FlatSharpDeserializers)&quot;</CompilerCommand>
         </PropertyGroup>
 
-        <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' == '' ">
-            <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
+        <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' != '' ">
+            <CompilerCommand>$(CompilerCommand) --normalize-field-names $(FlatSharpNameNormalization)</CompilerCommand>
         </PropertyGroup>
 
-        <PropertyGroup>
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
+        <PropertyGroup Condition=" '$(FlatSharpClassDefinitionsOnly)' == 'true' ">
+            <CompilerCommand>$(CompilerCommand) --class-definitions-only</CompilerCommand>
         </PropertyGroup>
 
-        <PropertyGroup Condition=" '$(FlatSharpCompilerPath)' != '' ">
-            <CompilerPath>$(FlatSharpCompilerPath)</CompilerPath>
-        </PropertyGroup>
-
-        <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
-            <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
-        </ProcessFlatSharpSchema>
-
-        <PropertyGroup>
-            <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; $(FlatSharpDeserializers) --output $(IntermediateOutputPath)</CompilerCommand>
+        <PropertyGroup Condition=" '$(FlatSharpInputFilesOnly)' == 'true' ">
+            <CompilerCommand>$(CompilerCommand) --input-files-only</CompilerCommand>
         </PropertyGroup>
 
         <Message
