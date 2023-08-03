@@ -284,6 +284,7 @@ internal class DeserializeClassDefinition
 
         return
         $@"
+            [System.Diagnostics.DebuggerDisplay(""{this.options.DeserializationOption} {this.typeModel.ClrType.Name}"")]
             internal sealed class {this.ClassName}<TInputBuffer> 
                 : {typeModel.GetGlobalCompilableTypeName()}
                 , {interfaceGlobalName}

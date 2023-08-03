@@ -38,6 +38,7 @@ internal static partial class FlatBufferVectorHelpers
 
         string classDef =
 $$""""
+    [System.Diagnostics.DebuggerDisplay("Progressive [ {{itemTypeModel.ClrType.Name}} ], Count = {Count}")]
     internal sealed class {{className}}<TInputBuffer>
         : object
         , IList<{{baseTypeName}}>
