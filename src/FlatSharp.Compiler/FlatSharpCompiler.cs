@@ -270,7 +270,10 @@ public class FlatSharpCompiler
         CompilerOptions options,
         IEnumerable<Assembly>? additionalReferences = null)
     {
-        string temp = Path.GetTempFileName() + ".fbs";
+        string tempDirectory = Path.Combine(Path.GetPathRoot(RootDirectory)!, "flatsharptemp", Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(tempDirectory);
+
+        string temp = Path.Combine(tempDirectory, "schema.fbs");
         File.WriteAllText(temp, fbsSchema);
 
         try
@@ -280,6 +283,7 @@ public class FlatSharpCompiler
         finally
         {
             File.Delete(temp);
+            Directory.Delete(tempDirectory, true);
         }
     }
 

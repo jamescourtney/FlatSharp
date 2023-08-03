@@ -132,13 +132,8 @@
             <CompilerCommand>$(CompilerCommand) --input-files-only</CompilerCommand>
         </PropertyGroup>
 
-        <Message
-            Text="$(CompilerCommand)"
-            Importance="high" />
-
-        <Exec
-            Command="$(CompilerCommand)"
-            CustomErrorRegularExpression=".*" />
+        <Message Text="$(CompilerCommand)" Importance="high" />
+        <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
 
         <ItemGroup>
             <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
