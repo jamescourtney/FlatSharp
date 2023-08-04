@@ -36,6 +36,18 @@ jobs:
       working-directory: src/FlatSharp.Compiler
       run: dotnet build -c Release /p:SignAssembly=true
       
+    - if: runner.os != 'Windows'
+      name: chmod flatc
+      working-directory: src/FlatSharp.Compiler
+      run: |
+         chmod +X bin/Release/net7.0/flatc/linux/flatc
+         chmod +X bin/Release/net6.0/flatc/linux/flatc
+         chmod +X bin/Release/net7.0/flatc/macos_intel/flatc
+         chmod +X bin/Release/net6.0/flatc/macos_intel/flatc
+         chmod +X bin/Release/net6.0/flatc/macos_arm/flatc
+         chmod +X bin/Release/net6.0/flatc/macos_arm/flatc
+      shell: bash
+      
     - name: Run FlatSharp.Compiler (E2E Tests)
       # You may pin to the exact commit or the version.
       # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
