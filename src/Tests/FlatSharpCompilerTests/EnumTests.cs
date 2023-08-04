@@ -115,21 +115,21 @@ public class EnumTests
     public void InvalidEnumTest_WrongUnderlyingType_Bool()
     {
         var ex = Assert.Throws<InvalidFbsFileException>(() => this.EnumTest<bool>("bool"));
-        Assert.Contains("error: underlying enum type must be integral", ex.Message);
+        Assert.Contains("error: underlying enumtype must be integral", ex.Message);
     }
 
     [Fact]
     public void InvalidEnumTest_WrongUnderlyingType_Double()
     {
         var ex = Assert.Throws<InvalidFbsFileException>(() => this.EnumTest<double>("double"));
-        Assert.Contains("error: underlying enum type must be integral", ex.Message);
+        Assert.Contains("error: underlying enumtype must be integral", ex.Message);
     }
 
     [Fact]
     public void InvalidEnumTest_WrongUnderlyingType_Float()
     {
         var ex = Assert.Throws<InvalidFbsFileException>(() => this.EnumTest<float>("float"));
-        Assert.Contains("error: underlying enum type must be integral", ex.Message);
+        Assert.Contains("error: underlying enumtype must be integral", ex.Message);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class EnumTests
     {
         string fbs = $"{MetadataHelpers.AllAttributes}namespace Foo.Bar; enum MyEnum : foobar {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
-        Assert.Contains("error: underlying enum type must be integral", ex.Message);
+        Assert.Contains("error: underlying enumtype must be integral", ex.Message);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public class EnumTests
     {
         string fbs = $"{MetadataHelpers.AllAttributes}namespace Foo.Bar; enum MyEnum : string {{ Red, Blue, Yellow }}";
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
-        Assert.Contains("error: underlying enum type must be integral", ex.Message);
+        Assert.Contains("error: underlying enumtype must be integral", ex.Message);
     }
 
     [Fact]
