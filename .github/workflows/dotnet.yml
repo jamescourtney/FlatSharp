@@ -59,7 +59,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/FlatSharpEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/FlatSharpEndToEndTests
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/FlatSharpEndToEndTests
           
     - name: Run FlatSharp.Compiler (Pooling Tests)
       # You may pin to the exact commit or the version.
@@ -69,7 +69,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/tests/FlatSharpPoolableEndToEndTests
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/Tests/FlatSharpPoolableEndToEndTests
     
     - name: Build
       working-directory: src
