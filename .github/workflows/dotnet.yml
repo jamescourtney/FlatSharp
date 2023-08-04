@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     env:
       AppVeyorBuild: true
@@ -27,6 +27,21 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+
+    - if: runner.os == 'Linux'
+      name: chmod flatc (linux)
+      working-directory: src/ext/flatc
+      run: |
+         chmod 755 linux/flatc
+      shell: bash
+      
+    - if: runner.os == 'MacOS'
+      name: chmod flatc (mac)
+      working-directory: src/ext/flatc
+      run: |
+         chmod 755 macos_arm/flatc
+         chmod 755 macos_intel/flatc
+      shell: bash
         
     - name: Restore dependencies
       working-directory: src
@@ -35,7 +50,7 @@ jobs:
     - name: Build FlatSharp.Compiler
       working-directory: src/FlatSharp.Compiler
       run: dotnet build -c Release /p:SignAssembly=true
-      
+            
     - name: Run FlatSharp.Compiler (E2E Tests)
       # You may pin to the exact commit or the version.
       # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
@@ -44,8 +59,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/FlatSharpEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/FlatSharpEndToEndTests
-          
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/FlatSharpEndToEndTests
           
     - name: Run FlatSharp.Compiler (Pooling Tests)
       # You may pin to the exact commit or the version.
@@ -55,7 +69,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/tests/FlatSharpPoolableEndToEndTests
+          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/Tests/FlatSharpPoolableEndToEndTests
     
     - name: Build
       working-directory: src
