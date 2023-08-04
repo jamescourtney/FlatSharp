@@ -368,10 +368,7 @@ public class FlatSharpCompiler
 
         if (options.FlatcPath is null)
         {
-            (string os, string name) = GetFlatcPath();
-            string currentProcess = typeof(ISchemaMutator).Assembly.Location;
-            string currentDirectory = Path.GetDirectoryName(currentProcess)!;
-            flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
+            flatcPath = GetFlatcPath();
         }
         else
         {
@@ -483,10 +480,11 @@ public class FlatSharpCompiler
     }
 
     [ExcludeFromCodeCoverage]
-    private static (string os, string name) GetFlatcPath()
+    private static string GetFlatcPath()
     {
         string os;
         string name;
+        bool chmod = false;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -495,6 +493,7 @@ public class FlatSharpCompiler
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
+            chmod = true;
             if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
                 os = "macos_arm";
@@ -508,6 +507,7 @@ public class FlatSharpCompiler
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
+            chmod = true;
             os = "linux";
             name = "flatc";
         }
@@ -516,7 +516,37 @@ public class FlatSharpCompiler
             throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
         }
 
-        return (os, name);
+        static void Exec(string cmd)
+        {
+            var escapedArgs = cmd.Replace("\"", "\\\"");
+
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{escapedArgs}\""
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+        }
+
+        string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
+        string currentDirectory = Path.GetDirectoryName(currentProcess)!;
+        string flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
+
+        if (chmod)
+        {
+            Exec($"chmod +X \"{flatcPath}\"");
+        }
+
+        return flatcPath;
     }
 
     private static string CreateCSharp(
