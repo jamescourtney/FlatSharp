@@ -153,6 +153,6 @@ public static class MetadataKeys
 
     public static IEnumerable<string> UnsupportedStandardAttributes => new[]
     {
-        "force_align", "flexbuffer", "hash", "original_order"
+        "force_align", "flexbuffer", "hash", "original_order", "vector64"
     };
 }

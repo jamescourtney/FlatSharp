@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using FlatSharp.TypeModel;
+
 namespace FlatSharpTests.Compiler;
 
 public class InvalidAttributeTests
@@ -40,6 +42,18 @@ public class InvalidAttributeTests
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains("FlatSharp does not support the 'force_align' attribute.", ex.Message);
+    }
+
+    [Fact]
+    public void UnsupportedAttribute_Vector64()
+    {
+        string schema = @"
+            namespace ns;
+            table Foo { Value : [ int ] (vector64); }
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("FlatSharp does not support the 'vector64' attribute.", ex.Message);
     }
 
     [Fact]
@@ -114,6 +128,19 @@ public class InvalidAttributeTests
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains("FlatSharp does not support the 'original_order' attribute.", ex.Message);
+    }
+
+    [Fact]
+    public void UnsupportedAttribute_KeyOnStruct()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct Bar {{ k : int (key); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Struct member 'ns.Bar.K' declared the 'key' attribute. FlatSharp does not support keys on struct members.", ex.Message);
     }
 
     [Fact]
