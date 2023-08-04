@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     env:
       AppVeyorBuild: true
@@ -36,16 +36,22 @@ jobs:
       working-directory: src/FlatSharp.Compiler
       run: dotnet build -c Release /p:SignAssembly=true
       
-    - if: runner.os != 'Windows'
-      name: chmod flatc
+    - if: runner.os == 'Linux'
+      name: chmod flatc (linux)
       working-directory: src/FlatSharp.Compiler
       run: |
          chmod +X bin/Release/net7.0/flatc/linux/flatc
          chmod +X bin/Release/net6.0/flatc/linux/flatc
-         chmod +X bin/Release/net7.0/flatc/macos_intel/flatc
-         chmod +X bin/Release/net6.0/flatc/macos_intel/flatc
-         chmod +X bin/Release/net6.0/flatc/macos_arm/flatc
-         chmod +X bin/Release/net6.0/flatc/macos_arm/flatc
+      shell: bash
+      
+    - if: runner.os == 'MacOS'
+      name: chmod flatc (mac)
+      working-directory: src/FlatSharp.Compiler
+      run: |
+         chmod 755 bin/Release/net7.0/flatc/macos_intel/flatc
+         chmod 755 bin/Release/net7.0/flatc/macos_arm/flatc
+         chmod 755 bin/Release/net6.0/flatc/macos_intel/flatc
+         chmod 755 bin/Release/net6.0/flatc/macos_arm/flatc
       shell: bash
       
     - name: Run FlatSharp.Compiler (E2E Tests)
