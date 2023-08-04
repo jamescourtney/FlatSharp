@@ -7,9 +7,12 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-jobs:
+jobs:  
   build:
-    runs-on: windows-2019
+    strategy:
+      matrix:
+        os: [windows-2019, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     env:
       AppVeyorBuild: true
     steps:
