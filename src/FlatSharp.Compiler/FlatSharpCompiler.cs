@@ -368,10 +368,7 @@ public class FlatSharpCompiler
 
         if (options.FlatcPath is null)
         {
-            (string os, string name) = GetFlatcPath();
-            string currentProcess = typeof(ISchemaMutator).Assembly.Location;
-            string currentDirectory = Path.GetDirectoryName(currentProcess)!;
-            flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
+            flatcPath = GetFlatcPath();
         }
         else
         {
@@ -483,7 +480,7 @@ public class FlatSharpCompiler
     }
 
     [ExcludeFromCodeCoverage]
-    private static (string os, string name) GetFlatcPath()
+    private static string GetFlatcPath()
     {
         string os;
         string name;
@@ -516,7 +513,11 @@ public class FlatSharpCompiler
             throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
         }
 
-        return (os, name);
+        string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
+        string currentDirectory = Path.GetDirectoryName(currentProcess)!;
+        string flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
+
+        return flatcPath;
     }
 
     private static string CreateCSharp(
