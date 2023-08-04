@@ -492,7 +492,6 @@ public class FlatSharpCompiler
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            chmod = true;
             if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
                 os = "macos_arm";
@@ -506,7 +505,6 @@ public class FlatSharpCompiler
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            chmod = true;
             os = "linux";
             name = "flatc";
         }
