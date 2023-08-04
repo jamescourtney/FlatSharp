@@ -484,7 +484,6 @@ public class FlatSharpCompiler
     {
         string os;
         string name;
-        bool chmod = false;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -516,35 +515,9 @@ public class FlatSharpCompiler
             throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
         }
 
-        static void Exec(string cmd)
-        {
-            var escapedArgs = cmd.Replace("\"", "\\\"");
-
-            using var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"{escapedArgs}\""
-                }
-            };
-
-            process.Start();
-            process.WaitForExit();
-        }
-
         string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
         string currentDirectory = Path.GetDirectoryName(currentProcess)!;
         string flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
-
-        if (chmod)
-        {
-            Exec($"chmod +X \"{flatcPath}\"");
-        }
 
         return flatcPath;
     }
