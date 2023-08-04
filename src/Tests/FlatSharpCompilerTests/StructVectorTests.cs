@@ -81,7 +81,7 @@ public class StructVectorTests
                 schema,
                 new()));
 
-        Assert.Contains("error: structs may contain only scalar or struct fields", ex.Message);
+        Assert.Contains("error: Incomplete type in struct is not allowed, type name: Bar", ex.Message);
     }
 
     [Fact]

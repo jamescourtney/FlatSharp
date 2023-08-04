@@ -221,7 +221,7 @@ public class SortedVectors
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains(
-            "error: 'key' field must be string or scalar type",
+            "error: 'key' field must be string, scalar type or fixed size array of scalars",
             ex.Message);
     }
 
