@@ -74,11 +74,18 @@ jobs:
     - name: Build
       working-directory: src
       run: dotnet build -c Release /p:SignAssembly=true
-      
-    - name: Test
+
+    - if: runner.os == 'Windows'
+    - name: Test (All)
       working-directory: src
       run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
-      
+
+    - if: runner.os != 'Windows'
+    - name: Test (E2E)
+      working-directory: src/Tests/FlatSharpEndToEndTests
+      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
+
+    - if: runner.os == 'Windows'
     - name: Upload Packages
       uses: actions/upload-artifact@v2
       with:
