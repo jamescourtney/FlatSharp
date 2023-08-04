@@ -35,8 +35,6 @@ public class FlatSharpCompiler
 
     internal static CompilerOptions? CommandLineOptions { get; private set; }
 
-    private static readonly string RootDirectory = Path.GetDirectoryName(typeof(FlatSharpCompiler).Assembly.Location)!;
-
     private static string AssemblyVersion => typeof(ISchemaMutator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
     [ExcludeFromCodeCoverage]
@@ -270,10 +268,7 @@ public class FlatSharpCompiler
         CompilerOptions options,
         IEnumerable<Assembly>? additionalReferences = null)
     {
-        string tempDirectory = Path.Combine(Path.GetPathRoot(RootDirectory)!, "flatsharptemp", Guid.NewGuid().ToString("n"));
-        Directory.CreateDirectory(tempDirectory);
-
-        string temp = Path.Combine(tempDirectory, "schema.fbs");
+        string temp = Path.GetTempFileName() + ".fbs";
         File.WriteAllText(temp, fbsSchema);
 
         try
@@ -283,7 +278,6 @@ public class FlatSharpCompiler
         finally
         {
             File.Delete(temp);
-            Directory.Delete(tempDirectory, true);
         }
     }
 
@@ -415,7 +409,8 @@ public class FlatSharpCompiler
                     "--bfbs-comments",
                     "--bfbs-builtins",
                     "--bfbs-filenames",
-                    RootDirectory,
+                    Environment.CurrentDirectory,
+                    "--bfbs-absolute-paths",
                     "--no-warnings",
                     "-o",
                     outputDir,
@@ -500,16 +495,8 @@ public class FlatSharpCompiler
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-            {
-                os = "macos_arm";
-                name = "flatc";
-            }
-            else
-            {
-                os = "macos_intel";
-                name = "flatc";
-            }
+            os = "macos";
+            name = "flatc";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
@@ -554,7 +541,7 @@ public class FlatSharpCompiler
             {
                 new FieldNameNormalizerSchemaMutator(),
                 new ExternalTypeSchemaMutator(),
-                new AbsolutePathSchemaMutator(RootDirectory),
+                new PathNormalizerSchemaMutator(),
             };
 
             Stopwatch sw = Stopwatch.StartNew();
