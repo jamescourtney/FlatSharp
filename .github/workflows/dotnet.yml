@@ -43,7 +43,7 @@ jobs:
       with:
         # PowerShell script to execute in Actions-hydrated context
         script: |
-          $fbs = (gci -r src/tests/FlatsharpEndToEndTests/*.fbs) -join ";"
+          $fbs = (gci -r src/Tests/FlatsharpEndToEndTests/*.fbs) -join ";"
           dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/FlatSharpEndToEndTests
           
           
@@ -54,7 +54,7 @@ jobs:
       with:
         # PowerShell script to execute in Actions-hydrated context
         script: |
-          $fbs = (gci -r src/tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
+          $fbs = (gci -r src/Tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
           dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/tests/FlatSharpPoolableEndToEndTests
     
     - name: Build
