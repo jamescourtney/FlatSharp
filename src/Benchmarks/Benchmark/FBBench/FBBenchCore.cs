@@ -35,7 +35,7 @@ namespace Benchmark.FBBench
     {
         protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(1024 * 1024);
         protected ByteBuffer google_ByteBuffer;
-        public Google.FooBarContainerT google_defaultContainer;
+        public GFB.FooBarContainerT google_defaultContainer;
 
         public FooBarListContainer defaultContainer;
         public FooBarListContainerNonVirtual defaultContainerNonVirtual;
@@ -241,7 +241,7 @@ namespace Benchmark.FBBench
             int googleLength = 0;
             {
                 this.google_ByteBuffer = new ByteBuffer(this.fs_readMemory.ToArray());
-                this.google_defaultContainer = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
+                this.google_defaultContainer = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
                 googleLength = this.Google_FlatBuffers_Serialize_ObjectApi();
             }
 
@@ -272,12 +272,12 @@ namespace Benchmark.FBBench
             builder.Clear();
             var vectorLength = this.VectorLength;
 
-            Offset<Google.FooBar>[] offsets = new Offset<Google.FooBar>[vectorLength];
+            Offset<GFB.FooBar>[] offsets = new Offset<GFB.FooBar>[vectorLength];
             for (int i = 0; i < vectorLength; i++)
             {
                 var str = builder.CreateString("Hello, World!");
-                Google.FooBar.StartFooBar(builder);
-                Google.FooBar.AddSibling(builder, Google.Bar.CreateBar(
+                GFB.FooBar.StartFooBar(builder);
+                GFB.FooBar.AddSibling(builder, GFB.Bar.CreateBar(
                     builder,
                     0xABADCAFEABADCAFE + (ulong)i,
                     (short)(10000 + i),
@@ -287,14 +287,14 @@ namespace Benchmark.FBBench
                     3.14159f + i,
                     (ushort)(10000 + i)));
 
-                Google.FooBar.AddName(builder, str);
-                Google.FooBar.AddRating(builder, 3.1415432432445543543 + i);
-                Google.FooBar.AddPostfix(builder, (byte)('!' + i));
-                var offset = Google.FooBar.EndFooBar(builder);
+                GFB.FooBar.AddName(builder, str);
+                GFB.FooBar.AddRating(builder, 3.1415432432445543543 + i);
+                GFB.FooBar.AddPostfix(builder, (byte)('!' + i));
+                var offset = GFB.FooBar.EndFooBar(builder);
                 offsets[i] = offset;
             }
 
-            var foobarOffset = Google.FooBarContainer.CreateFooBarContainer(
+            var foobarOffset = GFB.FooBarContainer.CreateFooBarContainer(
                 builder,
                 builder.CreateVectorOfTables(offsets),
                 true,
@@ -308,7 +308,7 @@ namespace Benchmark.FBBench
         {
             var builder = this.google_flatBufferBuilder;
             builder.Clear();
-            var offset = Google.FooBarContainer.Pack(builder, this.google_defaultContainer);
+            var offset = GFB.FooBarContainer.Pack(builder, this.google_defaultContainer);
             builder.Finish(offset.Value);
             return offset.Value;
         }
@@ -320,7 +320,7 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                var foobar = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+                var foobar = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
 
                 sum += foobar.Initialized ? 1 : 0;
                 sum += foobar.Location.Length;
@@ -352,7 +352,7 @@ namespace Benchmark.FBBench
 
         public virtual int Google_Flatbuffers_ParseAndTraverse_ObjectApi()
         {
-            var @struct = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+            var @struct = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
             var foobar = @struct.UnPack();
 
             var iterations = this.TraversalCount;
@@ -395,7 +395,7 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                var foobar = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+                var foobar = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
 
                 sum += foobar.Initialized ? 1 : 0;
                 sum += foobar.Location.Length;
@@ -420,7 +420,7 @@ namespace Benchmark.FBBench
 
         public virtual int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi()
         {
-            var @struct = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+            var @struct = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
             var foobar = @struct.UnPack();
 
             var iterations = this.TraversalCount;
@@ -455,8 +455,8 @@ namespace Benchmark.FBBench
             builder.Clear();
 
             var offsets = this.CreateSortedStringVectorOffsets(builder);
-            var vectorOffset = Google.SortedVectorStringKey.CreateSortedVectorOfSortedVectorStringKey(builder, offsets);
-            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
+            var vectorOffset = GFB.SortedVectorStringKey.CreateSortedVectorOfSortedVectorStringKey(builder, offsets);
+            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
             builder.Finish(tableOffset.Value);
         }
 
@@ -466,8 +466,8 @@ namespace Benchmark.FBBench
             builder.Clear();
 
             var offsets = this.CreateSortedIntVectorOffsets(builder);
-            var vectorOffset = Google.SortedVectorIntKey.CreateSortedVectorOfSortedVectorIntKey(builder, offsets);
-            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
+            var vectorOffset = GFB.SortedVectorIntKey.CreateSortedVectorOfSortedVectorIntKey(builder, offsets);
+            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
             builder.Finish(tableOffset.Value);
         }
 
@@ -477,8 +477,8 @@ namespace Benchmark.FBBench
             builder.Clear();
 
             var offsets = this.CreateSortedStringVectorOffsets(builder);
-            var vectorOffset = Google.SortedVectorContainer.CreateStringVectorVector(builder, offsets);
-            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
+            var vectorOffset = GFB.SortedVectorContainer.CreateStringVectorVector(builder, offsets);
+            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
             builder.Finish(tableOffset.Value);
         }
 
@@ -488,20 +488,20 @@ namespace Benchmark.FBBench
             builder.Clear();
 
             var offsets = this.CreateSortedIntVectorOffsets(builder);
-            var vectorOffset = Google.SortedVectorContainer.CreateIntVectorVector(builder, offsets);
-            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
+            var vectorOffset = GFB.SortedVectorContainer.CreateIntVectorVector(builder, offsets);
+            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
             builder.Finish(tableOffset.Value);
         }
 
-        private Offset<Google.SortedVectorStringKey>[] CreateSortedStringVectorOffsets(FlatBufferBuilder builder)
+        private Offset<GFB.SortedVectorStringKey>[] CreateSortedStringVectorOffsets(FlatBufferBuilder builder)
         {
             var stringVector = this.sortedStringContainer.Vector;
             int stringVectorLength = stringVector.Count;
 
-            var offsets = new Offset<Google.SortedVectorStringKey>[stringVectorLength];
+            var offsets = new Offset<GFB.SortedVectorStringKey>[stringVectorLength];
             for (int i = 0; i < stringVectorLength; ++i)
             {
-                offsets[i] = Google.SortedVectorStringKey.CreateSortedVectorStringKey(
+                offsets[i] = GFB.SortedVectorStringKey.CreateSortedVectorStringKey(
                     builder,
                     builder.CreateString(stringVector[i].Key));
             }
@@ -509,15 +509,15 @@ namespace Benchmark.FBBench
             return offsets;
         }
 
-        private Offset<Google.SortedVectorIntKey>[] CreateSortedIntVectorOffsets(FlatBufferBuilder builder)
+        private Offset<GFB.SortedVectorIntKey>[] CreateSortedIntVectorOffsets(FlatBufferBuilder builder)
         {
             var intVector = this.sortedIntContainer.Vector;
             int intVectorLength = intVector.Count;
 
-            var offsets = new Offset<Google.SortedVectorIntKey>[intVectorLength];
+            var offsets = new Offset<GFB.SortedVectorIntKey>[intVectorLength];
             for (int i = 0; i < intVectorLength; ++i)
             {
-                offsets[i] = Google.SortedVectorIntKey.CreateSortedVectorIntKey(
+                offsets[i] = GFB.SortedVectorIntKey.CreateSortedVectorIntKey(
                     builder,
                     intVector[i].Key);
             }
