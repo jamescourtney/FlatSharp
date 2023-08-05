@@ -27,22 +27,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-
-    - if: runner.os == 'Linux'
-      name: chmod flatc (linux)
-      working-directory: src/ext/flatc
-      run: |
-         chmod 755 linux/flatc
-      shell: bash
-      
-    - if: runner.os == 'MacOS'
-      name: chmod flatc (mac)
-      working-directory: src/ext/flatc
-      run: |
-         chmod 755 macos_arm/flatc
-         chmod 755 macos_intel/flatc
-      shell: bash
-        
+       
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
@@ -75,15 +60,23 @@ jobs:
       working-directory: src
       run: dotnet build -c Release /p:SignAssembly=true
 
-    - if: runner.os == 'Windows'
-      name: Test (All)
-      working-directory: src
-      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
-
-    - name: Test (E2E)
+    - name: E2E Test
       working-directory: src/Tests/FlatSharpEndToEndTests
       run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
 
+    - name: Poolable E2E Test
+      working-directory: src/Tests/FlatSharpPoolableEndToEndTests
+      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
+      
+    - name: Compiler Test
+      working-directory: src/Tests/FlatSharpCompilerTests
+      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
+
+    - if: runner.os == 'Windows'
+      name: Legacy Test
+      working-directory: src/Tests/FlatSharpTests
+      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
+      
     - if: runner.os == 'Windows'
       name: Upload Packages
       uses: actions/upload-artifact@v2
