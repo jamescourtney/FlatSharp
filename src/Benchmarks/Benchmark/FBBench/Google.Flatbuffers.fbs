@@ -17,7 +17,7 @@
 // 1 array of 3 elements, each element: 1 string, 3 nested objects, 9 scalars
 // root element has the array, additional string and a short
 
-namespace Benchmark.FBBench.Google;
+namespace Benchmark.FBBench.GFB;
 
 struct Foo {
   id:ulong;

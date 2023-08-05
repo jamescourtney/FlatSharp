@@ -13,7 +13,7 @@ public struct NestedStructs : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static NestedStructs GetRootAsNestedStructs(ByteBuffer _bb) { return GetRootAsNestedStructs(_bb, new NestedStructs()); }
   public static NestedStructs GetRootAsNestedStructs(ByteBuffer _bb, NestedStructs obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -22,7 +22,7 @@ public struct NestedStructs : IFlatbufferObject
   public FlatSharpEndToEndTests.Oracle.Flatc.OuterStruct? Outer { get { int o = __p.__offset(4); return o != 0 ? (FlatSharpEndToEndTests.Oracle.Flatc.OuterStruct?)(new FlatSharpEndToEndTests.Oracle.Flatc.OuterStruct()).__assign(o + __p.bb_pos, __p.bb) : null; } }
 
   public static void StartNestedStructs(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddOuter(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.OuterStruct> OuterOffset) { builder.AddStruct(0, OuterOffset.Value, 0); }
+  public static void AddOuter(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.OuterStruct> outerOffset) { builder.AddStruct(0, outerOffset.Value, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.NestedStructs> EndNestedStructs(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.NestedStructs>(o);
@@ -52,5 +52,15 @@ public class NestedStructsT
   }
 }
 
+
+static public class NestedStructsVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Outer*/, 8 /*FlatSharpEndToEndTests.Oracle.Flatc.OuterStruct*/, 4, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

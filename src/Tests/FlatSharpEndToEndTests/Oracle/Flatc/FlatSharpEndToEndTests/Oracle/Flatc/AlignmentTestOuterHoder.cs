@@ -13,7 +13,7 @@ public struct AlignmentTestOuterHoder : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static AlignmentTestOuterHoder GetRootAsAlignmentTestOuterHoder(ByteBuffer _bb) { return GetRootAsAlignmentTestOuterHoder(_bb, new AlignmentTestOuterHoder()); }
   public static AlignmentTestOuterHoder GetRootAsAlignmentTestOuterHoder(ByteBuffer _bb, AlignmentTestOuterHoder obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -22,7 +22,7 @@ public struct AlignmentTestOuterHoder : IFlatbufferObject
   public FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuter? Value { get { int o = __p.__offset(4); return o != 0 ? (FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuter?)(new FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuter()).__assign(o + __p.bb_pos, __p.bb) : null; } }
 
   public static void StartAlignmentTestOuterHoder(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddValue(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuter> ValueOffset) { builder.AddStruct(0, ValueOffset.Value, 0); }
+  public static void AddValue(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuter> valueOffset) { builder.AddStruct(0, valueOffset.Value, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuterHoder> EndAlignmentTestOuterHoder(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuterHoder>(o);
@@ -52,5 +52,15 @@ public class AlignmentTestOuterHoderT
   }
 }
 
+
+static public class AlignmentTestOuterHoderVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Value*/, 40 /*FlatSharpEndToEndTests.Oracle.Flatc.AlignmentTestOuter*/, 8, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

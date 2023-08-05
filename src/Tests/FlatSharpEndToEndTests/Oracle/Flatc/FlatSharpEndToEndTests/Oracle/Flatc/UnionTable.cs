@@ -13,7 +13,7 @@ public struct UnionTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static UnionTable GetRootAsUnionTable(ByteBuffer _bb) { return GetRootAsUnionTable(_bb, new UnionTable()); }
   public static UnionTable GetRootAsUnionTable(ByteBuffer _bb, UnionTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -36,8 +36,8 @@ public struct UnionTable : IFlatbufferObject
   }
 
   public static void StartUnionTable(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddValueType(FlatBufferBuilder builder, FlatSharpEndToEndTests.Oracle.Flatc.Union ValueType) { builder.AddByte(0, (byte)ValueType, 0); }
-  public static void AddValue(FlatBufferBuilder builder, int ValueOffset) { builder.AddOffset(1, ValueOffset, 0); }
+  public static void AddValueType(FlatBufferBuilder builder, FlatSharpEndToEndTests.Oracle.Flatc.Union valueType) { builder.AddByte(0, (byte)valueType, 0); }
+  public static void AddValue(FlatBufferBuilder builder, int valueOffset) { builder.AddOffset(1, valueOffset, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.UnionTable> EndUnionTable(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.UnionTable>(o);
@@ -83,5 +83,16 @@ public class UnionTableT
   }
 }
 
+
+static public class UnionTableVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*ValueType*/, 1 /*FlatSharpEndToEndTests.Oracle.Flatc.Union*/, 1, false)
+      && verifier.VerifyUnion(tablePos, 4, 6 /*Value*/, FlatSharpEndToEndTests.Oracle.Flatc.UnionVerify.Verify, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

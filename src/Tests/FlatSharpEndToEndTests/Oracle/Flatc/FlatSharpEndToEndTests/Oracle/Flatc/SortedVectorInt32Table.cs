@@ -13,7 +13,7 @@ public struct SortedVectorInt32Table : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static SortedVectorInt32Table GetRootAsSortedVectorInt32Table(ByteBuffer _bb) { return GetRootAsSortedVectorInt32Table(_bb, new SortedVectorInt32Table()); }
   public static SortedVectorInt32Table GetRootAsSortedVectorInt32Table(ByteBuffer _bb, SortedVectorInt32Table obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -29,7 +29,7 @@ public struct SortedVectorInt32Table : IFlatbufferObject
   }
 
   public static void StartSortedVectorInt32Table(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddValue(FlatBufferBuilder builder, int Value) { builder.AddInt(0, Value, 5); }
+  public static void AddValue(FlatBufferBuilder builder, int value) { builder.AddInt(0, value, 5); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.SortedVectorInt32Table> EndSortedVectorInt32Table(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.SortedVectorInt32Table>(o);
@@ -88,5 +88,15 @@ public class SortedVectorInt32TableT
   }
 }
 
+
+static public class SortedVectorInt32TableVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Value*/, 4 /*int*/, 4, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

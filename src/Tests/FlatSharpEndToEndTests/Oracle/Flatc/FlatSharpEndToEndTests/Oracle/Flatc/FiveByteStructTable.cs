@@ -13,7 +13,7 @@ public struct FiveByteStructTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static FiveByteStructTable GetRootAsFiveByteStructTable(ByteBuffer _bb) { return GetRootAsFiveByteStructTable(_bb, new FiveByteStructTable()); }
   public static FiveByteStructTable GetRootAsFiveByteStructTable(ByteBuffer _bb, FiveByteStructTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -30,7 +30,7 @@ public struct FiveByteStructTable : IFlatbufferObject
   }
 
   public static void StartFiveByteStructTable(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddVector(FlatBufferBuilder builder, VectorOffset VectorOffset) { builder.AddOffset(0, VectorOffset.Value, 0); }
+  public static void AddVector(FlatBufferBuilder builder, VectorOffset vectorOffset) { builder.AddOffset(0, vectorOffset.Value, 0); }
   public static void StartVectorVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(8, numElems, 4); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.FiveByteStructTable> EndFiveByteStructTable(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -68,5 +68,15 @@ public class FiveByteStructTableT
   }
 }
 
+
+static public class FiveByteStructTableVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyVectorOfData(tablePos, 4 /*Vector*/, 8 /*FlatSharpEndToEndTests.Oracle.Flatc.FiveByteStruct*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

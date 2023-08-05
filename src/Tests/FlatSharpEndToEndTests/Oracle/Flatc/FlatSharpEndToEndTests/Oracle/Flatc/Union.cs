@@ -41,4 +41,29 @@ public class UnionUnion {
 }
 
 
+
+static public class UnionVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, byte typeId, uint tablePos)
+  {
+    bool result = true;
+    switch((Union)typeId)
+    {
+      case Union.BasicTypes:
+        result = FlatSharpEndToEndTests.Oracle.Flatc.BasicTypesVerify.Verify(verifier, tablePos);
+        break;
+      case Union.Location:
+        result = verifier.VerifyUnionData(tablePos, 12, 4);
+        break;
+      case Union.stringValue:
+       result = verifier.VerifyUnionString(tablePos);
+        break;
+      default: result = true;
+        break;
+    }
+    return result;
+  }
+}
+
+
 }

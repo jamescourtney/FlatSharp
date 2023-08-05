@@ -13,7 +13,7 @@ public struct BasicTypes : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static BasicTypes GetRootAsBasicTypes(ByteBuffer _bb) { return GetRootAsBasicTypes(_bb, new BasicTypes()); }
   public static BasicTypes GetRootAsBasicTypes(ByteBuffer _bb, BasicTypes obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -68,18 +68,18 @@ public struct BasicTypes : IFlatbufferObject
   }
 
   public static void StartBasicTypes(FlatBufferBuilder builder) { builder.StartTable(12); }
-  public static void AddByte(FlatBufferBuilder builder, byte Byte) { builder.AddByte(0, Byte, 0); }
-  public static void AddUShort(FlatBufferBuilder builder, ushort UShort) { builder.AddUshort(1, UShort, 0); }
-  public static void AddShort(FlatBufferBuilder builder, short Short) { builder.AddShort(2, Short, 0); }
-  public static void AddBool(FlatBufferBuilder builder, bool Bool) { builder.AddBool(3, Bool, false); }
-  public static void AddUInt(FlatBufferBuilder builder, uint UInt) { builder.AddUint(4, UInt, 0); }
-  public static void AddInt(FlatBufferBuilder builder, int Int) { builder.AddInt(5, Int, 0); }
-  public static void AddSByte(FlatBufferBuilder builder, sbyte SByte) { builder.AddSbyte(6, SByte, 0); }
-  public static void AddULong(FlatBufferBuilder builder, ulong ULong) { builder.AddUlong(7, ULong, 0); }
-  public static void AddLong(FlatBufferBuilder builder, long Long) { builder.AddLong(8, Long, 0); }
-  public static void AddFloat(FlatBufferBuilder builder, float Float) { builder.AddFloat(9, Float, 0.0f); }
-  public static void AddDouble(FlatBufferBuilder builder, double Double) { builder.AddDouble(10, Double, 0.0); }
-  public static void AddString(FlatBufferBuilder builder, StringOffset StringOffset) { builder.AddOffset(11, StringOffset.Value, 0); }
+  public static void AddByte(FlatBufferBuilder builder, byte @byte) { builder.AddByte(0, @byte, 0); }
+  public static void AddUShort(FlatBufferBuilder builder, ushort uShort) { builder.AddUshort(1, uShort, 0); }
+  public static void AddShort(FlatBufferBuilder builder, short @short) { builder.AddShort(2, @short, 0); }
+  public static void AddBool(FlatBufferBuilder builder, bool @bool) { builder.AddBool(3, @bool, false); }
+  public static void AddUInt(FlatBufferBuilder builder, uint uInt) { builder.AddUint(4, uInt, 0); }
+  public static void AddInt(FlatBufferBuilder builder, int @int) { builder.AddInt(5, @int, 0); }
+  public static void AddSByte(FlatBufferBuilder builder, sbyte sByte) { builder.AddSbyte(6, sByte, 0); }
+  public static void AddULong(FlatBufferBuilder builder, ulong uLong) { builder.AddUlong(7, uLong, 0); }
+  public static void AddLong(FlatBufferBuilder builder, long @long) { builder.AddLong(8, @long, 0); }
+  public static void AddFloat(FlatBufferBuilder builder, float @float) { builder.AddFloat(9, @float, 0.0f); }
+  public static void AddDouble(FlatBufferBuilder builder, double @double) { builder.AddDouble(10, @double, 0.0); }
+  public static void AddString(FlatBufferBuilder builder, StringOffset stringOffset) { builder.AddOffset(11, stringOffset.Value, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.BasicTypes> EndBasicTypes(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.BasicTypes>(o);
@@ -154,5 +154,26 @@ public class BasicTypesT
   }
 }
 
+
+static public class BasicTypesVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Byte*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*UShort*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 8 /*Short*/, 2 /*short*/, 2, false)
+      && verifier.VerifyField(tablePos, 10 /*Bool*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*UInt*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*Int*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*SByte*/, 1 /*sbyte*/, 1, false)
+      && verifier.VerifyField(tablePos, 18 /*ULong*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 20 /*Long*/, 8 /*long*/, 8, false)
+      && verifier.VerifyField(tablePos, 22 /*Float*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 24 /*Double*/, 8 /*double*/, 8, false)
+      && verifier.VerifyString(tablePos, 26 /*String*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }
