@@ -52,6 +52,11 @@ public class StructMemberModel : ItemMemberModel
         {
             throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
         }
+
+        if (this.Attribute.Key)
+        {
+            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the 'key' attribute. FlatSharp does not support keys on struct members.");
+        }
     }
 
     /// <summary>
