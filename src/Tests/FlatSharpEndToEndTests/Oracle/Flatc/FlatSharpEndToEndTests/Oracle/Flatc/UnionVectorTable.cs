@@ -13,7 +13,7 @@ public struct UnionVectorTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static UnionVectorTable GetRootAsUnionVectorTable(ByteBuffer _bb) { return GetRootAsUnionVectorTable(_bb, new UnionVectorTable()); }
   public static UnionVectorTable GetRootAsUnionVectorTable(ByteBuffer _bb, UnionVectorTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -41,13 +41,13 @@ public struct UnionVectorTable : IFlatbufferObject
   }
 
   public static void StartUnionVectorTable(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddValueType(FlatBufferBuilder builder, VectorOffset ValueTypeOffset) { builder.AddOffset(0, ValueTypeOffset.Value, 0); }
+  public static void AddValueType(FlatBufferBuilder builder, VectorOffset valueTypeOffset) { builder.AddOffset(0, valueTypeOffset.Value, 0); }
   public static VectorOffset CreateValueTypeVector(FlatBufferBuilder builder, FlatSharpEndToEndTests.Oracle.Flatc.Union[] data) { builder.StartVector(1, data.Length, 1); for (int i = data.Length - 1; i >= 0; i--) builder.AddByte((byte)data[i]); return builder.EndVector(); }
   public static VectorOffset CreateValueTypeVectorBlock(FlatBufferBuilder builder, FlatSharpEndToEndTests.Oracle.Flatc.Union[] data) { builder.StartVector(1, data.Length, 1); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateValueTypeVectorBlock(FlatBufferBuilder builder, ArraySegment<FlatSharpEndToEndTests.Oracle.Flatc.Union> data) { builder.StartVector(1, data.Count, 1); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateValueTypeVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<FlatSharpEndToEndTests.Oracle.Flatc.Union>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartValueTypeVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(1, numElems, 1); }
-  public static void AddValue(FlatBufferBuilder builder, VectorOffset ValueOffset) { builder.AddOffset(1, ValueOffset.Value, 0); }
+  public static void AddValue(FlatBufferBuilder builder, VectorOffset valueOffset) { builder.AddOffset(1, valueOffset.Value, 0); }
   public static VectorOffset CreateValueVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i]); return builder.EndVector(); }
   public static VectorOffset CreateValueVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateValueVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
@@ -112,5 +112,15 @@ public class UnionVectorTableT
   }
 }
 
+
+static public class UnionVectorTableVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyVectorOfData(tablePos, 4 /*ValueType*/, 1 /*FlatSharpEndToEndTests.Oracle.Flatc.Union*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }
