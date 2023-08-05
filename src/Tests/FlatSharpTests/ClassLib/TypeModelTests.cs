@@ -699,7 +699,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyStruct<int>>>)));
-        Assert.Equal("Property 'Vector' declares a sorted vector, but the member is not a table. Type = System.Collections.Generic.IList<FlatSharpTests.TypeModelTests.SortedVectorKeyStruct<System.Int32>>.", ex.Message);
+        Assert.Equal("Struct member 'FlatSharpTests.TypeModelTests.SortedVectorKeyStruct<System.Int32>.Key' declared the 'key' attribute. FlatSharp does not support keys on struct members.", ex.Message);
     }
 
     [Fact]
