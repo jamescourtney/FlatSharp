@@ -26,7 +26,7 @@ public partial class TableMemberTests
     [ClassData(typeof(DeserializationOptionClassData))]
     public void Byte(FlatBufferDeserializationOption option)
     {
-         this.RunTest<byte, ByteTable>(1, option);
+       this.RunTest<byte, ByteTable>(1, option);
 
         ByteTable table = new();
         table.ItemMemory = new byte[] { 1, 2, 3, 4, 5, };

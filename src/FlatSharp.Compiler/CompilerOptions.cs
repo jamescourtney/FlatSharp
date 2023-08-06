@@ -65,10 +65,10 @@ public record CompilerOptions
     [Option("input-files-only", Hidden = false, HelpText = "Only outputs type definitions for expicitely passed input files. Does not process any included files.")]
     public bool SpecifiedFilesOnly { get; set; }
 
-    [Option("unity-assembly-path", HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
-    public string? UnityAssemblyPath { get; set; }
-
     // Hidden options for tests / debugging
+
+    [Option("unity-assembly-path", Hidden = true, HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
+    public string? UnityAssemblyPath { get; set; }
 
     [Option("flatc-path", Hidden = true)]
     public string? FlatcPath { get; set; }

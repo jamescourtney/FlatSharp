@@ -17,4 +17,6 @@ table StandardVectorTable (fs_serializer)
     implicit_memory : [ ubyte ];
     explicit_memory : [ ubyte ] (fs_vector:"Memory");
     read_only_memory : [ ubyte ] (fs_vector:"ReadOnlyMemory");
+
+    unity_native : [ ubyte ] (fs_vector:"UnityNativeArray");
 }
