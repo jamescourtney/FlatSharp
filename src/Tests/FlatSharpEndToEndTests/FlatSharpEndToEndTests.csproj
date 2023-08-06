@@ -43,6 +43,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
