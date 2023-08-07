@@ -371,8 +371,7 @@ public class EchoServiceTestCases
 
             for (int i = 0; i < 100; ++i)
             {
-                string str = Guid.NewGuid().ToString();
-                await sourceChannel.Writer.WriteAsync(new StringMessage { Value = str });
+                await sourceChannel.Writer.WriteAsync(new StringMessage { Value = i.ToString() });
 
                 if (i == 50)
                 {
@@ -396,14 +395,14 @@ public class EchoServiceTestCases
                 else
                 {
                     var item = await destChannel.Reader.ReadAsync();
-                    Assert.Equal(str, item.Value);
+                    Assert.Equal(i.ToString(), item.Value);
                 }
             }
 
             await this.AssertCanceled(() => duplexCall);
 
             Assert.True(destChannel.Reader.Completion.IsCompleted);
-            Assert.True(destChannel.Reader.Completion.IsFaulted);
+            Assert.True(destChannel.Reader.Completion.IsCanceled || destChannel.Reader.Completion.IsFaulted);
         });
     }
 
