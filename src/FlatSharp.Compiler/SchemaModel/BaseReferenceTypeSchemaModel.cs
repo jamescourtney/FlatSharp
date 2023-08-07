@@ -195,7 +195,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
         using (writer.WithBlock())
         {
             var keyProperty = this.properties.Values.SingleOrDefault(p => p.Field.Key);
-            if (keyProperty is not null)
+            if (keyProperty is not null && context.CompilePass == CodeWritingPass.LastPass)
             {
                 writer.AppendLine($"global::FlatSharp.SortedVectorHelpers.RegisterKeyLookup<{this.Name}, {keyProperty.Field.Type.ResolveTypeOrElementTypeName(this.Schema, keyProperty.Attributes)}>(x => x.{keyProperty.FieldName}, {keyProperty.Index});");
             }

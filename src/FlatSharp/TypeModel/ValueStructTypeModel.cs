@@ -239,14 +239,15 @@ public class ValueStructTypeModel : RuntimeTypeModel
     public override void Initialize()
     {
         var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
+
         FlatSharpInternal.Assert(structAttribute is not null, "Struct attribute was null");
         FlatSharpInternal.Assert(this.ClrType.IsValueType, "Struct was not a value type");
 
-        if (this.ClrType.StructLayoutAttribute is null ||
-            this.ClrType.StructLayoutAttribute.Value != LayoutKind.Explicit ||
-            !this.ClrType.IsExplicitLayout)
         {
-            throw new InvalidFlatBufferDefinitionException($"Value struct '{this.GetCompilableTypeName()}' must have [StructLayout(LayoutKind.Explicit)] specified.");
+            string msg = $"Value struct '{this.GetCompilableTypeName()}' must have [StructLayout(LayoutKind.Explicit)] specified.";
+            FlatSharpInternal.Assert(this.ClrType.StructLayoutAttribute is not null, msg);
+            FlatSharpInternal.Assert(this.ClrType.StructLayoutAttribute.Value == LayoutKind.Explicit, msg);
+            FlatSharpInternal.Assert(this.ClrType.IsExplicitLayout, msg);
         }
 
         var fields = this.ClrType
@@ -260,10 +261,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
             .OrderBy(x => x.OffsetAttribute!.Value)
             .ToList();
 
-        if (fields.Count == 0)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Value struct '{this.GetCompilableTypeName()}' is empty or has no public fields.");
-        }
+        FlatSharpInternal.Assert(fields.Count > 0, $"Value struct '{this.GetCompilableTypeName()}' is empty or has no public fields.");
 
         this.inlineSize = 0;
         foreach (var item in fields)
@@ -274,20 +272,17 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
             ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(field.FieldType);
 
-            if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' field {field.Name} cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.");
-            }
+            FlatSharpInternal.Assert(
+                propertyModel.IsValidStructMember && propertyModel.PhysicalLayout.Length == 1,
+                $"Struct '{this.GetCompilableTypeName()}' field {field.Name} cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.");
 
-            if (!field.IsPublic && string.IsNullOrEmpty(accessor))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' field {field.Name} is not public and does not declare a custom accessor. Non-public fields must also specify a custom accessor.");
-            }
+            FlatSharpInternal.Assert(
+                field.IsPublic || !string.IsNullOrEmpty(accessor),
+                $"Struct '{this.GetCompilableTypeName()}' field {field.Name} is not public and does not declare a custom accessor. Non-public fields must also specify a custom accessor.");
 
-            if (!propertyModel.ClrType.IsValueType)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' field {field.Name} must be a value type if the struct is a value type.");
-            }
+            FlatSharpInternal.Assert(
+                propertyModel.ClrType.IsValueType,
+                $"Struct '{this.GetCompilableTypeName()}' field {field.Name} must be a value type if the struct is a value type.");
 
             int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
             int propertyAlignment = propertyModel.PhysicalLayout[0].Alignment;
@@ -297,23 +292,21 @@ public class ValueStructTypeModel : RuntimeTypeModel
             this.inlineSize += SerializationHelpers.GetAlignmentError(this.inlineSize, propertyAlignment);
 
             this.members.Add((this.inlineSize, accessor ?? field.Name, propertyModel));
-            if (offsetAttribute?.Value != this.inlineSize)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.GetCompilableTypeName()}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");
-            }
+
+            FlatSharpInternal.Assert(
+                offsetAttribute?.Value == this.inlineSize,
+                $"Struct '{this.ClrType.GetCompilableTypeName()}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");
 
             this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
         }
 
-        if (!this.ClrType.IsPublic && !this.ClrType.IsNestedPublic)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
-        }
+        FlatSharpInternal.Assert(
+            this.ClrType.IsPublic || this.ClrType.IsNestedPublic,
+            $"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
 
         this.isExternal = this.ClrType.GetCustomAttribute<ExternalDefinitionAttribute>() is not null;
         this.CanMarshalOnSerialize = false;
         this.CanMarshalOnParse = false;
-
 
         if (UnsafeSizeOf(this.ClrType) == this.inlineSize)
         {

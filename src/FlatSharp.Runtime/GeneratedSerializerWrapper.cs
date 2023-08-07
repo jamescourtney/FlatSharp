@@ -223,11 +223,13 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         };
     }
 
+    [ExcludeFromCodeCoverage]
     public ISerializer<T> WithSettings(Action<SerializerSettings> settingsCallback)
     {
         return this.WithSettingsCore(settingsCallback);
     }
 
+    [ExcludeFromCodeCoverage]
     ISerializer ISerializer.WithSettings(Action<SerializerSettings> settingsCallback)
     {
         return this.WithSettingsCore(settingsCallback);
