@@ -15,6 +15,7 @@
  */
 
 using FlatSharp.Internal;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace FlatSharpEndToEndTests.Vectors.Sorted;
@@ -261,6 +262,100 @@ public class SortedVectorTests
         (k, v) => k.Key = v,
         new Utf8StringComparer());
 
+    [Fact]
+    public void String_Null_Key_Is_Required()
+    {
+        RootTable root = new()
+        {
+            ListVectorOfString = new List<StringKey> { new() { Key = null, }, new() { Key = "a" }, new() { Key = "b" } }
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => root.AllocateAndSerialize());
+        Assert.Equal("Table property 'FlatSharpEndToEndTests.Vectors.Sorted.StringKey.Key' is marked as required, but was not set.", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void Int_Null_Key_OK(FlatBufferDeserializationOption option)
+    {
+        RootTable root = new()
+        {
+            ListVectorOfInt = new List<IntKey> { new() { }, new() { Key = 1 }, new() { Key = 2 } }
+        };
+
+        RootTable parsed = root.SerializeAndParse(option, out byte[] buffer);
+
+        // ensure that the '5' is not written to the output.
+        byte[] expected = 
+        {
+            4, 0, 0, 0,
+            248, 255, 255, 255,
+            20, 0, 0, 0,
+            16, 0, 8, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 4, 0,
+            3, 0, 0, 0,
+            20, 0, 0, 0,
+            32, 0, 0, 0,
+            4, 0, 0, 0,
+            252, 255, 255, 255,
+            4, 0, 4, 0,
+            248, 255, 255, 255,
+            1, 0, 0, 0,
+            6, 0, 8, 0,
+            4, 0, 0, 0,
+            8, 0, 0, 0,
+            2, 0, 0, 0, 
+        };
+
+        Assert.True(buffer.SequenceEqual(expected));
+
+        Assert.NotNull(parsed.ListVectorOfInt.BinarySearchByFlatBufferKey(5));
+        Assert.Null(parsed.ListVectorOfInt.BinarySearchByFlatBufferKey(6));
+    }
+
+    [Theory]
+    [InlineData(FlatBufferDeserializationOption.Lazy)]
+    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    public void String_Null_Key_Fails_Binary_Search(FlatBufferDeserializationOption option)
+    {
+        RootTable_NonSorted root = new()
+        {
+            ListVectorOfString = new List<StringKey_NoKey> { new() { Key = null, }, new() { Key = "m" }, new() { Key = "z" } }
+        };
+
+        byte[] data = root.AllocateAndSerialize();
+        RootTable parsed = RootTable.Serializer.Parse(data, option);
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var key = parsed.ListVectorOfString.BinarySearchByFlatBufferKey("a");
+        });
+
+        Assert.Equal("Sorted FlatBuffer vectors may not have null-valued keys.", ex.Message);
+    }
+
+    [Theory]
+    [InlineData(FlatBufferDeserializationOption.Greedy)]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+    public void String_Null_Key_Fails_Greedy_Parse(FlatBufferDeserializationOption option)
+    {
+        RootTable_NonSorted root = new()
+        {
+            ListVectorOfString = new List<StringKey_NoKey> { new() { Key = null, }, new() { Key = "m" }, new() { Key = "z" } }
+        };
+
+        byte[] data = root.AllocateAndSerialize();
+
+        var ex = Assert.Throws<InvalidDataException>(() =>
+        {
+            RootTable parsed = RootTable.Serializer.Parse(data, option);
+        });
+
+        Assert.Equal("Table property 'FlatSharpEndToEndTests.Vectors.Sorted.StringKey.Key' is marked as required, but was missing from the buffer.", ex.Message);
+    }
+
     private void SortedVectorStructTestReadOnly<TKey, TValue>(
         FlatBufferDeserializationOption option,
         Func<RootTableReadOnly, IReadOnlyList<TValue>> getList,
@@ -347,7 +442,7 @@ public class SortedVectorTests
         }
     }
 
-    private  void SortedVectorTest<TKey, TValue>(
+    private void SortedVectorTest<TKey, TValue>(
         FlatBufferDeserializationOption option,
         Func<Random, TKey> createKey,
         Func<RootTable, IList<TValue>> getList,

@@ -235,6 +235,7 @@ public static class SortedVectorHelpers
             }
         }
 
+        [ExcludeFromCodeCoverage]
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DoesNotReturn]
         private static void ThrowNotInitialized()
@@ -319,8 +320,14 @@ public static class SortedVectorHelpers
             // Follow soffset to start of vtable.
             int vtableStart = offset - buffer.ReadInt(offset);
 
-            // Offset within the table.
-            int tableOffset = buffer.ReadUShort(vtableStart + 4 + (2 * this.keyIndex));
+            ushort vtableLength = buffer.ReadUShort(vtableStart);
+            int tableOffset = 0;
+            int keyFieldOffset = 4 + (2 * this.keyIndex);
+
+            if (keyFieldOffset + sizeof(ushort) <= vtableLength)
+            {
+                tableOffset = buffer.ReadUShort(vtableStart + keyFieldOffset);
+            }
 
             if (tableOffset == 0)
             {

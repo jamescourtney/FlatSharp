@@ -15,10 +15,12 @@
  */
 
 using FlatSharp.Internal;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using Xunit.Abstractions;
 
@@ -32,6 +34,26 @@ public static class Helpers
         {
             action();
         }
+    }
+
+    public static string ToCSharpArrayString(this byte[] buffer)
+    {
+        StringBuilder sb = new();
+        sb.Append("new byte[] { ");
+
+        for (int i = 0; i < buffer.Length; ++i)
+        {
+            if (i % 4 == 0)
+            {
+                sb.AppendLine();
+            }
+
+            sb.Append(buffer[i]);
+            sb.Append(", ");
+        }
+
+        sb.Append("}");
+        return sb.ToString();
     }
 
     public static byte[] AllocateAndSerialize<T>(this T item) where T : class, IFlatBufferSerializable<T>

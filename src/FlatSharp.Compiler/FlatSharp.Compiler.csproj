@@ -10,6 +10,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <NuspecProperties>$(NuspecProperties);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
     <Nullable>annotations</Nullable>
+    <Deterministic>true</Deterministic>
 
     <!-- NU5127: Nuget package doesn't contain any frameworks. This is intentional. -->
     <NoWarn>$(NoWarn);CS3021;3021;NU5127</NoWarn>
