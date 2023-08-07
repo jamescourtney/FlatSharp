@@ -15,7 +15,6 @@
  */
 
 using FlatSharp.Internal;
-using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
