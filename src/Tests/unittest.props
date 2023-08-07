@@ -1,5 +1,9 @@
 <Project>
   <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.1.2" Condition=" '$(CoverageBuild)' == 'true' ">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

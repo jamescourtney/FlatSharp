@@ -71,6 +71,19 @@ public static class FlatSharpInternal
             throw new FlatSharpInternalException(message);
         }
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AssertWellAligned<TElement>(int alignment)
+        where TElement : unmanaged
+    {
+        var size = Unsafe.SizeOf<TElement>();
+
+        // Inlining this method should allow this check to be elided as the alignment is a constant from the callsite.
+        if (size % alignment != 0)
+        {
+            throw new InvalidOperationException($"Type '{typeof(TElement).FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
+        }
+    }
 }
 
 [ExcludeFromCodeCoverage]

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace FlatSharpEndToEndTests.ValueStructs;
@@ -95,8 +96,9 @@ public class ValueStructTestCases
         }
     }
 
-    [Fact]
-    public void SerializeAndParse_Full()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void SerializeAndParse_Full(FlatBufferDeserializationOption option)
     {
         ValueStruct vs = new ValueStruct
         {
@@ -131,7 +133,7 @@ public class ValueStructTestCases
         int maxBytes = serializer.GetMaxSize(table);
         byte[] buffer = new byte[maxBytes];
         int written = serializer.Write(buffer, table);
-        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written));
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written), option);
 
         Assert.NotNull(parsed.RefStruct);
         Assert.NotNull(parsed.ValueStruct);
@@ -160,6 +162,105 @@ public class ValueStructTestCases
             var t = table.ValueStructVector[i];
             var p = parsed.ValueStructVector[i];
             AssertStructsEqual(t, p);
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void ValueStructs_UnityNative_WellAligned_Serialize(FlatBufferDeserializationOption option)
+    {
+        int count = 10;
+
+        UnityVectors_Native source = new()
+        {
+            WellAligned = new(Enumerable.Range(0, count).Select(x => new Vec3 { X = x, Y = x, Z = x }).ToArray(), default),
+        };
+
+        byte[] data = source.AllocateAndSerialize();
+
+        var parsed = UnityVectors_List.Serializer.Parse(data, option);
+
+        for (int i = 0; i < count; ++i)
+        {
+            Assert.Equal(source.WellAligned.Value[i].X, parsed.WellAligned[i].X);
+            Assert.Equal(source.WellAligned.Value[i].Y, parsed.WellAligned[i].Y);
+            Assert.Equal(source.WellAligned.Value[i].Z, parsed.WellAligned[i].Z);
+        }
+    }
+
+    [Fact]
+    public void ValueStructs_UnityNative_PoorlyAligned_Serialize()
+    {
+        int count = 10;
+
+        UnityVectors_Native source = new()
+        {
+            PoorlyAligned = new(Enumerable.Range(0, count).Select(x => new PoorlyAligned { X = x, Y = 1, }).ToArray(), default),
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => source.AllocateAndSerialize());
+        Assert.Equal("Type 'FlatSharpEndToEndTests.ValueStructs.PoorlyAligned' does not support Unsafe Span operations because the size (5) is not a multiple of the alignment (4).", ex.Message);
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void ValueStructs_UnityNative_WellAligned_Parse(FlatBufferDeserializationOption option)
+    {
+        int count = 10;
+
+        UnityVectors_List source = new()
+        {
+            WellAligned = Enumerable.Range(0, count).Select(x => new Vec3 { X = x, Y = x, Z = x }).ToArray(),
+        };
+
+        byte[] data = source.AllocateAndSerialize();
+
+        GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+        try
+        {
+            var parsed = UnityVectors_Native.Serializer.Parse(new MemoryInputBuffer(data, true), option);
+
+            for (int i = 0; i < count; ++i)
+            {
+                Assert.Equal(source.WellAligned[i].X, parsed.WellAligned.Value[i].X);
+                Assert.Equal(source.WellAligned[i].Y, parsed.WellAligned.Value[i].Y);
+                Assert.Equal(source.WellAligned[i].Z, parsed.WellAligned.Value[i].Z);
+            }
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void ValueStructs_UnityNative_PoorlyAligned_Parse(FlatBufferDeserializationOption option)
+    {
+        int count = 10;
+
+        UnityVectors_List source = new()
+        {
+            PoorlyAligned = Enumerable.Range(0, count).Select(x => new PoorlyAligned { X = x, Y = 1, }).ToArray(),
+        };
+
+        byte[] data = source.AllocateAndSerialize();
+        GCHandle handle = GCHandle.Alloc(data);
+        try
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                var parsed = UnityVectors_Native.Serializer.Parse(new MemoryInputBuffer(data, true), option);
+                float f = parsed.PoorlyAligned.Value[0].X;
+            });
+
+            Assert.Equal(
+                "Type 'FlatSharpEndToEndTests.ValueStructs.PoorlyAligned' does not support Unsafe Span operations because the size (5) is not a multiple of the alignment (4).",
+                ex.Message);
+        }
+        finally
+        {
+            handle.Free();
         }
     }
 
