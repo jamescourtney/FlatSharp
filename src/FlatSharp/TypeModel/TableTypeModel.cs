@@ -138,6 +138,8 @@ public class TableTypeModel : RuntimeTypeModel
 
     public override void Validate()
     {
+        base.Validate();
+
         {
             FlatBufferTableAttribute? attr = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
             FlatSharpInternal.Assert(attr != null, "Table object missing attribute");

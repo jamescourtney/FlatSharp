@@ -92,7 +92,11 @@ public class NullableTypeModel : RuntimeTypeModel
     /// <summary>
     /// Defer to underlying type model about whether we need this.
     /// </summary>
-    public override TableFieldContextRequirements TableFieldContextRequirements => this.underlyingTypeModel.TableFieldContextRequirements;
+    public override TableFieldContextRequirements TableFieldContextRequirements 
+        => this.underlyingTypeModel.TableFieldContextRequirements;
+
+    public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel) 
+        => this.underlyingTypeModel.TryGetUnderlyingVectorType(out typeModel);
 
     public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
 

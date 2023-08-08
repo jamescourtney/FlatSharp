@@ -80,6 +80,13 @@ public sealed class TypeModelContainer
     }
 
     /// <summary>
+    /// Attempts to look up a type model for the given type, if it exists.
+    /// </summary>
+    public bool TryGetTypeModel(
+        Type type,
+        [NotNullWhen(true)] out ITypeModel? typeModel) => this.cache.TryGetValue(type, out typeModel);
+
+    /// <summary>
     /// Attempts to resolve a type model from the given type.
     /// </summary>
     public bool TryCreateTypeModel(

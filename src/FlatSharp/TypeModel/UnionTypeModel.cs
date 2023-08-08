@@ -362,6 +362,7 @@ $@"
 
     public override void Validate()
     {
+        base.Validate();
         HashSet<Type> uniqueTypes = new HashSet<Type>();
 
         foreach (var item in this.memberTypeModels)
@@ -375,8 +376,6 @@ $@"
                 throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
             }
         }
-
-        base.Validate();
     }
 
     public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)

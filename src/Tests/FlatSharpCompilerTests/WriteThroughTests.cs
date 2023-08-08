@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using FlatSharp.TypeModel;
+using Microsoft.CodeAnalysis.Options;
+
 namespace FlatSharpTests.Compiler;
 
 public class WriteThroughTests
@@ -55,5 +58,33 @@ public class WriteThroughTests
 
         Test(FlatBufferDeserializationOption.Lazy);
         Test(FlatBufferDeserializationOption.Progressive);
+    }
+
+    [Fact]
+    public void UnityVector_WriteThrough_NotAllowed()
+    {
+        string schema = $@"
+                {MetadataHelpers.AllAttributes}
+                namespace ForceWriteTests;
+                struct VS ({MetadataKeys.ValueStruct}) {{ V : int; }}
+                table Table ({MetadataKeys.SerializerKind}) {{ V : [ VS ] ({MetadataKeys.VectorKind}:""UnityNativeArray"", {MetadataKeys.WriteThrough}); }}
+            ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Equal("Field 'ForceWriteTests.Table.V' declares the WriteThrough option. WriteThrough is only supported for IList vectors.", ex.Message);
+    }
+
+    [Fact]
+    public void MemoryVector_WriteThrough_NotAllowed()
+    {
+        string schema = $@"
+                {MetadataHelpers.AllAttributes}
+                namespace ForceWriteTests;
+                struct VS ({MetadataKeys.ValueStruct}) {{ V : int; }}
+                table Table ({MetadataKeys.SerializerKind}) {{ V : [ ubyte ] ({MetadataKeys.VectorKind}:""Memory"", {MetadataKeys.WriteThrough}); }}
+            ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Equal("Table property 'ForceWriteTests.Table.V' declared the WriteThrough on a vector. Vector WriteThrough is only valid for value type structs.", ex.Message);
     }
 }

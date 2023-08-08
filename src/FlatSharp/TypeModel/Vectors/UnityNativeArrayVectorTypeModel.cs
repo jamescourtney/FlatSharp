@@ -18,6 +18,7 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
     
     public override void Validate()
     {
+        base.Validate();
         FlatSharpInternal.Assert(
             this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition().FullName == "Unity.Collections.NativeArray`1",
             "Expecting Unity Native Array");
@@ -37,8 +38,6 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
             throw new InvalidFlatBufferDefinitionException(
                 $"UnityNativeArray vectors only support value types. Type = {this.GetCompilableTypeName()}.");
         }
-
-        base.Validate();
     }
 
     [ExcludeFromCodeCoverage]
@@ -53,8 +52,8 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
         ValidateWriteThrough(
             writeThroughSupported: false,
             this,
-            context.AllFieldContexts,
-            context.Options);
+            this.typeModelContainer,
+            context.AllFieldContexts);
 
         string alignmentCheck = $"FlatSharpInternal.AssertWellAligned<{this.ItemTypeModel.GetGlobalCompilableTypeName()}>({this.ItemTypeModel.PhysicalLayout[0].Alignment});";
 
