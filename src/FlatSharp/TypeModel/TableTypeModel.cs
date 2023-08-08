@@ -309,11 +309,14 @@ public class TableTypeModel : RuntimeTypeModel
             .Where(m => m.Name == OnDeserializedMethodName);
 
         FlatSharpInternal.Assert(
-            methods.Count() == 1,
+            methods.Count() <= 1,
             $"Type '{typeModel.GetCompilableTypeName()}' provides more than one '{OnDeserializedMethodName}' method.");
 
-        MethodInfo? method = methods.Single();
-        FlatSharpInternal.Assert(method is not null, "method was null");
+        MethodInfo? method = methods.SingleOrDefault();
+        if (method is null)
+        {
+            return null;
+        }
 
         bool invalidMethod = !method.IsFamily
                            || method.ReturnType != typeof(void)
@@ -331,8 +334,8 @@ public class TableTypeModel : RuntimeTypeModel
         string typeName = CSharpHelpers.GetCompilableTypeName(type);
 
         FlatSharpInternal.Assert(type.IsClass, $"Can't create type model from type {typeName} because it is not a class.");
-        FlatSharpInternal.Assert(type.IsSealed, $"Can't create type model from type {typeName} because it is sealed.");
-        FlatSharpInternal.Assert(type.IsAbstract, $"Can't create type model from type {typeName} because it is abstract.");
+        FlatSharpInternal.Assert(!type.IsSealed, $"Can't create type model from type {typeName} because it is sealed.");
+        FlatSharpInternal.Assert(!type.IsAbstract, $"Can't create type model from type {typeName} because it is abstract.");
         FlatSharpInternal.Assert(type.BaseType == typeof(object), $"Can't create type model from type {typeName} its base class is not System.Object.");
         FlatSharpInternal.Assert(type.IsPublic || type.IsNestedPublic, $"Can't create type model from type {typeName} because it is not public.");
 
