@@ -66,10 +66,9 @@ public class TableMemberModel : ItemMemberModel
         {
             if (IsValueStruct(this.ItemTypeModel))
             {
-                if (!this.IsRequired)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute, but the field is not marked as required. WriteThrough fields must also be required.");
-                }
+                FlatSharpInternal.Assert(
+                    this.IsRequired,
+                    $"Table property '{this.FriendlyName}' declared the WriteThrough attribute, but the field is not marked as required. WriteThrough fields must also be required.");
 
                 FlatSharpInternal.Assert(
                     !this.ItemTypeModel.SerializeMethodRequiresContext,
