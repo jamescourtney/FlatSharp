@@ -17,7 +17,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Other.Namespace.Foobar;
 using SChannel = System.Threading.Channels.Channel;
 
