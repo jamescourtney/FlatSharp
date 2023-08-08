@@ -270,6 +270,8 @@ public class SortedVectorTests
             ListVectorOfString = new List<StringKey> { new() { Key = null, }, new() { Key = "a" }, new() { Key = "b" } }
         };
 
+        Assert.True(typeof(StringKey).GetProperty("Key").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+
         var ex = Assert.Throws<InvalidOperationException>(() => root.AllocateAndSerialize());
         Assert.Equal("Table property 'FlatSharpEndToEndTests.Vectors.Sorted.StringKey.Key' is marked as required, but was not set.", ex.Message);
     }
