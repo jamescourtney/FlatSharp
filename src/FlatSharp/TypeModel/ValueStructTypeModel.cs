@@ -272,13 +272,14 @@ public class ValueStructTypeModel : RuntimeTypeModel
 
             ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(field.FieldType);
 
+            bool validMember = propertyModel.IsValidStructMember && propertyModel.PhysicalLayout.Length == 1;
             FlatSharpInternal.Assert(
-                propertyModel.IsValidStructMember && propertyModel.PhysicalLayout.Length == 1,
+                validMember,
                 $"Struct '{this.GetCompilableTypeName()}' field {field.Name} cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.");
 
             FlatSharpInternal.Assert(
-                field.IsPublic || !string.IsNullOrEmpty(accessor),
-                $"Struct '{this.GetCompilableTypeName()}' field {field.Name} is not public and does not declare a custom accessor. Non-public fields must also specify a custom accessor.");
+                !string.IsNullOrEmpty(accessor),
+                $"Struct '{this.GetCompilableTypeName()}' field {field.Name} is not public and does not declare a custom accessor. Fields must also specify a custom accessor.");
 
             FlatSharpInternal.Assert(
                 propertyModel.ClrType.IsValueType,
@@ -291,10 +292,13 @@ public class ValueStructTypeModel : RuntimeTypeModel
             // Pad for alignment.
             this.inlineSize += SerializationHelpers.GetAlignmentError(this.inlineSize, propertyAlignment);
 
-            this.members.Add((this.inlineSize, accessor ?? field.Name, propertyModel));
+            this.members.Add((this.inlineSize, accessor, propertyModel));
 
             FlatSharpInternal.Assert(
-                offsetAttribute?.Value == this.inlineSize,
+                offsetAttribute is not null,
+                $"Struct '{this.ClrType.GetCompilableTypeName()}' missing offset attribute.");
+            FlatSharpInternal.Assert(
+                offsetAttribute.Value == this.inlineSize,
                 $"Struct '{this.ClrType.GetCompilableTypeName()}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");
 
             this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
