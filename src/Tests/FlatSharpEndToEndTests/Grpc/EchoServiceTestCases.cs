@@ -380,12 +380,9 @@ public class EchoServiceTestCases
 
                     try
                     {
-                        int count = 50;
-                        while (count-- > 0)
-                        {
-                            await destChannel.Reader.ReadAsync();
-                        }
-
+                        await destChannel.Reader.ReadAsync();
+                        await destChannel.Reader.ReadAsync();
+                        await destChannel.Reader.ReadAsync();
                         Assert.False(true, "Exception not thrown");
                     }
                     catch (System.Threading.Channels.ChannelClosedException)

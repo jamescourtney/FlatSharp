@@ -39,7 +39,7 @@ table RootTable (fs_serializer:"GreedyMutable") {
 }
 
 table UnityVectors_Native (fs_serializer) {
-    well_aligned : [ Vec3 ] (fs_vector:"UnityNativeArray");
+    well_aligned : [ Vec3 ] (fs_vector:"UnityNativeArray", required);
     poorly_aligned : [ PoorlyAligned ] (fs_vector:"UnityNativeArray");
 }
 

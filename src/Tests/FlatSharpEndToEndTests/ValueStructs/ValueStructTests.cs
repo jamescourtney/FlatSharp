@@ -182,9 +182,9 @@ public class ValueStructTestCases
 
         for (int i = 0; i < count; ++i)
         {
-            Assert.Equal(source.WellAligned.Value[i].X, parsed.WellAligned[i].X);
-            Assert.Equal(source.WellAligned.Value[i].Y, parsed.WellAligned[i].Y);
-            Assert.Equal(source.WellAligned.Value[i].Z, parsed.WellAligned[i].Z);
+            Assert.Equal(source.WellAligned[i].X, parsed.WellAligned[i].X);
+            Assert.Equal(source.WellAligned[i].Y, parsed.WellAligned[i].Y);
+            Assert.Equal(source.WellAligned[i].Z, parsed.WellAligned[i].Z);
         }
     }
 
@@ -195,6 +195,7 @@ public class ValueStructTestCases
 
         UnityVectors_Native source = new()
         {
+            WellAligned = new Unity.Collections.NativeArray<Vec3>(Array.Empty<Vec3>(), default),
             PoorlyAligned = new(Enumerable.Range(0, count).Select(x => new PoorlyAligned { X = x, Y = 1, }).ToArray(), default),
         };
 
@@ -222,9 +223,9 @@ public class ValueStructTestCases
 
             for (int i = 0; i < count; ++i)
             {
-                Assert.Equal(source.WellAligned[i].X, parsed.WellAligned.Value[i].X);
-                Assert.Equal(source.WellAligned[i].Y, parsed.WellAligned.Value[i].Y);
-                Assert.Equal(source.WellAligned[i].Z, parsed.WellAligned.Value[i].Z);
+                Assert.Equal(source.WellAligned[i].X, parsed.WellAligned[i].X);
+                Assert.Equal(source.WellAligned[i].Y, parsed.WellAligned[i].Y);
+                Assert.Equal(source.WellAligned[i].Z, parsed.WellAligned[i].Z);
             }
         }
         finally
@@ -241,6 +242,7 @@ public class ValueStructTestCases
 
         UnityVectors_List source = new()
         {
+            WellAligned = Array.Empty<Vec3>(),
             PoorlyAligned = Enumerable.Range(0, count).Select(x => new PoorlyAligned { X = x, Y = 1, }).ToArray(),
         };
 

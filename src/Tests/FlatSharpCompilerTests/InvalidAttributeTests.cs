@@ -168,4 +168,27 @@ public class InvalidAttributeTests
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains("Table ns.Foo declares a key property that is deprecated.", ex.Message);
     }
+
+
+    [Theory]
+    [InlineData("FunUnion", "UnityNativeArray vectors only support scalar or struct generic arguments. Type = Unity.Collections.NativeArray<ns.FunUnion>.")]
+    [InlineData("FunTable", "UnityNativeArray vectors only support scalar or struct generic arguments. Type = Unity.Collections.NativeArray<ns.FunTable>.")]
+    [InlineData("RefStruct", "UnityNativeArray vectors only support value types. Type = Unity.Collections.NativeArray<ns.RefStruct>.")]
+    [InlineData("string", "UnityNativeArray vectors only support scalar or struct generic arguments. Type = Unity.Collections.NativeArray<System.String>.")]
+    public void UnityNativeVector_InvalidType(string type, string error)
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+
+            struct RefStruct {{ Value: int; }}
+            table FunTable {{ Value : int; }}
+            union FunUnion {{ FunTable }}
+
+            table Foo {{ Value : [ {type} ] ({MetadataKeys.VectorKind}:""UnityNativeArray""); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains(error, ex.Message);
+    }
 }
