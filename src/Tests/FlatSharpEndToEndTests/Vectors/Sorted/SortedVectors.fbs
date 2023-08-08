@@ -109,3 +109,4 @@ table FloatKey { Key : float (key); }
 table DoubleKey { Key : double (key); }
 table StringKey { Key : string (key); }
 table StringKey_NoKey { Key : string; }
+

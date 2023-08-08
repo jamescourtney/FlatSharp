@@ -155,4 +155,17 @@ public class InvalidAttributeTests
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains("Unable to parse 'fs_vector' value 'banana'. Valid values are: IList, IReadOnlyList, Memory, ReadOnlyMemory, IIndexedVector, UnityNativeArray.", ex.Message);
     }
+
+    [Fact]
+    public void Table_DeprecatedKey()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            table Foo {{ Value : string (key, deprecated); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Table ns.Foo declares a key property that is deprecated.", ex.Message);
+    }
 }
