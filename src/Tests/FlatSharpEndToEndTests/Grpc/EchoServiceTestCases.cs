@@ -17,6 +17,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Other.Namespace.Foobar;
 using SChannel = System.Threading.Channels.Channel;
 
@@ -380,7 +381,12 @@ public class EchoServiceTestCases
 
                     try
                     {
-                        await destChannel.Reader.ReadAsync();
+                        int count = 50;
+                        while (count-- > 0)
+                        {
+                            await destChannel.Reader.ReadAsync();
+                        }
+
                         Assert.False(true, "Exception not thrown");
                     }
                     catch (System.Threading.Channels.ChannelClosedException)
