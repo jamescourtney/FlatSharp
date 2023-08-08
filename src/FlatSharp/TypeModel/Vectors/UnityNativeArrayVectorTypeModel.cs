@@ -18,7 +18,6 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
     
     public override void Validate()
     {
-        base.Validate();
         FlatSharpInternal.Assert(
             this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition().FullName == "Unity.Collections.NativeArray`1",
             "Expecting Unity Native Array");
@@ -38,6 +37,8 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
             throw new InvalidFlatBufferDefinitionException(
                 $"UnityNativeArray vectors only support value types. Type = {this.GetCompilableTypeName()}.");
         }
+
+        base.Validate();
     }
 
     [ExcludeFromCodeCoverage]

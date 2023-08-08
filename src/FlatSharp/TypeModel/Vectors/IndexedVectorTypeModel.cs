@@ -56,7 +56,6 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
 
     public override void Validate()
     {
-        base.Validate();
         if (this.valueTypeModel.SchemaType != FlatBufferSchemaType.Table)
         {
             throw new InvalidFlatBufferDefinitionException(
@@ -84,6 +83,8 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
             throw new InvalidFlatBufferDefinitionException(
                 $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
         }
+
+        base.Validate();
     }
 
     public override void AdjustTableMember(TableMemberModel source)
