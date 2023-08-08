@@ -222,11 +222,11 @@ public class StructTypeModel : RuntimeTypeModel
             var property = item.Property;
 
             FlatSharpInternal.Assert(
-                propertyAttribute.Deprecated,
+                !propertyAttribute.Deprecated,
                 $"FlatBuffer struct {this.GetCompilableTypeName()} may not have deprecated properties");
 
             FlatSharpInternal.Assert(
-                propertyAttribute.ForceWrite,
+                !propertyAttribute.ForceWrite,
                 $"FlatBuffer struct {this.GetCompilableTypeName()} may not have properties with the ForceWrite option set to true.");
 
             ushort index = propertyAttribute.Index;
@@ -264,7 +264,7 @@ public class StructTypeModel : RuntimeTypeModel
         {
             ITypeModel memberModel = member.ItemTypeModel;
 
-            bool validMember = memberModel.IsValidStructMember && memberModel.PhysicalLayout.Length > 1;
+            bool validMember = memberModel.IsValidStructMember && memberModel.PhysicalLayout.Length == 1;
 
             FlatSharpInternal.Assert(
                 validMember,
