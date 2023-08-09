@@ -213,15 +213,13 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
 
     public override void Validate()
     {
-        if (!this.ItemTypeModel.IsValidVectorMember)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Type '{this.ItemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
-        }
+        FlatSharpInternal.Assert(
+            this.ItemTypeModel.IsValidVectorMember,
+            $"Type '{this.ItemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
 
-        if (this.ItemTypeModel.PhysicalLayout.Length != 1)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Vectors may only store vtable layouts with one item. Consider a custom vector type model for other vector kinds.");
-        }
+        FlatSharpInternal.Assert(
+            this.ItemTypeModel.PhysicalLayout.Length == 1,
+            $"Vectors may only store vtable layouts with one item. Consider a custom vector type model for other vector kinds.");
 
         base.Validate();
     }

@@ -191,4 +191,90 @@ public class InvalidAttributeTests
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains(error, ex.Message);
     }
+
+    [Fact]
+    public void Struct_RequiredMember_NotAllowed()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct RefStruct {{ Value: int (required); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("only non-scalar fields in tables may be 'required'", ex.Message);
+    }
+
+    [Fact]
+    public void Struct_SharedStringMember_NotAllowed()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct RefStruct {{ Value: int ({MetadataKeys.SharedString}); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("The attribute 'fs_sharedString' is never valid on StructField elements.", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("Memory")]
+    [InlineData("ReadOnlyMemory")]
+    public void MemoryVector_OfNonByte_NotAllowed(string type)
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            table Table {{ Value: [ int ] ({MetadataKeys.VectorKind}:""{type}""); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.", ex.Message);
+    }
+
+    [Fact]
+    public void IndexedVector_NonTable()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct Item {{ key : int; }}
+            table Table {{ Value: [ Item ] ({MetadataKeys.VectorKind}:""IIndexedVector""); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Indexed vector values must be flatbuffer tables. Type = 'ns.Item'", ex.Message);
+    }
+
+
+    [Fact]
+    public void VectorOfUnion_WriteThrough_NotAllowed()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct Item {{ key : int; }}
+            union FunUnion {{ Item }}
+            table Table {{ Value: [ FunUnion ] ({MetadataKeys.WriteThrough}); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Table property 'ns.Table.Value' declared the WriteThrough on a vector. Vector WriteThrough is only valid for value type structs.", ex.Message);
+    }
+
+    [Fact]
+    public void VectorOfUnion_Sorted_NotAllowed()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct Item {{ key : int; }}
+            union FunUnion {{ Item }}
+            table Table {{ Value: [ FunUnion ] ({MetadataKeys.SortedVector}); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Property 'Value' declares a sorted vector, but the member is not a table. Type = System.Collections.Generic.IList<ns.FunUnion>.", ex.Message);
+    }
 }
