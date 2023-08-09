@@ -64,10 +64,6 @@ public class EnumTypeModel : RuntimeTypeModel
 
     public override bool IsValidVectorMember => true;
 
-    public override bool IsValidUnionMember => false;
-
-    public override bool IsValidSortedVectorKey => false;
-
     public override bool SerializesInline => true;
 
     public override bool SerializeMethodRequiresContext => this.underlyingTypeModel.SerializeMethodRequiresContext;

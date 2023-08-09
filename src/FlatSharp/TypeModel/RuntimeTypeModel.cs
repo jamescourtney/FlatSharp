@@ -67,27 +67,27 @@ public abstract class RuntimeTypeModel : ITypeModel
     /// <summary>
     /// Indicates if this type model can be part of a struct.
     /// </summary>
-    public abstract bool IsValidStructMember { get; }
+    public virtual bool IsValidStructMember => false;
 
     /// <summary>
     /// Indicates if this type model can be part of a table.
     /// </summary>
-    public abstract bool IsValidTableMember { get; }
+    public virtual bool IsValidTableMember => false;
 
     /// <summary>
     /// Indicates if this type model can be part of a vector.
     /// </summary>
-    public abstract bool IsValidVectorMember { get; }
+    public virtual bool IsValidVectorMember => false;
 
     /// <summary>
     /// Indicates if this type model can be part of a union.
     /// </summary>
-    public abstract bool IsValidUnionMember { get; }
+    public virtual bool IsValidUnionMember => false;
 
     /// <summary>
     /// Indicates if this type model can be a sorted vector key.
     /// </summary>
-    public abstract bool IsValidSortedVectorKey { get; }
+    public virtual bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// When true, indicates that this type model's serialize method writes inline, rather than by offset.

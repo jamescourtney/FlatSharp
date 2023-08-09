@@ -53,29 +53,9 @@ public class NullableTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
 
     /// <summary>
-    /// Nullables can't be part of Structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Nullables can be part of Tables.
     /// </summary>
     public override bool IsValidTableMember => this.underlyingTypeModel.IsValidTableMember;
-
-    /// <summary>
-    /// Nullables can't be part of Unions.
-    /// </summary>
-    public override bool IsValidUnionMember => false;
-
-    /// <summary>
-    /// Optionals can't be part of unions.
-    /// </summary>
-    public override bool IsValidVectorMember => false;
-
-    /// <summary>
-    /// Optionals can't be keys.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// Defer to underlying type for serializing.

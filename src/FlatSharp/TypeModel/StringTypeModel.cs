@@ -49,11 +49,6 @@ public class StringTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => false;
 
     /// <summary>
-    /// Strings can't be part of structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Strings can be part of tables.
     /// </summary>
     public override bool IsValidTableMember => true;

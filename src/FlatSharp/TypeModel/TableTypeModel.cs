@@ -65,11 +65,6 @@ public class TableTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => false;
 
     /// <summary>
-    /// Tables can't be part of structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Tables can be part of tables.
     /// </summary>
     public override bool IsValidTableMember => true;
@@ -83,11 +78,6 @@ public class TableTypeModel : RuntimeTypeModel
     /// Tables can be part of vectors.
     /// </summary>
     public override bool IsValidVectorMember => true;
-
-    /// <summary>
-    /// Tables can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// Tables are written by reference.

@@ -280,6 +280,19 @@ public class InvalidAttributeTests
         Assert.Contains("Property 'Value' declares a sorted vector, but the member is not a table. Type = System.Collections.Generic.IList<ns.FunUnion>.", ex.Message);
     }
 
+    [Fact]
+    public void Struct_Serializer_NotAllowed()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct Item ({MetadataKeys.SerializerKind}) {{ key : int; }}
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("The attribute 'fs_serializer' is never valid on ReferenceStruct elements.", ex.Message);
+    }
+
     [Theory]
     [InlineData("RefStruct")]
     [InlineData("Union")]

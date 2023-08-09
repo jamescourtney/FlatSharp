@@ -155,10 +155,10 @@ $@"
     internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>()
     {
         ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
-        if (rootModel.SchemaType != FlatBufferSchemaType.Table)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
-        }
+
+        FlatSharpInternal.Assert(
+            rootModel.SchemaType == FlatBufferSchemaType.Table,
+            $"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
 
         IMethodNameResolver resolver = new DefaultMethodNameResolver();
 
