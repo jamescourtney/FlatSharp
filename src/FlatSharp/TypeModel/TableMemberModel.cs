@@ -94,10 +94,9 @@ public class TableMemberModel : ItemMemberModel
 
         if (this.IsRequired)
         {
-            if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Scalar)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute. Required is only valid on non-scalar table fields.");
-            }
+            FlatSharpInternal.Assert(
+                this.ItemTypeModel.SchemaType != FlatBufferSchemaType.Scalar,
+                $"Table property '{this.FriendlyName}' declared the Required attribute. Required is only valid on non-scalar table fields.");
 
             FlatSharpInternal.Assert(
                 this.DefaultValue is null,

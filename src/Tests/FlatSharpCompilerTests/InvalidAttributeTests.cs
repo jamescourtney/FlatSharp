@@ -192,13 +192,15 @@ public class InvalidAttributeTests
         Assert.Contains(error, ex.Message);
     }
 
-    [Fact]
-    public void Struct_RequiredMember_NotAllowed()
+    [Theory]
+    [InlineData("struct")]
+    [InlineData("table")]
+    public void Struct_RequiredMember_NotAllowed(string itemType)
     {
         string schema = @$"
             {MetadataHelpers.AllAttributes}
             namespace ns;
-            struct RefStruct {{ Value: int (required); }}
+            {itemType} RefStruct {{ Value: int (required); }}
         ";
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
@@ -276,5 +278,25 @@ public class InvalidAttributeTests
 
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains("Property 'Value' declares a sorted vector, but the member is not a table. Type = System.Collections.Generic.IList<ns.FunUnion>.", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("RefStruct")]
+    [InlineData("Union")]
+    [InlineData("FunTable")]
+    [InlineData("int")]
+    [InlineData("string")]
+    public void Table_WriteThrough_NotAllowed(string type)
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            union Union {{ RefStruct }}
+            struct RefStruct {{ key : int; }}
+            table FunTable {{ x : {type} ({MetadataKeys.WriteThrough}); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Table property 'ns.FunTable.X' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.", ex.Message);
     }
 }
