@@ -347,17 +347,11 @@ public class TableTypeModel : RuntimeTypeModel
             FlatSharpInternal.Assert(IsVisible(specialCtor), "Special deserialize constructor should be visible.");
             defaultConstructor = specialCtor;
         }
-        else if (defaultCtor is not null)
-        {
-            FlatSharpInternal.Assert(IsVisible(defaultCtor), $"Default constructor for '{typeName}' is not visible to subclasses outside the assembly.");
-            defaultConstructor = defaultCtor;
-        }
         else
         {
-            defaultConstructor = null!;
-            FlatSharpInternal.Assert(
-                false,
-                $"Unable to find a usable constructor for '{typeName}'. The type must supply a default constructor or single parameter constructor accepting '{nameof(FlatBufferDeserializationContext)}' that is visible to subclasses outside the assembly.");
+            FlatSharpInternal.Assert(defaultCtor is not null, $"No default constructor found for '{typeName}'.");
+            FlatSharpInternal.Assert(IsVisible(defaultCtor), $"Default constructor for '{typeName}' is not visible to subclasses outside the assembly.");
+            defaultConstructor = defaultCtor;
         }
     }
 
