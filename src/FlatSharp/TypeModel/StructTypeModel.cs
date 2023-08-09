@@ -74,11 +74,6 @@ public class StructTypeModel : RuntimeTypeModel
     public override bool IsValidVectorMember => true;
 
     /// <summary>
-    /// Structs can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
-
-    /// <summary>
     /// We only need context if one of our children needs it.
     /// </summary>
     public override bool SerializeMethodRequiresContext => this.Members.Any(x => x.ItemTypeModel.SerializeMethodRequiresContext);

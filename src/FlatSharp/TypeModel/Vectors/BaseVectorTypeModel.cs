@@ -54,11 +54,6 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
     public override bool IsValidTableMember => true;
 
     /// <summary>
-    /// Vector's can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
-
-    /// <summary>
     /// Gets the type model for this vector's elements.
     /// </summary>
     public ITypeModel ItemTypeModel { get; private set; }

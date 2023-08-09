@@ -79,11 +79,6 @@ public class ValueStructTypeModel : RuntimeTypeModel
     public override bool IsValidVectorMember => true;
 
     /// <summary>
-    /// Structs can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
-
-    /// <summary>
     /// Structs are written inline.
     /// </summary>
     public override bool SerializesInline => true;

@@ -58,29 +58,9 @@ public class UnionTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => false;
 
     /// <summary>
-    /// Unions can't be part of structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Unions can be part of tables.
     /// </summary>
     public override bool IsValidTableMember => true;
-
-    /// <summary>
-    /// Unions can't be part of unions.
-    /// </summary>
-    public override bool IsValidUnionMember => false;
-
-    /// <summary>
-    /// Unions can't be part of vectors.
-    /// </summary>
-    public override bool IsValidVectorMember => false;
-
-    /// <summary>
-    /// Unions can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// Unions are pointers.
