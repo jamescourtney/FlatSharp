@@ -440,7 +440,7 @@ public class EchoServiceTestCases
             await callback();
             Assert.False(true, "Exception was not thrown");
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
