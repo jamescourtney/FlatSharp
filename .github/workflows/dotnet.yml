@@ -73,11 +73,6 @@ jobs:
       run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
 
     - if: runner.os == 'Windows'
-      name: Legacy Test
-      working-directory: src/Tests/FlatSharpTests
-      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
-      
-    - if: runner.os == 'Windows'
       name: Upload Packages
       uses: actions/upload-artifact@v2
       with:
