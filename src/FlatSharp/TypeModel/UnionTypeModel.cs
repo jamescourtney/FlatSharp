@@ -58,29 +58,9 @@ public class UnionTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => false;
 
     /// <summary>
-    /// Unions can't be part of structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Unions can be part of tables.
     /// </summary>
     public override bool IsValidTableMember => true;
-
-    /// <summary>
-    /// Unions can't be part of unions.
-    /// </summary>
-    public override bool IsValidUnionMember => false;
-
-    /// <summary>
-    /// Unions can't be part of vectors.
-    /// </summary>
-    public override bool IsValidVectorMember => false;
-
-    /// <summary>
-    /// Unions can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// Unions are pointers.
@@ -362,21 +342,19 @@ $@"
 
     public override void Validate()
     {
+        base.Validate();
         HashSet<Type> uniqueTypes = new HashSet<Type>();
 
         foreach (var item in this.memberTypeModels)
         {
-            if (!item.IsValidUnionMember)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetCompilableTypeName()}'.");
-            }
-            else if (!uniqueTypes.Add(item.ClrType))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
-            }
-        }
+            FlatSharpInternal.Assert(
+                item.IsValidUnionMember,
+                $"Unions may not store '{item.GetCompilableTypeName()}'.");
 
-        base.Validate();
+            FlatSharpInternal.Assert(
+                uniqueTypes.Add(item.ClrType),
+                $"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
+        }
     }
 
     public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)

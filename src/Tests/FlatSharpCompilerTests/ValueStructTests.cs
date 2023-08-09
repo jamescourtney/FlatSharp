@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using FlatSharp.TypeModel;
 using System.Runtime.InteropServices;
 
 namespace FlatSharpTests.Compiler;
@@ -175,5 +176,40 @@ public class ValueStructTests
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains($"The attribute 'fs_writeThrough' is never valid on ValueStructField elements.", ex.Message);
+    }
+
+    [Fact]
+    public void ValueStruct_SortedVectorKey_NotAllowed()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ValueStructTests;
+            struct StructB ({MetadataKeys.ValueStruct}) {{
+                A : int;
+            }}
+
+            table Table ({MetadataKeys.SerializerKind}) {{
+                A : [ Item ] ({MetadataKeys.SortedVector});
+            }}
+
+            table Item {{
+                k : StructB (key);
+            }}";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains($"Table ValueStructTests.Item declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+    }
+
+    [Fact]
+    public void ValueStruct_Empty_NotAllowed()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ValueStructTests;
+            struct StructB ({MetadataKeys.ValueStruct}) {{
+            }}";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains($"size 0 structs not allowed", ex.Message);
     }
 }

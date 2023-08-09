@@ -594,7 +594,7 @@ public class FlatSharpCompiler
                                 Options = localOptions,
                                 InputHash = inputHash,
                                 PreviousAssembly = assembly,
-                                TypeModelContainer = TypeModelContainer.CreateDefault().WithUnitySupport(localOptions.UnityAssemblyPath is not null),
+                                TypeModelContainer = TypeModelContainer.CreateDefault().WithUnitySupport(true),
                             });
 
                         return true;
@@ -678,6 +678,10 @@ public class FlatSharpCompiler
         if (options.UnityAssemblyPath is not null)
         {
             references.Add(Assembly.LoadFrom(options.UnityAssemblyPath));
+        }
+        else
+        {
+            references.Add(typeof(Unity.Collections.NativeArray<>).Assembly);
         }
 
         return references.ToArray();

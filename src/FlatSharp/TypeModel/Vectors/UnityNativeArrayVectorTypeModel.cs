@@ -53,12 +53,15 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
         ValidateWriteThrough(
             writeThroughSupported: false,
             this,
-            context.AllFieldContexts,
-            context.Options);
+            this.typeModelContainer,
+            context.AllFieldContexts);
+
+        string alignmentCheck = $"FlatSharpInternal.AssertWellAligned<{this.ItemTypeModel.GetGlobalCompilableTypeName()}>({this.ItemTypeModel.PhysicalLayout[0].Alignment});";
 
         if (context.Options.GreedyDeserialize)
         {
             string body = $@"
+                {alignmentCheck}
                 var bufferSpan = {context.InputBufferVariableName}.UnsafeReadSpan<{context.InputBufferTypeName}, {this.ItemTypeModel.GetGlobalCompilableTypeName()}>({context.OffsetVariableName});
                 var nativeArray = new NativeArray<{this.ItemTypeModel.GetGlobalCompilableTypeName()}>(bufferSpan.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
                 bufferSpan.CopyTo(nativeArray.AsSpan());
@@ -70,6 +73,7 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
         else
         {
             string body = $@"
+                {alignmentCheck}
                 if (!buffer.IsPinned)
                 {{
                    throw new NotSupportedException(""Non-greedy parsing of a NativeArray requires a pinned buffer."");

@@ -1,1 +1,0 @@
-dotnet stryker --excluded-mutations "['checked', 'string']" --project-file=FlatSharp.csproj

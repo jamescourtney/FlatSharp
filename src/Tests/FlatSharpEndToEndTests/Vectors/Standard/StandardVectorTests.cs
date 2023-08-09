@@ -24,6 +24,7 @@ public class StandardVectorTests
 {
     private static readonly string[] Strings = new[] { string.Empty, "a", "ab", "abc", "abcd", "abcde" };
     private static readonly byte[] Bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+    private static readonly int[] Ints = new int[] { 1, 2, 3, 4, 5, 6 };
 
     #region Lazy
 
@@ -155,6 +156,12 @@ public class StandardVectorTests
         Assert.Equal(Bytes.Length, memory.Length);
     }
 
+    [Fact]
+    public void Lazy_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.Lazy, true, true);
+
+    [Fact]
+    public void Lazy_Unity_NotPinned() => this.ValidateUnity_ExpectPinningError(FlatBufferDeserializationOption.Lazy);
+
     #endregion
 
     #region Progressive
@@ -284,6 +291,12 @@ public class StandardVectorTests
 
         Assert.Equal(Bytes.Length, memory.Length);
     }
+
+    [Fact]
+    public void Progressive_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.Progressive, true, true);
+
+    [Fact]
+    public void Progressive_Unity_NotPinned() => this.ValidateUnity_ExpectPinningError(FlatBufferDeserializationOption.Progressive);
 
     #endregion
 
@@ -415,10 +428,15 @@ public class StandardVectorTests
         Assert.Equal(Bytes.Length, memory.Length);
     }
 
+    [Fact]
+    public void Greedy_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.Greedy, true, false);
+
+    [Fact]
+    public void Greedy_Unity_NotPinned() => this.ValidateUnity(FlatBufferDeserializationOption.Greedy, false, false);
+
     #endregion
 
-
-    #region Greedy
+    #region GreedyMutable
 
     [Fact]
     public void GreedyMutable_String_IList_Implicit()
@@ -546,7 +564,49 @@ public class StandardVectorTests
         Assert.Equal(Bytes.Length, memory.Length);
     }
 
+    [Fact]
+    public void GreedyMutable_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.GreedyMutable, true, false);
+
+    [Fact]
+    public void GreedyMutable_Unity_NotPinned() => this.ValidateUnity(FlatBufferDeserializationOption.GreedyMutable, false, false);
+
     #endregion
+
+    private void ValidateUnity(FlatBufferDeserializationOption option, bool pin, bool expectOverlap)
+    {
+        this.SerializeAndParse(option, out _, out byte[] buffer);
+
+        GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+        try
+        {
+            MemoryInputBuffer inputBuffer = new MemoryInputBuffer(buffer, isPinned: pin);
+
+            var result = StandardVectorTable.Serializer.Parse(inputBuffer, option);
+            Assert.NotNull(result.UnityNative);
+            var nativeArray = result.UnityNative.Value;
+
+            Assert.Equal(Ints.Length, nativeArray.Length);
+
+            for (int i = 0; i < Ints.Length; ++i)
+            {
+                Assert.Equal(Ints[i], nativeArray[i]);
+            }
+
+            Assert.Equal(
+                expectOverlap,
+                MemoryMarshal.Cast<int, byte>(nativeArray.AsSpan()).Overlaps(buffer.AsSpan()));
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
+
+    private void ValidateUnity_ExpectPinningError(FlatBufferDeserializationOption option)
+    {
+        var ex = Assert.Throws<NotSupportedException>(() => this.ValidateUnity(option, false, false));
+        Assert.Equal("Non-greedy parsing of a NativeArray requires a pinned buffer.", ex.Message);
+    }
 
     private StandardVectorTable SerializeAndParse(FlatBufferDeserializationOption option, out IFlatBufferDeserializedObject obj, out byte[] inputBuffer)
     {
@@ -559,6 +619,8 @@ public class StandardVectorTests
             ExplicitStringList = Strings,
             ImplicitStringList = Strings,
             ReadOnlyStringList = Strings,
+
+            UnityNative = new Unity.Collections.NativeArray<int>(Ints, Unity.Collections.Allocator.Temp)
         }.AllocateAndSerialize();
 
         var table = StandardVectorTable.Serializer.Parse(inputBuffer, option);

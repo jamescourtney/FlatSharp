@@ -74,11 +74,6 @@ public class StructTypeModel : RuntimeTypeModel
     public override bool IsValidVectorMember => true;
 
     /// <summary>
-    /// Structs can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
-
-    /// <summary>
     /// We only need context if one of our children needs it.
     /// </summary>
     public override bool SerializeMethodRequiresContext => this.Members.Any(x => x.ItemTypeModel.SerializeMethodRequiresContext);
@@ -210,10 +205,9 @@ public class StructTypeModel : RuntimeTypeModel
 
         var properties = this.GetProperties();
 
-        if (!properties.Any())
-        {
-            throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.GetCompilableTypeName()} because it does not have any non-static [FlatBufferItem] properties. Structs cannot be empty.");
-        }
+        FlatSharpInternal.Assert(
+            properties.Any(),
+            $"Can't create struct type model from type {this.GetCompilableTypeName()} because it does not have any non-static [FlatBufferItem] properties. Structs cannot be empty.");
 
         ushort expectedIndex = 0;
 
@@ -222,26 +216,22 @@ public class StructTypeModel : RuntimeTypeModel
             var propertyAttribute = item.Attribute;
             var property = item.Property;
 
-            if (propertyAttribute.Deprecated)
-            {
-                throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have deprecated properties");
-            }
+            FlatSharpInternal.Assert(
+                !propertyAttribute.Deprecated,
+                $"FlatBuffer struct {this.GetCompilableTypeName()} may not have deprecated properties");
 
-            if (propertyAttribute.ForceWrite)
-            {
-                throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have properties with the ForceWrite option set to true.");
-            }
+            FlatSharpInternal.Assert(
+                !propertyAttribute.ForceWrite,
+                $"FlatBuffer struct {this.GetCompilableTypeName()} may not have properties with the ForceWrite option set to true.");
 
             ushort index = propertyAttribute.Index;
-            if (index != expectedIndex)
-            {
-                throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
-            }
+            FlatSharpInternal.Assert(
+                index == expectedIndex,
+                $"FlatBuffer struct {this.GetCompilableTypeName()} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
 
-            if (propertyAttribute.DefaultValue is not null)
-            {
-                throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} declares default value on index {expectedIndex}. Structs may not have default values.");
-            }
+            FlatSharpInternal.Assert(
+                propertyAttribute.DefaultValue is null,
+                $"FlatBuffer struct {this.GetCompilableTypeName()} declares default value on index {expectedIndex}. Structs may not have default values.");
 
             expectedIndex++;
             ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(property.PropertyType);
@@ -269,10 +259,11 @@ public class StructTypeModel : RuntimeTypeModel
         {
             ITypeModel memberModel = member.ItemTypeModel;
 
-            if (!memberModel.IsValidStructMember || memberModel.PhysicalLayout.Length > 1)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {member.PropertyInfo.Name} (Index {member.Index}) with type {CSharpHelpers.GetCompilableTypeName(member.PropertyInfo.PropertyType)} cannot be part of a flatbuffer struct.");
-            }
+            bool validMember = memberModel.IsValidStructMember && memberModel.PhysicalLayout.Length == 1;
+
+            FlatSharpInternal.Assert(
+                validMember,
+                $"Struct '{this.GetCompilableTypeName()}' property {member.PropertyInfo.Name} (Index {member.Index}) with type {CSharpHelpers.GetCompilableTypeName(member.PropertyInfo.PropertyType)} cannot be part of a flatbuffer struct.");
 
             member.Validate();
         }

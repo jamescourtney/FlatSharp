@@ -38,20 +38,17 @@ public class StructMemberModel : ItemMemberModel
     {
         base.Validate();
 
-        if (this.ItemTypeModel.SerializeMethodRequiresContext)
-        {
-            throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
-        }
+        FlatSharpInternal.Assert(
+            !this.ItemTypeModel.SerializeMethodRequiresContext,
+            $"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
 
-        if (this.Attribute.Required)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
-        }
+        FlatSharpInternal.Assert(
+            !this.Attribute.Required,
+            $"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
 
-        if (this.Attribute.SharedString)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
-        }
+        FlatSharpInternal.Assert(
+            !this.Attribute.SharedString,
+            $"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
 
         if (this.Attribute.Key)
         {

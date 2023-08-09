@@ -34,6 +34,7 @@ internal static class CSharpHelpers
     internal static string GetCompilableTypeName(this Type t)
     {
         FlatSharpInternal.Assert(!string.IsNullOrEmpty(t.FullName), $"{t} has null/empty full name.");
+        FlatSharpInternal.Assert(!t.IsArray, "Not expecting an array");
 
         string name;
         if (t.IsGenericType)
@@ -45,10 +46,6 @@ internal static class CSharpHelpers
             }
 
             name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
-        }
-        else if (t.IsArray)
-        {
-            name = $"{GetCompilableTypeName(t.GetElementType()!)}[]";
         }
         else
         {

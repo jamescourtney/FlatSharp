@@ -88,4 +88,26 @@ public class UnionTests
             schema,
             new());
     }
+
+    [Theory]
+    [InlineData("ValueStruct")]
+    [InlineData("string")]
+    [InlineData("Table")]
+    public void Union_DuplicateTypes_NotAllowed(string type)
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace UnionTests;
+            struct ValueStruct (fs_valueStruct) {{ x : int; }}
+            table Table {{ x : int; }}
+            union MyUnion {{ a : {type}, b : {type} }}
+        ";
+
+        // Usage is validated in the EndtoEndTests. Compiling is good enough for this project.
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new()));
+
+        Assert.Contains("FlatSharp unions may not contain duplicate types. Union = UnionTests.MyUnion", ex.Message);
+    }
 }

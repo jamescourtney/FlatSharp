@@ -40,14 +40,6 @@ public sealed class TypeModelContainer
     }
 
     /// <summary>
-    /// Creates an empty container with no types supported. No types will be supported unless explicitly registered. Have fun!
-    /// </summary>
-    public static TypeModelContainer CreateEmpty()
-    {
-        return new TypeModelContainer();
-    }
-
-    /// <summary>
     /// Creates a FlatSharp type model container with default support.
     /// </summary>
     public static TypeModelContainer CreateDefault()
@@ -71,13 +63,16 @@ public sealed class TypeModelContainer
     /// </summary>
     public void RegisterProvider(ITypeModelProvider provider)
     {
-        if (provider is null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
+        FlatSharpInternal.Assert(provider is not null, "Provider can't be null");
         this.providers.Add(provider);
     }
+
+    /// <summary>
+    /// Attempts to look up a type model for the given type, if it exists.
+    /// </summary>
+    public bool TryGetTypeModel(
+        Type type,
+        [NotNullWhen(true)] out ITypeModel? typeModel) => this.cache.TryGetValue(type, out typeModel);
 
     /// <summary>
     /// Attempts to resolve a type model from the given type.
@@ -267,10 +262,9 @@ public sealed class TypeModelContainer
     /// </summary>
     public ITypeModel CreateTypeModel(Type type)
     {
-        if (!this.TryCreateTypeModel(type, out var typeModel))
-        {
-            throw new InvalidFlatBufferDefinitionException($"Failed to create or find type model for type '{CSharpHelpers.GetCompilableTypeName(type)}'.");
-        }
+        FlatSharpInternal.Assert(
+            this.TryCreateTypeModel(type, out var typeModel),
+            $"Failed to create or find type model for type '{CSharpHelpers.GetCompilableTypeName(type)}'.");
 
         return typeModel;
     }

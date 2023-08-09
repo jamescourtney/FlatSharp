@@ -95,10 +95,6 @@ jobs:
             --output stryker.coverage.xml `
             --targetargs "src/FlatSharp.Compiler/bin/Debug/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/Stryker/CodeGen --mutation-testing-mode"
       
-    - name: Legacy Tests
-      working-directory: src
-      run: dotnet test Tests/FlatSharpTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
-
     - name: E2E Tests
       working-directory: src
       run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0

@@ -48,10 +48,7 @@ public abstract class ItemMemberModel
         this.IsRequired = attribute.Required;
         this.Attribute = attribute;
 
-        if (getMethod is null)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} on did not declare a getter.");
-        }
+        FlatSharpInternal.Assert(getMethod is not null, $"Property {this.DeclaringType} on did not declare a getter.");
 
         if (setMethod is not null)
         {
@@ -66,22 +63,19 @@ public abstract class ItemMemberModel
     internal virtual void Validate()
     {
         MethodInfo getMethod = this.PropertyInfo.GetMethod!; // validated in .ctor.
-        var setMethod = this.PropertyInfo.SetMethod;
+        bool validAccessor = getMethod.IsPublic || !string.IsNullOrEmpty(this.CustomAccessor);
 
-        if (!getMethod.IsPublic && string.IsNullOrEmpty(this.CustomAccessor))
-        {
-            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} must declare a public getter.");
-        }
+        FlatSharpInternal.Assert(
+            validAccessor,
+            $"Property {this.DeclaringType} must declare a public getter.");
 
-        if (!ValidateVirtualPropertyMethod(getMethod, false))
-        {
-            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} did not declare a public/protected virtual getter.");
-        }
+        FlatSharpInternal.Assert(
+            ValidateVirtualPropertyMethod(getMethod, false),
+            $"Property {this.DeclaringType} did not declare a public/protected virtual getter.");
 
-        if (!ValidateVirtualPropertyMethod(setMethod, true))
-        {
-            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} declared a set method, but it was not public/protected and virtual.");
-        }
+        FlatSharpInternal.Assert(
+            ValidateVirtualPropertyMethod(this.PropertyInfo.SetMethod, true),
+            $"Property {this.DeclaringType} declared a set method, but it was not public/protected and virtual.");
     }
 
     protected string DeclaringType
@@ -124,10 +118,7 @@ public abstract class ItemMemberModel
             return allowNull;
         }
 
-        if (!CanBeOverridden(method))
-        {
-            return false;
-        }
+        FlatSharpInternal.Assert(CanBeOverridden(method), "virtual method expected");
 
         return method.IsPublic || method.IsFamilyOrAssembly || method.IsFamily;
     }

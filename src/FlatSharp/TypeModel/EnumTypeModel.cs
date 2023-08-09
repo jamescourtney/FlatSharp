@@ -41,15 +41,13 @@ public class EnumTypeModel : RuntimeTypeModel
         this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(underlyingType);
 
         var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
-        if (attribute == null)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' is not tagged with a [FlatBufferEnum] attribute.");
-        }
+        FlatSharpInternal.Assert(
+            attribute is not null,
+            $"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' is not tagged with a [FlatBufferEnum] attribute.");
 
-        if (attribute.DeclaredUnderlyingType != Enum.GetUnderlyingType(enumType))
-        {
-            throw new InvalidFlatBufferDefinitionException($"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{CSharpHelpers.GetCompilableTypeName(Enum.GetUnderlyingType(enumType))}'");
-        }
+        FlatSharpInternal.Assert(
+            attribute.DeclaredUnderlyingType == Enum.GetUnderlyingType(enumType),
+            $"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{CSharpHelpers.GetCompilableTypeName(Enum.GetUnderlyingType(enumType))}'");
     }
 
     public override bool IsParsingInvariant => true;
@@ -65,10 +63,6 @@ public class EnumTypeModel : RuntimeTypeModel
     public override bool IsValidTableMember => true;
 
     public override bool IsValidVectorMember => true;
-
-    public override bool IsValidUnionMember => false;
-
-    public override bool IsValidSortedVectorKey => false;
 
     public override bool SerializesInline => true;
 
