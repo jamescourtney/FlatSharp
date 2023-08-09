@@ -371,10 +371,9 @@ $@"
                 item.IsValidUnionMember,
                 $"Unions may not store '{item.GetCompilableTypeName()}'.");
 
-            if (!uniqueTypes.Add(item.ClrType))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
-            }
+            FlatSharpInternal.Assert(
+                uniqueTypes.Add(item.ClrType),
+                $"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
         }
     }
 
