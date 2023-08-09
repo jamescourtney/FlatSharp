@@ -67,26 +67,31 @@ public abstract class RuntimeTypeModel : ITypeModel
     /// <summary>
     /// Indicates if this type model can be part of a struct.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public virtual bool IsValidStructMember => false;
 
     /// <summary>
     /// Indicates if this type model can be part of a table.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public virtual bool IsValidTableMember => false;
 
     /// <summary>
     /// Indicates if this type model can be part of a vector.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public virtual bool IsValidVectorMember => false;
 
     /// <summary>
     /// Indicates if this type model can be part of a union.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public virtual bool IsValidUnionMember => false;
 
     /// <summary>
     /// Indicates if this type model can be a sorted vector key.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public virtual bool IsValidSortedVectorKey => false;
 
     /// <summary>
