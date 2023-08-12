@@ -5,7 +5,8 @@
     "ignore-methods": 
     [
       "CheckAlignment",
-      "Assert"
+      "Assert",
+      "ReturnToPool"
     ],
 
     "ignore-mutations": [

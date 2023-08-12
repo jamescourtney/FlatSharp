@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using FlatSharp.Internal;
+
 namespace FlatSharpEndToEndTests.ClassLib.IndexedVectorTests;
 
 /// <summary>
@@ -202,5 +204,53 @@ public class IndexedVectorTests
         Assert.Empty(vector);
         Assert.False(vector.ContainsKey(item.Key));
         Assert.False(vector.TryGetValue(item.Key, out _));
+    }
+
+    [Fact]
+    public void GreedyIndexedVector_Mutations()
+    {
+        GreedyIndexedVector<string, StringKey> vector = GreedyIndexedVector<string, StringKey>.GetOrCreate(new StringKey[0], true);
+        var item = new StringKey { Key = "foobar" };
+
+        Assert.False(vector.ContainsKey(item.Key));
+        Assert.False(vector.TryGetValue(item.Key, out _));
+        Assert.Equal(0, vector.Count);
+        Assert.Empty(vector);
+        Assert.True(vector.Add(item));
+        Assert.False(vector.Add(item));
+        Assert.True(vector.ContainsKey(item.Key));
+        Assert.True(vector.TryGetValue(item.Key, out _));
+        Assert.Equal(1, vector.Count);
+        Assert.Single(vector);
+        Assert.True(vector.Remove(item.Key));
+        Assert.False(vector.Remove(item.Key));
+        Assert.Equal(0, vector.Count);
+        Assert.Empty(vector);
+        Assert.True(vector.Add(item));
+        Assert.Equal(1, vector.Count);
+        Assert.Single(vector);
+        vector.Clear();
+        Assert.Equal(0, vector.Count);
+        Assert.Empty(vector);
+        Assert.False(vector.ContainsKey(item.Key));
+        Assert.False(vector.TryGetValue(item.Key, out _));
+    }
+
+    [Fact]
+    public void GreedyIndexedVector_Mutations_Frozen()
+    {
+        GreedyIndexedVector<string, StringKey> vector = GreedyIndexedVector<string, StringKey>.GetOrCreate(new StringKey[0], true);
+        var item = new StringKey { Key = "foobar" };
+
+        vector.Freeze();
+
+        Assert.False(vector.ContainsKey(item.Key));
+        Assert.False(vector.TryGetValue(item.Key, out _));
+        Assert.Equal(0, vector.Count);
+        Assert.Empty(vector);
+
+        Assert.Throws<NotMutableException>(() => vector.Add(item));
+        Assert.Throws<NotMutableException>(() => vector.Remove("foobar"));
+        Assert.Throws<NotMutableException>(() => vector.Clear());
     }
 }
