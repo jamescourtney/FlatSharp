@@ -49,29 +49,9 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => false;
 
     /// <summary>
-    /// Vectors can't be part of structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Vectors can be part of tables.
     /// </summary>
     public override bool IsValidTableMember => true;
-
-    /// <summary>
-    /// Vectors can't be part of unions.
-    /// </summary>
-    public override bool IsValidUnionMember => false;
-
-    /// <summary>
-    /// Vectors can't be part of vectors.
-    /// </summary>
-    public override bool IsValidVectorMember => false;
-
-    /// <summary>
-    /// Vector's can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// Gets the type model for this vector's elements.
@@ -213,15 +193,13 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
 
     public override void Validate()
     {
-        if (!this.ItemTypeModel.IsValidVectorMember)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Type '{this.ItemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
-        }
+        FlatSharpInternal.Assert(
+            this.ItemTypeModel.IsValidVectorMember,
+            $"Type '{this.ItemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
 
-        if (this.ItemTypeModel.PhysicalLayout.Length != 1)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Vectors may only store vtable layouts with one item. Consider a custom vector type model for other vector kinds.");
-        }
+        FlatSharpInternal.Assert(
+            this.ItemTypeModel.PhysicalLayout.Length == 1,
+            $"Vectors may only store vtable layouts with one item. Consider a custom vector type model for other vector kinds.");
 
         base.Validate();
     }
@@ -249,21 +227,46 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
     internal static bool ValidateWriteThrough(
         bool writeThroughSupported,
         ITypeModel model,
-        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> contexts,
-        FlatBufferSerializerOptions options)
+        TypeModelContainer container,
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> contexts)
     {
-        if (!contexts.TryGetValue(model, out var fieldsForModel))
+        // Helper to validate writethrough for a single model.
+        static bool ValidateModel(
+            ITypeModel model,
+            IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> contexts,
+            bool writeThroughSupported)
         {
+            if (contexts.TryGetValue(model, out var fieldsForModel))
+            {
+                var firstWriteThrough = fieldsForModel.Where(x => x.WriteThrough).FirstOrDefault();
+                if (firstWriteThrough is not null && !writeThroughSupported)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
+                }
+
+                return firstWriteThrough is not null;
+            }
+
             return false;
         }
 
-        var firstWriteThrough = fieldsForModel.Where(x => x.WriteThrough).FirstOrDefault();
 
-        if (firstWriteThrough is not null && !writeThroughSupported)
+        if (ValidateModel(model, contexts, writeThroughSupported))
         {
-            throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
+            return true;
         }
 
-        return firstWriteThrough is not null;
+        if (model.ClrType.IsValueType)
+        {
+            // Some vectors are structs: Memory<T> and UnityNativeArray<T>. We have
+            // to reverse those back to a type here and then see if *those* are writethrough.
+            Type nullable = typeof(Nullable<>).MakeGenericType(model.ClrType);
+            if (container.TryGetTypeModel(nullable, out var nullableModel))
+            {
+                return ValidateModel(nullableModel, contexts, writeThroughSupported);
+            }
+        }
+
+        return false;
     }
 }

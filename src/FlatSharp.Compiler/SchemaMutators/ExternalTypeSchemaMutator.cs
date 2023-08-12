@@ -23,7 +23,7 @@ using System.Text;
 /// Renames external types to have unique, random names, then replaces those in the output with real names.
 /// </summary>
 /// <remarks>
-/// This class is slightly. The idea for external types is that they are defined in assemblies that FlatSharp doesn't know about.
+/// This class is slightly odd. The idea for external types is that they are defined in assemblies that FlatSharp doesn't know about.
 /// However, the FlatSharp type model needs full knowledge of these types in order to build serializers. So, we emit "temporary" types
 /// to take the place of these external types while we build our serializer. Then, at the end, we do a big find/replace to swap
 /// the temporary types for the real types.

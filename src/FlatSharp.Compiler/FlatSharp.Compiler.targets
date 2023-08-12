@@ -90,39 +90,50 @@
     </ItemGroup>
 
     <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences" Condition=" '@(FlatSharpSchema)' != '' ">
+        <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
+            <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
+        </ProcessFlatSharpSchema>
+        
+        <!-- find compiler and set base command -->
+        <PropertyGroup>
+            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
+            <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
+            <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)</CompilerCommand>
+        </PropertyGroup>
+
+        <!-- Initialize FlatSharpNullable if not set -->
         <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
             <FlatSharpNullable>false</FlatSharpNullable>
             <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
         </PropertyGroup>
 
-        <PropertyGroup Condition=" '$(FlatSharpPoolable)' == '' ">
-            <FlatSharpPoolable>false</FlatSharpPoolable>
-        </PropertyGroup>
-
-
-        <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' == '' ">
-            <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
-        </PropertyGroup>
-
+        <!-- Append nullability to command line -->
         <PropertyGroup>
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
+            <CompilerCommand>$(CompilerCommand) --nullable-warnings $(FlatSharpNullable)</CompilerCommand>
         </PropertyGroup>
 
-        <PropertyGroup Condition=" '$(FlatSharpCompilerPath)' != '' ">
-            <CompilerPath>$(FlatSharpCompilerPath)</CompilerPath>
+        <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
+            <CompilerCommand>$(CompilerCommand) --gen-poolable</CompilerCommand>
         </PropertyGroup>
 
-        <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
-            <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
-        </ProcessFlatSharpSchema>
+        <PropertyGroup Condition=" '$(FlatSharpDeserializers)' != '' ">
+            <CompilerCommand>$(CompilerCommand) --deserializers &quot;$(FlatSharpDeserializers)&quot;</CompilerCommand>
+        </PropertyGroup>
 
-        <Message
-            Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
-            Importance="high" />
+        <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' != '' ">
+            <CompilerCommand>$(CompilerCommand) --normalize-field-names $(FlatSharpNameNormalization)</CompilerCommand>
+        </PropertyGroup>
 
-        <Exec
-            Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --gen-poolable $(FlatSharpPoolable) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
-            CustomErrorRegularExpression=".*" />
+        <PropertyGroup Condition=" '$(FlatSharpClassDefinitionsOnly)' == 'true' ">
+            <CompilerCommand>$(CompilerCommand) --class-definitions-only</CompilerCommand>
+        </PropertyGroup>
+
+        <PropertyGroup Condition=" '$(FlatSharpInputFilesOnly)' == 'true' ">
+            <CompilerCommand>$(CompilerCommand) --input-files-only</CompilerCommand>
+        </PropertyGroup>
+
+        <Message Text="$(CompilerCommand)" Importance="high" />
+        <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
 
         <ItemGroup>
             <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />

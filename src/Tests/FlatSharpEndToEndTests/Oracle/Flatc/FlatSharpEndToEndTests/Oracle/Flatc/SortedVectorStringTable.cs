@@ -13,7 +13,7 @@ public struct SortedVectorStringTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static SortedVectorStringTable GetRootAsSortedVectorStringTable(ByteBuffer _bb) { return GetRootAsSortedVectorStringTable(_bb, new SortedVectorStringTable()); }
   public static SortedVectorStringTable GetRootAsSortedVectorStringTable(ByteBuffer _bb, SortedVectorStringTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -35,7 +35,7 @@ public struct SortedVectorStringTable : IFlatbufferObject
   }
 
   public static void StartSortedVectorStringTable(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddValue(FlatBufferBuilder builder, StringOffset ValueOffset) { builder.AddOffset(0, ValueOffset.Value, 0); }
+  public static void AddValue(FlatBufferBuilder builder, StringOffset valueOffset) { builder.AddOffset(0, valueOffset.Value, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.SortedVectorStringTable> EndSortedVectorStringTable(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     builder.Required(o, 4);  // Value
@@ -96,5 +96,15 @@ public class SortedVectorStringTableT
   }
 }
 
+
+static public class SortedVectorStringTableVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyString(tablePos, 4 /*Value*/, true)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

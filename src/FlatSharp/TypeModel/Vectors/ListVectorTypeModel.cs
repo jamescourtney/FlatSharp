@@ -101,8 +101,8 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         bool isEverWriteThrough = ValidateWriteThrough(
             writeThroughSupported: !this.isReadOnly,
             this,
-            context.AllFieldContexts,
-            context.Options);
+            this.typeModelContainer,
+            context.AllFieldContexts);
 
         Func<ITypeModel, int, ParserCodeGenContext, bool, (string classDef, string className)>? createVector = context.Options.DeserializationOption switch
         {

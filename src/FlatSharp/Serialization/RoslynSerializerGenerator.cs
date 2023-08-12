@@ -36,7 +36,11 @@ namespace FlatSharp.CodeGen;
 /// </summary>
 internal class RoslynSerializerGenerator
 {
-    private static IReadOnlyList<FlatBufferDeserializationOption> DistinctDeserializationOptions = Enum.GetValues(typeof(FlatBufferDeserializationOption)).Cast<FlatBufferDeserializationOption>().Distinct().ToList();
+    private static IReadOnlyList<FlatBufferDeserializationOption> DistinctDeserializationOptions = 
+        Enum.GetValues(typeof(FlatBufferDeserializationOption))
+            .Cast<FlatBufferDeserializationOption>()
+            .Distinct()
+            .ToList();
 
 #if NET7_0_OR_GREATER
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
@@ -151,10 +155,10 @@ $@"
     internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>()
     {
         ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
-        if (rootModel.SchemaType != FlatBufferSchemaType.Table)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
-        }
+
+        FlatSharpInternal.Assert(
+            rootModel.SchemaType == FlatBufferSchemaType.Table,
+            $"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
 
         IMethodNameResolver resolver = new DefaultMethodNameResolver();
 
@@ -164,7 +168,7 @@ $@"
         List<string> parts = new();
         foreach (Type type in dependencies)
         {
-            parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), resolver));
+            parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), resolver, DistinctDeserializationOptions));
         }
 
         var serializerParts = resolver.ResolveGeneratedSerializerClassName(this.typeModelContainer.CreateTypeModel(typeof(TRoot)));
@@ -397,9 +401,9 @@ $@"
         return seenAssemblies;
     }
 
-    private (string body, string fullName) ImplementInterfaceMethod(Type rootType, IMethodNameResolver resolver)
+    private (string body, string fullName) ImplementInterfaceMethod(TableTypeModel typeModel, IMethodNameResolver resolver, IEnumerable<FlatBufferDeserializationOption> deserializationOptions)
     {
-        ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(rootType);
+        Type rootType = typeModel.ClrType;
         List<string> bodyParts = new();
 
         {
@@ -464,12 +468,24 @@ $@"
         foreach (var pair in pairs)
         {
             var parts = resolver.ResolveParse(pair.Item2, typeModel);
+
+            string body;
+
+            if (deserializationOptions.Contains(pair.Item2))
+            {
+                body = $"return {parts.@namespace}.{parts.className}.{parts.methodName}(buffer, args.{nameof(GeneratedSerializerParseArguments.Offset)}, args.{nameof(GeneratedSerializerParseArguments.DepthLimit)});";
+            }
+            else
+            {
+                body = $"throw new NotImplementedException(\"Deserializer type '{pair.Item2}' was excluded from generation at compile time.\");";
+            }
+
             string methodText =
 $@"
                 public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} {pair.Item1}<TInputBuffer>(TInputBuffer buffer, in {typeof(GeneratedSerializerParseArguments).GetGlobalCompilableTypeName()} args) 
                     where TInputBuffer : IInputBuffer
                 {{
-                    return {parts.@namespace}.{parts.className}.{parts.methodName}(buffer, args.{nameof(GeneratedSerializerParseArguments.Offset)}, args.{nameof(GeneratedSerializerParseArguments.DepthLimit)});
+                    {body}
                 }}
 ";
             bodyParts.Add(methodText);
@@ -547,7 +563,7 @@ $@"
     /// Implements methods for a single type.
     /// </summary>
     /// <returns>The c# code</returns>
-    internal string ImplementHelperClass(ITypeModel typeModel, IMethodNameResolver resolver)
+    internal string ImplementHelperClass(ITypeModel typeModel, IMethodNameResolver resolver, IEnumerable<FlatBufferDeserializationOption> deserializationOptions)
     {
         bool requiresDepthTracking = typeModel.IsDeepEnoughToRequireDepthTracking();
         
@@ -609,7 +625,7 @@ $@"
         }
         else
         {
-            foreach (var option in DistinctDeserializationOptions)
+            foreach (var option in DistinctDeserializationOptions.Intersect(deserializationOptions))
             {
                 parseContext = parseContext with { Options = this.options with { DeserializationOption = option } };
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
@@ -631,7 +647,7 @@ $@"
             if (tableModel.ShouldBuildISerializer)
             {
                 // Generate a serializer as well.
-                (serializerBody, _) = ImplementInterfaceMethod(typeModel.ClrType, resolver);
+                (serializerBody, _) = ImplementInterfaceMethod(tableModel, resolver, deserializationOptions);
             }
         }
 

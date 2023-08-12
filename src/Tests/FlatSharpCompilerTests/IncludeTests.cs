@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.IO;
+
 namespace FlatSharpTests.Compiler;
 
 public class IncludeTests
@@ -69,7 +71,7 @@ public class IncludeTests
 
         var schemas = new[]
         {
-            (@"Foo\B.fbs", schemaB),
+            (@$"Foo{Path.DirectorySeparatorChar}B.fbs", schemaB),
             (@"A.fbs", schemaA),
         };
 
@@ -80,8 +82,14 @@ public class IncludeTests
     [Fact]
     public void IncludeTest_IncludePaths()
     {
+        string separator = "" + Path.DirectorySeparatorChar;
+        if (separator == "\\")
+        {
+            separator = "\\\\";
+        }
+
         var schemaA = $@"
-            include ""Foo\\B.fbs"";
+            include ""Foo{separator}B.fbs"";
 
             namespace Foobar;
 
@@ -111,9 +119,9 @@ public class IncludeTests
 
         var schemas = new[]
         {
-            (@"Baz\D.fbs", schemaD),
-            (@"Bar\C.fbs", schemaC),
-            (@"Foo\B.fbs", schemaB),
+            (@$"Baz{Path.DirectorySeparatorChar}D.fbs", schemaD),
+            (@$"Bar{Path.DirectorySeparatorChar}C.fbs", schemaC),
+            (@$"Foo{Path.DirectorySeparatorChar}B.fbs", schemaB),
             (@"A.fbs", schemaA),
         };
 

@@ -179,7 +179,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     private void EmitPoolableObject(CodeWriter writer, CompileContext context)
     {
-        if (context.Options.GeneratePoolableObjects == true)
+        if (context.Options.GeneratePoolableObjects)
         {
             writer.AppendLine("/// <inheritdoc />");
             writer.AppendLine("public virtual void ReturnToPool(bool unsafeForce = false)");
@@ -195,7 +195,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
         using (writer.WithBlock())
         {
             var keyProperty = this.properties.Values.SingleOrDefault(p => p.Field.Key);
-            if (keyProperty is not null)
+            if (keyProperty is not null && context.CompilePass == CodeWritingPass.LastPass)
             {
                 writer.AppendLine($"global::FlatSharp.SortedVectorHelpers.RegisterKeyLookup<{this.Name}, {keyProperty.Field.Type.ResolveTypeOrElementTypeName(this.Schema, keyProperty.Attributes)}>(x => x.{keyProperty.FieldName}, {keyProperty.Index});");
             }

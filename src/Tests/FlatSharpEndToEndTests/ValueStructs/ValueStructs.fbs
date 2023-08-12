@@ -3,6 +3,7 @@ attribute "fs_serializer";
 attribute "fs_unsafeStructVector";
 attribute "fs_valueStruct";
 attribute "fs_writeThrough";
+attribute "fs_vector";
 
 namespace FlatSharpEndToEndTests.ValueStructs;
 
@@ -21,6 +22,12 @@ struct Vec3 (fs_valueStruct)
     Z : float;
 }
 
+struct PoorlyAligned (fs_valueStruct)
+{
+    X : float;
+    Y : ubyte;
+}
+
 table RootTable (fs_serializer:"GreedyMutable") {
     refStruct : RefStruct;
     valueStruct : ValueStruct;
@@ -29,6 +36,16 @@ table RootTable (fs_serializer:"GreedyMutable") {
     vectorOfUnion : [TestUnion];
     requiredValueStruct : ValueStruct (required);
     str : string;
+}
+
+table UnityVectors_Native (fs_serializer) {
+    well_aligned : [ Vec3 ] (fs_vector:"UnityNativeArray", required);
+    poorly_aligned : [ PoorlyAligned ] (fs_vector:"UnityNativeArray");
+}
+
+table UnityVectors_List (fs_serializer) {
+    well_aligned : [ Vec3 ];
+    poorly_aligned : [ PoorlyAligned ];
 }
 
 struct InnerValueStruct (fs_valueStruct) {

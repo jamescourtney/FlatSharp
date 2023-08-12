@@ -30,6 +30,28 @@ table RootTable (fs_serializer)
     list_vector_of_string : [ StringKey ] (fs_sortedVector);
 }
 
+table RootTable_NonSorted (fs_serializer)
+{
+    list_vector_of_bool : [ BoolKey ];
+
+    list_vector_of_byte : [ ByteKey ];
+    list_vector_of_sbyte : [ SByteKey ];
+
+    list_vector_of_short : [ ShortKey ];
+    list_vector_of_ushort : [ UShortKey ];
+
+    list_vector_of_int : [ IntKey ];
+    list_vector_of_uint : [ UIntKey ];
+
+    list_vector_of_long : [ LongKey ];
+    list_vector_of_ulong : [ ULongKey ];
+
+    list_vector_of_float : [ FloatKey ];
+    list_vector_of_double : [ DoubleKey ];
+
+    list_vector_of_string : [ StringKey_NoKey ];
+}
+
 table RootTableReadOnly (fs_serializer)
 {
     list_vector_of_bool : [ BoolKey ] (fs_sortedVector, fs_vector:"IReadOnlyList");
@@ -79,10 +101,12 @@ table ByteKey { Key : ubyte (key); }
 table SByteKey { Key : byte (key); }
 table ShortKey { Key : short (key); }
 table UShortKey { Key : ushort (key); }
-table IntKey { Key : int (key); }
+table IntKey { Key : int = 5(key); }
 table UIntKey { Key : uint (key); }
 table LongKey { Key : long (key); }
 table ULongKey { Key : ulong (key); }
 table FloatKey { Key : float (key); }
 table DoubleKey { Key : double (key); }
 table StringKey { Key : string (key); }
+table StringKey_NoKey { Key : string; }
+

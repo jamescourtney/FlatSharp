@@ -64,6 +64,21 @@ public class SpanComparerTests
     }
 
     [Fact]
+    public void StringComparer_NullItems()
+    {
+        StringSpanComparer comp = default;
+
+        var ex = Assert.Throws<InvalidOperationException>(() => comp.Compare(false, default, false, default));
+        Assert.Equal("Strings may not be null when used as sorted vector keys.", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => comp.Compare(false, default, true, default));
+        Assert.Equal("Strings may not be null when used as sorted vector keys.", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => comp.Compare(true, default, false, default));
+        Assert.Equal("Strings may not be null when used as sorted vector keys.", ex.Message);
+    }
+
+    [Fact]
     public void TestBoolComparer()
     {
         BoolSpanComparer comparer = new BoolSpanComparer(default);

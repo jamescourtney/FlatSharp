@@ -64,11 +64,6 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override bool IsValidTableMember => true;
 
     /// <summary>
-    /// Scalars can't be part of Unions.
-    /// </summary>
-    public override bool IsValidUnionMember => false;
-
-    /// <summary>
     /// Scalars can be part of Vectors.
     /// </summary>
     public override bool IsValidVectorMember => true;

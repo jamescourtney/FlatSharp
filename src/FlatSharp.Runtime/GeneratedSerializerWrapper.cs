@@ -57,8 +57,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     public Type RootType => typeof(T);
 
-    public string? CSharp => this.lazyCSharp.Value;
-
     public FlatBufferDeserializationOption DeserializationOption => this.option;
 
     public int GetMaxSize(T item)
@@ -223,11 +221,13 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         };
     }
 
+    [ExcludeFromCodeCoverage]
     public ISerializer<T> WithSettings(Action<SerializerSettings> settingsCallback)
     {
         return this.WithSettingsCore(settingsCallback);
     }
 
+    [ExcludeFromCodeCoverage]
     ISerializer ISerializer.WithSettings(Action<SerializerSettings> settingsCallback)
     {
         return this.WithSettingsCore(settingsCallback);

@@ -49,7 +49,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             return false;
         }
 
-        if (context.GeneratePoolableObjects == true)
+        if (context.GeneratePoolableObjects)
         {
             model = new ReferenceUnionSchemaModel(schema, union);
         }
@@ -71,6 +71,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
         bool generateUnsafeItemsOriginal = context.CompilePass >= CodeWritingPass.LastPass && this.Attributes.UnsafeUnion == true;
         bool generateUnsafeItems = generateUnsafeItemsOriginal;
 
+        HashSet<string> seenTypes = new();
         List<(string resolvedType, EnumVal value, int? size)> innerTypes = new List<(string, EnumVal, int?)>();
         foreach (var inner in this.union.Values.Select(x => x.Value))
         {
@@ -85,6 +86,11 @@ public class ValueUnionSchemaModel : BaseSchemaModel
 
             long discriminator = inner.Value;
             string typeName = inner.UnionType.ResolveTypeOrElementTypeName(this.Schema, this.Attributes);
+            if (!seenTypes.Add(typeName))
+            {
+                ErrorContext.Current.RegisterError($"FlatSharp unions may not contain duplicate types. Union = {this.FullName}");
+                continue;
+            }
 
             int? size = null;
             Type? type = context.PreviousAssembly?.GetType(typeName);

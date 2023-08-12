@@ -95,9 +95,21 @@ jobs:
             --output stryker.coverage.xml `
             --targetargs "src/FlatSharp.Compiler/bin/Debug/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o src/tests/Stryker/CodeGen --mutation-testing-mode"
       
-    - name: Test
+    - name: E2E Tests
       working-directory: src
-      run: dotnet test -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
+      run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
+
+    - name: E2E Tests (Poolable)
+      working-directory: src
+      run: dotnet test Tests/FlatSharpPoolableEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
+      
+    - name: Compiler Tests
+      working-directory: src
+      run: dotnet test Tests/FlatSharpCompilerTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
+      
+    - name: Stryker Tests
+      working-directory: src
+      run: dotnet test Tests/Stryker/Tests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net7.0
       
     - name: Upload
       run: codecov -f **/*coverage*.xml

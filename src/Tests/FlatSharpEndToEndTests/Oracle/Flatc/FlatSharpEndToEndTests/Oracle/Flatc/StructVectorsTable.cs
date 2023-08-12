@@ -13,7 +13,7 @@ public struct StructVectorsTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static StructVectorsTable GetRootAsStructVectorsTable(ByteBuffer _bb) { return GetRootAsStructVectorsTable(_bb, new StructVectorsTable()); }
   public static StructVectorsTable GetRootAsStructVectorsTable(ByteBuffer _bb, StructVectorsTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -22,7 +22,7 @@ public struct StructVectorsTable : IFlatbufferObject
   public FlatSharpEndToEndTests.Oracle.Flatc.StructVectors? Vec { get { int o = __p.__offset(4); return o != 0 ? (FlatSharpEndToEndTests.Oracle.Flatc.StructVectors?)(new FlatSharpEndToEndTests.Oracle.Flatc.StructVectors()).__assign(o + __p.bb_pos, __p.bb) : null; } }
 
   public static void StartStructVectorsTable(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddVec(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.StructVectors> VecOffset) { builder.AddStruct(0, VecOffset.Value, 0); }
+  public static void AddVec(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.StructVectors> vecOffset) { builder.AddStruct(0, vecOffset.Value, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.StructVectorsTable> EndStructVectorsTable(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.StructVectorsTable>(o);
@@ -52,5 +52,15 @@ public class StructVectorsTableT
   }
 }
 
+
+static public class StructVectorsTableVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Vec*/, 56 /*FlatSharpEndToEndTests.Oracle.Flatc.StructVectors*/, 8, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

@@ -49,29 +49,9 @@ public abstract class BaseVectorOfUnionTypeModel : RuntimeTypeModel
     public override bool IsFixedSize => false;
 
     /// <summary>
-    /// Vectors can't be part of structs.
-    /// </summary>
-    public override bool IsValidStructMember => false;
-
-    /// <summary>
     /// Vectors can be part of tables.
     /// </summary>
     public override bool IsValidTableMember => true;
-
-    /// <summary>
-    /// Vectors can't be part of unions.
-    /// </summary>
-    public override bool IsValidUnionMember => false;
-
-    /// <summary>
-    /// Vectors can't be part of vectors.
-    /// </summary>
-    public override bool IsValidVectorMember => false;
-
-    /// <summary>
-    /// Vector's can't be keys of sorted vectors.
-    /// </summary>
-    public override bool IsValidSortedVectorKey => false;
 
     /// <summary>
     /// Gets the type model for this vector's elements.

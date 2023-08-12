@@ -86,11 +86,11 @@ public class FlatSharpTypeModelProvider : ITypeModelProvider
         var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();
         var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
 
-        if (tableAttribute is not null && structAttribute is not null)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Type '{CSharpHelpers.GetCompilableTypeName(type)}' is declared as both [FlatBufferTable] and [FlatBufferStruct].");
-        }
-        else if (tableAttribute is not null)
+        FlatSharpInternal.Assert(
+            tableAttribute is null || structAttribute is null,
+            $"Type '{CSharpHelpers.GetCompilableTypeName(type)}' is declared as both [FlatBufferTable] and [FlatBufferStruct].");
+
+        if (tableAttribute is not null)
         {
             typeModel = new TableTypeModel(type, container);
             return true;

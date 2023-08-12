@@ -22,6 +22,7 @@ namespace FlatSharp.Compiler.Schema;
 public enum BaseType : byte
 {
     None,
+
     UType,
     Bool,
     Byte,
@@ -39,6 +40,7 @@ public enum BaseType : byte
     Obj,     // Used for tables & structs.
     Union,
     Array,
+    Vector64,
 
     // Add any new type above this value.
     MaxBaseType

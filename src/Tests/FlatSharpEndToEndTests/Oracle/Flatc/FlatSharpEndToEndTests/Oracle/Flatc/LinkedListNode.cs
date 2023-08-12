@@ -13,7 +13,7 @@ public struct LinkedListNode : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static LinkedListNode GetRootAsLinkedListNode(ByteBuffer _bb) { return GetRootAsLinkedListNode(_bb, new LinkedListNode()); }
   public static LinkedListNode GetRootAsLinkedListNode(ByteBuffer _bb, LinkedListNode obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -38,8 +38,8 @@ public struct LinkedListNode : IFlatbufferObject
   }
 
   public static void StartLinkedListNode(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddValue(FlatBufferBuilder builder, StringOffset ValueOffset) { builder.AddOffset(0, ValueOffset.Value, 0); }
-  public static void AddNext(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.LinkedListNode> NextOffset) { builder.AddOffset(1, NextOffset.Value, 0); }
+  public static void AddValue(FlatBufferBuilder builder, StringOffset valueOffset) { builder.AddOffset(0, valueOffset.Value, 0); }
+  public static void AddNext(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.LinkedListNode> nextOffset) { builder.AddOffset(1, nextOffset.Value, 0); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.LinkedListNode> EndLinkedListNode(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<FlatSharpEndToEndTests.Oracle.Flatc.LinkedListNode>(o);
@@ -75,5 +75,16 @@ public class LinkedListNodeT
   }
 }
 
+
+static public class LinkedListNodeVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyString(tablePos, 4 /*Value*/, false)
+      && verifier.VerifyTable(tablePos, 6 /*Next*/, FlatSharpEndToEndTests.Oracle.Flatc.LinkedListNodeVerify.Verify, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

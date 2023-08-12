@@ -13,7 +13,7 @@ public struct LocationHolder : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_23_5_26(); }
   public static LocationHolder GetRootAsLocationHolder(ByteBuffer _bb) { return GetRootAsLocationHolder(_bb, new LocationHolder()); }
   public static LocationHolder GetRootAsLocationHolder(ByteBuffer _bb, LocationHolder obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -42,9 +42,9 @@ public struct LocationHolder : IFlatbufferObject
   }
 
   public static void StartLocationHolder(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddSingleLocation(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.Location> SingleLocationOffset) { builder.AddStruct(0, SingleLocationOffset.Value, 0); }
-  public static void AddFake(FlatBufferBuilder builder, StringOffset FakeOffset) { builder.AddOffset(1, FakeOffset.Value, 0); }
-  public static void AddLocationVector(FlatBufferBuilder builder, VectorOffset LocationVectorOffset) { builder.AddOffset(2, LocationVectorOffset.Value, 0); }
+  public static void AddSingleLocation(FlatBufferBuilder builder, Offset<FlatSharpEndToEndTests.Oracle.Flatc.Location> singleLocationOffset) { builder.AddStruct(0, singleLocationOffset.Value, 0); }
+  public static void AddFake(FlatBufferBuilder builder, StringOffset fakeOffset) { builder.AddOffset(1, fakeOffset.Value, 0); }
+  public static void AddLocationVector(FlatBufferBuilder builder, VectorOffset locationVectorOffset) { builder.AddOffset(2, locationVectorOffset.Value, 0); }
   public static void StartLocationVectorVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(12, numElems, 4); }
   public static Offset<FlatSharpEndToEndTests.Oracle.Flatc.LocationHolder> EndLocationHolder(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -91,5 +91,17 @@ public class LocationHolderT
   }
 }
 
+
+static public class LocationHolderVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*SingleLocation*/, 12 /*FlatSharpEndToEndTests.Oracle.Flatc.Location*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*Fake*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 8 /*LocationVector*/, 12 /*FlatSharpEndToEndTests.Oracle.Flatc.Location*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

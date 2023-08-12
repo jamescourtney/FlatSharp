@@ -51,8 +51,8 @@ public class MemoryVectorTypeModel : BaseVectorTypeModel
         ValidateWriteThrough(
             writeThroughSupported: false,
             this,
-            context.AllFieldContexts,
-            context.Options);
+            this.typeModelContainer,
+            context.AllFieldContexts);
 
         string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
         if (this.isReadOnly)

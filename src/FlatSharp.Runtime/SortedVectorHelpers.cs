@@ -58,8 +58,8 @@ public static class SortedVectorHelpers
         {
             using SimpleStringComparer cmp = new SimpleStringComparer(str);
 
-            return BinarySearchByFlatBufferKey<ListIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
-                new ListIndexable<TTable, string?>(sortedVector),
+            return BinarySearchByFlatBufferKey<ListIndexable<TTable, string>, TTable, string, SimpleStringComparer>(
+                new ListIndexable<TTable, string>(sortedVector),
                 sortedVector,
                 cmp);
         }
@@ -86,8 +86,8 @@ public static class SortedVectorHelpers
         {
             using SimpleStringComparer cmp = new SimpleStringComparer(str);
 
-            return BinarySearchByFlatBufferKey<ReadOnlyListIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
-                new ReadOnlyListIndexable<TTable, string?>(sortedVector),
+            return BinarySearchByFlatBufferKey<ReadOnlyListIndexable<TTable, string>, TTable, string, SimpleStringComparer>(
+                new ReadOnlyListIndexable<TTable, string>(sortedVector),
                 sortedVector,
                 cmp);
         }
@@ -235,6 +235,7 @@ public static class SortedVectorHelpers
             }
         }
 
+        [ExcludeFromCodeCoverage]
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DoesNotReturn]
         private static void ThrowNotInitialized()
@@ -319,8 +320,14 @@ public static class SortedVectorHelpers
             // Follow soffset to start of vtable.
             int vtableStart = offset - buffer.ReadInt(offset);
 
-            // Offset within the table.
-            int tableOffset = buffer.ReadUShort(vtableStart + 4 + (2 * this.keyIndex));
+            ushort vtableLength = buffer.ReadUShort(vtableStart);
+            int tableOffset = 0;
+            int keyFieldOffset = 4 + (2 * this.keyIndex);
+
+            if (keyFieldOffset + sizeof(ushort) <= vtableLength)
+            {
+                tableOffset = buffer.ReadUShort(vtableStart + keyFieldOffset);
+            }
 
             if (tableOffset == 0)
             {
@@ -371,7 +378,7 @@ public static class SortedVectorHelpers
         }
     }
 
-    private struct SimpleStringComparer : ISimpleComparer<string?>, ISimpleComparer<ReadOnlyMemory<byte>>
+    private struct SimpleStringComparer : ISimpleComparer<string>, ISimpleComparer<ReadOnlyMemory<byte>>
     {
         private readonly byte[] pooledArray;
         private readonly int length;
@@ -385,12 +392,9 @@ public static class SortedVectorHelpers
             this.length = enc.GetBytes(right, 0, right.Length, this.pooledArray, 0);
         }
 
-        public int CompareTo(string? left)
+        public int CompareTo(string left)
         {
-            if (left is null)
-            {
-                throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
-            }
+            FlatSharpInternal.Assert(left is not null, "Sorted FlatBuffer vectors may not have null-valued keys.");
 
             var enc = SerializationHelpers.Encoding;
             int comp;

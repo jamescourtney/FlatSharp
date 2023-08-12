@@ -20,6 +20,65 @@ namespace FlatSharpTests.Compiler;
 
 public class SortedVectors
 {
+    [Theory]
+    [InlineData("string")]
+    [InlineData("int")]
+    public void SortedVector_DoubleKey_NotAllowed(string type)
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            table VectorMember {{
+                Key : {type} (key);
+                Key2 : {type} (key);
+            }}
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("only one field may be set as 'key'", ex.Message);
+    }
+
+    [Fact]
+    public void SortedVector_OfStruct_NotAllowed()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct VectorMember {{
+                Key : int;
+            }}
+
+            table Table {{
+                Items : [ VectorMember ] ({MetadataKeys.SortedVector});
+            }}
+        ";
+
+        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("Property 'Items' declares a sorted vector, but the member is not a table.", ex.Message);
+    }
+
+    [Fact]
+    public void SortedVector_UnionKey_NotAllowed()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            
+            union FunUnion {{ str : string }}
+
+            table VectorMember {{
+                Key : FunUnion (key);
+            }}
+
+            table Table {{
+                Items : [ VectorMember ] ({MetadataKeys.SortedVector});
+            }}
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("'key' field must be string, scalar type or fixed size array of scalars", ex.Message);
+    }
+
     [Fact]
     public void SortedVector_StringKey()
     {
@@ -221,7 +280,7 @@ public class SortedVectors
 
         var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains(
-            "error: 'key' field must be string or scalar type",
+            "error: 'key' field must be string, scalar type or fixed size array of scalars",
             ex.Message);
     }
 

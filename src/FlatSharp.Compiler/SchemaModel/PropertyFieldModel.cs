@@ -206,7 +206,7 @@ public record PropertyFieldModel
                 return "true";
             }
 
-            return $"({typeName}){defaultInt}";
+            return $"({typeName})({defaultInt})";
         }
     }
 
