@@ -113,7 +113,7 @@ public class GeneratedSerializerWrapperTests
         // default mode throws
         Assert.Throws<BufferTooSmallException>(() => SomeTable.Serializer.Write(buffer, parsed));
 
-        Array.Fill<byte>(target, 0);
+        target = new byte[buffer.Length];
 
         // memcopy mode is OK.
         SomeTable.Serializer.WithSettings(s => s.UseMemoryCopySerialization()).Write(target, parsed);
