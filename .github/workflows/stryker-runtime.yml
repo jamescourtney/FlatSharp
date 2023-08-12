@@ -39,10 +39,10 @@ jobs:
     
     - name: Mutate
       working-directory: src/Tests/FlatsharpEndToEndTests
-      continue-on-error: true
       run: dotnet-stryker
       
     - name: Upload Results
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Stryker Results
