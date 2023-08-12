@@ -35,10 +35,13 @@ public class GeneratedSerializerWrapperTests
         Assert.Throws<BufferTooSmallException>(() => serializer.Write(destination, table));
     }
 
-    [Fact]
-    public void Parse_SourceBuffer_TooShort()
+    [Theory]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    public void Parse_SourceBuffer_TooShort(int size)
     {
-        var ex = Assert.Throws<ArgumentException>(() => FlatBufferSerializerNonGenericTests.SomeTable.Serializer.Parse(new byte[7]));
+        var ex = Assert.Throws<ArgumentException>(() => FlatBufferSerializerNonGenericTests.SomeTable.Serializer.Parse(new byte[size]));
         Assert.Equal("Buffer is too small to be valid!", ex.Message);
     }
 
@@ -75,7 +78,60 @@ public class GeneratedSerializerWrapperTests
     public void GeneratedSerializer_GetMaxSize_Null()
     {
         var ex = Assert.Throws<ArgumentNullException>(() => FlatBufferSerializerNonGenericTests.SomeTable.Serializer.GetMaxSize(null!));
-        Assert.Contains("item", ex.Message);
+        Assert.Contains("The root table may not be null", ex.Message);
+    }
+
+    [Fact]
+    public void Serialize_Null_NotAllowed()
+    {
+        byte[] destination = new byte[1024];
+        var ex = Assert.Throws<ArgumentNullException>(() => FlatBufferSerializerNonGenericTests.SomeTable.Serializer.Write(destination, null));
+        Assert.Contains("The root table may not be null", ex.Message);
+    }
+
+    [Theory]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    public void Serialize_DestinationTooSmall(int size)
+    {
+        byte[] destination = new byte[size];
+        var ex = Assert.Throws<BufferTooSmallException>(() => FlatBufferSerializerNonGenericTests.SomeTable.Serializer.Write(destination, new()));
+        Assert.Equal(
+            SomeTable.Serializer.GetMaxSize(new()),
+            ex.SizeNeeded);
+    }
+
+    [Fact]
+    public void Serialize_MemoryCopy_OK()
+    {
+        SomeTable table = new() { A = 4 };
+        SomeTable parsed = table.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out byte[] buffer);
+
+        byte[] target = new byte[buffer.Length];
+
+        // default mode throws
+        Assert.Throws<BufferTooSmallException>(() => SomeTable.Serializer.Write(buffer, parsed));
+
+        Array.Fill<byte>(target, 0);
+
+        // memcopy mode is OK.
+        SomeTable.Serializer.WithSettings(s => s.UseMemoryCopySerialization()).Write(target, parsed);
+        Assert.True(buffer.AsSpan().SequenceEqual(target));
+    }
+
+    [Fact]
+    public void Serialize_MemoryCopy_TooShort()
+    {
+        SomeTable table = new() { A = 4 };
+        SomeTable parsed = table.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out byte[] buffer);
+
+        byte[] target = new byte[buffer.Length - 1];
+
+        var ex = Assert.Throws<BufferTooSmallException>(() => SomeTable.Serializer.WithSettings(s => s.UseMemoryCopySerialization()).Write(target, parsed));
+        Assert.Equal(
+            buffer.Length,
+            ex.SizeNeeded);
     }
 
     private class FakeInputBuffer : IInputBuffer
