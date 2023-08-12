@@ -75,7 +75,7 @@ public class GeneratedSerializerWrapperTests
     public void GeneratedSerializer_GetMaxSize_Null()
     {
         var ex = Assert.Throws<ArgumentNullException>(() => FlatBufferSerializerNonGenericTests.SomeTable.Serializer.GetMaxSize(null!));
-        Assert.Equal("The root table may not be null.", ex.Message);
+        Assert.Equal("The root table may not be null. (Parameter 'item')", ex.Message);
     }
 
     private class FakeInputBuffer : IInputBuffer
