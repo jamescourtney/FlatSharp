@@ -203,9 +203,9 @@ $@"
     {
         var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
         SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
+        Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
 #if DEBUG
-        Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
         string actualCSharp = tree.ToString();
         var debugCSharp = formattedTextFactory();
 
