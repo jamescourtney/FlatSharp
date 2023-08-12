@@ -29,7 +29,7 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage]
     public static ISerializer<T> AsISerializer<T>(this IGeneratedSerializer<T> generatedSerializer, FlatBufferDeserializationOption option) where T : class
     {
-        return new GeneratedSerializerWrapper<T>(option, generatedSerializer, () => null);
+        return new GeneratedSerializerWrapper<T>(option, generatedSerializer);
     }
 
     /// <summary>

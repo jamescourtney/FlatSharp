@@ -34,7 +34,13 @@ public class FlatBufferSerializerNonGenericTests
         {
             var bw = new ArrayBufferWriter<byte>();
             Assert.Throws<ArgumentNullException>(() => serializer.Write(bw, null));
-            Assert.Throws<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable()));
+            Assert.Equal(
+                "Argument was not of the correct type. Type = FlatSharpEndToEndTests.ClassLib.FlatBufferSerializerNonGenericTests.SomeOtherTable, Expected Type = FlatSharpEndToEndTests.ClassLib.FlatBufferSerializerNonGenericTests.SomeTable",
+                Assert.Throws<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable())).Message);
+
+            Assert.Equal(
+                "Argument was not of the correct type. Type = FlatSharpEndToEndTests.ClassLib.FlatBufferSerializerNonGenericTests.SomeOtherTable, Expected Type = FlatSharpEndToEndTests.ClassLib.FlatBufferSerializerNonGenericTests.SomeTable",
+                Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable())).Message);
 
             int written = serializer.Write(bw, new SomeTable { A = 3 });
             Assert.True(written > 0);

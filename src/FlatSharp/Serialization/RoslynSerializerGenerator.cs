@@ -131,7 +131,7 @@ $@"
 
         var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
-        (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) =
+        (Assembly assembly, byte[] assemblyData) =
             CompileAssembly(
                 template,
                 this.options.EnableAppDomainInterceptOnAssemblyLoad,
@@ -148,8 +148,7 @@ $@"
 
         return new GeneratedSerializerWrapper<TRoot>(
             this.options.DeserializationOption,
-            (IGeneratedSerializer<TRoot>)item,
-            formattedTextFactory);
+            (IGeneratedSerializer<TRoot>)item);
     }
 
     internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>()
@@ -197,16 +196,16 @@ $@"
         };
     }
 
-    internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
+    internal static (Assembly assembly, byte[] assemblyData) CompileAssembly(
         string sourceCode,
         bool enableAppDomainIntercept,
         params Assembly[] additionalReferences)
     {
         var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
         SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
-        Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
 #if DEBUG
+        Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
         string actualCSharp = tree.ToString();
         var debugCSharp = formattedTextFactory();
 
@@ -279,7 +278,7 @@ $@"
 
             AssemblyNameReferenceMapping[name] = (assembly, assemblyData);
 
-            return (assembly, formattedTextFactory, assemblyData);
+            return (assembly, assemblyData);
         }
     }
 

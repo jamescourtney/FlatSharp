@@ -26,7 +26,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
     private const int FileIdentifierSize = 4;
 
     private readonly IGeneratedSerializer<T> innerSerializer;
-    private readonly Lazy<string?> lazyCSharp;
 
     private ThreadLocal<ISharedStringWriter?> sharedStringWriter;
     private bool enableMemoryCopySerialization;
@@ -35,10 +34,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     public GeneratedSerializerWrapper(
         FlatBufferDeserializationOption option,
-        IGeneratedSerializer<T>? innerSerializer,
-        Func<string?> generatedCSharp)
+        IGeneratedSerializer<T>? innerSerializer)
     {
-        this.lazyCSharp = new Lazy<string?>(generatedCSharp);
         this.innerSerializer = innerSerializer ?? throw new ArgumentNullException(nameof(innerSerializer));
         this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(() => new SharedStringWriter());
         this.remainingDepthLimit = 1000; // sane default.
@@ -52,7 +49,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         this.option = template.option;
         this.sharedStringWriter = template.sharedStringWriter;
         this.enableMemoryCopySerialization = template.enableMemoryCopySerialization;
-        this.lazyCSharp = template.lazyCSharp;
     }
 
     public Type RootType => typeof(T);
@@ -90,11 +86,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
             null => throw new ArgumentNullException(nameof(item)),
             _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
         };
-    }
-
-    public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
-    {
-        return this.Parse(buffer, this.option);
     }
 
     public T Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option = null) where TInputBuffer : IInputBuffer
