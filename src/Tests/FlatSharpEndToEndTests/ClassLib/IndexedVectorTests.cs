@@ -207,6 +207,25 @@ public class IndexedVectorTests
     }
 
     [Fact]
+    public void IndexedVector_Constructor_Works()
+    {
+        string[] keys = new[]
+        {
+            "foo",
+            "bar",
+            "baz",
+            "bat",
+        };
+
+        IndexedVector<string, StringKey> vector = new(keys.Select(x => new StringKey { Key = x }).ToArray(), false);
+
+        foreach (var key in keys)
+        {
+            Assert.True(vector.ContainsKey(key));
+        }
+    }
+
+    [Fact]
     public void GreedyIndexedVector_Mutations()
     {
         GreedyIndexedVector<string, StringKey> vector = GreedyIndexedVector<string, StringKey>.GetOrCreate(new StringKey[0], true);

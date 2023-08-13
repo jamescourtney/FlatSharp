@@ -29,6 +29,18 @@ public class StandardVectorTests
     #region Lazy
 
     [Fact]
+    public void Lazy_String_IList_NotMutable()
+    {
+        var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out _);
+        IList<string> list = table.ImplicitStringList;
+
+        var nme = Assert.Throws<NotMutableException>(() => list[0] = "foo");
+        Assert.Equal("FlatBufferVector does not support this operation.", nme.Message);
+
+        Assert.Throws<IndexOutOfRangeException>(() => list[-1]);
+    }
+
+    [Fact]
     public void Lazy_String_IList_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out _);

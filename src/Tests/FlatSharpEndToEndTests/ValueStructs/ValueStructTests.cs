@@ -21,8 +21,9 @@ namespace FlatSharpEndToEndTests.ValueStructs;
 
 public class ValueStructTestCases
 {
-    [Fact]
-    public void WriteThrough_ValueStruct_InVector()
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void WriteThrough_ValueStruct_InVector(FlatBufferDeserializationOption option)
     {
         WriteThroughTable t = new WriteThroughTable
         {
@@ -34,17 +35,57 @@ public class ValueStructTestCases
             Point = default,
         };
 
-        byte[] data = new byte[1024];
-        WriteThroughTable.Serializer.Write(data, t);
+        byte[] originalData = t.AllocateAndSerialize();
+        byte[] newData = t.AllocateAndSerialize();
 
-        var parsed = WriteThroughTable.Serializer.Parse(data);
-        var parsed2 = WriteThroughTable.Serializer.Parse(data);
+        var parsed = WriteThroughTable.Serializer.Parse(newData, option);
 
-        Assert.Equal(1f, parsed2.Points[0].X);
+        void Set() => parsed.Points[0] = default;
 
-        parsed.Points[0] = new Vec3 { X = -1, Y = -1, Z = -1 }; // triggers writethrough
+        if (option == FlatBufferDeserializationOption.Lazy || option == FlatBufferDeserializationOption.Progressive)
+        {
+            Set();
+            Assert.False(originalData.SequenceEqual(newData));
+        }
+        else if (option == FlatBufferDeserializationOption.Greedy)
+        {
+            var nme = Assert.Throws<NotMutableException>(Set);
+            Assert.Equal("FlatBufferVector does not support this operation.", nme.Message);
+            Assert.True(originalData.SequenceEqual(newData));
+        }
+        else
+        {
+            var nme = Assert.Throws<NotMutableException>(Set);
+            Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", nme.Message);
+            Assert.True(originalData.SequenceEqual(newData));
+        }
+    }
 
-        Assert.Equal(-1f, parsed2.Points[0].X);
+    [Theory]
+    [ClassData(typeof(DeserializationOptionClassData))]
+    public void WriteThrough_ValueStruct_InVector_NotWriteThrough(FlatBufferDeserializationOption option)
+    {
+        WriteThroughTable t = new WriteThroughTable
+        {
+            ReadOnlyPoints = new Vec3[]
+            {
+                new() { X = 1, Y = 2, Z = 3 },
+                new() { X = 4, Y = 5, Z = 6 },
+            },
+            Point = default,
+        };
+
+        var parsed = t.SerializeAndParse(option);
+
+        if (option != FlatBufferDeserializationOption.GreedyMutable)
+        {
+            var nme = Assert.Throws<NotMutableException>(() => parsed.ReadOnlyPoints[0] = default);
+            Assert.Equal("FlatBufferVector does not support this operation.", nme.Message);
+        }
+        else
+        {
+            parsed.ReadOnlyPoints[0] = default;
+        }
     }
 
     [Fact]

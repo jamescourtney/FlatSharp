@@ -11,8 +11,10 @@ union TestUnion { RefStruct, ValueStruct, InnerValueStruct }
 
 table WriteThroughTable (fs_serializer:"Lazy")
 {
-    Points : [ Vec3 ] (fs_writeThrough);
-    Point : Vec3 (fs_writeThrough, required);
+    points : [ Vec3 ] (fs_writeThrough);
+    point : Vec3 (fs_writeThrough, required);
+
+    read_only_points : [ Vec3 ];
 }
 
 struct Vec3 (fs_valueStruct)
