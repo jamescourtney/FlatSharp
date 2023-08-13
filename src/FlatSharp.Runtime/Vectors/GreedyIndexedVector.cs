@@ -181,6 +181,9 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         return this.backingDictionary.Remove(key);
     }
 
+#if EXCLUDE_POOLING_FROM_COVERAGE
+    [ExcludeFromCodeCoverage]
+#endif
     public void ReturnToPool(bool unsafeForce = false)
     {
         if (FlatBufferDeserializationOption.Greedy.ShouldReturnToPool(unsafeForce))

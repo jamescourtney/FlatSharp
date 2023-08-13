@@ -118,6 +118,9 @@ public class FlatBufferIndexedVector<TKey, TValue>
         throw new NotMutableException();
     }
 
+#if EXCLUDE_POOLING_FROM_COVERAGE
+    [ExcludeFromCodeCoverage]
+#endif
     public void ReturnToPool(bool force = false)
     {
         if (FlatBufferDeserializationOption.Lazy.ShouldReturnToPool(force))
