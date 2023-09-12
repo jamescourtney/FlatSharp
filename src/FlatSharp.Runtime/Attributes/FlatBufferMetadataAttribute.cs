@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Linq;
-
 namespace FlatSharp.Attributes;
 
 /// <summary>
@@ -27,27 +25,38 @@ public enum FlatBufferMetadataKind
     /// A custom get/set accessor for a flatbuffer field.
     /// </summary>
     Accessor = 1,
+
+    /// <summary>
+    /// A FBS attribute
+    /// </summary>
+    FbsAttribute = 2,
 }
 
 /// <summary>
 /// Defines a member of a FlatBuffer struct or table.
 /// </summary>
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
+[AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = true)]
 public class FlatBufferMetadataAttribute : Attribute
 {
     /// <summary>
     /// Initializes a new FlatBufferMetadataAttribute.
     /// </summary>
-    public FlatBufferMetadataAttribute(FlatBufferMetadataKind kind, string value)
+    public FlatBufferMetadataAttribute(FlatBufferMetadataKind kind, string key, string? value)
     {
         this.Kind = kind;
+        this.Key = key;
         this.Value = value;
     }
 
     /// <summary>
+    /// The key.
+    /// </summary>
+    public string Key { get; }
+
+    /// <summary>
     /// The value.
     /// </summary>
-    public string Value { get; }
+    public string? Value { get; }
 
     /// <summary>
     /// The kind of metadata.

@@ -15,6 +15,7 @@
  */
 
 using FlatSharp.Attributes;
+using System.Linq;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -23,10 +24,11 @@ public class FlatSharpAttributes : IFlatSharpAttributes
     private readonly IIndexedVector<string, Schema.KeyValue> rawAttributes;
     private readonly Dictionary<string, object?> parsed;
 
-    public FlatSharpAttributes(IIndexedVector<string, Schema.KeyValue>? attrs)
+    public FlatSharpAttributes(IList<Schema.KeyValue>? attrs)
     {
         this.parsed = new();
-        this.rawAttributes = attrs ?? new IndexedVector<string, Schema.KeyValue>();
+        attrs ??= Array.Empty<Schema.KeyValue>();
+        this.rawAttributes = new IndexedVector<string, Schema.KeyValue>(attrs.ToList(), true);
 
         foreach (var unsupported in MetadataKeys.UnsupportedStandardAttributes)
         {
@@ -66,6 +68,8 @@ public class FlatSharpAttributes : IFlatSharpAttributes
     public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
     public bool? UnsafeUnion => this.TryParseBoolean(MetadataKeys.UnsafeUnion);
+
+    public IIndexedVector<string, Schema.KeyValue> RawAttributes => this.rawAttributes;
 
     public string? ExternalTypeName
     {

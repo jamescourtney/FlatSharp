@@ -95,6 +95,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
         writer.AppendSummaryComment(this.Documentation);
         writer.AppendLine(attribute);
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial class {this.Name}");
 

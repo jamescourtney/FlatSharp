@@ -15,6 +15,8 @@
  */
 
 using FlatSharp.Attributes;
+using FlatSharp.Compiler.Schema;
+using System.Linq;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -26,6 +28,8 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
 
     public MutableFlatSharpAttributes(IFlatSharpAttributes? other)
     {
+        this.RawAttributes = new IndexedVector<string, KeyValue>();
+
         if (other is not null)
         {
             this.DefaultCtorKind = other.DefaultCtorKind;
@@ -44,6 +48,11 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.StreamingType = other.StreamingType;
             this.ExternalTypeName = other.ExternalTypeName;
             this.UnsafeUnion = other.UnsafeUnion;
+            
+            foreach (var pair in other.RawAttributes)
+            {
+                this.RawAttributes.Add(pair.Value);
+            }
         }
     }
 
@@ -78,4 +87,6 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
     public string? ExternalTypeName { get; set; }
 
     public bool? UnsafeUnion { get; set; }
+
+    public IIndexedVector<string, KeyValue> RawAttributes { get; set; }
 }

@@ -79,6 +79,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         }
 
         writer.AppendSummaryComment(this.service.Documentation);
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine($"public static partial class {this.Name}");
         using (writer.WithBlock())
         {

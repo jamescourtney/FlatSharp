@@ -221,6 +221,7 @@ public class StructVectorTests
             Assert.Equal(i, attr.Index);
             Assert.Equal(FlatBufferMetadataKind.Accessor, metaAttr.Kind);
             Assert.Equal($"V[{attr.Index}]", metaAttr.Value);
+            Assert.Equal(string.Empty, metaAttr.Key);
         }
 
         var vectorProperty = fooType.GetProperty("V");

@@ -127,6 +127,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
         string interfaceName = $"IFlatBufferUnion<{string.Join(", ", innerTypes.Select(x => x.resolvedType))}>";
 
         writer.AppendSummaryComment(this.union.Documentation);
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public {@unsafe} partial struct {this.Name} : {interfaceName}");
         using (writer.WithBlock())

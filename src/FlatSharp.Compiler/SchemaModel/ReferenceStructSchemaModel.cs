@@ -15,6 +15,7 @@
  */
 
 using FlatSharp.Compiler.Schema;
+using System.Linq;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -41,7 +42,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
             return false;
         }
 
-        if (@struct.Attributes?.ContainsKey(MetadataKeys.ValueStruct) == true)
+        if (@struct.Attributes?.Any(x => x.Key == MetadataKeys.ValueStruct) == true)
         {
             return false;
         }
@@ -74,6 +75,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
 
         writer.AppendSummaryComment(this.Documentation);
         writer.AppendLine(attribute);
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial class {this.Name}");
         writer.AppendLine($"    : object");

@@ -66,7 +66,7 @@ public class Field
     public virtual bool Key { get; set; } = false;
 
     [FlatBufferItem(9)]
-    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    public virtual IList<KeyValue>? Attributes { get; set; }
 
     [FlatBufferItem(10)]
     public virtual IList<string>? Documentation { get; set; }

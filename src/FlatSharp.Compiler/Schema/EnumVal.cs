@@ -25,6 +25,7 @@ table EnumVal {
     object:Object (deprecated);
     union_type:Type;
     documentation:[string];
+    attributes:[KeyValue];
 }
 */
 
@@ -47,4 +48,7 @@ public class EnumVal : ISortableTable<long>
 
     [FlatBufferItem(4)]
     public virtual IList<string>? Documentation { get; set; }
+
+    [FlatBufferItem(5)]
+    public virtual IList<KeyValue>? Attributes { get; set; }
 }

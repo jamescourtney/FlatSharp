@@ -25,5 +25,5 @@ public interface INamedSchemaElement
 
     string? OriginalName { get; set; }
 
-    IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    IList<KeyValue>? Attributes { get; set; }
 }
