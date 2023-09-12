@@ -39,7 +39,7 @@ public class RpcService
     public virtual IList<RpcCall>? Calls { get; set; }
 
     [FlatBufferItem(2)]
-    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    public virtual IList<KeyValue>? Attributes { get; set; }
 
     [FlatBufferItem(3)]
     public virtual IList<string>? Documentation { get; set; }

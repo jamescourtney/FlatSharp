@@ -118,6 +118,7 @@ public record StructVectorPropertyFieldModel
         writer.AppendLine();
 
         writer.AppendSummaryComment(this.Documentation);
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine($"public {structName} {this.Field.Name} => (__{this.Field.Name} ??= new {structName}(this));");
         writer.AppendLine();
 

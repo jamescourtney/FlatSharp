@@ -48,7 +48,7 @@ public class FlatBufferEnum : INamedSchemaElement
     public virtual FlatBufferType UnderlyingType { get; set; } = new FlatBufferType();
 
     [FlatBufferItem(4)]
-    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    public virtual IList<KeyValue>? Attributes { get; set; }
 
     [FlatBufferItem(5)]
     public virtual IList<string>? Documentation { get; set; }

@@ -130,6 +130,8 @@ public record PropertyFieldModel
         writer.AppendSummaryComment(this.Field.Documentation);
         writer.AppendLine(this.GetAttribute());
 
+        this.Attributes.EmitAsMetadata(writer);
+
         string setter = this.Attributes.SetterKind switch
         {
             SetterKind.PublicInit => "init;",
@@ -242,7 +244,7 @@ public record PropertyFieldModel
 
         if (!string.IsNullOrEmpty(this.CustomGetter))
         {
-            customAccessor = $"[{nameof(FlatBufferMetadataAttribute)}({nameof(FlatBufferMetadataKind)}.{nameof(FlatBufferMetadataKind.Accessor)}, \"{this.CustomGetter}\")]";
+            customAccessor = $"[{nameof(FlatBufferMetadataAttribute)}({nameof(FlatBufferMetadataKind)}.{nameof(FlatBufferMetadataKind.Accessor)}, \"\", \"{this.CustomGetter}\")]";
         }
 
         bool emitForcedWrite = this.Attributes.ForceWrite == true

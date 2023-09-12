@@ -73,6 +73,8 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
         string interfaceName = $"IFlatBufferUnion<{string.Join(", ", innerTypes.Select(x => x.resolvedType))}>";
 
         writer.AppendSummaryComment(this.union.Documentation);
+
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial class {this.Name} : object, {interfaceName}, IPoolableObject");
         using (writer.WithBlock())

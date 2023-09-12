@@ -84,7 +84,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
             return false;
         }
 
-        if (@struct.Attributes?.ContainsKey(MetadataKeys.ValueStruct) != true)
+        if (@struct.Attributes?.Any(x => x.Key == MetadataKeys.ValueStruct) != true)
         {
             return false;
         }
@@ -133,6 +133,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
             size = $", Size = {model.PhysicalLayout[0].InlineSize}";
         }
 
+        this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine($"[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit{size})]");
         writer.AppendLine($"public partial struct {this.Name}");
         using (writer.WithBlock())
@@ -141,7 +142,8 @@ public class ValueStructSchemaModel : BaseSchemaModel
             {
                 writer.AppendSummaryComment(field.Documentation);
                 writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.Offset})]");
-                writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.Accessor}\")]");
+                writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"\", \"{field.Accessor}\")]");
+                field.Attributes.EmitAsMetadata(writer);
                 writer.AppendLine($"{field.Visibility} {field.TypeName} {field.Name};");
                 writer.AppendLine();
             }
@@ -256,6 +258,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
             this.TypeName = type;
             this.Accessor = accessor;
             this.Documentation = documentation;
+            this.Attributes = attributes;
 
             new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}").Validate(attributes);
         }
@@ -271,5 +274,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         public string Accessor { get; }
 
         public IEnumerable<string>? Documentation { get; }
+
+        public IFlatSharpAttributes Attributes { get; }
     }
 }

@@ -1,0 +1,40 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_sharedString";
+attribute "fs_rpcInterface";
+attribute "fs_valueStruct";
+attribute "fs_unsafeUnion";
+attribute "fs_vectorKind";
+attribute "fs_writeThrough";
+attribute "test";
+
+namespace FlatSharpEndToEndTests.MetadataAttributes;
+
+enum MyEnum : ubyte (test:"MyEnum")
+{
+    A = 0 (test:"A"),
+    B = 1 (test:"B")
+}
+
+struct ValueStruct (fs_valueStruct, test:"ValueStruct")
+{
+    i : int (test:"i");
+}
+
+struct RefStruct (test:"RefStruct")
+{
+    i : int (test:"i");
+}
+
+union MyUnion (test:"MyUnion") { ValueStruct }
+
+table Message (fs_serializer:"Lazy", test:"Message") {
+    value : string (required, fs_sharedString, test:"value");
+    single_int : int (test:"single_int");
+    vector_int : [ int ] (fs_vectorKind:"IList", test:"vector_int");
+    value_struct : ValueStruct (required, fs_writeThrough, test:"value_struct");
+}
+
+rpc_service EchoService (fs_rpcInterface, test:"EchoService") {
+    EchoUnary(Message) : Message;
+}

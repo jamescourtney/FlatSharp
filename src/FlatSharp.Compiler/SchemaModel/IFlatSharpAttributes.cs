@@ -50,4 +50,20 @@ public interface IFlatSharpAttributes
     string? ExternalTypeName { get; }
 
     bool? UnsafeUnion { get; }
+
+    IIndexedVector<string, Schema.KeyValue> RawAttributes { get; }
+}
+
+public static class IFlatSharpAttributesExtensions
+{
+    public static void EmitAsMetadata(this IFlatSharpAttributes attributes, CodeWriter writer)
+    {
+        foreach (var pair in attributes.RawAttributes)
+        {
+            string key = pair.Key;
+            string? value = pair.Value.Value;
+
+            writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.FbsAttribute, \"{key}\", \"{value}\")]");
+        }
+    }
 }

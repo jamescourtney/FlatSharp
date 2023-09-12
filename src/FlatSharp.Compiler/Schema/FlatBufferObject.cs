@@ -51,7 +51,7 @@ public class FlatBufferObject : INamedSchemaElement
     public virtual int ByteSize { get; set; }
 
     [FlatBufferItem(5)]
-    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    public virtual IList<KeyValue>? Attributes { get; set; }
 
     [FlatBufferItem(6)]
     public virtual IList<string>? Documentation { get; set; }

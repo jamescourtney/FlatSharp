@@ -33,7 +33,7 @@ public class EnumSchemaModel : BaseSchemaModel
         FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.IsInteger(), "Expected scalar base type");
         FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.TryGetBuiltInTypeName(out this.underlyingType!), "Couldn't get type name string");
 
-        this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
+        this.isFlags = @enum.Attributes?.Any(x => x.Key == MetadataKeys.BitFlags) == true;
         this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value);
         this.documentation = @enum.Documentation;
         this.DeclaringFile = @enum.DeclarationFile;
@@ -70,6 +70,8 @@ public class EnumSchemaModel : BaseSchemaModel
             writer.AppendLine("[Flags]");
         }
 
+        this.Attributes.EmitAsMetadata(writer);
+
         writer.AppendLine($"[FlatBufferEnum(typeof({this.underlyingType}))]");
         writer.AppendLine($"public enum {this.Name} : {this.underlyingType}");
         using (writer.WithBlock())
@@ -80,6 +82,8 @@ public class EnumSchemaModel : BaseSchemaModel
                 {
                     writer.AppendSummaryComment(item.Value.Documentation);
                 }
+
+                new FlatSharpAttributes(item.Value.Attributes).EmitAsMetadata(writer);
 
                 if (this.@enum.UnderlyingType.BaseType == BaseType.ULong)
                 {

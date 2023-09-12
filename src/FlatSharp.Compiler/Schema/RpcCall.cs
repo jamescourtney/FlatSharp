@@ -42,7 +42,7 @@ public class RpcCall
     public virtual FlatBufferObject Response { get; set; } = new();
 
     [FlatBufferItem(3)]
-    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    public virtual IList<KeyValue>? Attributes { get; set; }
 
     [FlatBufferItem(4)]
     public virtual IList<string>? Documentation { get; set; }
