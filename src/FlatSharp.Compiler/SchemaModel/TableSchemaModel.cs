@@ -64,7 +64,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
             string optionTypeName = typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName();
 
-            writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{this.Attributes.DeserializationOption.Value});");
+            writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new global::{ns}.{name}().AsISerializer({optionTypeName}.{this.Attributes.DeserializationOption.Value});");
 
             writer.AppendLine();
 
@@ -75,7 +75,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
             foreach (var option in new[] { FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Greedy, FlatBufferDeserializationOption.GreedyMutable, FlatBufferDeserializationOption.Progressive })
             {
-                string staticAbstractMethod = $"static ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{option}Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{option});";
+                string staticAbstractMethod = $"static ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{option}Serializer {{ get; }} = new global::{ns}.{name}().AsISerializer({optionTypeName}.{option});";
                 writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, staticAbstractMethod).Flush();
             }
         }

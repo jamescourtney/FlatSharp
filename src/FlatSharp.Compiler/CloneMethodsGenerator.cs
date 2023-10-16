@@ -34,7 +34,7 @@ internal static class CloneMethodsGenerator
         string className = $"CloneHelpers_{Guid.NewGuid():n}";
         string methodName = "Clone";
 
-        string fullyQualifiedMethodName = $"{@namespace}.{className}.{methodName}";
+        string fullyQualifiedMethodName = $"global::{@namespace}.{className}.{methodName}";
 
         HashSet<Type> seenTypes = new HashSet<Type>();
         foreach (var type in assembly.GetTypes())
