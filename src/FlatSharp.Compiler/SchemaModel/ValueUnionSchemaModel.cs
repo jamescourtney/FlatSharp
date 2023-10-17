@@ -175,6 +175,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                 }
 
                 this.WriteConstructor(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
+                this.WriteImplicitOperator(writer, item.resolvedType);
                 this.WriteUncheckedGetItemMethod(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
 
                 writer.AppendLine();
@@ -322,6 +323,15 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             {
                 writer.AppendLine($"this.value = value;");
             }
+        }
+    }
+
+    private void WriteImplicitOperator(CodeWriter writer, string resolvedType)
+    {
+        writer.AppendLine($"public static implicit operator {this.Name}({resolvedType} value)");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine($"return new {Name}(value);");
         }
     }
 }

@@ -101,6 +101,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
             foreach (var item in innerTypes)
             {
                 this.WriteConstructor(writer, item.resolvedType, item.value, item.propertyType);
+                this.WriteImplicitOperator(writer, resolvedType);
                 this.AddUnionMember(writer, item.resolvedType, item.value, item.propertyType, context);
             }
 
@@ -211,6 +212,15 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
 
             writer.AppendLine($"this.discriminator = {unionValue.Value};");
             writer.AppendLine($"this.Item{unionValue.Value} = value;");
+        }
+    }
+
+    private void WriteImplicitOperator(CodeWriter writer, string resolvedType)
+    {
+        writer.AppendLine($"public static implicit operator {this.Name}({resolvedType} value)");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine($"return new {this.Name}(value);");
         }
     }
 
