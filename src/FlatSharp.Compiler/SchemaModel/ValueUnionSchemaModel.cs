@@ -230,6 +230,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             }
 
             this.WriteAcceptMethod(writer, innerTypes);
+            this.WriteMatchMethod(writer, innerTypes);
         }
     }
 
@@ -261,6 +262,32 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             }
         }
     }
+
+    private void WriteMatchMethod(
+        CodeWriter writer,
+        List<(string resolvedType, EnumVal value, int? size)> components)
+    {
+        string parameters = string.Join(", ", components.Select(x => $"Func<{x.resolvedType}, TReturn> f{x.value.Value}"));
+
+        writer.AppendSummaryComment("Matches this FlatBufferUnion with a function for each value.");
+        writer.AppendLine($"public TReturn Match<TReturn>({parameters})");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine("var disc = this.Discriminator;");
+            writer.AppendLine("switch (disc)");
+            using (writer.WithBlock())
+            {
+                foreach (var item in components)
+                {
+                    long index = item.value.Value;
+                    writer.AppendLine($"case {index}: return f{index}(this.UncheckedGetItem{index}());");
+                }
+
+                writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
+            }
+        }
+    }
+
 
     private void WriteUncheckedGetItemMethod(CodeWriter writer, string resolvedType, EnumVal unionValue, Type? propertyType, bool generateUnsafeItems)
     {

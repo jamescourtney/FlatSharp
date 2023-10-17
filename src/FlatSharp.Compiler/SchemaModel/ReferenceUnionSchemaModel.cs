@@ -107,6 +107,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
             this.WriteDefaultConstructor(writer);
             this.WriteReturnToPool(writer);
             this.WriteAcceptMethod(writer, innerTypes);
+            this.WriteMatchMethod(writer, innerTypes);
         }
     }
 
@@ -187,7 +188,32 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
                 foreach (var item in components)
                 {
                     long index = item.value.Value;
-                    writer.AppendLine($"case {index}: return visitor.Visit(this.value_{item.value.Value});");
+                    writer.AppendLine($"case {index}: return visitor.Visit(this.value_{index});");
+                }
+
+                writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
+            }
+        }
+    }
+
+    private void WriteMatchMethod(
+        CodeWriter writer,
+        List<(string resolvedType, EnumVal value, Type? propertyType)> components)
+    {
+        string parameters = string.Join(", ", components.Select((x, i) => $"Func<{x.resolvedType}, TReturn> f{i + 1}"));
+
+        writer.AppendSummaryComment("Matches this FlatBufferUnion with a function for each value.");
+        writer.AppendLine($"public TReturn Match<TReturn>({parameters})");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine("var disc = this.Discriminator;");
+            writer.AppendLine("switch (disc)");
+            using (writer.WithBlock())
+            {
+                foreach (var item in components)
+                {
+                    long index = item.value.Value;
+                    writer.AppendLine($"case {index}: return f{index}(this.value_{index});");
                 }
 
                 writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
