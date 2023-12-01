@@ -18,6 +18,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
+        
     - name: Setup .NET 7
       uses: actions/setup-dotnet@v1
       with:
@@ -44,7 +49,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/FlatSharpEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/FlatSharpEndToEndTests
+          dotnet src/FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/FlatSharpEndToEndTests
           
     - name: Run FlatSharp.Compiler (Pooling Tests)
       # You may pin to the exact commit or the version.
@@ -54,7 +59,7 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net7.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/Tests/FlatSharpPoolableEndToEndTests
+          dotnet src/FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input "$fbs" -o src/Tests/FlatSharpPoolableEndToEndTests
     
     - name: Build
       working-directory: src
