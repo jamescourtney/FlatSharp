@@ -383,7 +383,7 @@ public class EchoServiceTestCases
                         await destChannel.Reader.ReadAsync();
                         await destChannel.Reader.ReadAsync();
                         await destChannel.Reader.ReadAsync();
-                        Assert.False(true, "Exception not thrown");
+                        Assert.Fail("Exception not thrown");
                     }
                     catch (System.Threading.Channels.ChannelClosedException)
                     {
@@ -438,7 +438,7 @@ public class EchoServiceTestCases
         try
         {
             await callback();
-            Assert.False(true, "Exception was not thrown");
+            Assert.Fail("Exception was not thrown");
         }
         catch (OperationCanceledException)
         {

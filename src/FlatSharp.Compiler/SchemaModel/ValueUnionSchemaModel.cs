@@ -313,7 +313,8 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                 using (writer.WithBlock())
                 {
                     writer.AppendLine($"var localSpan = new Span<byte>(pByte, {propertyType.StructLayoutAttribute.Size});");
-                    writer.AppendLine($"System.Runtime.InteropServices.MemoryMarshal.Write(localSpan, ref value);");
+                    writer.BeginPreprocessorIf("NET8_0_OR_GREATER", "System.Runtime.InteropServices.MemoryMarshal.Write(localSpan, in value);")
+                          .Else("System.Runtime.InteropServices.MemoryMarshal.Write(localSpan, ref value);");
                 }
             }
             else

@@ -93,10 +93,29 @@
         <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
             <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
         </ProcessFlatSharpSchema>
+
+        <!-- Query the installed SDKs. -->
+        <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
+        </Exec>
+        
+        <PropertyGroup>
+            <CompilerVersion>net8.0</CompilerVersion>
+        </PropertyGroup>
+
+        <!-- try .net6.0. -->
+        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
+            <CompilerVersion>net6.0</CompilerVersion>
+        </PropertyGroup>
+
+        <!-- try .net7.0. -->
+        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
+            <CompilerVersion>net7.0</CompilerVersion>
+        </PropertyGroup>
         
         <!-- find compiler and set base command -->
         <PropertyGroup>
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net6.0\FlatSharp.Compiler.dll'))</CompilerPath>
+            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\$(CompilerVersion)\FlatSharp.Compiler.dll'))</CompilerPath>
             <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
             <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)</CompilerCommand>
         </PropertyGroup>

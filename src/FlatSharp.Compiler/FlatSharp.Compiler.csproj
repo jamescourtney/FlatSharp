@@ -2,7 +2,7 @@
   <Import Project="..\common.props" />
   
   <PropertyGroup>
-	<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+	<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <AssemblyName>FlatSharp.Compiler</AssemblyName>
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
     <OutputType>Exe</OutputType>
@@ -16,7 +16,7 @@
     <NoWarn>$(NoWarn);CS3021;3021;NU5127</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
