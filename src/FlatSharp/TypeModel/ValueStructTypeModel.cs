@@ -186,7 +186,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
                 {StrykerSuppressor.SuppressNextLine("boolean")}
                 if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
                 {{
-#if NET8_0_OR_GREATER
+#if {CSharpHelpers.Net8PreprocessorVariable}
                     {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
 #else
                     {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
