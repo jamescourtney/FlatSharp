@@ -9,7 +9,7 @@
         <Nullable>enable</Nullable>
         <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE;VECTOR_VISITORS</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
         <FlatSharpPoolable>false</FlatSharpPoolable>
         <FlatSharpNullable>false</FlatSharpNullable>
     </PropertyGroup>

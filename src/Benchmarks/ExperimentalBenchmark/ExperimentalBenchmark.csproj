@@ -9,7 +9,7 @@
         <!--<PublishAot>true</PublishAot>-->
         <IsPackable>false</IsPackable>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net7.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     </PropertyGroup>
 
     <ItemGroup>

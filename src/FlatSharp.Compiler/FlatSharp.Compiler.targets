@@ -95,7 +95,7 @@
         </ProcessFlatSharpSchema>
 
         <!-- Query the installed SDKs. -->
-        <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="true">
+        <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="false">
             <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
         </Exec>
         
@@ -111,6 +111,11 @@
         <!-- try .net7.0. -->
         <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
             <CompilerVersion>net7.0</CompilerVersion>
+        </PropertyGroup>
+        
+        <!-- try .net8.0. -->
+        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+')) ">
+            <CompilerVersion>net8.0</CompilerVersion>
         </PropertyGroup>
         
         <!-- find compiler and set base command -->
