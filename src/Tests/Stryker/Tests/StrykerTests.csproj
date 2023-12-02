@@ -2,7 +2,7 @@
   <Import Project="..\..\unittest.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpStrykerTests</AssemblyName>
     <RootNamespace>FlatSharpStrykerTests</RootNamespace>

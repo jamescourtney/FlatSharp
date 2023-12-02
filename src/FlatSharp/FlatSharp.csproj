@@ -2,7 +2,7 @@
     <Import Project="..\common.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
         <AssemblyName>FlatSharp</AssemblyName>
         <RootNamespace>FlatSharp</RootNamespace>
         <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
@@ -12,7 +12,7 @@
         <NoWarn>$(NoWarn);NETSDK1023;NU5104</NoWarn>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
@@ -32,8 +32,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0-2.final" />
-        <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.4.0-2.final">
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
+        <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.8.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

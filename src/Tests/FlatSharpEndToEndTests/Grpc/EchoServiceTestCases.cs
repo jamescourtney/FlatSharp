@@ -22,7 +22,7 @@ using SChannel = System.Threading.Channels.Channel;
 
 namespace FlatSharpEndToEndTests.GrpcTests;
 
-#if NET7_0
+#if NET7_0_OR_GREATER
 public class EchoServiceTestCases
 {
     [Fact]
@@ -383,7 +383,7 @@ public class EchoServiceTestCases
                         await destChannel.Reader.ReadAsync();
                         await destChannel.Reader.ReadAsync();
                         await destChannel.Reader.ReadAsync();
-                        Assert.False(true, "Exception not thrown");
+                        Assert.Fail("Exception not thrown");
                     }
                     catch (System.Threading.Channels.ChannelClosedException)
                     {
@@ -438,7 +438,7 @@ public class EchoServiceTestCases
         try
         {
             await callback();
-            Assert.False(true, "Exception was not thrown");
+            Assert.Fail("Exception was not thrown");
         }
         catch (OperationCanceledException)
         {

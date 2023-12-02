@@ -3,7 +3,7 @@
   <Import Project="..\unittest.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>FlatSharpCompilerTests</AssemblyName>
@@ -13,8 +13,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grpc.Core" Version="2.46.5" />
-    <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
+    <PackageReference Include="Grpc.Core" Version="2.46.6" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.59.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
@@ -22,5 +22,16 @@
     <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Update="Microsoft.TestPlatform.ObjectModel" Version="17.8.0" />
+    <PackageReference Update="xunit" Version="2.6.2" />
+    <PackageReference Update="xunit.runner.utility" Version="2.6.2" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.5.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

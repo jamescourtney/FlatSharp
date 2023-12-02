@@ -186,7 +186,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
                 {StrykerSuppressor.SuppressNextLine("boolean")}
                 if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
                 {{
+#if {CSharpHelpers.Net8PreprocessorVariable}
+                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
+#else
                     {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
+#endif
                 }}
                 else
                 {{
@@ -211,7 +215,12 @@ public class ValueStructTypeModel : RuntimeTypeModel
             FlatSharpInternal.AssertLittleEndian();
             FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
             Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
+
+#if NET8_0_OR_GREATER
+            {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
+#else
             {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
+#endif
         ";
 
         return new CodeGeneratedMethod(body) { IsMethodInline = true };
