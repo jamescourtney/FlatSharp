@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <OutputType>exe</OutputType>
     <LangVersion>11.0</LangVersion>
     <Nullable>enable</Nullable>
@@ -31,11 +31,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp.Compiler" Version="7.1.0">
+    <PackageReference Include="FlatSharp.Compiler" Version="7.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="7.1.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="7.4.0" />
     <PackageReference Include="Grpc" Version="2.38.1" />
   </ItemGroup>
 </Project>
