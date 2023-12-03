@@ -150,6 +150,9 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
         throw new NotMutableException();
     }
 
+#if EXCLUDE_POOLING_FROM_COVERAGE
+    [ExcludeFromCodeCoverage]
+#endif
     public void ReturnToPool(bool force = false)
     {
         if (FlatBufferDeserializationOption.Progressive.ShouldReturnToPool(force))

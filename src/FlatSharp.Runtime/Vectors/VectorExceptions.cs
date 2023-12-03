@@ -27,12 +27,6 @@ public static class VectorUtilities
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void ThrowIndexOutOfRange()
-    {
-        throw new IndexOutOfRangeException();
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ThrowInlineNotMutableException()
     {

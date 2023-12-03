@@ -352,8 +352,7 @@ public class FlatSharpCompiler
             List<(byte[], string)> bfbs = GetBfbs(options);
             string cSharp = CreateCSharp(bfbs, "hash", options);
 
-            var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
-            string debugText = formattedText();
+            var (assembly,  _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
             return (assembly, cSharp);
         }
         finally
@@ -576,7 +575,7 @@ public class FlatSharpCompiler
                 if (step > CodeWritingPass.Initialization)
                 {
                     csharp = Instrument($"{step}.CodeWriterToString", options, writer.ToString);
-                    (assembly, _, _) = Instrument($"{step}.CompilePreviousAssembly", options, () => RoslynSerializerGenerator.CompileAssembly(csharp, true, additionalRefs));
+                    (assembly, _) = Instrument($"{step}.CompilePreviousAssembly", options, () => RoslynSerializerGenerator.CompileAssembly(csharp, true, additionalRefs));
                 }
 
                 writer = new CodeWriter();

@@ -1,0 +1,20 @@
+{
+  "stryker-config": {
+    "project": "FlatSharp.Runtime.csproj",
+
+    "ignore-methods": 
+    [
+      "CheckAlignment",
+      "Assert",
+      "ReturnToPool"
+    ],
+
+    "ignore-mutations": [
+      "checked"
+    ],
+
+    "reporters": [ "html", "cleartext" ],
+    "thresholds": { "high": 100, "low": 95, "break": 95 },
+    "additional-timeout": 10000
+  }
+}

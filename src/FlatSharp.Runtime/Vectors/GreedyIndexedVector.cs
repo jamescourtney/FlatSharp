@@ -32,7 +32,6 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
     {
         this.backingDictionary = new Dictionary<TKey, TValue>();
         this.backingVector = null!;
-        this.mutable = true;
     }
 
     public static GreedyIndexedVector<TKey, TValue> GetOrCreate(IList<TValue> backing, bool mutable)
@@ -182,6 +181,9 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         return this.backingDictionary.Remove(key);
     }
 
+#if EXCLUDE_POOLING_FROM_COVERAGE
+    [ExcludeFromCodeCoverage]
+#endif
     public void ReturnToPool(bool unsafeForce = false)
     {
         if (FlatBufferDeserializationOption.Greedy.ShouldReturnToPool(unsafeForce))

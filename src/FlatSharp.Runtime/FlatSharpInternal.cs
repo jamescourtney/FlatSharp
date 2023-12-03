@@ -33,6 +33,7 @@ public static class FlatSharpInternal
         }
     }
 
+    [ExcludeFromCodeCoverage]
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowAssertFailed(
