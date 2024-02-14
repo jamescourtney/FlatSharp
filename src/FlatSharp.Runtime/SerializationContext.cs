@@ -102,7 +102,7 @@ public sealed class SerializationContext
         {
             if (numberOfItems < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(numberOfItems));
+                FSThrow.ArgumentOutOfRange(nameof(numberOfItems));
             }
 
             int bytesNeeded = numberOfItems * sizePerItem + sizeof(uint);
@@ -146,7 +146,7 @@ public sealed class SerializationContext
             int finalOffset = offset + bytesNeeded;
             if (finalOffset >= this.capacity)
             {
-                throw new BufferTooSmallException();
+                FSThrow.BufferTooSmall(0);
             }
 
             this.offset = finalOffset;

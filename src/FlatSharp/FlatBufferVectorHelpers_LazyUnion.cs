@@ -76,7 +76,7 @@ $$""""
 
             if (discriminatorCount != offsetCount)
             {
-                throw new {{typeof(InvalidDataException).GetGlobalCompilableTypeName()}}($"Union vector had mismatched number of discriminators and offsets.");
+                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData)}}($"Union vector had mismatched number of discriminators and offsets.");
             }
 
             item.count = (int)offsetCount;

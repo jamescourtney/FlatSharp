@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System.IO;
+using System.Text;
+
 namespace FlatSharp.Internal;
 
 public static class FlatSharpInternal
@@ -31,17 +34,13 @@ public static class FlatSharpInternal
         {
             ThrowAssertFailed(message, memberName, fileName, lineNumber);
         }
-    }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowAssertFailed(
-        string message,
-        string memberName,
-        string fileName,
-        int lineNumber)
-    {
-        throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void ThrowAssertFailed(string message, string memberName, string fileName, int lineNumber)
+        {
+            throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+        }
     }
 
     /// <summary>
@@ -52,6 +51,12 @@ public static class FlatSharpInternal
     public static void AssertSizeOf<T>(int expectedSize) where T : struct
     {
         if (Unsafe.SizeOf<T>() != expectedSize)
+        {
+            Throw(expectedSize);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw(int expectedSize)
         {
             string message = $"Flatsharp expected type: {typeof(T).FullName} to have size {expectedSize}. Unsafe.SizeOf reported size {Unsafe.SizeOf<T>()}.";
             throw new FlatSharpInternalException(message);
@@ -67,9 +72,11 @@ public static class FlatSharpInternal
     {
         if (!BitConverter.IsLittleEndian)
         {
-            string message = $"FlatSharp encountered a code path that is only functional on little endian architectures.";
-            throw new FlatSharpInternalException(message);
+            Throw();
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw() => throw new FlatSharpInternalException($"FlatSharp encountered a code path that is only functional on little endian architectures.");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,8 +88,11 @@ public static class FlatSharpInternal
         // Inlining this method should allow this check to be elided as the alignment is a constant from the callsite.
         if (size % alignment != 0)
         {
-            throw new InvalidOperationException($"Type '{typeof(TElement).FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
+            Throw(size, alignment);
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw(int size, int alignment) => FSThrow.InvalidOperation($"Type '{typeof(TElement).FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
     }
 }
 

@@ -39,7 +39,7 @@ public struct StringSpanComparer : ISpanComparer
     {
         if (!leftExists || !rightExists)
         {
-            throw new InvalidOperationException($"Strings may not be null when used as sorted vector keys.");
+            FSThrow.InvalidOperation("Strings may not be null when used as sorted vector keys.");
         }
 
         int i = 0;

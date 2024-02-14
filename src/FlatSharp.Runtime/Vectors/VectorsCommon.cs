@@ -55,7 +55,7 @@ public static class VectorsCommon
     {
         if (array is null)
         {
-            throw new ArgumentNullException(nameof(array));
+            FSThrow.ArgumentNull(nameof(array));
         }
 
         var count = vector.Count;

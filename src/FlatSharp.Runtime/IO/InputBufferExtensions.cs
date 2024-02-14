@@ -76,10 +76,9 @@ public static class InputBufferExtensions
     /// <summary>
     /// Left as no inlining. Literal strings seem to prevent JIT inlining.
     /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
     {
-        throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+        FSThrow.InvalidData($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
     }
 
     /// <summary>
@@ -108,10 +107,9 @@ public static class InputBufferExtensions
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowInvalidVtableException()
     {
-        throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
+        FSThrow.InvalidData("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
     }
 
     // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
@@ -163,7 +161,7 @@ public static class InputBufferExtensions
 #if DEBUG
         if (offset % size != 0)
         {
-            throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
+            FSThrow.InvalidOperation($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
         }
 #endif
     }

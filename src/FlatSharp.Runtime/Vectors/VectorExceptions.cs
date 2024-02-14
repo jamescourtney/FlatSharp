@@ -23,31 +23,18 @@ public static class VectorUtilities
     {
         if ((uint)index >= count)
         {
-            throw new IndexOutOfRangeException();
+            FSThrow.IndexOutOfRange();
         }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void ThrowIndexOutOfRange()
-    {
-        throw new IndexOutOfRangeException();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ThrowInlineNotMutableException()
     {
-        throw new NotMutableException("FlatBufferVector does not support this operation.");
+        return FSThrow.NotMutable<bool>("FlatBufferVector does not support this operation.");
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public static bool ThrowNotMutableException()
-    {
-        throw new NotMutableException("FlatBufferVector does not support this operation.");
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void ThrowGreedyMutableWriteThroughNotSupportedException()
     {
-        throw new NotMutableException("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.");
+        FSThrow.NotMutable("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.");
     }
 }

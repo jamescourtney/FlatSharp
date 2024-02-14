@@ -20,6 +20,7 @@ using FlatSharp.Attributes;
 using FlatSharp.TypeModel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using FlatSharp.Internal;
+using FlatSharp.CodeGen;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -164,7 +165,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
                         writer.AppendLine($"if (unchecked((uint)index) >= {sv.Properties.Count})");
                         using (writer.WithBlock())
                         {
-                            writer.AppendLine("throw new IndexOutOfRangeException();");
+                            writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.IndexOutOfRange)}();");
                         }
 
                         writer.AppendLine($"return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.{sv.Properties[0]}, index);");
@@ -174,13 +175,15 @@ public class ValueStructSchemaModel : BaseSchemaModel
                         writer.AppendLine("switch (index)");
                         using (writer.WithBlock())
                         {
+                            FlatSharpInternal.Assert(sv.Properties.Count >= 1, "Expected at least 1 element in struct vector.");
+
                             for (int i = 0; i < sv.Properties.Count; ++i)
                             {
                                 var item = sv.Properties[i];
                                 writer.AppendLine($"case {i}: return ref item.{item};");
                             }
 
-                            writer.AppendLine("default: throw new IndexOutOfRangeException();");
+                            writer.AppendLine($"default: {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.IndexOutOfRange)}(); goto case 0;");
                         }
                     }
                 }

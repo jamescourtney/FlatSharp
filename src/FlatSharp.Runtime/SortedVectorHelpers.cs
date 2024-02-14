@@ -106,11 +106,12 @@ public static class SortedVectorHelpers
         KeyLookup<TTable, TKey>.KeyIndex = keyIndex;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CheckKeyNotNull<TKey>(TKey key)
     {
         if (key is null)
         {
-            throw new ArgumentNullException(nameof(key));
+            FSThrow.ArgumentNull(nameof(key));
         }
     }
 
@@ -191,6 +192,8 @@ public static class SortedVectorHelpers
             RuntimeHelpers.RunClassConstructor(typeof(TTable).TypeHandle);
         }
 
+        private static string NotInitializedErrorMessage = $"Type '{typeof(TTable).Name}' has not registered a sorted vector key of type '{typeof(TKey).Name}'.";
+
         private static Func<TTable, TKey>? getter;
         private static ushort index;
 
@@ -231,16 +234,8 @@ public static class SortedVectorHelpers
         {
             if (getter is null)
             {
-                ThrowNotInitialized();
+                FSThrow.InvalidOperation(NotInitializedErrorMessage);
             }
-        }
-
-        [ExcludeFromCodeCoverage]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [DoesNotReturn]
-        private static void ThrowNotInitialized()
-        {
-            throw new InvalidOperationException($"Type '{typeof(TTable).Name}' has not registered a sorted vector key of type '{typeof(TKey).Name}'.");
         }
     }
 
@@ -331,7 +326,7 @@ public static class SortedVectorHelpers
 
             if (tableOffset == 0)
             {
-                throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
+                return FSThrow.InvalidOperation<ReadOnlyMemory<byte>>("Sorted FlatBuffer vectors may not have null-valued keys.");
             }
 
             offset += tableOffset;

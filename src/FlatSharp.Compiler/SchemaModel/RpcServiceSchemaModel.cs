@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
 
 namespace FlatSharp.Compiler.SchemaModel;
@@ -96,7 +97,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
                     public static ISerializer<T> Value
                     {{
                         get => __value;
-                        set => __value = value ?? throw new ArgumentNullException(nameof(value));
+                        set => __value = value ?? {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.ArgumentNull)}<ISerializer<T>>(nameof(value));
                     }}
                 }}
                 ");

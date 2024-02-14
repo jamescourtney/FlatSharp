@@ -39,7 +39,7 @@ public class SharedStringWriter : ISharedStringWriter
     {
         if (hashTableCapacity <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(hashTableCapacity));
+            FSThrow.ArgumentOutOfRange(nameof(hashTableCapacity));
         }
 
         this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity ?? DefaultCapacity];

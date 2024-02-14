@@ -39,7 +39,13 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         Func<string?> generatedCSharp)
     {
         this.lazyCSharp = new Lazy<string?>(generatedCSharp);
-        this.innerSerializer = innerSerializer ?? throw new ArgumentNullException(nameof(innerSerializer));
+
+        if (innerSerializer is null)
+        {
+            FSThrow.ArgumentNull(nameof(innerSerializer));
+        }
+
+        this.innerSerializer = innerSerializer;
         this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(() => new SharedStringWriter());
         this.remainingDepthLimit = 1000; // sane default.
         this.option = option;
@@ -63,7 +69,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
     {
         if (item is null)
         {
-            throw new ArgumentNullException(nameof(item), "The root table may not be null.");
+            FSThrow.ArgumentNull(nameof(item), "The root table may not be null.");
         }
 
         if (this.enableMemoryCopySerialization &&
@@ -84,11 +90,12 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     int ISerializer.GetMaxSize(object item)
     {
+
         return item switch
         {
             T t => this.GetMaxSize(t),
-            null => throw new ArgumentNullException(nameof(item)),
-            _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+            null => FSThrow.ArgumentNull<int>(nameof(item)),
+            _ => FSThrow.Argument<int>($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}"),
         };
     }
 
@@ -101,12 +108,12 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
     {
         if (buffer.Length >= int.MaxValue / 2)
         {
-            throw new ArgumentOutOfRangeException("Buffer must be <= 1GB in size.");
+            FSThrow.Argument("Buffer must be <= 1GB in size.");
         }
 
         if (buffer.Length <= 2 * sizeof(uint))
         {
-            throw new ArgumentException("Buffer is too small to be valid!");
+            FSThrow.Argument("Buffer is too small to be valid!");
         }
 
         var parseArgs = new GeneratedSerializerParseArguments(0, this.remainingDepthLimit);
@@ -133,7 +140,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 break;
 
             default:
-                throw new InvalidOperationException("Unexpected deserialization mode: " + this.option);
+                item = FSThrow.InvalidOperation<T>("Unexpected deserialization mode");
+                break;
         }
 
         if (item is IPoolableObjectDebug deserializedObject)
@@ -151,15 +159,12 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
     {
         if (item is null)
         {
-            throw new ArgumentNullException(nameof(item), "The root table may not be null.");
+            FSThrow.ArgumentNull(nameof(item), "The root table may not be null.");
         }
 
         if (destination.Length <= 8)
         {
-            throw new BufferTooSmallException
-            {
-                SizeNeeded = this.GetMaxSize(item)
-            };
+            FSThrow.BufferTooSmall(this.GetMaxSize(item));
         }
 
         if (this.enableMemoryCopySerialization &&
@@ -171,7 +176,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
             if (destination.Length < inputBuffer.Length)
             {
-                throw new BufferTooSmallException { SizeNeeded = inputBuffer.Length };
+                FSThrow.BufferTooSmall(inputBuffer.Length);
             }
 
             inputBuffer.GetReadOnlySpan().CopyTo(destination);
@@ -216,8 +221,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         return item switch
         {
             T t => this.Write(writer, destination, t),
-            null => throw new ArgumentNullException(nameof(item)),
-            _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+            null => FSThrow.ArgumentNull<int>(nameof(item)),
+            _ => FSThrow.Argument<int>($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
         };
     }
 
