@@ -39,13 +39,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         Func<string?> generatedCSharp)
     {
         this.lazyCSharp = new Lazy<string?>(generatedCSharp);
+        this.innerSerializer = innerSerializer ?? FSThrow.ArgumentNull<IGeneratedSerializer<T>>(nameof(innerSerializer));
 
-        if (innerSerializer is null)
-        {
-            FSThrow.ArgumentNull(nameof(innerSerializer));
-        }
-
-        this.innerSerializer = innerSerializer;
         this.sharedStringWriter = new ThreadLocal<ISharedStringWriter?>(() => new SharedStringWriter());
         this.remainingDepthLimit = 1000; // sane default.
         this.option = option;
