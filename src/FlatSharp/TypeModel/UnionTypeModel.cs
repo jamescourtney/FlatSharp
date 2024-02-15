@@ -157,7 +157,7 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(""Exception parsing union '{this.GGCTN()}'. Unexpected union discriminator."");
+                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(""Exception parsing union '{this.GetCompilableTypeName()}'. Unexpected union discriminator."");
             }}
         ";
 
