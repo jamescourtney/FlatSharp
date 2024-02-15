@@ -932,15 +932,19 @@ namespace Benchmark.FBBench
     public struct Foo_ValueType
     {
         [ProtoMember(1), FieldOffset(0)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Id")]
         public ulong Id;
 
         [ProtoMember(2), FieldOffset(8)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Count")]
         public short Count;
 
         [ProtoMember(3), FieldOffset(10)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Prefix")]
         public sbyte Prefix;
 
         [ProtoMember(4), FieldOffset(12)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Length")]
         public uint Length;
     }
 
@@ -967,15 +971,19 @@ namespace Benchmark.FBBench
     public struct Bar_ValueType
     {
         [ProtoMember(1), FieldOffset(0)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Parent")]
         public Foo_ValueType Parent;
 
         [ProtoMember(2), FieldOffset(16)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Time")]
         public int Time;
 
         [ProtoMember(3), FieldOffset(20)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Ratio")]
         public float Ratio;
 
         [ProtoMember(4), FieldOffset(24)]
+        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Size")]
         public ushort Size;
     }
 
