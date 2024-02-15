@@ -131,6 +131,7 @@ namespace Benchmark.FBBench
         public struct ValueStruct_Small
         {
             [FieldOffset(0)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "Foo")]
             public int Foo;
         }
 
@@ -139,24 +140,34 @@ namespace Benchmark.FBBench
         public struct ValueStruct_Large
         {
             [FieldOffset(0)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "A")]
             public int A;
             [FieldOffset(4)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "B")]
             public int B;
             [FieldOffset(8)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "C")]
             public int C;
             [FieldOffset(12)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "D")]
             public int D;
             [FieldOffset(16)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "E")]
             public int E;
             [FieldOffset(20)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "F")]
             public int F;
             [FieldOffset(24)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "G")]
             public int G;
             [FieldOffset(28)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "H")]
             public int H;
             [FieldOffset(32)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "I")]
             public int I;
             [FieldOffset(36)]
+            [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "", "J")]
             public int J;
         }
 
