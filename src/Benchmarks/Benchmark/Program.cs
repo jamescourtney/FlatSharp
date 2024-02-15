@@ -40,8 +40,8 @@ namespace Benchmark
                 .WithLaunchCount(7)
                 .WithWarmupCount(3)
                 .WithIterationCount(5)
-                .WithRuntime(CoreRuntime.Core70);
-                //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
+                .WithRuntime(CoreRuntime.Core80)
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
 
             var config = DefaultConfig.Instance
                  .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })

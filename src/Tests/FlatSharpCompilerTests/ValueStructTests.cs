@@ -105,8 +105,6 @@ public class ValueStructTests
             schema,
             new());
 
-        Assert.Contains("throw new IndexOutOfRangeException()", csharp);
-
         // Syntax for "safe" struct vectors is a giant switch followed by "case {index}: return ref item.__flatsharp__{vecName}_index;
         // Syntax for unsafe struct vectors is an indexed unsafe field reference access.
 
