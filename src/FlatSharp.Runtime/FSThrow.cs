@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2021 James Courtney
+ * Copyright 2024 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ using System.IO;
 
 namespace FlatSharp.Internal;
 
+[ExcludeFromCodeCoverage]
 public static class FSThrow
 {
     [DoesNotReturn]
