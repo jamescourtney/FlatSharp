@@ -55,12 +55,12 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     {
         get
         {
-            if (this.TryGetValue(key, out TValue? value))
+            if (!this.TryGetValue(key, out TValue? value))
             {
-                return value;
+                value = FSThrow.KeyNotFound<TValue>();
             }
 
-            throw new KeyNotFoundException();
+            return value;
         }
     }
 
@@ -129,7 +129,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     /// </summary>
     public void AddOrReplace(TValue value)
     {
-        throw new NotMutableException();
+        FSThrow.NotMutable();
     }
 
     /// <summary>
@@ -137,17 +137,17 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     /// </summary>
     public bool Add(TValue value)
     {
-        throw new NotMutableException();
+        return FSThrow.NotMutable<bool>();
     }
 
     public void Clear()
     {
-        throw new NotMutableException();
+        FSThrow.NotMutable();
     }
 
     public bool Remove(TKey key)
     {
-        throw new NotMutableException();
+        return FSThrow.NotMutable<bool>();
     }
 
     public void ReturnToPool(bool force = false)

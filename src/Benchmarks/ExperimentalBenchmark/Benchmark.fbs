@@ -12,18 +12,30 @@ attribute "fs_writeThrough";
 
 namespace BenchmarkCore;
 
-struct ValueStruct (fs_valueStruct)
-{
-    a : int;
+struct Foo {
+  id:ulong;
+  count:short;
+  prefix:byte;
+  length:uint;
 }
 
-struct RefStruct
-{
-    a : int (fs_writeThrough);
+struct Bar {
+  parent:Foo;
+  time:int;
+  ratio:float;
+  size:ushort;
 }
 
-table Outer (fs_serializer:"Lazy")
-{
-    value_items : [ ValueStruct ];
-    ref_items : [ RefStruct ];
+table FooBar {
+  sibling:Bar;
+  name:string;
+  rating:double;
+  postfix:ubyte;
+}
+
+table FooBarContainer (fs_serializer) {
+  list:[FooBar];  // 3 copies of the above
+  initialized:bool;
+  fruit:short;
+  location:string;
 }

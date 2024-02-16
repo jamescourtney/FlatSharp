@@ -111,7 +111,7 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    throw new System.InvalidOperationException(""Exception determining type of union. Discriminator = "" + {context.ValueVariableName}.{discriminatorPropertyName});
+                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<int>(""Exception determining type of union. Unexpected Union discriminator."");
             }}
 ";
         return new CodeGeneratedMethod(body);
@@ -157,7 +157,7 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    throw new System.InvalidOperationException(""Exception parsing union '{this.GetCompilableTypeName()}'. Discriminator = "" + discriminator);
+                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(""Exception parsing union '{this.GetCompilableTypeName()}'. Unexpected union discriminator."");
             }}
         ";
 
@@ -304,7 +304,9 @@ $@"
             switch (discriminatorValue)
             {{
                 {string.Join("\r\n", switchCases)}
-                default: throw new InvalidOperationException(""Unexpected discriminator. Unions must be initialized."");
+                default: 
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""Unexpected union discriminator. Unions must be initialized."");
+                    break;
             }}";
 
         return new CodeGeneratedMethod(serializeBlock);
@@ -321,7 +323,7 @@ $@"
             switchCases.Add($"{discriminator} => new {this.GetGlobalCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator})),");
         }
 
-        switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");
+        switchCases.Add($"_ => {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(\"Unexpected union discriminator\")");
 
         string body = $@"
             return {context.ItemVariableName}.{nameof(IFlatBufferUnion.Discriminator)} switch {{

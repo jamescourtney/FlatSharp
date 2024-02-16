@@ -51,12 +51,12 @@ public class FlatBufferIndexedVector<TKey, TValue>
     {
         get
         {
-            if (this.TryGetValue(key, out var value))
+            if (!this.TryGetValue(key, out TValue? value))
             {
-                return value;
+                value = FSThrow.KeyNotFound<TValue>();
             }
 
-            throw new KeyNotFoundException();
+            return value;
         }
     }
 
@@ -79,7 +79,7 @@ public class FlatBufferIndexedVector<TKey, TValue>
 
     public void AddOrReplace(TValue value)
     {
-        throw new NotMutableException();
+        FSThrow.NotMutable();
     }
 
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
@@ -94,7 +94,7 @@ public class FlatBufferIndexedVector<TKey, TValue>
 
     public bool Add(TValue value)
     {
-        throw new NotMutableException();
+        return FSThrow.NotMutable<bool>();
     }
 
     public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value)
@@ -110,12 +110,12 @@ public class FlatBufferIndexedVector<TKey, TValue>
 
     public void Clear()
     {
-        throw new NotMutableException();
+        FSThrow.NotMutable();
     }
 
     public bool Remove(TKey key)
     {
-        throw new NotMutableException();
+        return FSThrow.NotMutable<bool>();
     }
 
     public void ReturnToPool(bool force = false)

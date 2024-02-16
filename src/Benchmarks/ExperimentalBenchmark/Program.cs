@@ -24,88 +24,59 @@ using FlatSharp;
 using FlatSharp.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace BenchmarkCore
 {
-    public class IterationTests
+    public class Program
     {
-        public const int Length = 1000;
-        public byte[] buffer;
-
-        [Params(FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Progressive)]
-        public FlatBufferDeserializationOption Option { get; set; }
+        private FooBarContainer container;
+        private byte[] buffer;
 
         [GlobalSetup]
         public void Setup()
         {
-            var outer = new Outer { RefItems = new List<RefStruct>(), ValueItems = new List<ValueStruct>(), };
-
-            for (int i = 0; i < Length; ++i)
+            this.container = new()
             {
-                outer.RefItems.Add(new RefStruct { A = i });
-                outer.ValueItems.Add(new ValueStruct { A = i });
-            }
+                Fruit = 1,
+                Initialized = true,
+                Location = "somewhere",
+                List = Enumerable.Range(0, 30).Select(x => new FooBar
+                {
+                    Name = x.ToString(),
+                    Postfix = (byte)x,
+                    Rating = x,
+                    Sibling = new Bar
+                    {
+                        Parent = new Foo
+                        {
+                            Count = 30,
+                            Id = 10,
+                            Length = 20,
+                            Prefix = 40,
+                        },
+                        Ratio = 10,
+                        Size = 10,
+                        Time = 10,
+                    }
+                }).ToList(),
+            };
 
-
-            buffer = new byte[Outer.Serializer.GetMaxSize(outer)];
-            Outer.Serializer.Write(buffer, outer);
+            this.buffer = new byte[1024 * 1024];
         }
 
         [Benchmark]
-        public int RefNormalTraversal()
+        public void Serialize()
         {
-            var outer = Outer.Serializer.Parse(buffer, this.Option);
-
-            int sum = 0;
-            IList<RefStruct> items = outer.RefItems!;
-
-            for (int i = 0; i < Length; ++i)
-            {
-                var item = items[i];
-                item.A += 3;
-            }
-
-            return sum;
+            FooBarContainer.Serializer.Write(this.buffer, this.container);
         }
 
-        [Benchmark]
-        public int ValueNormalTraversal()
-        {
-            var outer = Outer.Serializer.Parse(buffer, this.Option);
-
-            int sum = 0;
-            IList<ValueStruct> items = outer.ValueItems!;
-
-            if (items is null)
-            {
-                return sum;
-            }
-
-            for (int i = 0; i < Length; ++i)
-            {
-                sum += items[i].A;
-            }
-
-            return sum;
-        }
-    }
-
-    public class Program
-    {
         public static void Main(string[] args)
         {
-            //BenchmarkRunner.Run(typeof(Program).Assembly);
-            IterationTests t = new();
-
-            t.Option = FlatBufferDeserializationOption.Lazy;
-            t.Setup();
-
-            while (true)
-            {
-                t.RefNormalTraversal();
-            }
+            BenchmarkRunner.Run(typeof(Program).Assembly);
         }
     }
 }

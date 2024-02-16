@@ -76,7 +76,7 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
                 {alignmentCheck}
                 if (!buffer.IsPinned)
                 {{
-                   throw new NotSupportedException(""Non-greedy parsing of a NativeArray requires a pinned buffer."");
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.NotSupported)}(""Non-greedy parsing of a NativeArray requires a pinned buffer."");
                 }}
 
                 var bufferSpan = {context.InputBufferVariableName}.UnsafeReadSpan<{context.InputBufferTypeName}, {this.ItemTypeModel.GetGlobalCompilableTypeName()}>({context.OffsetVariableName});

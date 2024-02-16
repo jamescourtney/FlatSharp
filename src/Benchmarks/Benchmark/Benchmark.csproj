@@ -6,7 +6,7 @@
     <TargetFrameworks>net8.0</TargetFrameworks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
-    <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;FLATSHARP_7_0_0_OR_GREATER;RUN_COMPARISON_BENCHMARKS</DefineConstants>
+    <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

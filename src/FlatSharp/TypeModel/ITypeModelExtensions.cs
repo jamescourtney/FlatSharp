@@ -130,6 +130,11 @@ internal static class ITypeModelExtensions
         => CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
 
     /// <summary>
+    /// Shortcut for GetGlobalCompilableTypeName
+    /// </summary>
+    public static string GGCTN(this ITypeModel typeModel) => typeModel.ClrType.GetGlobalCompilableTypeName();
+
+    /// <summary>
     /// Shortcut for getting compilable type name.
     /// </summary>
     public static string GetGlobalCompilableTypeName(this ITypeModel typeModel)
@@ -155,7 +160,7 @@ internal static class ITypeModelExtensions
     /// <summary>
     /// Returns a boolean expression that compares the given variable name to the given default value literal for inequality.
     /// </summary>
-    public static string GetNotEqualToDefaultValueLiteralExpression(this ITypeModel typeModel, string variableName, string defaultValueLiteral)
+    public static string? TryGetNotEqualToDefaultValueLiteralExpression(this ITypeModel typeModel, string variableName, string defaultValueLiteral)
     {
         if (typeModel.IsNonNullableClrValueType())
         {
@@ -167,7 +172,7 @@ internal static class ITypeModelExtensions
             else
             {
                 // We assume non-primitive structs are not equal.
-                return "true";
+                return null;
             }
         }
         else

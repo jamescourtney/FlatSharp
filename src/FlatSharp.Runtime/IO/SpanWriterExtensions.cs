@@ -138,7 +138,7 @@ public static class SpanWriterExtensions
 #if DEBUG
         if (offset % size != 0)
         {
-            throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
+            FSThrow.InvalidOperation($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
         }
 #endif
     }

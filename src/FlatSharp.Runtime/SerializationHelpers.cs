@@ -91,15 +91,8 @@ public static class SerializationHelpers
     {
         if (item is null)
         {
-            ThrowNonNullException();
+            FSThrow.InvalidData("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
         }
-    }
-
-    // Left as no inlining. Literal strings seem to prevent JIT inlining.
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowNonNullException()
-    {
-        throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,13 +100,7 @@ public static class SerializationHelpers
     {
         if (remainingDepth < 0)
         {
-            ThrowDepthLimitExceededException();
+            FSThrow.InvalidData($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
         }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowDepthLimitExceededException()
-    {
-        throw new InvalidDataException($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
     }
 }

@@ -19,12 +19,18 @@ public class UnionFieldTests
     {
         FunUnion a = new FunUnion(new RefStruct());
 
-        Assert.Throws<InvalidOperationException>(() => a.ValueStruct);
-        Assert.Throws<InvalidOperationException>(() => a.Key);
-        Assert.Throws<InvalidOperationException>(() => a.str);
+        var ex = Assert.Throws<InvalidOperationException>(() => a.ValueStruct);
+        Assert.Equal("Union Discriminator != 2", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => a.str);
+        Assert.Equal("Union Discriminator != 3", ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => a.Key);
+        Assert.Equal("Union Discriminator != 4", ex.Message);
 
         a = new FunUnion(new ValueStruct());
-        Assert.Throws<InvalidOperationException>(() => a.RefStruct);
+        ex = Assert.Throws<InvalidOperationException>(() => a.RefStruct);
+        Assert.Equal("Union Discriminator != 1", ex.Message);
     }
 
     [Fact]
@@ -72,13 +78,13 @@ public class UnionFieldTests
         Root root = new() { Fields = new() { Union = new FunUnion() } };
 
         var ex = Assert.Throws<InvalidOperationException>(() => Root.Serializer.GetMaxSize(root));
-        Assert.Equal("Exception determining type of union. Discriminator = 0", ex.Message);
+        Assert.Equal("Exception determining type of union. Unexpected Union discriminator.", ex.Message);
 
         ex = Assert.Throws<InvalidOperationException>(() => Root.Serializer.Write(new byte[1024], root));
-        Assert.Equal("Unexpected discriminator. Unions must be initialized.", ex.Message);
+        Assert.Equal("Unexpected union discriminator. Unions must be initialized.", ex.Message);
 
         ex = Assert.Throws<InvalidOperationException>(() => new FunUnion().Accept<Visitor, bool>(new Visitor()));
-        Assert.Equal("Unexpected discriminator: 0", ex.Message);
+        Assert.Equal("Unexpected discriminator", ex.Message);
 
         ex = Assert.Throws<InvalidOperationException>(() => new Root(root));
         Assert.Equal("Unexpected union discriminator", ex.Message);
@@ -232,7 +238,7 @@ public class UnionFieldTests
             FunUnion union = root.Fields.Union.Value;
         });
 
-        Assert.Equal("Exception parsing union 'FlatSharpStrykerTests.FunUnion'. Discriminator = 10", ex.Message);
+        Assert.Equal("Exception parsing union 'FlatSharpStrykerTests.FunUnion'. Unexpected union discriminator.", ex.Message);
     }
 
     [Theory]

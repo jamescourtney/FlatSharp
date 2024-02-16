@@ -40,8 +40,8 @@ namespace Benchmark
                 .WithLaunchCount(7)
                 .WithWarmupCount(3)
                 .WithIterationCount(5)
-                .WithRuntime(CoreRuntime.Core70);
-                //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
+                .WithRuntime(CoreRuntime.Core80);
+                //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "0"));
 
             var config = DefaultConfig.Instance
                  .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
@@ -56,7 +56,7 @@ namespace Benchmark
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.WriteThroughBench), config));
 #if CURRENT_VERSION_ONLY
-            summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)

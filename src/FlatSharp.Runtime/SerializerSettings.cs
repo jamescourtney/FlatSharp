@@ -121,7 +121,7 @@ public class SerializerSettings
     {
         if (depthLimit <= 0)
         {
-            throw new ArgumentException("ObjectDepthLimit must be nonnegative.");
+            FSThrow.Argument("ObjectDepthLimit must be nonnegative.");
         }
 
         this.ObjectDepthLimit = depthLimit;

@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharpPoolableEndToEndTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.UnityPolyfills", "FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj", "{E439E4AF-B948-4E6C-8791-1830619EB35B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExperimentalBenchmarkOld", "Benchmarks\ExperimentalBenchmarkOld\ExperimentalBenchmarkOld.csproj", "{F78DD266-66AF-4125-8179-AE6D7F6B39F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{E439E4AF-B948-4E6C-8791-1830619EB35B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E439E4AF-B948-4E6C-8791-1830619EB35B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E439E4AF-B948-4E6C-8791-1830619EB35B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F78DD266-66AF-4125-8179-AE6D7F6B39F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F78DD266-66AF-4125-8179-AE6D7F6B39F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F78DD266-66AF-4125-8179-AE6D7F6B39F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F78DD266-66AF-4125-8179-AE6D7F6B39F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -93,6 +99,7 @@ Global
 		{927A2D53-B127-4297-B17A-4E4EEE7ACD0D} = {83478353-8C5A-41C2-84C2-F79488B43CB0}
 		{5A173CC8-53B4-445B-9AA2-68A61A4BE449} = {927A2D53-B127-4297-B17A-4E4EEE7ACD0D}
 		{7E55A248-4BBD-48AD-B27D-A7E0E705DC89} = {D1E90BAE-FC51-44DB-8215-1D9BB6059886}
+		{F78DD266-66AF-4125-8179-AE6D7F6B39F9} = {83478353-8C5A-41C2-84C2-F79488B43CB0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {726A4C0E-5760-4B35-8C73-9AC21B2E4C8B}

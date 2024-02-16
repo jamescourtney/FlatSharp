@@ -130,7 +130,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
     {
         if (!this.mutable)
         {
-            throw new NotMutableException();
+            FSThrow.NotMutable();
         }
 
         this.backingDictionary[GetKey(value)] = value;
@@ -143,7 +143,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
     {
         if (!this.mutable)
         {
-            throw new NotMutableException();
+            return FSThrow.NotMutable<bool>();
         }
 
         TKey key = GetKey(value);
@@ -166,7 +166,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
     {
         if (!this.mutable)
         {
-            throw new NotMutableException();
+            FSThrow.NotMutable();
         }
 
         this.backingDictionary.Clear();
@@ -176,7 +176,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
     {
         if (!this.mutable)
         {
-            throw new NotMutableException();
+            return FSThrow.NotMutable<bool>();
         }
 
         return this.backingDictionary.Remove(key);

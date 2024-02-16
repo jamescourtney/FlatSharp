@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
 
 namespace FlatSharp.Compiler.SchemaModel;
@@ -155,7 +156,7 @@ public record StructVectorPropertyFieldModel
                             writer.AppendLine($"case {i}: return thisItem.{this.Properties[i].FieldName};");
                         }
 
-                        writer.AppendLine($"default: throw new IndexOutOfRangeException();");
+                        writer.AppendLine($"default: return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.IndexOutOfRange)}<{typeName}>();");
                     }
                 }
 
@@ -175,7 +176,7 @@ public record StructVectorPropertyFieldModel
                                 writer.AppendLine($"case {i}: thisItem.{this.Properties[i].FieldName} = value; break;");
                             }
 
-                            writer.AppendLine($"default: throw new IndexOutOfRangeException();");
+                            writer.AppendLine($"default: {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.IndexOutOfRange)}(); break;");
                         }
                     }
                 }

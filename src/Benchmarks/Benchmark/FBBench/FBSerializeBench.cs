@@ -54,7 +54,7 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_Serialize() => base.FlatSharp_Serialize();
-
+        
         [Benchmark]
         public override void FlatSharp_Serialize_ValueStructs() => base.FlatSharp_Serialize_ValueStructs();
 

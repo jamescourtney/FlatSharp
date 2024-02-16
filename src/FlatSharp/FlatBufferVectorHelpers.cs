@@ -161,7 +161,7 @@ internal static partial class FlatBufferVectorHelpers
             writeThroughBody = @$"
                 if (!{context.TableFieldContextVariableName}.WriteThrough)
                 {{
-                    {nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowNotMutableException)}();
+                    {nameof(FSThrow)}.{nameof(FSThrow.NotMutable)}();
                 }}
 
                 int offset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
