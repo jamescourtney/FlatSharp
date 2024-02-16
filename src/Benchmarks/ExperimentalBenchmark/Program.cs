@@ -39,7 +39,7 @@ namespace BenchmarkCore
         [GlobalSetup]
         public void Setup()
         {
-            this.container = container = new()
+            this.container = new()
             {
                 Fruit = 1,
                 Initialized = true,
