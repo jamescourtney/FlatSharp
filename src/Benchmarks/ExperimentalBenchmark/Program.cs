@@ -34,16 +34,38 @@ namespace BenchmarkCore
     public class Program
     {
         private FooBarContainer container;
+        private FooBar foobar;
         private byte[] buffer;
 
         [GlobalSetup]
         public void Setup()
         {
+            this.foobar = new()
+            {
+                Name = new string('c', 1),
+                Postfix = (byte)3,
+                Rating = 3,
+                Sibling = new Bar
+                {
+                    Parent = new Foo
+                    {
+                        Count = 30,
+                        Id = 10,
+                        Length = 20,
+                        Prefix = 40,
+                    },
+                    Ratio = 10,
+                    Size = 10,
+                    Time = 10,
+                }
+            };
+
             this.container = new()
             {
                 Fruit = 1,
                 Initialized = true,
                 Location = "somewhere",
+                // List = Array.Empty<FooBar>(),
                 List = Enumerable.Range(0, 30).Select(x => new FooBar
                 {
                     Name = x.ToString(),

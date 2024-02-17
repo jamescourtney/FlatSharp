@@ -74,9 +74,9 @@ public interface ISpanWriter
     void WriteUShort(Span<byte> span, ushort value, int offset);
 
     /// <summary>
-    /// Writes the bytes of the given string to the destination span according to the given encoding.
+    /// Writes the UTF8-encoded bytes of the given string to the destination span.
     /// </summary>
-    int GetStringBytes(Span<byte> destination, string value, Encoding encoding);
+    int GetStringBytes(Span<byte> destination, string value);
 
     /// <summary>
     /// Invokes the <see cref="IGeneratedSerializer{T}.Write{TSpanWriter}(TSpanWriter, Span{byte}, T, SerializationContext)"/>

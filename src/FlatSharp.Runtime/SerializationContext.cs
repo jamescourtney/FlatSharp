@@ -100,10 +100,9 @@ public sealed class SerializationContext
     {
         checked
         {
-            if (numberOfItems < 0)
-            {
-                FSThrow.ArgumentOutOfRange(nameof(numberOfItems));
-            }
+            Debug.Assert(numberOfItems >= 0);
+            Debug.Assert(sizePerItem >= 1);
+            Debug.Assert(itemAlignment >= 1);
 
             int bytesNeeded = numberOfItems * sizePerItem + sizeof(uint);
 
@@ -122,7 +121,7 @@ public sealed class SerializationContext
             offset += SerializationHelpers.GetAlignmentError(offset + sizeof(uint), itemAlignment);
             this.offset = offset;
 
-            offset = this.AllocateSpace(bytesNeeded, sizeof(uint));
+            offset = this.AllocateSpace(bytesNeeded, alignment: 1); // we are already aligned, so no need to align further.
 
             Debug.Assert(offset % 4 == 0);
             Debug.Assert((offset + 4) % itemAlignment == 0);
@@ -138,22 +137,18 @@ public sealed class SerializationContext
     {
         checked
         {
-            int offset = this.offset;
             Debug.Assert(alignment == 1 || alignment % 2 == 0);
 
+            int offset = this.offset;
             offset += SerializationHelpers.GetAlignmentError(offset, alignment);
+            this.offset = offset + bytesNeeded;
 
-            int finalOffset = offset + bytesNeeded;
-            if (finalOffset >= this.capacity)
-            {
-                FSThrow.BufferTooSmall(0);
-            }
 
-            this.offset = finalOffset;
             return offset;
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public int FinishVTable(
         Span<byte> buffer,
         Span<byte> vtable)
@@ -171,16 +166,11 @@ public sealed class SerializationContext
                 existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
 
                 if (existingVTable.Length == vtable.Length && existingVTable.SequenceEqual(vtable))
-                //if (CompareEquality(existingVTable, vtable))
                 {
                     // Slowly bubble used things towards the front of the list.
                     // This is not exact, but should keep frequently used
                     // items towards the front.
-                    if (i != 0)
-                    {
-                        Promote(i, offsets);
-                    }
-
+                    Promote(i, offsets);
                     return offset;
                 }
             }
@@ -196,20 +186,18 @@ public sealed class SerializationContext
 
             return newVTableOffset;
         }
-    }
 
-    /// <summary>
-    /// Promote frequently-used items to be closer to the front of the list.
-    /// This is done with a swap to avoid shuffling the whole list by inserting
-    /// at a given index. An alternative might be an unrolled linked list data structure.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Promote(int i, List<int> offsets)
-    {
-        int swapIndex = i / 2;
+        // Promote frequently-used items to be closer to the front of the list.
+        // This is done with a swap to avoid shuffling the whole list by inserting
+        // at a given index. An alternative might be an unrolled linked list data structure.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Promote(int i, List<int> offsets)
+        {
+            int swapIndex = i / 2;
 
-        int temp = offsets[i];
-        offsets[i] = offsets[swapIndex];
-        offsets[swapIndex] = temp;
+            int temp = offsets[i];
+            offsets[i] = offsets[swapIndex];
+            offsets[swapIndex] = temp;
+        }
     }
 }

@@ -86,19 +86,17 @@ public static class SpanWriterExtensions
     /// <summary>
     /// Writes the string to the buffer, returning the absolute offset of the string.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
         where TSpanWriter : ISpanWriter
     {
         checked
         {
-            var encoding = SerializationHelpers.Encoding;
-
             // Allocate more than we need and then give back what we don't use.
-            int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
+            int maxItems = SerializationHelpers.Encoding.GetMaxByteCount(value.Length) + 1;
             int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
 
-            int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
+            int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value);
 
             // null teriminator
             span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;

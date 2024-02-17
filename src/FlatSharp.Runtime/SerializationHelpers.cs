@@ -26,9 +26,17 @@ namespace FlatSharp.Internal;
 public static class SerializationHelpers
 {
     /// <summary>
+    /// A sealed version of UTF8Encoding that allows the JIT to emit nonvirtual method calls.
+    /// </summary>
+    public sealed class SealedUTF8Encoding : UTF8Encoding
+    {
+        public SealedUTF8Encoding(bool includeByteOrderMark) : base(includeByteOrderMark) { }
+    }
+
+    /// <summary>
     /// Encoding used for strings.
     /// </summary>
-    public static readonly Encoding Encoding = new UTF8Encoding(false);
+    public static readonly SealedUTF8Encoding Encoding = new SealedUTF8Encoding(false);
 
     /// <summary>
     /// Value of true as a byte.
@@ -81,6 +89,19 @@ public static class SerializationHelpers
     }
 
     /// <summary>
+    /// A branchless Math.Max analog that works for nonnegative numbers.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int VTableMax(int current, int proposed)
+    {
+        Debug.Assert(current >= 0);
+        Debug.Assert(proposed >= 0);
+
+        int sign = (current - proposed) >>> 31;
+        return current + ((proposed - current) * sign);
+    }
+
+    /// <summary>
     /// Throws an InvalidDataException if the given item is null.
     /// </summary>
     /// <remarks>
@@ -91,8 +112,11 @@ public static class SerializationHelpers
     {
         if (item is null)
         {
-            FSThrow.InvalidData("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+            Throw();
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw() => FSThrow.InvalidData("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -100,7 +124,10 @@ public static class SerializationHelpers
     {
         if (remainingDepth < 0)
         {
-            FSThrow.InvalidData($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+            Throw();
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Throw() => FSThrow.InvalidData($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
     }
 }

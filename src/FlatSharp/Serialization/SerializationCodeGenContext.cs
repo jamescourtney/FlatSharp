@@ -32,7 +32,6 @@ public record SerializationCodeGenContext
         string offsetVariableName,
         string tableFieldContextVariableName,
         bool isOffsetByRef,
-        IMethodNameResolver methodNameResolver,
         TypeModelContainer typeModelContainer,
         FlatBufferSerializerOptions options,
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
@@ -42,7 +41,6 @@ public record SerializationCodeGenContext
         this.SpanVariableName = spanVariableName;
         this.ValueVariableName = valueVariableName;
         this.OffsetVariableName = offsetVariableName;
-        this.MethodNameResolver = methodNameResolver;
         this.TypeModelContainer = typeModelContainer;
         this.IsOffsetByRef = isOffsetByRef;
         this.Options = options;
@@ -88,7 +86,7 @@ public record SerializationCodeGenContext
     /// <summary>
     /// A mapping of type to serialize method name for that type.
     /// </summary>
-    public IMethodNameResolver MethodNameResolver { get; private init; }
+    public IMethodNameResolver MethodNameResolver => OperationContext.Current.Resolver;
 
     /// <summary>
     /// Resolves Type -> TypeModel.

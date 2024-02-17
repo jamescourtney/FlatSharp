@@ -129,6 +129,8 @@ public class RootModel
             writer.AppendLine("#nullable enable annotations");
         }
 
+        var generator = new RoslynSerializerGenerator(new(), context.TypeModelContainer);
+        OperationContext.Current = new();
 
         if (context.CompilePass > CodeWritingPass.PropertyModeling && context.PreviousAssembly is not null)
         {
@@ -149,8 +151,10 @@ public class RootModel
 
                 foreach (Type t in seenTypes)
                 {
-                    WriteHelperClass(t, context, writer);
+                    WriteHelperClass(generator, t, context, writer);
                 }
+
+                writer.AppendLine(generator.GetAdditionalSharedMethods());
             }
         }
 
@@ -167,11 +171,9 @@ public class RootModel
         }
     }
 
-    private static void WriteHelperClass(Type type, CompileContext context, CodeWriter writer)
+    private static void WriteHelperClass(RoslynSerializerGenerator generator, Type type, CompileContext context, CodeWriter writer)
     {
-        var options = new FlatBufferSerializerOptions();
-        var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
-        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver(), context.Options.Deserializers);
+        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), context.Options.Deserializers);
 
         writer.AppendLine(helper);
     }

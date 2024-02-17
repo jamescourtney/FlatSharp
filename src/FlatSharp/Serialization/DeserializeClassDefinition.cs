@@ -349,7 +349,7 @@ internal class DeserializeClassDefinition
 
             if (itemModel.IsWriteThrough)
             {
-                setterLines.Add($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.NotMutable)}(\"WriteThrough fields are implemented as readonly when using '{FlatBufferDeserializationOption.GreedyMutable}' serializers.\");");
+                setterLines.Add(OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.NotMutable), $"WriteThrough fields are implemented as readonly when using '{FlatBufferDeserializationOption.GreedyMutable}' serializers.") + ";");
             }
             else
             {

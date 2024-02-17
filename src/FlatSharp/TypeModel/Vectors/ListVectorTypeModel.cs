@@ -78,12 +78,11 @@ public class ListVectorTypeModel : BaseVectorTypeModel
             return $@"
                 if ({vectorVariableName} is {typeModel.GetCompilableTypeName()}[] array)
                 {{
-                    int length = array.Length;
                     {ListBody("array", "array.Length")}
                 }}
                 else if ({vectorVariableName} is List<{typeModel.GetCompilableTypeName()}> realList)
                 {{
-                    {ListBody("realList", "realList.Count")}
+                    {ListBody("realList", numberofItemsVariableName)}
                 }}
                 else
                 {{

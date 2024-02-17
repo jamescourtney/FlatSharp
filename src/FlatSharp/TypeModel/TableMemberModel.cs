@@ -243,7 +243,7 @@ public class TableMemberModel : ItemMemberModel
 
             if (anyZero)
             {{
-                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidData)}(""FlatBuffer table property '{this.FriendlyName}' was only partially included in the buffer."");
+                {OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.InvalidData), $"FlatBuffer table property '{this.FriendlyName}' was only partially included in the buffer.")};
             }}
 
             var absoluteLocations = ({string.Join(", ", absoluteLocations)});
@@ -254,8 +254,10 @@ public class TableMemberModel : ItemMemberModel
     {
         if (this.IsRequired)
         {
-            string message = $"Table property '{this.FriendlyName}' is marked as required, but was missing from the buffer.";
-            return $"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidData)}(\"{message}\");";
+            return
+                OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(
+                    nameof(FSThrow.InvalidData),
+                    message: $"Table property '{this.FriendlyName}' is marked as required, but was missing from the buffer.") + ";";
         }
         else
         {

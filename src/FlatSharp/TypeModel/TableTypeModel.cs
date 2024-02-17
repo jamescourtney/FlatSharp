@@ -522,7 +522,7 @@ $@"
         TableMemberModel memberModel,
         SerializationCodeGenContext context)
     {
-        string? comparison = memberModel.ItemTypeModel.TryGetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral);
+        string? comparison = memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral);
         string condition = string.Empty;
         string elseBlock = string.Empty;
 
@@ -540,7 +540,7 @@ $@"
             elseBlock =
             $@"else
             {{
-                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""Table property '{memberModel.FriendlyName}' is marked as required, but was not set."");
+                {OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.InvalidOperation), $"Table property '{memberModel.FriendlyName}' is marked as required, but was not set.")};
             }}
             ";
         }
@@ -566,12 +566,7 @@ $@"
                 }
                 else
                 {
-                    setVtableBlock = $@"
-                        {StrykerSuppressor.SuppressNextLine("equality")}
-                        if ({vTableLength} > vtableLength)
-                        {{
-                            vtableLength = {vTableLength};
-                        }}";
+                    setVtableBlock = $"vtableLength = {typeof(SerializationHelpers).GGCTN()}.{nameof(SerializationHelpers.VTableMax)}(vtableLength, {vTableLength});";
                 }
             }
         }
@@ -725,7 +720,7 @@ $@"
             };
 
             string condition = string.Empty;
-            string? comparison = itemModel.TryGetNotEqualToDefaultValueLiteralExpression(variableName, member.DefaultValueLiteral);
+            string? comparison = itemModel.GetNotEqualToDefaultValueLiteralExpression(variableName, member.DefaultValueLiteral);
             if (!string.IsNullOrEmpty(comparison))
             {
                 condition = $"if ({comparison})";

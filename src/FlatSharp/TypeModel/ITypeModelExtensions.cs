@@ -160,7 +160,7 @@ internal static class ITypeModelExtensions
     /// <summary>
     /// Returns a boolean expression that compares the given variable name to the given default value literal for inequality.
     /// </summary>
-    public static string? TryGetNotEqualToDefaultValueLiteralExpression(this ITypeModel typeModel, string variableName, string defaultValueLiteral)
+    public static string? GetNotEqualToDefaultValueLiteralExpression(this ITypeModel typeModel, string variableName, string defaultValueLiteral)
     {
         if (typeModel.IsNonNullableClrValueType())
         {

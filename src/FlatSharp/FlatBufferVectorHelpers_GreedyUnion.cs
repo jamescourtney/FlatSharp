@@ -65,7 +65,7 @@ $$""""
 
             if (discriminatorCount != offsetCount)
             {
-                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData)}}("Union vector had mismatched number of discriminators and offsets.");
+                {{OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.InvalidData), "Union vector had mismatched number of discriminators and offsets.")}};
             }
 
             dvo += sizeof(uint);

@@ -32,4 +32,6 @@ public interface IMethodNameResolver
     (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, ITypeModel type);
 
     (string @namespace, string className, string methodName) ResolveSerialize(ITypeModel type);
+
+    (string @namespace, string className) GetThrowHelperClassName();
 }

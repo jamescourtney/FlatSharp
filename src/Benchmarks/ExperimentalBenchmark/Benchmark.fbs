@@ -26,16 +26,16 @@ struct Bar {
   size:ushort;
 }
 
-table FooBar {
-  sibling:Bar;
-  name:string;
+table FooBar (fs_serializer) {
+  sibling:Bar (required);
+  name:string (required);
   rating:double;
   postfix:ubyte;
 }
 
 table FooBarContainer (fs_serializer) {
-  list:[FooBar];  // 3 copies of the above
+  list:[FooBar] (required);  // 3 copies of the above
   initialized:bool;
   fruit:short;
-  location:string;
+  location:string (required);
 }

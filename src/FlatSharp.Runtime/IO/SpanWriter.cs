@@ -97,8 +97,10 @@ public struct SpanWriter : ISpanWriter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int GetStringBytes(Span<byte> destination, string value, Encoding encoding)
+    public int GetStringBytes(Span<byte> destination, string value)
     {
+        var encoding = SerializationHelpers.Encoding;
+
 #if NETSTANDARD2_0
         int length = value.Length;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(encoding.GetMaxByteCount(length));

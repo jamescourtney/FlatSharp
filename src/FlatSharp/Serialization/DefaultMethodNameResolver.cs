@@ -30,6 +30,7 @@ public class DefaultMethodNameResolver : IMethodNameResolver
 
     private const string FlatSharpGenerated = "FlatSharp.Compiler.Generated";
     private const string HelperClassName = "Helpers";
+    private const string ThrowHelpersClassName = "ThrowHelpers";
     private const string GeneratedSerializer = "Serializer";
 
     public (string @namespace, string name) ResolveGeneratedSerializerClassName(ITypeModel type)
@@ -60,6 +61,11 @@ public class DefaultMethodNameResolver : IMethodNameResolver
     public (string @namespace, string className, string methodName) ResolveSerialize(ITypeModel type)
     {
         return (this.GetGlobalNamespace(type), HelperClassName, $"Serialize");
+    }
+
+    public (string @namespace, string className) GetThrowHelperClassName()
+    {
+        return (FlatSharpGenerated, ThrowHelpersClassName);
     }
 
     private string GetGlobalNamespace(ITypeModel type)

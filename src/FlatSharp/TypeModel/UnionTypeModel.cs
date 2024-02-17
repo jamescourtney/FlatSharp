@@ -111,7 +111,8 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<int>(""Exception determining type of union. Unexpected Union discriminator."");
+                    {OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.InvalidOperation), "Exception determining type of union. Unexpected Union discriminator.")};
+                    return 0;
             }}
 ";
         return new CodeGeneratedMethod(body);
@@ -157,7 +158,8 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(""Exception parsing union '{this.GetCompilableTypeName()}'. Unexpected union discriminator."");
+                    {OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.InvalidOperation), $"Exception parsing union '{this.GetCompilableTypeName()}'. Unexpected union discriminator.")};
+                    return default({this.GGCTN()});
             }}
         ";
 
@@ -305,7 +307,7 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default: 
-                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""Unexpected union discriminator. Unions must be initialized."");
+                    {OperationContext.Current.ThrowGenerator.CreateThrowMethodCall(nameof(FSThrow.InvalidOperation), "Unexpected union discriminator. Unions must be initialized.")};
                     break;
             }}";
 
