@@ -69,7 +69,7 @@ public partial class <#= className #> : ScalarTypeModel
 
     protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
     
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
         return "<#=typeName#>";
     }

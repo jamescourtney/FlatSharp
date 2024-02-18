@@ -164,18 +164,16 @@ $@"
             rootModel.SchemaType == FlatBufferSchemaType.Table,
             $"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
 
-        IMethodNameResolver resolver = new DefaultMethodNameResolver();
-
         HashSet<Type> dependencies = new();
         rootModel.TraverseObjectGraph(dependencies);
 
         List<string> parts = new();
         foreach (Type type in dependencies)
         {
-            parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), resolver, DistinctDeserializationOptions));
+            parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), DistinctDeserializationOptions));
         }
 
-        var serializerParts = resolver.ResolveGeneratedSerializerClassName(this.typeModelContainer.CreateTypeModel(typeof(TRoot)));
+        var serializerParts = DefaultMethodNameResolver.ResolveGeneratedSerializerClassName(this.typeModelContainer.CreateTypeModel(typeof(TRoot)));
         string fullName = $"{serializerParts.@namespace}.{serializerParts.name}";
         return (string.Join("\r\n\r\n", parts), fullName);
     }
@@ -405,13 +403,13 @@ $@"
         return seenAssemblies;
     }
 
-    private (string body, string fullName) ImplementInterfaceMethod(TableTypeModel typeModel, IMethodNameResolver resolver, IEnumerable<FlatBufferDeserializationOption> deserializationOptions)
+    private (string body, string fullName) ImplementInterfaceMethod(TableTypeModel typeModel, IEnumerable<FlatBufferDeserializationOption> deserializationOptions)
     {
         Type rootType = typeModel.ClrType;
         List<string> bodyParts = new();
 
         {
-            var parts = resolver.ResolveSerialize(typeModel);
+            var parts = DefaultMethodNameResolver.ResolveSerialize(typeModel);
 
             // Reserve first 4 bytes for offset to first table.
             string writeFileId = $"context.Offset = 4;";
@@ -447,7 +445,7 @@ $@"
                 fileIdSize = "maxSize += 4; // file id";
             }
 
-            var parts = resolver.ResolveGetMaxSize(typeModel);
+            var parts = DefaultMethodNameResolver.ResolveGetMaxSize(typeModel);
             string methodText =
 $@"
                 public int GetMaxSize({CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root)
@@ -471,7 +469,7 @@ $@"
 
         foreach (var pair in pairs)
         {
-            var parts = resolver.ResolveParse(pair.Item2, typeModel);
+            var parts = DefaultMethodNameResolver.ResolveParse(pair.Item2, typeModel);
 
             string body;
 
@@ -497,7 +495,7 @@ $@"
 
         string? compilerVersion = typeof(RoslynSerializerGenerator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
 
-        var resolvedName = resolver.ResolveGeneratedSerializerClassName(typeModel);
+        var resolvedName = DefaultMethodNameResolver.ResolveGeneratedSerializerClassName(typeModel);
 
         string code = $@"
         namespace {resolvedName.@namespace}
@@ -567,7 +565,7 @@ $@"
     /// Implements methods for a single type.
     /// </summary>
     /// <returns>The c# code</returns>
-    internal string ImplementHelperClass(ITypeModel typeModel, IMethodNameResolver resolver, IEnumerable<FlatBufferDeserializationOption> deserializationOptions)
+    internal string ImplementHelperClass(ITypeModel typeModel, IEnumerable<FlatBufferDeserializationOption> deserializationOptions)
     {
         bool requiresDepthTracking = typeModel.IsDeepEnoughToRequireDepthTracking();
         
@@ -605,9 +603,9 @@ $@"
             ? "fieldContext"
             : string.Empty;
 
-        var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, resolver, this.options, this.typeModelContainer, allContextsMap);
-        var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, resolver, this.typeModelContainer, this.options, allContextsMap);
-        var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
+        var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.options, this.typeModelContainer, allContextsMap);
+        var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.typeModelContainer, this.options, allContextsMap);
+        var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, options, this.typeModelContainer, allContextsMap);
 
         CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
         CodeGeneratedMethod writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
@@ -640,7 +638,7 @@ $@"
 
         methods.Add(typeModel.CreateExtraClasses() ?? string.Empty);
 
-        (string ns, string name) = resolver.ResolveHelperClassName(typeModel);
+        (string ns, string name) = DefaultMethodNameResolver.ResolveHelperClassName(typeModel);
 
         string serializerBody = string.Empty;
         if (typeModel.SchemaType == FlatBufferSchemaType.Table)
@@ -651,7 +649,7 @@ $@"
             if (tableModel.ShouldBuildISerializer)
             {
                 // Generate a serializer as well.
-                (serializerBody, _) = ImplementInterfaceMethod(tableModel, resolver, deserializationOptions);
+                (serializerBody, _) = ImplementInterfaceMethod(tableModel, deserializationOptions);
             }
         }
 
@@ -737,7 +735,7 @@ $@"
         string declaration =
 $@"
             {method.GetMethodImplAttribute()}
-            internal static int {context.MethodNameResolver.ResolveGetMaxSize(typeModel).methodName}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
+            internal static int {DefaultMethodNameResolver.ResolveGetMaxSize(typeModel).methodName}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
             {{
                 {method.MethodBody}
             }}";
@@ -754,7 +752,7 @@ $@"
         }
 
         string clrType = typeModel.GetGlobalCompilableTypeName();
-        string parsedType = typeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
+        string parsedType = typeModel.GetDeserializedTypeName(context.Options.DeserializationOption, context.InputBufferTypeName);
 
         // If we require depth tracking due to the schema, inject the if statement and the decrement instruction.
         string depthCheck = string.Empty;
@@ -769,7 +767,7 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static {parsedType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
+            internal static {parsedType} {DefaultMethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
                 short {context.RemainingDepthVariableName}
@@ -800,7 +798,7 @@ $@"
         string fullText =
 $@"
             {method.GetMethodImplAttribute()}
-            internal static void {context.MethodNameResolver.ResolveSerialize(typeModel).methodName}<TSpanWriter>(
+            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 

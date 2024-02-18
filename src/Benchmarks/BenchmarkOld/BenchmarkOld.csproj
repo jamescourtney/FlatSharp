@@ -6,8 +6,14 @@
     <TargetFrameworks>net8.0</TargetFrameworks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
-    <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;RUN_COMPARISON_BENCHMARKS;FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineContants);FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="../Benchmark/*.cs" />
+        <Compile Include="../Benchmark/FBBench/*.cs" />
+        <Compile Include="../Benchmark/Internal/*.cs" />
+    </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
@@ -15,10 +21,11 @@
     <PackageReference Include="MessagePack" Version="2.5.140" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="protobuf-net" Version="3.2.30" />
+    <PackageReference Include="FlatSharp" Version="7.4.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="7.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
     <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 

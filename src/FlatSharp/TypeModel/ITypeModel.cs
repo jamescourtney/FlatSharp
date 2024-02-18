@@ -210,5 +210,5 @@ public interface ITypeModel
     /// <summary>
     /// Gets the fully qualified name of the deserialized type.
     /// </summary>
-    string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName);
+    string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName);
 }

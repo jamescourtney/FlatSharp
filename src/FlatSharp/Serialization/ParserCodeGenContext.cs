@@ -31,7 +31,6 @@ public record ParserCodeGenContext
         string inputBufferTypeName,
         bool isOffsetByRef,
         string tableFieldContextVariableName,
-        IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
@@ -40,7 +39,6 @@ public record ParserCodeGenContext
         this.OffsetVariableName = offsetVariableName;
         this.InputBufferTypeName = inputBufferTypeName;
         this.RemainingDepthVariableName = remainingDepthVariableName;
-        this.MethodNameResolver = methodNameResolver;
         this.IsOffsetByRef = isOffsetByRef;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
@@ -79,11 +77,6 @@ public record ParserCodeGenContext
     public string TableFieldContextVariableName { get; init; }
 
     /// <summary>
-    /// Resolves method names.
-    /// </summary>
-    public IMethodNameResolver MethodNameResolver { get; init; }
-
-    /// <summary>
     /// Serialization options.
     /// </summary>
     public FlatBufferSerializerOptions Options { get; init; }
@@ -105,7 +98,7 @@ public record ParserCodeGenContext
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
-        var parts = this.MethodNameResolver.ResolveParse(this.Options.DeserializationOption, typeModel);
+        var parts = DefaultMethodNameResolver.ResolveParse(this.Options.DeserializationOption, typeModel);
         StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.InputBufferVariableName}, ");
 
         if (this.IsOffsetByRef)
@@ -138,7 +131,6 @@ public record ParserCodeGenContext
             offsetVariableName,
             this.TableFieldContextVariableName,
             this.IsOffsetByRef,
-            this.MethodNameResolver,
             this.TypeModelContainer,
             this.Options,
             this.AllFieldContexts);

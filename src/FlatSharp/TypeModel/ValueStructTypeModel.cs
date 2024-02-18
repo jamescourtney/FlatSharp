@@ -115,7 +115,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
             var member = this.members[i];
             var offsetAdjustment = member.offset != 0 ? $" + {member.offset}" : string.Empty;
 
-            var parts = context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, member.model);
+            var parts = DefaultMethodNameResolver.ResolveParse(context.Options.DeserializationOption, member.model);
 
             propertyStatements.Add($@"
                 item.{member.accessor} = {parts.@namespace}.{parts.className}.{parts.methodName}<{context.InputBufferTypeName}>(
@@ -355,7 +355,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         return (int)value;
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
         return this.GetGlobalCompilableTypeName();
     }

@@ -159,7 +159,7 @@ public class StringTypeModel : RuntimeTypeModel
         return true;
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
         return "string";
     }
