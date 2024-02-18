@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2024 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,30 +48,31 @@ public static class SpanWriterExtensions
         int alignment,
         SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : unmanaged
     {
-        // Since we are copying bytes here, only LE is supported.
-        FlatSharpInternal.AssertLittleEndian();
-        FlatSharpInternal.AssertWellAligned<TElement>(alignment);
+        checked
+        {
+            // Since we are copying bytes here, only LE is supported.
+            FlatSharpInternal.AssertLittleEndian();
+            FlatSharpInternal.AssertWellAligned<TElement>(alignment);
 
-        var size = Unsafe.SizeOf<TElement>();
+            int numberOfItems = buffer.Length;
+            int vectorStartOffset = ctx.AllocateVector(
+                itemAlignment: alignment,
+                numberOfItems,
+                sizePerItem: Unsafe.SizeOf<TElement>());
 
-        int numberOfItems = buffer.Length;
-        int vectorStartOffset = ctx.AllocateVector(
-            itemAlignment: alignment,
-            numberOfItems,
-            sizePerItem: size);
+            spanWriter.WriteUOffset(span, offset, vectorStartOffset);
+            spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
 
-        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
-        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+            var start = span.Slice(vectorStartOffset + sizeof(uint), numberOfItems * Unsafe.SizeOf<TElement>());
 
-        var start = span.Slice(vectorStartOffset + sizeof(uint), numberOfItems * size);
-
-        MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
+            MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
+        }
     }
 
     /// <summary>
     /// Writes the given string.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)] // Strings are super common -- discourage inlining.
     public static void WriteString<TSpanWriter>(
         this TSpanWriter spanWriter,
         Span<byte> span,

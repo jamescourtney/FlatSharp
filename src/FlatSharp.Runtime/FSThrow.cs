@@ -22,7 +22,6 @@ namespace FlatSharp.Internal;
 public static class FSThrow
 {
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void InvalidOperation(string message) => throw new InvalidOperationException(message);
 
     [DoesNotReturn]
@@ -34,15 +33,12 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void InvalidData(string message) => throw new InvalidDataException(message);
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void ArgumentOutOfRange(string paramName) => throw new ArgumentOutOfRangeException(paramName);
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void ArgumentNull(string paramName) => throw new ArgumentNullException(paramName);
 
     [DoesNotReturn]
@@ -54,7 +50,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void ArgumentNull(string paramName, string message) => throw new ArgumentNullException(paramName, message);
 
     [DoesNotReturn]
@@ -66,7 +61,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Argument(string message) => throw new ArgumentException(message);
 
     [DoesNotReturn]
@@ -78,7 +72,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void BufferTooSmall(int sizeNeeded)
     {
         throw new BufferTooSmallException
@@ -88,7 +81,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void NotMutable(string message) => throw new NotMutableException(message);
 
     [DoesNotReturn]
@@ -100,7 +92,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void NotMutable() => throw new NotMutableException();
 
     [DoesNotReturn]
@@ -112,7 +103,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void KeyNotFound() => throw new KeyNotFoundException();
 
     [DoesNotReturn]
@@ -124,7 +114,6 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void IndexOutOfRange() => throw new IndexOutOfRangeException();
 
     [DoesNotReturn]
@@ -136,6 +125,5 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void NotSupported(string s) => throw new NotSupportedException(s);
 }

@@ -36,6 +36,11 @@ namespace BenchmarkCore
         private FooBarContainer container;
         private byte[] buffer;
 
+        private MultiTable multi;
+
+        public static readonly int A = 3;
+        public static readonly int B = 4;
+
         [GlobalSetup]
         public void Setup()
         {
@@ -66,12 +71,46 @@ namespace BenchmarkCore
             };
 
             this.buffer = new byte[1024 * 1024];
+
+            this.multi = new()
+            {
+                A = new() { Value = Guid.NewGuid().ToString() },
+                B = new() { Value = Guid.NewGuid().ToString() },
+                C = new() { Value = Guid.NewGuid().ToString() },
+                D = new() { Value = Guid.NewGuid().ToString() },
+                E = new() { Value = Guid.NewGuid().ToString() },
+                F = new() { Value = Guid.NewGuid().ToString() },
+                G = new() { Value = Guid.NewGuid().ToString() },
+                H = new() { Value = Guid.NewGuid().ToString(), Value2 = Guid.NewGuid().ToString(), Value3 = Guid.NewGuid().ToString(), },
+                I = new() { Value = Guid.NewGuid().ToString() },
+                J = new() { Value = Guid.NewGuid().ToString() },
+                K = new() { Value = Guid.NewGuid().ToString() },
+            };
         }
 
         [Benchmark]
         public void Serialize()
         {
             FooBarContainer.Serializer.Write(this.buffer, this.container);
+        }
+
+        [Benchmark]
+        public int MathMax()
+        {
+            return Math.Max(A, B);
+        }
+
+        [Benchmark]
+        public int Shift()
+        {
+            int sign = (A - B) >>> 31;
+            return A + ((B - A) * sign);
+        }
+
+        [Benchmark]
+        public int NoOp()
+        {
+            return 0;
         }
 
         public static void Main(string[] args)
