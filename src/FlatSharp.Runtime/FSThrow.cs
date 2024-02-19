@@ -56,7 +56,7 @@ public static class FSThrow
 
     [DoesNotReturn]
     public static void InvalidData_DepthLimit()
-        => throw new InvalidOperationException("FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+        => throw new InvalidDataException("FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
 
     [DoesNotReturn]
     public static void InvalidData(string message) => throw new InvalidDataException(message);
