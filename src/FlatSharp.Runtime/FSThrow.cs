@@ -33,6 +33,14 @@ public static class FSThrow
     }
 
     [DoesNotReturn]
+    public static void InvalidUOffset(uint uoffset) 
+        => throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+
+    [DoesNotReturn]
+    public static void InvalidVTable() 
+        => throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
+
+    [DoesNotReturn]
     public static void InvalidData(string message) => throw new InvalidDataException(message);
 
     [DoesNotReturn]

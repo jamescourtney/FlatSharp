@@ -52,11 +52,8 @@ public static class InputBufferExtensions
     /// </summary>
     public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
     {
-        checked
-        {
-            int numberOfBytes = (int)buffer.ReadUInt(uoffset);
-            return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, SerializationHelpers.Encoding);
-        }
+        int numberOfBytes = (int)buffer.ReadUInt(uoffset);
+        return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, SerializationHelpers.Encoding);
     }
 
     /// <summary>
@@ -64,16 +61,13 @@ public static class InputBufferExtensions
     /// </summary>
     public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
     {
-        uint uoffset = buffer.ReadUInt(offset);
+        int uoffset = buffer.ReadInt(offset);
         if (uoffset < sizeof(uint))
         {
-            Throw(uoffset);
+            FSThrow.InvalidUOffset((uint)uoffset);
         }
 
-        return checked((int)uoffset);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw(uint uoffset) => FSThrow.InvalidData($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+        return uoffset;
     }
 
     /// <summary>
@@ -87,60 +81,48 @@ public static class InputBufferExtensions
         out nuint vtableFieldCount,
         out ReadOnlySpan<byte> fieldData) where TBuffer : IInputBuffer
     {
-        checked
+        vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+        ushort vtableLength = buffer.ReadUShort(vtableOffset);
+
+        if (vtableLength < 4)
         {
-            vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-            ushort vtableLength = buffer.ReadUShort(vtableOffset);
-
-            if (vtableLength < 4)
-            {
-                FSThrow.InvalidData("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
-            }
-
-            fieldData = buffer.GetReadOnlySpan().Slice(vtableOffset, vtableLength).Slice(4);
-            vtableFieldCount = (nuint)fieldData.Length / 2;
+            FSThrow.InvalidVTable();
         }
+
+        fieldData = buffer.GetReadOnlySpan().Slice(vtableOffset, vtableLength).Slice(4);
+        vtableFieldCount = (nuint)fieldData.Length / 2;
     }
 
     // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
     // [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
     {
-        checked
-        {
-            // The local value stores a uoffset_t, so follow that now.
-            uoffset = uoffset + buffer.ReadUOffset(uoffset);
-            return buffer.GetMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
-        }
+        // The local value stores a uoffset_t, so follow that now.
+        uoffset = uoffset + buffer.ReadUOffset(uoffset);
+        return buffer.GetMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
     }
 
     // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
     // [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
     {
-        checked
-        {
-            // The local value stores a uoffset_t, so follow that now.
-            uoffset = uoffset + buffer.ReadUOffset(uoffset);
-            return buffer.GetReadOnlyMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
-        }
+        // The local value stores a uoffset_t, so follow that now.
+        uoffset = uoffset + buffer.ReadUOffset(uoffset);
+        return buffer.GetReadOnlyMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
     }
     
     public static Span<TElement> UnsafeReadSpan<TBuffer, TElement>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer where TElement : struct
     {
-        checked
-        {   
-            // The local value stores a uoffset_t, so follow that now.
-            uoffset = uoffset + buffer.ReadUOffset(uoffset);
+        // The local value stores a uoffset_t, so follow that now.
+        uoffset = uoffset + buffer.ReadUOffset(uoffset);
 
-            // We need to construct a Span<TElement> from byte buffer that:
-            // 1. starts at correct offset for vector data
-            // 2. has a length based on *TElement* count not *byte* count
-            var byteSpanAtDataOffset = buffer.GetSpan().Slice(uoffset + sizeof(uint));
-            var sourceSpan = MemoryMarshal.Cast<byte, TElement>(byteSpanAtDataOffset).Slice(0, (int)buffer.ReadUInt(uoffset));
+        // We need to construct a Span<TElement> from byte buffer that:
+        // 1. starts at correct offset for vector data
+        // 2. has a length based on *TElement* count not *byte* count
+        var byteSpanAtDataOffset = buffer.GetSpan().Slice(uoffset + sizeof(uint));
+        var sourceSpan = MemoryMarshal.Cast<byte, TElement>(byteSpanAtDataOffset).Slice(0, (int)buffer.ReadUInt(uoffset));
 
-            return sourceSpan;
-        }
+        return sourceSpan;
     }
 
     [ExcludeFromCodeCoverage] // Not currently used.

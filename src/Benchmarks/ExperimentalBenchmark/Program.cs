@@ -94,12 +94,20 @@ namespace BenchmarkCore
             {
                 List = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
             };
+
+            this.Serialize();
         }
 
         [Benchmark]
         public void Serialize()
         {
             FooBarContainer.Serializer.Write(this.buffer, this.container);
+        }
+
+        [Benchmark]
+        public string Parse()
+        {
+            return FooBarContainer.Serializer.Parse(this.buffer).Location;
         }
 
         public static void Main(string[] args)

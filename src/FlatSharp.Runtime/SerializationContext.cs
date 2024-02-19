@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2024 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,40 +153,37 @@ public sealed class SerializationContext
         Span<byte> buffer,
         Span<byte> vtable)
     {
-        checked
+        var offsets = this.vtableOffsets;
+        int count = offsets.Count;
+
+        for (int i = 0; i < count; ++i)
         {
-            var offsets = this.vtableOffsets;
-            int count = offsets.Count;
+            int offset = offsets[i];
 
-            for (int i = 0; i < count; ++i)
+            ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
+            existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
+
+            if (existingVTable.SequenceEqual(vtable))
             {
-                int offset = offsets[i];
+                // Slowly bubble used things towards the front of the list.
+                // This is not exact, but should keep frequently used
+                // items towards the front.
+                Promote(i, offsets);
 
-                ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
-                existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
-
-                if (existingVTable.SequenceEqual(vtable))
-                {
-                    // Slowly bubble used things towards the front of the list.
-                    // This is not exact, but should keep frequently used
-                    // items towards the front.
-                    Promote(i, offsets);
-
-                    return offset;
-                }
+                return offset;
             }
-
-            // Oh, well. Write the new table.
-            int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
-            vtable.CopyTo(buffer.Slice(newVTableOffset));
-            offsets.Add(newVTableOffset);
-
-            // "Insert" this item in the middle of the list.
-            int maxIndex = offsets.Count - 1;
-            Promote(maxIndex, offsets);
-
-            return newVTableOffset;
         }
+
+        // Oh, well. Write the new table.
+        int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
+        vtable.CopyTo(buffer.Slice(newVTableOffset));
+        offsets.Add(newVTableOffset);
+
+        // "Insert" this item in the middle of the list.
+        int maxIndex = offsets.Count - 1;
+        Promote(maxIndex, offsets);
+
+        return newVTableOffset;
 
         // Promote frequently-used items to be closer to the front of the list.
         // This is done with a swap to avoid shuffling the whole list by inserting
