@@ -796,7 +796,7 @@ $@"
         }
 
         string fullText =
-$@"
+        $@"
             {method.GetMethodImplAttribute()}
             internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
@@ -807,7 +807,8 @@ $@"
                 {tableFieldContextParameter}) where TSpanWriter : ISpanWriter
             {{
                 {method.MethodBody}
-            }}";
+            }}
+        ";
 
         return fullText;
     }

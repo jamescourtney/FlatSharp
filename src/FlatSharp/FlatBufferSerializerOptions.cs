@@ -26,24 +26,15 @@ public record class FlatBufferSerializerOptions
     /// </summary>
     /// <param name="option">The deserialization mode.</param>
     public FlatBufferSerializerOptions(
-        FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default,
-        bool devirtualize = true)
+        FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default)
     {
         if (!Enum.IsDefined(typeof(FlatBufferDeserializationOption), option))
         {
             throw new ArgumentException(nameof(option), $"The value '{option}' is not defined in '{nameof(FlatBufferDeserializationOption)}'.");
         }
 
-        this.Devirtualize = devirtualize;
         this.DeserializationOption = option;
     }
-
-    /// <summary>
-    /// Indicates that FlatSharp should try to devirtualize <see cref="System.Collections.Generic.IList{T}" /> vectors.
-    /// Enabling this expands the size of the generated code but allows for must faster execution when using well-known
-    /// list types.
-    /// </summary>
-    public bool Devirtualize { get; }
 
     /// <summary>
     /// The deserialization mode.

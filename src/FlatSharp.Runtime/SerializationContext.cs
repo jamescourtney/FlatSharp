@@ -98,37 +98,34 @@ public sealed class SerializationContext
     /// </summary>
     public int AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
     {
-        checked
+        if (numberOfItems < 0)
         {
-            if (numberOfItems < 0)
-            {
-                FSThrow.ArgumentOutOfRange(nameof(numberOfItems));
-            }
-
-            int bytesNeeded = numberOfItems * sizePerItem + sizeof(uint);
-
-            // Vectors have a size uoffset_t, followed by N items. The uoffset_t needs to be 4 byte aligned, while the items need to be N byte aligned.
-            // So, if the items are double or long, the length field has 4 byte alignment, but the item field has 8 byte alignment.
-            // This means that we need to choose an offset such that:
-            // (lengthIndex) % 4 == 0
-            // (lengthIndex + 4) % N == 0
-            //
-            // Obviously, if N <= 4 this is trivial. If N = 8, it gets a bit more interesting.
-            // First, align the offset to 4.
-            int offset = this.offset;
-            offset += SerializationHelpers.GetAlignmentError(offset, sizeof(uint));
-
-            // Now, align offset + 4 to item alignment.
-            offset += SerializationHelpers.GetAlignmentError(offset + sizeof(uint), itemAlignment);
-            this.offset = offset;
-
-            offset = this.AllocateSpace(bytesNeeded, alignment: 1); // already aligned correctly, no need to realign
-
-            Debug.Assert(offset % 4 == 0);
-            Debug.Assert((offset + 4) % itemAlignment == 0);
-
-            return offset;
+            FSThrow.ArgumentOutOfRange(nameof(numberOfItems));
         }
+
+        int bytesNeeded = checked(numberOfItems * sizePerItem + sizeof(uint));
+
+        // Vectors have a size uoffset_t, followed by N items. The uoffset_t needs to be 4 byte aligned, while the items need to be N byte aligned.
+        // So, if the items are double or long, the length field has 4 byte alignment, but the item field has 8 byte alignment.
+        // This means that we need to choose an offset such that:
+        // (lengthIndex) % 4 == 0
+        // (lengthIndex + 4) % N == 0
+        //
+        // Obviously, if N <= 4 this is trivial. If N = 8, it gets a bit more interesting.
+        // First, align the offset to 4.
+        int offset = this.offset;
+        offset += SerializationHelpers.GetAlignmentError(offset, sizeof(uint));
+
+        // Now, align offset + 4 to item alignment.
+        offset += SerializationHelpers.GetAlignmentError(offset + sizeof(uint), itemAlignment);
+        this.offset = offset;
+
+        offset = this.AllocateSpace(bytesNeeded, alignment: 1); // already aligned correctly, no need to realign
+
+        Debug.Assert(offset % 4 == 0);
+        Debug.Assert((offset + 4) % itemAlignment == 0);
+
+        return offset;
     }
 
     /// <summary>
@@ -136,22 +133,19 @@ public sealed class SerializationContext
     /// </summary>
     public int AllocateSpace(int bytesNeeded, int alignment)
     {
-        checked
+        int offset = this.offset;
+        Debug.Assert(alignment == 1 || alignment % 2 == 0);
+
+        offset += SerializationHelpers.GetAlignmentError(offset, alignment);
+
+        int finalOffset = offset + bytesNeeded;
+        if (finalOffset >= this.capacity)
         {
-            int offset = this.offset;
-            Debug.Assert(alignment == 1 || alignment % 2 == 0);
-
-            offset += SerializationHelpers.GetAlignmentError(offset, alignment);
-
-            int finalOffset = offset + bytesNeeded;
-            if (finalOffset >= this.capacity)
-            {
-                FSThrow.BufferTooSmall(0);
-            }
-
-            this.offset = finalOffset;
-            return offset;
+            FSThrow.BufferTooSmall(0);
         }
+
+        this.offset = finalOffset;
+        return offset;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)] // Common method; don't inline

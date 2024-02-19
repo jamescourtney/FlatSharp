@@ -36,7 +36,9 @@ namespace BenchmarkCore
         private FooBarContainer container;
         private byte[] buffer;
 
-        private MultiTable multi;
+        private LotsOfStrings strings;
+
+        // private MultiTable multi;
 
         public static readonly int A = 3;
         public static readonly int B = 4;
@@ -72,6 +74,7 @@ namespace BenchmarkCore
 
             this.buffer = new byte[1024 * 1024];
 
+            /*
             this.multi = new()
             {
                 A = new() { Value = Guid.NewGuid().ToString() },
@@ -85,6 +88,11 @@ namespace BenchmarkCore
                 I = new() { Value = Guid.NewGuid().ToString() },
                 J = new() { Value = Guid.NewGuid().ToString() },
                 K = new() { Value = Guid.NewGuid().ToString() },
+            };*/
+
+            this.strings = new LotsOfStrings
+            {
+                List = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
             };
         }
 
@@ -92,25 +100,6 @@ namespace BenchmarkCore
         public void Serialize()
         {
             FooBarContainer.Serializer.Write(this.buffer, this.container);
-        }
-
-        [Benchmark]
-        public int MathMax()
-        {
-            return Math.Max(A, B);
-        }
-
-        [Benchmark]
-        public int Shift()
-        {
-            int sign = (A - B) >>> 31;
-            return A + ((B - A) * sign);
-        }
-
-        [Benchmark]
-        public int NoOp()
-        {
-            return 0;
         }
 
         public static void Main(string[] args)

@@ -60,7 +60,7 @@ public static class DefaultMethodNameResolver
 
     public static (string @namespace, string className, string methodName) ResolveSerialize(ITypeModel type)
     {
-        return (GetGlobalNamespace(type), HelperClassName, $"Serialize");
+        return (GetGlobalNamespace(type), HelperClassName, "Serialize");
     }
 
     private static string GetGlobalNamespace(ITypeModel type)

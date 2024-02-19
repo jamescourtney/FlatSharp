@@ -41,6 +41,11 @@ table FooBarContainer (fs_serializer) {
   location:string;
 }
 
+table LotsOfStrings (fs_serializer) {
+  list : [ string ];
+}
+
+/*
 
 table MultiTable (fs_serializer)
 {
@@ -68,4 +73,6 @@ table H { Value : string; Value2 : string; Value3 : string; }
 table I { Value : string; }
 table J { Value : string; }
 table K { Value : string; }
+
+*/
 

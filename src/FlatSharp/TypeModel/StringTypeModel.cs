@@ -142,7 +142,7 @@ public class StringTypeModel : RuntimeTypeModel
             ";
         }
 
-        return new CodeGeneratedMethod(body);
+        return new CodeGeneratedMethod(body) { IsMethodInline = false };
     }
 
     public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)

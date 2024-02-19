@@ -72,7 +72,7 @@ public static class SpanWriterExtensions
     /// <summary>
     /// Writes the given string.
     /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining)] // Strings are super common -- discourage inlining.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteString<TSpanWriter>(
         this TSpanWriter spanWriter,
         Span<byte> span,
@@ -91,27 +91,24 @@ public static class SpanWriterExtensions
     public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
         where TSpanWriter : ISpanWriter
     {
-        checked
-        {
-            var encoding = SerializationHelpers.Encoding;
+        var encoding = SerializationHelpers.Encoding;
 
-            // Allocate more than we need and then give back what we don't use.
-            int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
-            int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
+        // Allocate more than we need and then give back what we don't use.
+        int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
+        int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
 
-            int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
+        int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
 
-            // null teriminator
-            span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
+        // null teriminator
+        span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
 
-            // write length
-            spanWriter.WriteInt(span, bytesWritten, stringStartOffset);
+        // write length
+        spanWriter.WriteInt(span, bytesWritten, stringStartOffset);
 
-            // give back unused space. Account for null terminator.
-            context.Offset -= maxItems - (bytesWritten + 1);
+        // give back unused space. Account for null terminator.
+        context.Offset -= maxItems - (bytesWritten + 1);
 
-            return stringStartOffset;
-        }
+        return stringStartOffset;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
