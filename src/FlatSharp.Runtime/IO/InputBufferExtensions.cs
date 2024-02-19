@@ -64,7 +64,7 @@ public static class InputBufferExtensions
         int uoffset = buffer.ReadInt(offset);
         if (uoffset < sizeof(uint))
         {
-            FSThrow.InvalidUOffset((uint)uoffset);
+            FSThrow.InvalidData_UOffsetTooSmall((uint)uoffset);
         }
 
         return uoffset;
@@ -86,7 +86,7 @@ public static class InputBufferExtensions
 
         if (vtableLength < 4)
         {
-            FSThrow.InvalidVTable();
+            FSThrow.InvalidData_VTableTooShort();
         }
 
         fieldData = buffer.GetReadOnlySpan().Slice(vtableOffset, vtableLength).Slice(4);
@@ -111,6 +111,9 @@ public static class InputBufferExtensions
         return buffer.GetReadOnlyMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
     }
     
+    /// <summary>
+    /// Reads a sequence of TElement items from the buffer at the given offset using the equivalent of reinterpret_cast.
+    /// </summary>
     public static Span<TElement> UnsafeReadSpan<TBuffer, TElement>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer where TElement : struct
     {
         // The local value stores a uoffset_t, so follow that now.

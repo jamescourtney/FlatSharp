@@ -91,16 +91,19 @@ public static class SerializationHelpers
     {
         if (item is null)
         {
-            FSThrow.InvalidData("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+            FSThrow.InvalidData_InvalidNull();
         }
     }
 
+    /// <summary>
+    /// Throws if the depth limit is less than 0.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureDepthLimit(short remainingDepth)
     {
         if (remainingDepth < 0)
         {
-            FSThrow.InvalidData($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+            FSThrow.InvalidData_DepthLimit();
         }
     }
 }

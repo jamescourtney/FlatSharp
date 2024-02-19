@@ -21,8 +21,14 @@ namespace FlatSharp.Internal;
 [ExcludeFromCodeCoverage]
 public static class FSThrow
 {
+    #region InvalidOperation
+
     [DoesNotReturn]
     public static void InvalidOperation(string message) => throw new InvalidOperationException(message);
+
+    [DoesNotReturn]
+    public static void InvalidOperation_SizeNotMultipleOfAlignment(Type elementType, int size, int alignment)
+        => throw new InvalidOperationException($"Type '{elementType.FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,16 +38,32 @@ public static class FSThrow
         return default;
     }
 
+    #endregion
+
+    #region InvalidData
+
     [DoesNotReturn]
-    public static void InvalidUOffset(uint uoffset) 
+    public static void InvalidData_UOffsetTooSmall(uint uoffset) 
         => throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
 
     [DoesNotReturn]
-    public static void InvalidVTable() 
+    public static void InvalidData_VTableTooShort() 
         => throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
 
     [DoesNotReturn]
+    public static void InvalidData_InvalidNull()
+        => throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+
+    [DoesNotReturn]
+    public static void InvalidData_DepthLimit()
+        => throw new InvalidOperationException("FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+
+    [DoesNotReturn]
     public static void InvalidData(string message) => throw new InvalidDataException(message);
+
+    #endregion
+
+    #region Argument
 
     [DoesNotReturn]
     public static void ArgumentOutOfRange(string paramName) => throw new ArgumentOutOfRangeException(paramName);
@@ -79,6 +101,10 @@ public static class FSThrow
         return default;
     }
 
+    #endregion
+
+    #region BufferTooSmall
+
     [DoesNotReturn]
     public static void BufferTooSmall(int sizeNeeded)
     {
@@ -87,6 +113,10 @@ public static class FSThrow
             SizeNeeded = sizeNeeded
         };
     }
+
+    #endregion
+
+    #region NotMutable
 
     [DoesNotReturn]
     public static void NotMutable(string message) => throw new NotMutableException(message);
@@ -110,6 +140,10 @@ public static class FSThrow
         return default;
     }
 
+    #endregion
+
+    #region KeyNotFound
+
     [DoesNotReturn]
     public static void KeyNotFound() => throw new KeyNotFoundException();
 
@@ -120,6 +154,10 @@ public static class FSThrow
         KeyNotFound();
         return default;
     }
+
+    #endregion
+
+    #region IndexOutOfRange
 
     [DoesNotReturn]
     public static void IndexOutOfRange() => throw new IndexOutOfRangeException();
@@ -132,6 +170,12 @@ public static class FSThrow
         return default;
     }
 
+    #endregion
+
+    #region NotSupported
+
     [DoesNotReturn]
     public static void NotSupported(string s) => throw new NotSupportedException(s);
+
+    #endregion
 }

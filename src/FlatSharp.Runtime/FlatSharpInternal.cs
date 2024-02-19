@@ -36,7 +36,6 @@ public static class FlatSharpInternal
         }
 
         [DoesNotReturn]
-        [MethodImpl(MethodImplOptions.NoInlining)]
         static void ThrowAssertFailed(string message, string memberName, string fileName, int lineNumber)
         {
             throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
@@ -55,7 +54,7 @@ public static class FlatSharpInternal
             Throw(expectedSize);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
         static void Throw(int expectedSize)
         {
             string message = $"Flatsharp expected type: {typeof(T).FullName} to have size {expectedSize}. Unsafe.SizeOf reported size {Unsafe.SizeOf<T>()}.";
@@ -64,10 +63,10 @@ public static class FlatSharpInternal
     }
 
     /// <summary>
-    /// Asserts that the system is a LE architecture.
+    /// Asserts that the system is a LE architecture. This method is inlined because the condition can be evaluated at JIT time.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] //inline keeps the JIT codegen the same as this method should be known at JIT time.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AssertLittleEndian()
     {
         if (!BitConverter.IsLittleEndian)
@@ -75,23 +74,26 @@ public static class FlatSharpInternal
             Throw();
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw() => throw new FlatSharpInternalException($"FlatSharp encountered a code path that is only functional on little endian architectures.");
+        [DoesNotReturn]
+        static void Throw() => throw new FlatSharpInternalException("FlatSharp encountered a code path that is only functional on little endian architectures.");
     }
 
+    /// <summary>
+    /// Validates that the size of TElement is a multiple of the alignment. This ensures that items can be laid out
+    /// sequentially with no gaps between them. Inlining this method should allow this check to be elided as the alignment is a constant from the callsite.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AssertWellAligned<TElement>(int alignment)
         where TElement : unmanaged
     {
         var size = Unsafe.SizeOf<TElement>();
 
-        // Inlining this method should allow this check to be elided as the alignment is a constant from the callsite.
         if (size % alignment != 0)
         {
             Throw(size, alignment);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
         static void Throw(int size, int alignment) => FSThrow.InvalidOperation($"Type '{typeof(TElement).FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
     }
 }
