@@ -15,6 +15,7 @@
  */
 
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
@@ -38,7 +39,7 @@ namespace BenchmarkCore
 
         private LotsOfStrings strings;
 
-        // private MultiTable multi;
+        private MultiTable multi;
 
         public static readonly int A = 3;
         public static readonly int B = 4;
@@ -74,7 +75,6 @@ namespace BenchmarkCore
 
             this.buffer = new byte[1024 * 1024];
 
-            /*
             this.multi = new()
             {
                 A = new() { Value = Guid.NewGuid().ToString() },
@@ -88,7 +88,7 @@ namespace BenchmarkCore
                 I = new() { Value = Guid.NewGuid().ToString() },
                 J = new() { Value = Guid.NewGuid().ToString() },
                 K = new() { Value = Guid.NewGuid().ToString() },
-            };*/
+            };
 
             this.strings = new LotsOfStrings
             {
@@ -104,7 +104,24 @@ namespace BenchmarkCore
 
         public static void Main(string[] args)
         {
-            BenchmarkRunner.Run(typeof(Program).Assembly);
+            Job job = Job.ShortRun
+                .WithAnalyzeLaunchVariance(true)
+                .WithLaunchCount(1)
+                .WithWarmupCount(5)
+                .WithIterationCount(10)
+                .WithRuntime(CoreRuntime.Core80)
+                /*.WithEnvironmentVariable(new("DOTNET_JitDisasmOnlyOptimized", "1"))
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_JitDisasmSummary", "1"))
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_JitStdOutFile", $"d:\\out.txt"))*/
+                .WithEnvironmentVariable(new EnvironmentVariable("fake", $"fake"));
+
+            var config = DefaultConfig.Instance
+                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
+                 .AddDiagnoser(MemoryDiagnoser.Default)
+                 .AddDiagnoser(new DisassemblyDiagnoser(new DisassemblyDiagnoserConfig()))
+                 .AddJob(job);
+
+            BenchmarkRunner.Run(typeof(Program).Assembly, config);
         }
     }
 }

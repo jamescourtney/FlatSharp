@@ -45,8 +45,6 @@ table LotsOfStrings (fs_serializer) {
   list : [ string ];
 }
 
-/*
-
 table MultiTable (fs_serializer)
 {
     A : A;
@@ -73,6 +71,4 @@ table H { Value : string; Value2 : string; Value3 : string; }
 table I { Value : string; }
 table J { Value : string; }
 table K { Value : string; }
-
-*/
 
