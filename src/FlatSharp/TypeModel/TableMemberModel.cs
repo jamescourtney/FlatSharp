@@ -254,8 +254,7 @@ public class TableMemberModel : ItemMemberModel
     {
         if (this.IsRequired)
         {
-            string message = $"Table property '{this.FriendlyName}' is marked as required, but was missing from the buffer.";
-            return $"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidData)}(\"{message}\");";
+            return $"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidData_RequiredPropertyNotSet)}(\"{this.FriendlyName}\");";
         }
         else
         {

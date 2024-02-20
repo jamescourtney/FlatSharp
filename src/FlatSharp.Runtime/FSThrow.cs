@@ -24,11 +24,24 @@ public static class FSThrow
     #region InvalidOperation
 
     [DoesNotReturn]
-    public static void InvalidOperation(string message) => throw new InvalidOperationException(message);
+    public static void InvalidOperation(string message)
+        => throw new InvalidOperationException(message);
 
     [DoesNotReturn]
     public static void InvalidOperation_SizeNotMultipleOfAlignment(Type elementType, int size, int alignment)
         => throw new InvalidOperationException($"Type '{elementType.FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
+
+    [DoesNotReturn]
+    public static void InvalidOperation_RequiredPropertyNotSet(string propertyName)
+        => throw new InvalidOperationException($"Table property '{propertyName}' is marked as required, but was not set.");
+
+    [DoesNotReturn]
+    public static T InvalidOperation_InvalidUnionDiscriminator<T>(byte discriminator)
+        => throw new InvalidOperationException($"Unexpected union discriminator value '{discriminator}' for Union {typeof(T).FullName}");
+
+    [DoesNotReturn]
+    public static void InvalidOperation_UnionIsNotOfType()
+        => throw new InvalidOperationException("The union is not of the requested type.");
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -43,11 +56,11 @@ public static class FSThrow
     #region InvalidData
 
     [DoesNotReturn]
-    public static void InvalidData_UOffsetTooSmall(uint uoffset) 
+    public static void InvalidData_UOffsetTooSmall(uint uoffset)
         => throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
 
     [DoesNotReturn]
-    public static void InvalidData_VTableTooShort() 
+    public static void InvalidData_VTableTooShort()
         => throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
 
     [DoesNotReturn]
@@ -57,6 +70,10 @@ public static class FSThrow
     [DoesNotReturn]
     public static void InvalidData_DepthLimit()
         => throw new InvalidDataException("FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+
+    [DoesNotReturn]
+    public static void InvalidData_RequiredPropertyNotSet(string propertyName)
+        => throw new InvalidDataException($"Table property '{propertyName}' is marked as required, but was missing from the buffer.");
 
     [DoesNotReturn]
     public static void InvalidData(string message) => throw new InvalidDataException(message);

@@ -190,7 +190,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                         writer.AppendLine($"if (this.Discriminator != {item.value.Value})");
                         using (writer.WithBlock())
                         {
-                            writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(\"Union Discriminator != {item.value.Value}\");");
+                            writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_UnionIsNotOfType)}();");
                         }
 
                         writer.AppendLine($"return this.UncheckedGetItem{item.value.Value}();");
@@ -257,7 +257,12 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                     writer.AppendLine($"case {index}: return visitor.Visit(this.UncheckedGetItem{item.value.Value}());");
                 }
 
-                writer.AppendLine($"default: return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<TReturn>(\"Unexpected discriminator\");");
+                writer.AppendLine($"default:");
+                using (writer.IncreaseIndent())
+                {
+                    writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_InvalidUnionDiscriminator)}<{this.Name}>(disc);");
+                    writer.AppendLine("return default(TReturn);");
+                }
             }
         }
     }

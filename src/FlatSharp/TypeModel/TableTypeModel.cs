@@ -540,7 +540,7 @@ $@"
             elseBlock =
             $@"else
             {{
-                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""Table property '{memberModel.FriendlyName}' is marked as required, but was not set."");
+                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_RequiredPropertyNotSet)}(""{memberModel.FriendlyName}"");
             }}
             ";
         }
