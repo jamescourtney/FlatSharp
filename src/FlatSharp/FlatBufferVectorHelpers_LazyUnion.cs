@@ -76,7 +76,7 @@ $$""""
 
             if (discriminatorCount != offsetCount)
             {
-                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData)}}("Union vector had mismatched number of discriminators and offsets.");
+                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData_UnionVectorMismatchedLength)}}();
             }
 
             item.count = (int)offsetCount;
@@ -140,7 +140,7 @@ $$""""
 
         private void WriteThrough(int index, {{baseTypeName}} value)
         {
-            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+            {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.NotMutable_DeserializedVector)}}();
         }
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}

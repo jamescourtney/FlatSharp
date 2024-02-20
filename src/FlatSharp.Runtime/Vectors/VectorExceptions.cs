@@ -26,15 +26,4 @@ public static class VectorUtilities
             FSThrow.IndexOutOfRange();
         }
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool ThrowInlineNotMutableException()
-    {
-        return FSThrow.NotMutable<bool>("FlatBufferVector does not support this operation.");
-    }
-
-    public static void ThrowGreedyMutableWriteThroughNotSupportedException()
-    {
-        FSThrow.NotMutable("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.");
-    }
 }

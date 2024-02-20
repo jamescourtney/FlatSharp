@@ -38,7 +38,7 @@ internal static partial class FlatBufferVectorHelpers
                 return $$"""
                         if ({{context.TableFieldContextVariableName}}.{{nameof(TableFieldContext.WriteThrough)}})
                         {
-                            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowGreedyMutableWriteThroughNotSupportedException)}}();
+                            {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.NotMutable_GreedyMutableWriteThrough)}}();
                         }
 
                         {{str}}

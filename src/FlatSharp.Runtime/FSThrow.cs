@@ -44,6 +44,10 @@ public static class FSThrow
         => throw new InvalidOperationException("The union is not of the requested type.");
 
     [DoesNotReturn]
+    public static void InvalidOperation_AotHelper()
+        => throw new InvalidOperationException("AotHelper is not intended to be invoked");
+
+    [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T InvalidOperation<T>(string message)
     {
@@ -74,6 +78,14 @@ public static class FSThrow
     [DoesNotReturn]
     public static void InvalidData_RequiredPropertyNotSet(string propertyName)
         => throw new InvalidDataException($"Table property '{propertyName}' is marked as required, but was missing from the buffer.");
+
+    [DoesNotReturn]
+    public static void InvalidData_UnionVectorMismatchedLength()
+        => throw new InvalidDataException("Union vector had mismatched number of discriminators and offsets.");
+
+    [DoesNotReturn]
+    public static void InvalidData_UnionOnlyPartiallyPresent(string fieldName)
+        => throw new InvalidDataException($"FlatBuffer table property '{fieldName}' was only partially included in the buffer.");
 
     [DoesNotReturn]
     public static void InvalidData(string message) => throw new InvalidDataException(message);
@@ -139,6 +151,10 @@ public static class FSThrow
     public static void NotMutable(string message) => throw new NotMutableException(message);
 
     [DoesNotReturn]
+    public static void NotMutable_GreedyMutableWriteThrough()
+        => throw new NotMutableException("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.");
+
+    [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T NotMutable<T>(string message)
     {
@@ -150,12 +166,14 @@ public static class FSThrow
     public static void NotMutable() => throw new NotMutableException();
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T NotMutable<T>()
+    public static bool NotMutable_DeserializedVector()
     {
-        NotMutable();
-        return default;
+        FSThrow.NotMutable("FlatBufferVector does not support this operation.");
+        return false;
     }
+
+    [DoesNotReturn]
+    public static T NotMutable<T>() => throw new NotMutableException();
 
     #endregion
 
@@ -163,14 +181,6 @@ public static class FSThrow
 
     [DoesNotReturn]
     public static void KeyNotFound() => throw new KeyNotFoundException();
-
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T KeyNotFound<T>()
-    {
-        KeyNotFound();
-        return default;
-    }
 
     #endregion
 
@@ -180,19 +190,15 @@ public static class FSThrow
     public static void IndexOutOfRange() => throw new IndexOutOfRangeException();
 
     [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T IndexOutOfRange<T>()
-    {
-        IndexOutOfRange();
-        return default;
-    }
+    public static T IndexOutOfRange<T>() => throw new IndexOutOfRangeException();
 
     #endregion
 
     #region NotSupported
 
     [DoesNotReturn]
-    public static void NotSupported(string s) => throw new NotSupportedException(s);
+    public static void NotSupported_NativeArray_NonPinned() 
+        => throw new NotSupportedException("Non-greedy parsing of a NativeArray requires a pinned buffer.");
 
     #endregion
 }

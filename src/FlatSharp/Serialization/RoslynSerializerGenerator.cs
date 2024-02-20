@@ -533,24 +533,13 @@ $@"
                     this.ParseGreedyMutable<ArrayInputBuffer>(default!, default);
                     this.ParseGreedyMutable<ArraySegmentInputBuffer>(default!, default);
 
-                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""__AotHelper is not intended to be invoked"");
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_AotHelper)}();
                 }}
 
                 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
                 public {resolvedName.name}()
                 {{
-                    string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
-                    string compilerVersion = ""{compilerVersion}"";
-
-                    if (runtimeVersion != compilerVersion)
-                    {{
-                        {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
-                    }}
-
-                    if (string.IsNullOrEmpty(runtimeVersion))
-                    {{
-                        {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
-                    }}
+                    {typeof(FlatSharpInternal).GGCTN()}.{nameof(FlatSharpInternal.AssertFlatSharpRuntimeVersionMatches)}(""{compilerVersion}"");
                 }}
 
                 {string.Join("\r\n", bodyParts)}

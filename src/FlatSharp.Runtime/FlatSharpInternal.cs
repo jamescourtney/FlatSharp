@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace FlatSharp.Internal;
@@ -39,6 +40,21 @@ public static class FlatSharpInternal
         static void ThrowAssertFailed(string message, string memberName, string fileName, int lineNumber)
         {
             throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
+        }
+    }
+
+    /// <summary>
+    /// Assert that the FlatSharp.Runtime assembly version matches the FlatSharp.Compiler assembly version.
+    /// </summary>
+    public static void AssertFlatSharpRuntimeVersionMatches(string compilerVersion)
+    {
+        string? runtimeVersion = typeof(FlatSharpInternal).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+
+        FlatSharpInternal.Assert(!string.IsNullOrEmpty(runtimeVersion), "FlatSharp.Runtime version not found.");
+
+        if (runtimeVersion != compilerVersion)
+        {
+            FSThrow.InvalidOperation($"FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{runtimeVersion}', Compiler = '{compilerVersion}'.");
         }
     }
 
@@ -90,11 +106,8 @@ public static class FlatSharpInternal
 
         if (size % alignment != 0)
         {
-            Throw(size, alignment);
+            FSThrow.InvalidOperation_SizeNotMultipleOfAlignment(typeof(TElement), size, alignment);
         }
-
-        [DoesNotReturn]
-        static void Throw(int size, int alignment) => FSThrow.InvalidOperation($"Type '{typeof(TElement).FullName}' does not support Unsafe Span operations because the size ({size}) is not a multiple of the alignment ({alignment}).");
     }
 }
 

@@ -243,7 +243,7 @@ public class TableMemberModel : ItemMemberModel
 
             if (anyZero)
             {{
-                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidData)}(""FlatBuffer table property '{this.FriendlyName}' was only partially included in the buffer."");
+                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidData_UnionOnlyPartiallyPresent)}(""{this.FriendlyName}"");
             }}
 
             var absoluteLocations = ({string.Join(", ", absoluteLocations)});

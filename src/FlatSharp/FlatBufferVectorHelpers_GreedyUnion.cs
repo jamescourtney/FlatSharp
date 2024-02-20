@@ -65,7 +65,7 @@ $$""""
 
             if (discriminatorCount != offsetCount)
             {
-                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData)}}("Union vector had mismatched number of discriminators and offsets.");
+                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData_UnionVectorMismatchedLength)}}();
             }
 
             dvo += sizeof(uint);
@@ -136,7 +136,7 @@ $$""""
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
         private {{derivedTypeName}} GetItem(int index) => this.list[index];
-        private void SetItem(int index, {{baseTypeName}} value) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+        private void SetItem(int index, {{baseTypeName}} value) => {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.NotMutable_DeserializedVector)}}();
 
         {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
         {{CreateImmutableVectorMethods(itemTypeModel)}}
