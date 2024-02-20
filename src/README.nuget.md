@@ -11,12 +11,12 @@ Thanks for using FlatSharp! FlatSharp is a C# FlatBuffers implementation designe
 ### Issues and Contributions
 FlatSharp is open source. Find it on [GitHub](https://github.com/jamescourtney/FlatSharp)! Issues, contributions, and other feedback are always welcome. Don't be a stranger!
 
-### Getting Started
+### Quick Start
 
-### Reference FlatSharp
+#### 1. Reference FlatSharp
 Reference both `FlatSharp.Runtime` and `FlatSharp.Compiler`. Use the same version for them both.
 
-#### Define a Schema
+#### 2. Define a Schema
 
 ```idl
 // all FlatSharp FBS attributes start with the 'fs_' prefix.
@@ -41,14 +41,14 @@ struct Location {
 }
 ```
 
-#### Update Your csproj
+#### 3. Update Your csproj
 ```xml
    <ItemGroup>
      <FlatSharpSchema Include="YourSchema.fbs" />
    </ItemGroup>
 ```
 
-#### Serialize Your Data
+#### 4. Serialize Your Data
 ```c#
 Person person = new Person(...);
 int maxBytesNeeded = Person.Serializer.GetMaxSize(person);
@@ -56,7 +56,7 @@ byte[] buffer = new byte[maxBytesNeeded];
 int bytesWritten = Person.Serializer.Serialize(buffer, person);
 ```
 
-#### Parse Your Data
+#### 5. Parse Your Data
 
 ```c#
 Person p = Person.Serializer.Parse(data);
