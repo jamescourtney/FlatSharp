@@ -9,6 +9,7 @@ attribute "fs_unsafeExternal";
 attribute "fs_memoryMarshal";
 attribute "fs_vector";
 attribute "fs_writeThrough";
+attribute "fs_sharedString";
 
 namespace BenchmarkCore;
 
@@ -39,3 +40,35 @@ table FooBarContainer (fs_serializer) {
   fruit:short;
   location:string;
 }
+
+table LotsOfStrings (fs_serializer) {
+  list : [ string ];
+}
+
+table MultiTable (fs_serializer)
+{
+    A : A;
+    B : B;
+    C : C;
+    D : D;
+    E : E;
+    F : F;
+    G : G;
+    H : H;
+    I : I;
+    J : J;
+    K : K;
+}
+
+table A { Value : string; }
+table B { Value : string; }
+table C { Value : string; }
+table D { Value : string; }
+table E { Value : string; }
+table F { Value : string; }
+table G { Value : string; }
+table H { Value : string; Value2 : string; Value3 : string; }
+table I { Value : string; }
+table J { Value : string; }
+table K { Value : string; }
+

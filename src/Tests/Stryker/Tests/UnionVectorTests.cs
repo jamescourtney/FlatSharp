@@ -158,7 +158,9 @@ public class UnionVectorTests
             var x = item.Vectors.Union[0];
         });
 
-        Assert.Equal("Exception parsing union 'FlatSharpStrykerTests.FunUnion'. Unexpected union discriminator.", ex.Message);
+        Assert.Equal(
+            $"Unexpected union discriminator value '7' for Union {typeof(FunUnion).FullName}",
+            ex.Message);
     }
 
     [Theory]

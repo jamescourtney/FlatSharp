@@ -46,20 +46,6 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         string vectorVariableName,
         string numberofItemsVariableName,
         string expectedVariableName,
-        string body) => CreateLoopStatic(
-            this.ItemTypeModel,
-            options,
-            vectorVariableName,
-            numberofItemsVariableName,
-            expectedVariableName,
-            body);
-
-    internal static string CreateLoopStatic(
-        ITypeModel typeModel,
-        FlatBufferSerializerOptions options,
-        string vectorVariableName,
-        string numberofItemsVariableName,
-        string expectedVariableName,
         string body)
     {
         string ListBody(string variable, string length)
@@ -73,15 +59,12 @@ public class ListVectorTypeModel : BaseVectorTypeModel
                 }}";
         }
 
-        if (options.Devirtualize)
-        {
-            return $@"
-                if ({vectorVariableName} is {typeModel.GetCompilableTypeName()}[] array)
+        return $@"
+                if ({vectorVariableName} is {this.ItemTypeModel.GGCTN()}[] array)
                 {{
-                    int length = array.Length;
                     {ListBody("array", "array.Length")}
                 }}
-                else if ({vectorVariableName} is List<{typeModel.GetCompilableTypeName()}> realList)
+                else if ({vectorVariableName} is List<{this.ItemTypeModel.GGCTN()}> realList)
                 {{
                     {ListBody("realList", "realList.Count")}
                 }}
@@ -89,11 +72,6 @@ public class ListVectorTypeModel : BaseVectorTypeModel
                 {{
                     {ListBody(vectorVariableName, numberofItemsVariableName)}
                 }}";
-        }
-        else
-        {
-            return ListBody(vectorVariableName, numberofItemsVariableName);
-        }
     }
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -135,7 +113,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
         };
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
         return this.GetGlobalCompilableTypeName();
     }

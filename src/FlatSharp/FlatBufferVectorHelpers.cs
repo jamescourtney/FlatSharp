@@ -135,15 +135,16 @@ internal static partial class FlatBufferVectorHelpers
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string nullableReference = GetNullableReferenceAnnotation(itemTypeModel);
 
+        string notMutableThrow = $"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.NotMutable_DeserializedVector)}()";
         return
             $$"""
               public bool IsReadOnly => true;
 
-              public void Add({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              public void Clear() => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              public void Insert(int index, {{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              public void RemoveAt(int index) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
-              public bool Remove({{baseTypeName}} item) => {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+              public void Add({{baseTypeName}} item) => {{notMutableThrow}};
+              public void Clear() => {{notMutableThrow}};
+              public void Insert(int index, {{baseTypeName}} item) => {{notMutableThrow}};
+              public void RemoveAt(int index) => {{notMutableThrow}};
+              public bool Remove({{baseTypeName}} item) => {{notMutableThrow}};
               """;
     }
 
@@ -153,7 +154,8 @@ internal static partial class FlatBufferVectorHelpers
         ParserCodeGenContext context,
         bool isEverWriteThrough)
     {
-        string writeThroughBody = $"{nameof(VectorUtilities)}.{nameof(VectorUtilities.ThrowInlineNotMutableException)}();";
+        string writeThroughBody = $"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.NotMutable_DeserializedVector)}();";
+
         if (isEverWriteThrough)
         {
             var serializeContext = context.GetWriteThroughContext("data", "value", "0");

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using FlatSharp.TypeModel;
@@ -24,52 +25,52 @@ namespace FlatSharp.CodeGen;
 /// A default method name resolver, which resolves method and class
 /// names for generated serializers.
 /// </summary>
-public class DefaultMethodNameResolver : IMethodNameResolver
+public static class DefaultMethodNameResolver
 {
-    private readonly Dictionary<Type, string> namespaceMapping = new();
+    private static readonly ConcurrentDictionary<Type, string> namespaceMapping = new();
 
     private const string FlatSharpGenerated = "FlatSharp.Compiler.Generated";
     private const string HelperClassName = "Helpers";
     private const string GeneratedSerializer = "Serializer";
 
-    public (string @namespace, string name) ResolveGeneratedSerializerClassName(ITypeModel type)
+    public static (string @namespace, string name) ResolveGeneratedSerializerClassName(ITypeModel type)
     {
-        return (this.GetNamespace(type), GeneratedSerializer);
+        return (GetNamespace(type), GeneratedSerializer);
     }
 
-    public (string @namespace, string name) ResolveHelperClassName(ITypeModel type)
+    public static (string @namespace, string name) ResolveHelperClassName(ITypeModel type)
     {
-        return (this.GetNamespace(type), HelperClassName);
+        return (GetNamespace(type), HelperClassName);
     }
 
-    public (string @namespace, string className, string methodName) ResolveGetMaxSize(ITypeModel type)
+    public static (string @namespace, string className, string methodName) ResolveGetMaxSize(ITypeModel type)
     {
-        return (this.GetGlobalNamespace(type), HelperClassName, "GetMaxSize");
+        return (GetGlobalNamespace(type), HelperClassName, "GetMaxSize");
     }
 
-    public (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, ITypeModel type)
+    public static (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, ITypeModel type)
     {
         if (type.IsParsingInvariant)
         {
-            return (this.GetGlobalNamespace(type), HelperClassName, $"Parse");
+            return (GetGlobalNamespace(type), HelperClassName, $"Parse");
         }
 
-        return (this.GetGlobalNamespace(type), HelperClassName, $"Parse_{option}");
+        return (GetGlobalNamespace(type), HelperClassName, $"Parse_{option}");
     }
 
-    public (string @namespace, string className, string methodName) ResolveSerialize(ITypeModel type)
+    public static (string @namespace, string className, string methodName) ResolveSerialize(ITypeModel type)
     {
-        return (this.GetGlobalNamespace(type), HelperClassName, $"Serialize");
+        return (GetGlobalNamespace(type), HelperClassName, "Serialize");
     }
 
-    private string GetGlobalNamespace(ITypeModel type)
+    private static string GetGlobalNamespace(ITypeModel type)
     {
-        return $"global::{this.GetNamespace(type)}";
+        return $"global::{GetNamespace(type)}";
     }
 
-    private string GetNamespace(ITypeModel type)
+    private static string GetNamespace(ITypeModel type)
     {
-        if (!this.namespaceMapping.TryGetValue(type.ClrType, out string? ns))
+        if (!namespaceMapping.TryGetValue(type.ClrType, out string? ns))
         {
             byte[] data = Encoding.UTF8.GetBytes(type.GetGlobalCompilableTypeName());
             using var sha = SHA256.Create();
@@ -77,7 +78,7 @@ public class DefaultMethodNameResolver : IMethodNameResolver
             byte[] hash = sha.ComputeHash(data);
 
             ns = $"{FlatSharpGenerated}.N{BitConverter.ToString(hash).Replace("-", string.Empty)}";
-            this.namespaceMapping[type.ClrType] = ns;
+            namespaceMapping[type.ClrType] = ns;
         }
 
         return ns;

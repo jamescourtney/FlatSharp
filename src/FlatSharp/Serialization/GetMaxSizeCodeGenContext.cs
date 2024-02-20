@@ -27,14 +27,12 @@ public record GetMaxSizeCodeGenContext
     public GetMaxSizeCodeGenContext(
         string valueVariableName,
         string tableFieldContextVariableName,
-        IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.ValueVariableName = valueVariableName;
         this.TableFieldContextVariableName = tableFieldContextVariableName;
-        this.MethodNameResolver = methodNameResolver;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
         this.AllFieldContexts = allFieldContexts;
@@ -56,11 +54,6 @@ public record GetMaxSizeCodeGenContext
     public TypeModelContainer TypeModelContainer { get; init; }
 
     /// <summary>
-    /// A mapping of type to serialize method name for that type.
-    /// </summary>
-    public IMethodNameResolver MethodNameResolver { get; }
-
-    /// <summary>
     /// Serialization options.
     /// </summary>
     public FlatBufferSerializerOptions Options { get; }
@@ -77,7 +70,7 @@ public record GetMaxSizeCodeGenContext
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
-        var parts = this.MethodNameResolver.ResolveGetMaxSize(typeModel);
+        var parts = DefaultMethodNameResolver.ResolveGetMaxSize(typeModel);
         StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.ValueVariableName}");
 
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))

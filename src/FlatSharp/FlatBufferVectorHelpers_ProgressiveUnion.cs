@@ -28,7 +28,7 @@ internal static partial class FlatBufferVectorHelpers
 
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.Progressive);
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
-        string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
+        string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.Options.DeserializationOption, context.InputBufferTypeName);
 
         string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
         int chunkSize = itemTypeModel.ClrType.IsValueType ? 8 : 32;
@@ -77,7 +77,7 @@ $$""""
 
             if (discriminatorCount != offsetCount)
             {
-                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData)}}("Union vector had mismatched number of discriminators and offsets.");
+                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData_UnionVectorMismatchedLength)}}();
             }
 
             item.count = (int)offsetCount;
@@ -239,7 +239,7 @@ $$""""
         private void ProgressiveSet(int index, {{baseTypeName}} value)
         {
             {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
-            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.ThrowInlineNotMutableException)}}();
+            {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.NotMutable_DeserializedVector)}}();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

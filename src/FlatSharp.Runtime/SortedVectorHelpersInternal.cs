@@ -52,6 +52,9 @@ public static class SortedVectorHelpersInternal
     /// 
     /// After we sort our array of tuples, we go back and overwrite the vectors with the updated uoffsets, which need to be adjusted relative to the
     /// new position within the vector.
+    /// 
+    /// Furthermore, this method is left without checked multiply operations since this is a post-serialize action, which means the input
+    /// has already been sanitized since FlatSharp wrote it.
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void SortVector<TSpanComparer>(
@@ -61,44 +64,41 @@ public static class SortedVectorHelpersInternal
         int? keyInlineSize,
         TSpanComparer comparer) where TSpanComparer : ISpanComparer
     {
-        checked
+        int vectorStartOffset = vectorUOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorUOffset));
+        int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
+        int index0Position = vectorStartOffset + sizeof(int);
+
+        (int, int, int)[]? pooledArray = null;
+
+        // Traverse the vector and figure out the offsets of all the keys.
+        // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
+        Span<(int offset, int length, int tableOffset)> keyOffsets =
+            vectorLength < 512
+            ? stackalloc (int, int, int)[vectorLength]
+            : (pooledArray = ArrayPool<(int, int, int)>.Shared.Rent(vectorLength)).AsSpan().Slice(0, vectorLength);
+
+        for (int i = 0; i < keyOffsets.Length; ++i)
         {
-            int vectorStartOffset = vectorUOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorUOffset));
-            int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
-            int index0Position = vectorStartOffset + sizeof(int);
+            keyOffsets[i] = GetKeyOffset(buffer, index0Position, i, vtableIndex, keyInlineSize);
+        }
 
-            (int, int, int)[]? pooledArray = null;
+        // Sort the offsets.
+        IntroSort(buffer, comparer, 0, vectorLength - 1, keyOffsets);
 
-            // Traverse the vector and figure out the offsets of all the keys.
-            // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
-            Span<(int offset, int length, int tableOffset)> keyOffsets =
-                vectorLength < 512
-                ? stackalloc (int, int, int)[vectorLength]
-                : (pooledArray = ArrayPool<(int, int, int)>.Shared.Rent(vectorLength)).AsSpan().Slice(0, vectorLength);
+        // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
+        // partying inappropriately in the rest of the buffer.
+        Span<byte> boundedVector = buffer.Slice(index0Position, sizeof(uint) * vectorLength);
+        int nextPosition = index0Position;
+        for (int i = 0; i < keyOffsets.Length; ++i)
+        {
+            (_, _, int tableOffset) = keyOffsets[i];
+            BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
+            nextPosition += sizeof(uint);
+        }
 
-            for (int i = 0; i < keyOffsets.Length; ++i)
-            {
-                keyOffsets[i] = GetKeyOffset(buffer, index0Position, i, vtableIndex, keyInlineSize);
-            }
-
-            // Sort the offsets.
-            IntroSort(buffer, comparer, 0, vectorLength - 1, keyOffsets);
-
-            // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
-            // partying inappropriately in the rest of the buffer.
-            Span<byte> boundedVector = buffer.Slice(index0Position, sizeof(uint) * vectorLength);
-            int nextPosition = index0Position;
-            for (int i = 0; i < keyOffsets.Length; ++i)
-            {
-                (_, _, int tableOffset) = keyOffsets[i];
-                BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
-                nextPosition += sizeof(uint);
-            }
-
-            if (pooledArray is not null)
-            {
-                ArrayPool<(int, int, int)>.Shared.Return(pooledArray);
-            }
+        if (pooledArray is not null)
+        {
+            ArrayPool<(int, int, int)>.Shared.Return(pooledArray);
         }
     }
 
@@ -274,6 +274,9 @@ public static class SortedVectorHelpersInternal
     /// the key start offset, the key length, and the table offset. It's advantageous to return the
     /// tuple here since we can store that in a span.
     /// </summary>
+    /// <remarks>
+    /// Left as unchecked since this is a sort operation (not a search).
+    /// </remarks>
     private static (int offset, int length, int tableOffset) GetKeyOffset(
         ReadOnlySpan<byte> buffer,
         int index0Position,
@@ -281,39 +284,36 @@ public static class SortedVectorHelpersInternal
         int vtableIndex,
         int? inlineItemSize)
     {
-        checked
+        // Find offset to the table at the index.
+        int tableOffset = index0Position + (sizeof(uint) * vectorIndex);
+        tableOffset += (int)ScalarSpanReader.ReadUInt(buffer.Slice(tableOffset));
+
+        // Consult the vtable.
+        int vtableOffset = tableOffset - ScalarSpanReader.ReadInt(buffer.Slice(tableOffset));
+
+        // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
+        int vtableLengthEntries = (ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset)) / 2) - 2;
+
+        if (vtableIndex >= vtableLengthEntries)
         {
-            // Find offset to the table at the index.
-            int tableOffset = index0Position + (sizeof(uint) * vectorIndex);
-            tableOffset += (int)ScalarSpanReader.ReadUInt(buffer.Slice(tableOffset));
-
-            // Consult the vtable.
-            int vtableOffset = tableOffset - ScalarSpanReader.ReadInt(buffer.Slice(tableOffset));
-
-            // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
-            int vtableLengthEntries = (ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset)) / 2) - 2;
-
-            if (vtableIndex >= vtableLengthEntries)
-            {
-                return (0, 0, tableOffset);
-            }
-
-            // Absolute offset of the field within the table.
-            int fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset + 2 * (2 + vtableIndex)));
-            if (inlineItemSize is not null)
-            {
-                return (fieldOffset, inlineItemSize.Value, tableOffset);
-            }
-
-            if (fieldOffset == 0)
-            {
-                return (0, 0, tableOffset);
-            }
-
-            // Strings are stored as a uoffset reference. Follow the indirection one more time.
-            int uoffsetToString = fieldOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(fieldOffset));
-            int stringLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(uoffsetToString));
-            return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
+            return (0, 0, tableOffset);
         }
+
+        // Absolute offset of the field within the table.
+        int fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset + 2 * (2 + vtableIndex)));
+        if (inlineItemSize is not null)
+        {
+            return (fieldOffset, inlineItemSize.Value, tableOffset);
+        }
+
+        if (fieldOffset == 0)
+        {
+            return (0, 0, tableOffset);
+        }
+
+        // Strings are stored as a uoffset reference. Follow the indirection one more time.
+        int uoffsetToString = fieldOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(fieldOffset));
+        int stringLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(uoffsetToString));
+        return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
     }
 }

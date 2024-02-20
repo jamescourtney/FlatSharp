@@ -76,7 +76,7 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
                 {alignmentCheck}
                 if (!buffer.IsPinned)
                 {{
-                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.NotSupported)}(""Non-greedy parsing of a NativeArray requires a pinned buffer."");
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.NotSupported_NativeArray_NonPinned)}();
                 }}
 
                 var bufferSpan = {context.InputBufferVariableName}.UnsafeReadSpan<{context.InputBufferTypeName}, {this.ItemTypeModel.GetGlobalCompilableTypeName()}>({context.OffsetVariableName});
@@ -115,7 +115,7 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
         };
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
         return this.GetGlobalCompilableTypeName();
     }

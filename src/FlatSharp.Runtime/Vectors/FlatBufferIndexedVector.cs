@@ -53,7 +53,7 @@ public class FlatBufferIndexedVector<TKey, TValue>
         {
             if (!this.TryGetValue(key, out TValue? value))
             {
-                value = FSThrow.KeyNotFound<TValue>();
+                FSThrow.KeyNotFound();
             }
 
             return value;

@@ -540,7 +540,7 @@ $@"
             elseBlock =
             $@"else
             {{
-                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""Table property '{memberModel.FriendlyName}' is marked as required, but was not set."");
+                {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_RequiredPropertyNotSet)}(""{memberModel.FriendlyName}"");
             }}
             ";
         }
@@ -788,9 +788,9 @@ $@"
         return tableMember != null;
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
-        var (ns, name) = nameResolver.ResolveHelperClassName(this);
+        var (ns, name) = DefaultMethodNameResolver.ResolveHelperClassName(this);
         return $"{ns}.{name}.{this.GetTableReaderClassName(option)}<{inputBufferTypeName}>";
     }
 

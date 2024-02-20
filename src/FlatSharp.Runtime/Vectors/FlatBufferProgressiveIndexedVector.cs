@@ -57,7 +57,7 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
         {
             if (!this.TryGetValue(key, out TValue? value))
             {
-                value = FSThrow.KeyNotFound<TValue>();
+                FSThrow.KeyNotFound();
             }
 
             return value;

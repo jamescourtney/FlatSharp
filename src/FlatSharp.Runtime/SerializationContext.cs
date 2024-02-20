@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2024 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,37 +98,34 @@ public sealed class SerializationContext
     /// </summary>
     public int AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
     {
-        checked
+        if (numberOfItems < 0)
         {
-            if (numberOfItems < 0)
-            {
-                FSThrow.ArgumentOutOfRange(nameof(numberOfItems));
-            }
-
-            int bytesNeeded = numberOfItems * sizePerItem + sizeof(uint);
-
-            // Vectors have a size uoffset_t, followed by N items. The uoffset_t needs to be 4 byte aligned, while the items need to be N byte aligned.
-            // So, if the items are double or long, the length field has 4 byte alignment, but the item field has 8 byte alignment.
-            // This means that we need to choose an offset such that:
-            // (lengthIndex) % 4 == 0
-            // (lengthIndex + 4) % N == 0
-            //
-            // Obviously, if N <= 4 this is trivial. If N = 8, it gets a bit more interesting.
-            // First, align the offset to 4.
-            int offset = this.offset;
-            offset += SerializationHelpers.GetAlignmentError(offset, sizeof(uint));
-
-            // Now, align offset + 4 to item alignment.
-            offset += SerializationHelpers.GetAlignmentError(offset + sizeof(uint), itemAlignment);
-            this.offset = offset;
-
-            offset = this.AllocateSpace(bytesNeeded, sizeof(uint));
-
-            Debug.Assert(offset % 4 == 0);
-            Debug.Assert((offset + 4) % itemAlignment == 0);
-
-            return offset;
+            FSThrow.ArgumentOutOfRange(nameof(numberOfItems));
         }
+
+        int bytesNeeded = checked(numberOfItems * sizePerItem + sizeof(uint));
+
+        // Vectors have a size uoffset_t, followed by N items. The uoffset_t needs to be 4 byte aligned, while the items need to be N byte aligned.
+        // So, if the items are double or long, the length field has 4 byte alignment, but the item field has 8 byte alignment.
+        // This means that we need to choose an offset such that:
+        // (lengthIndex) % 4 == 0
+        // (lengthIndex + 4) % N == 0
+        //
+        // Obviously, if N <= 4 this is trivial. If N = 8, it gets a bit more interesting.
+        // First, align the offset to 4.
+        int offset = this.offset;
+        offset += SerializationHelpers.GetAlignmentError(offset, sizeof(uint));
+
+        // Now, align offset + 4 to item alignment.
+        offset += SerializationHelpers.GetAlignmentError(offset + sizeof(uint), itemAlignment);
+        this.offset = offset;
+
+        offset = this.AllocateSpace(bytesNeeded, alignment: 1); // already aligned correctly, no need to realign
+
+        Debug.Assert(offset % 4 == 0);
+        Debug.Assert((offset + 4) % itemAlignment == 0);
+
+        return offset;
     }
 
     /// <summary>
@@ -136,80 +133,69 @@ public sealed class SerializationContext
     /// </summary>
     public int AllocateSpace(int bytesNeeded, int alignment)
     {
-        checked
+        int offset = this.offset;
+        Debug.Assert(alignment == 1 || alignment % 2 == 0);
+
+        offset += SerializationHelpers.GetAlignmentError(offset, alignment);
+
+        int finalOffset = offset + bytesNeeded;
+        if (finalOffset >= this.capacity)
         {
-            int offset = this.offset;
-            Debug.Assert(alignment == 1 || alignment % 2 == 0);
-
-            offset += SerializationHelpers.GetAlignmentError(offset, alignment);
-
-            int finalOffset = offset + bytesNeeded;
-            if (finalOffset >= this.capacity)
-            {
-                FSThrow.BufferTooSmall(0);
-            }
-
-            this.offset = finalOffset;
-            return offset;
+            FSThrow.BufferTooSmall(0);
         }
+
+        this.offset = finalOffset;
+        return offset;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)] // Common method; don't inline
     public int FinishVTable(
         Span<byte> buffer,
         Span<byte> vtable)
     {
-        checked
+        var offsets = this.vtableOffsets;
+        int count = offsets.Count;
+
+        for (int i = 0; i < count; ++i)
         {
-            var offsets = this.vtableOffsets;
-            int count = offsets.Count;
+            int offset = offsets[i];
 
-            for (int i = 0; i < count; ++i)
+            ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
+            existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
+
+            if (existingVTable.SequenceEqual(vtable))
             {
-                int offset = offsets[i];
+                // Slowly bubble used things towards the front of the list.
+                // This is not exact, but should keep frequently used
+                // items towards the front.
+                Promote(i, offsets);
 
-                ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
-                existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
-
-                if (existingVTable.Length == vtable.Length && existingVTable.SequenceEqual(vtable))
-                //if (CompareEquality(existingVTable, vtable))
-                {
-                    // Slowly bubble used things towards the front of the list.
-                    // This is not exact, but should keep frequently used
-                    // items towards the front.
-                    if (i != 0)
-                    {
-                        Promote(i, offsets);
-                    }
-
-                    return offset;
-                }
+                return offset;
             }
-
-            // Oh, well. Write the new table.
-            int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
-            vtable.CopyTo(buffer.Slice(newVTableOffset));
-            offsets.Add(newVTableOffset);
-
-            // "Insert" this item in the middle of the list.
-            int maxIndex = offsets.Count - 1;
-            Promote(maxIndex, offsets);
-
-            return newVTableOffset;
         }
-    }
 
-    /// <summary>
-    /// Promote frequently-used items to be closer to the front of the list.
-    /// This is done with a swap to avoid shuffling the whole list by inserting
-    /// at a given index. An alternative might be an unrolled linked list data structure.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Promote(int i, List<int> offsets)
-    {
-        int swapIndex = i / 2;
+        // Oh, well. Write the new table.
+        int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
+        vtable.CopyTo(buffer.Slice(newVTableOffset));
+        offsets.Add(newVTableOffset);
 
-        int temp = offsets[i];
-        offsets[i] = offsets[swapIndex];
-        offsets[swapIndex] = temp;
+        // "Insert" this item in the middle of the list.
+        int maxIndex = offsets.Count - 1;
+        Promote(maxIndex, offsets);
+
+        return newVTableOffset;
+
+        // Promote frequently-used items to be closer to the front of the list.
+        // This is done with a swap to avoid shuffling the whole list by inserting
+        // at a given index. An alternative might be an unrolled linked list data structure.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Promote(int i, List<int> offsets)
+        {
+            int swapIndex = i / 2;
+
+            int temp = offsets[i];
+            offsets[i] = offsets[swapIndex];
+            offsets[swapIndex] = temp;
+        }
     }
 }

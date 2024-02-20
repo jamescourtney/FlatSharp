@@ -58,9 +58,8 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
     {
         if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
         {
-            DefaultMethodNameResolver resolver = new();
             ITypeModel model = context.TypeModelContainer.CreateTypeModel(context.PreviousAssembly!.GetType(this.FullName)!);
-            (string ns, string name) = resolver.ResolveGeneratedSerializerClassName(model);
+            (string ns, string name) = DefaultMethodNameResolver.ResolveGeneratedSerializerClassName(model);
 
             string optionTypeName = typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName();
 

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2024 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ public static class SerializationHelpers
     /// <summary>
     /// Encoding used for strings.
     /// </summary>
-    public static readonly Encoding Encoding = new UTF8Encoding(false);
+    public static readonly Encoding Encoding = Encoding.UTF8;
 
     /// <summary>
     /// Value of true as a byte.
@@ -91,16 +91,19 @@ public static class SerializationHelpers
     {
         if (item is null)
         {
-            FSThrow.InvalidData("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+            FSThrow.InvalidData_InvalidNull();
         }
     }
 
+    /// <summary>
+    /// Throws if the depth limit is less than 0.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureDepthLimit(short remainingDepth)
     {
         if (remainingDepth < 0)
         {
-            FSThrow.InvalidData($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+            FSThrow.InvalidData_DepthLimit();
         }
     }
 }

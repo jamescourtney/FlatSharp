@@ -317,7 +317,7 @@ public static class SortedVectorHelpers
 
             ushort vtableLength = buffer.ReadUShort(vtableStart);
             int tableOffset = 0;
-            int keyFieldOffset = 4 + (2 * this.keyIndex);
+            int keyFieldOffset = 4 + checked(2 * this.keyIndex);
 
             if (keyFieldOffset + sizeof(ushort) <= vtableLength)
             {

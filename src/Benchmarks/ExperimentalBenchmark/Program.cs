@@ -15,6 +15,7 @@
  */
 
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
@@ -35,6 +36,13 @@ namespace BenchmarkCore
     {
         private FooBarContainer container;
         private byte[] buffer;
+
+        private LotsOfStrings strings;
+
+        private MultiTable multi;
+
+        public static readonly int A = 3;
+        public static readonly int B = 4;
 
         [GlobalSetup]
         public void Setup()
@@ -66,6 +74,28 @@ namespace BenchmarkCore
             };
 
             this.buffer = new byte[1024 * 1024];
+
+            this.multi = new()
+            {
+                A = new() { Value = Guid.NewGuid().ToString() },
+                B = new() { Value = Guid.NewGuid().ToString() },
+                C = new() { Value = Guid.NewGuid().ToString() },
+                D = new() { Value = Guid.NewGuid().ToString() },
+                E = new() { Value = Guid.NewGuid().ToString() },
+                F = new() { Value = Guid.NewGuid().ToString() },
+                G = new() { Value = Guid.NewGuid().ToString() },
+                H = new() { Value = Guid.NewGuid().ToString(), Value2 = Guid.NewGuid().ToString(), Value3 = Guid.NewGuid().ToString(), },
+                I = new() { Value = Guid.NewGuid().ToString() },
+                J = new() { Value = Guid.NewGuid().ToString() },
+                K = new() { Value = Guid.NewGuid().ToString() },
+            };
+
+            this.strings = new LotsOfStrings
+            {
+                List = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+            };
+
+            this.Serialize();
         }
 
         [Benchmark]
@@ -74,9 +104,32 @@ namespace BenchmarkCore
             FooBarContainer.Serializer.Write(this.buffer, this.container);
         }
 
+        [Benchmark]
+        public string Parse()
+        {
+            return FooBarContainer.Serializer.Parse(this.buffer).Location;
+        }
+
         public static void Main(string[] args)
         {
-            BenchmarkRunner.Run(typeof(Program).Assembly);
+            Job job = Job.ShortRun
+                .WithAnalyzeLaunchVariance(true)
+                .WithLaunchCount(1)
+                .WithWarmupCount(5)
+                .WithIterationCount(10)
+                .WithRuntime(CoreRuntime.Core80)
+                /*.WithEnvironmentVariable(new("DOTNET_JitDisasmOnlyOptimized", "1"))
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_JitDisasmSummary", "1"))
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_JitStdOutFile", $"d:\\out.txt"))*/
+                .WithEnvironmentVariable(new EnvironmentVariable("fake", $"fake"));
+
+            var config = DefaultConfig.Instance
+                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
+                 .AddDiagnoser(MemoryDiagnoser.Default)
+                 .AddDiagnoser(new DisassemblyDiagnoser(new DisassemblyDiagnoserConfig()))
+                 .AddJob(job);
+
+            BenchmarkRunner.Run(typeof(Program).Assembly, config);
         }
     }
 }

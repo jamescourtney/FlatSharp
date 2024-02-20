@@ -107,11 +107,13 @@ $@"
 
         string body =
 $@"
-            switch ({context.ValueVariableName}.{discriminatorPropertyName})
+            byte discriminator = {context.ValueVariableName}.{discriminatorPropertyName};
+            switch (discriminator)
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<int>(""Exception determining type of union. Unexpected Union discriminator."");
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_InvalidUnionDiscriminator)}<{this.GGCTN()}>(discriminator);
+                    return 0;
             }}
 ";
         return new CodeGeneratedMethod(body);
@@ -157,7 +159,8 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default:
-                    return {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(""Exception parsing union '{this.GetCompilableTypeName()}'. Unexpected union discriminator."");
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_InvalidUnionDiscriminator)}<{this.GGCTN()}>(discriminator);
+                    return default({this.GGCTN()});
             }}
         ";
 
@@ -305,7 +308,7 @@ $@"
             {{
                 {string.Join("\r\n", switchCases)}
                 default: 
-                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}(""Unexpected union discriminator. Unions must be initialized."");
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_InvalidUnionDiscriminator)}<{this.GGCTN()}>(discriminatorValue);
                     break;
             }}";
 
@@ -320,15 +323,22 @@ $@"
         {
             int discriminator = i + 1;
             string cloneMethod = context.MethodNameMap[this.memberTypeModels[i].ClrType];
-            switchCases.Add($"{discriminator} => new {this.GetGlobalCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator})),");
+            switchCases.Add($@"
+                case {discriminator}:
+                    return new {this.GetGlobalCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator}));
+                ");
         }
 
-        switchCases.Add($"_ => {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation)}<{this.GGCTN()}>(\"Unexpected union discriminator\")");
-
         string body = $@"
-            return {context.ItemVariableName}.{nameof(IFlatBufferUnion.Discriminator)} switch {{
+            byte discriminator = {context.ItemVariableName}.{nameof(IFlatBufferUnion.Discriminator)};
+            switch (discriminator)
+            {{
                 {string.Join("\r\n", switchCases)}
-            }};";
+                default: 
+                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_InvalidUnionDiscriminator)}<{this.GGCTN()}>(discriminator);
+                    return default({this.GGCTN()});
+            }}
+            ";
 
         return new CodeGeneratedMethod(body);
     }
@@ -359,7 +369,7 @@ $@"
         }
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
         // improve?
         return this.ClrType.GetGlobalCompilableTypeName();

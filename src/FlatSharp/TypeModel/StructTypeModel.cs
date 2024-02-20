@@ -269,9 +269,9 @@ public class StructTypeModel : RuntimeTypeModel
         }
     }
 
-    public override string GetDeserializedTypeName(IMethodNameResolver nameResolver, FlatBufferDeserializationOption option, string inputBufferTypeName)
+    public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
-        var (ns, name) = nameResolver.ResolveHelperClassName(this);
+        var (ns, name) = DefaultMethodNameResolver.ResolveHelperClassName(this);
         return $"{ns}.{name}.{this.GetDeserializedClassName(option)}<{inputBufferTypeName}>";
     }
 

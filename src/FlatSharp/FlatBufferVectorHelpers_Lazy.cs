@@ -31,7 +31,7 @@ internal static partial class FlatBufferVectorHelpers
 
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.Lazy);
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
-        string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.MethodNameResolver, context.Options.DeserializationOption, context.InputBufferTypeName);
+        string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.Options.DeserializationOption, context.InputBufferTypeName);
         string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
 
         string classDef =

@@ -250,7 +250,6 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
             return false;
         }
 
-
         if (ValidateModel(model, contexts, writeThroughSupported))
         {
             return true;

@@ -39,18 +39,33 @@ public record CodeGeneratedMethod
     /// <summary>
     /// Indicates if the method should be marked with aggressive inlining.
     /// </summary>
-    public bool IsMethodInline { get; init; }
+    public bool? IsMethodInline { get; init; }
 
     public string GetMethodImplAttribute()
     {
-        if (this.IsMethodInline)
+        if (this.IsMethodInline == true)
         {
-            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
-            return $"[{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({inlining})]";
+            return GetInlineAttribute();
+        }
+        else if (this.IsMethodInline == false)
+        {
+            return GetNonInlineAttribute();
         }
         else
         {
             return string.Empty;
         }
+    }
+
+    public static string GetInlineAttribute()
+    {
+        string inlining = $"System.Runtime.CompilerServices.MethodImplOptions.{nameof(MethodImplOptions.AggressiveInlining)}";
+        return $"[{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({inlining})]";
+    }
+
+    public static string GetNonInlineAttribute()
+    {
+        string inlining = $"System.Runtime.CompilerServices.MethodImplOptions.{nameof(MethodImplOptions.NoInlining)}";
+        return $"[{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({inlining})]";
     }
 }
