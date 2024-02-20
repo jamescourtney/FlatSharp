@@ -47,6 +47,6 @@ public struct VTableGeneric : IVTable
             return 0;
         }
 
-        return buffer.ReadUShort(this.offset + (index << 1));
+        return buffer.ReadUShort(this.offset + checked(index << 1));
     }
 }

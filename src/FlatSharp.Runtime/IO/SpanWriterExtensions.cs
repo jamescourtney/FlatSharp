@@ -48,25 +48,22 @@ public static class SpanWriterExtensions
         int alignment,
         SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : unmanaged
     {
-        checked
-        {
-            // Since we are copying bytes here, only LE is supported.
-            FlatSharpInternal.AssertLittleEndian();
-            FlatSharpInternal.AssertWellAligned<TElement>(alignment);
+        // Since we are copying bytes here, only LE is supported.
+        FlatSharpInternal.AssertLittleEndian();
+        FlatSharpInternal.AssertWellAligned<TElement>(alignment);
 
-            int numberOfItems = buffer.Length;
-            int vectorStartOffset = ctx.AllocateVector(
-                itemAlignment: alignment,
-                numberOfItems,
-                sizePerItem: Unsafe.SizeOf<TElement>());
+        int numberOfItems = buffer.Length;
+        int vectorStartOffset = ctx.AllocateVector(
+            itemAlignment: alignment,
+            numberOfItems,
+            sizePerItem: Unsafe.SizeOf<TElement>());
 
-            spanWriter.WriteUOffset(span, offset, vectorStartOffset);
-            spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
+        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
 
-            var start = span.Slice(vectorStartOffset + sizeof(uint), numberOfItems * Unsafe.SizeOf<TElement>());
+        var start = span.Slice(vectorStartOffset + sizeof(uint), checked(numberOfItems * Unsafe.SizeOf<TElement>()));
 
-            MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
-        }
+        MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
     }
 
     /// <summary>

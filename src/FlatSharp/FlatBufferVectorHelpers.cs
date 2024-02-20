@@ -90,7 +90,7 @@ internal static partial class FlatBufferVectorHelpers
         if (!isPowerOf2)
         {
             // Slow multiply.
-            return $"checked({inlineSize} * {indexVariableName})";
+            return $"{inlineSize} * {indexVariableName}";
         }
 
         int mask = inlineSize;
@@ -102,7 +102,7 @@ internal static partial class FlatBufferVectorHelpers
         }
 
         FlatSharpInternal.Assert((1 << shift) == inlineSize, $"expected to recompute inlinesize. Expected = {inlineSize}, Actual = {(1 << shift)}");
-        return $"checked({indexVariableName} << {shift})";
+        return $"{indexVariableName} << {shift}";
     }
 
     private static string CreateIFlatBufferDeserializedVectorMethods(

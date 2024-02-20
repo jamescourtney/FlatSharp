@@ -667,45 +667,28 @@ $@"
     /// </summary>
     private static SyntaxNode ApplySyntaxTransformations(SyntaxNode rootNode)
     {
-        // Add checked{} to methods.
+        // Add checked() to multiplications.
         rootNode = rootNode.ReplaceNodes(
-           rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
-           (a, b) =>
-           {
-               // Ignore empty methods.
-               if (b.Body == null || b.Body.Statements.Count == 0)
-               {
-                   return a;
-               }
-
-               return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
-           });
-
-        // Add checked{} to constructors.
-        rootNode = rootNode.ReplaceNodes(
-            rootNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>(),
-            (a, b) =>
+            rootNode.DescendantNodes().OfType<BinaryExpressionSyntax>().Where(bes => bes.Kind() == SyntaxKind.MultiplyExpression),
+            (a, _) =>
             {
-                // Ignore empty methods.
-                if (b.Body == null || b.Body.Statements.Count == 0)
-                {
-                    return a;
-                }
-                return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
+                return SyntaxFactory.CheckedExpression(SyntaxKind.CheckedExpression, a);
             });
 
-        // Add checked{} to property accessors.
         rootNode = rootNode.ReplaceNodes(
-            rootNode.DescendantNodes().OfType<AccessorDeclarationSyntax>(),
-            (a, b) =>
+            rootNode.DescendantNodes().OfType<BinaryExpressionSyntax>().Where(bes => bes.Kind() == SyntaxKind.LeftShiftExpression),
+            (a, _) =>
             {
-                // Ignore empty methods.
-                if (b.Body == null || b.Body.Statements.Count == 0)
-                {
-                    return a;
-                }
-                return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
+                return SyntaxFactory.CheckedExpression(SyntaxKind.CheckedExpression, a);
             });
+
+        FlatSharpInternal.Assert(
+            !rootNode.DescendantNodes().OfType<BinaryExpressionSyntax>().Where(bes => bes.Kind() == SyntaxKind.MultiplyAssignmentExpression).Any(),
+            "No *= operators allowed");
+
+        FlatSharpInternal.Assert(
+            !rootNode.DescendantNodes().OfType<BinaryExpressionSyntax>().Where(bes => bes.Kind() == SyntaxKind.LeftShiftAssignmentExpression).Any(),
+            "No <<= operators allowed");
 
         return rootNode;
     }
