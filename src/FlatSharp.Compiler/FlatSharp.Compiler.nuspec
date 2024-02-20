@@ -12,8 +12,10 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="expression">Apache-2.0</license>
     <developmentDependency>true</developmentDependency>
+    <readme>README.nuget.md</readme>
   </metadata>
   <files>
+    <file src="../README.nuget.md" target="README.nuget.md" />
     <file src="FlatSharp.Compiler.targets" target="build/FlatSharp.Compiler.targets" />
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
