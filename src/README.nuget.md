@@ -66,4 +66,4 @@ Person p = Person.Serializer.Parse(data);
 ```
 
 ### License
-FlatSharp licensed under Apache 2.0.
+FlatSharp is licensed under Apache 2.0. Have fun :)
