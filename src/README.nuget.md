@@ -11,6 +11,9 @@ Thanks for using FlatSharp! FlatSharp is a C# FlatBuffers implementation designe
 ### Issues and Contributions
 FlatSharp is open source. Find it on [GitHub](https://github.com/jamescourtney/FlatSharp)! Issues, contributions, and other feedback are always welcome. Don't be a stranger!
 
+### Sponsorship
+FlatSharp is free and always will be. However, the project does take a significant amount of time to maintain. If you or your organization find the project useful, please consider a [Github sponsorship](https://github.com/sponsors/jamescourtney). Any amount is appreciated!
+
 ### Quick Start
 
 #### 1. Reference FlatSharp
