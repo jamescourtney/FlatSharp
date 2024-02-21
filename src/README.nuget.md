@@ -8,8 +8,8 @@ Thanks for using FlatSharp! FlatSharp is a C# FlatBuffers implementation designe
 - [FlatBuffers Overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview)
 - [FlatBuffers Schema Authoring](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html)
 
-### Issues and Contributions
-FlatSharp is open source. Find it on [GitHub](https://github.com/jamescourtney/FlatSharp)! Issues, contributions, and other feedback are always welcome. Don't be a stranger!
+### Issues, Contributions, and Feedback
+FlatSharp is open source. Find it on [GitHub](https://github.com/jamescourtney/FlatSharp)! Issues, contributions, and other feedback are always welcome. Don't be a stranger! If you have feedback to share, please consider filling out the form [here](https://forms.office.com/r/sHkumrr6sK)!
 
 ### Sponsorship
 FlatSharp is free and always will be. However, the project does take a significant amount of time to maintain. If you or your organization find the project useful, please consider a [Github sponsorship](https://github.com/sponsors/jamescourtney). Any amount is appreciated!
