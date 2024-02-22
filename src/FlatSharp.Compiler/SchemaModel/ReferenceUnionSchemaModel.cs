@@ -125,7 +125,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
                 writer.AppendLine($"if (this.Discriminator != {value.Value})");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine("throw new InvalidOperationException();");
+                    writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_UnionIsNotOfType)}();");
                 }
 
                 writer.AppendLine($"return this.value_{value.Value}!;");
@@ -189,8 +189,12 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
                     long index = item.value.Value;
                     writer.AppendLine($"case {index}: return visitor.Visit(this.value_{item.value.Value});");
                 }
-
-                writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
+                writer.AppendLine($"default:");
+                using (writer.IncreaseIndent())
+                {
+                    writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_InvalidUnionDiscriminator)}<{this.Name}>(disc);");
+                    writer.AppendLine("return default(TReturn);");
+                }
             }
         }
     }
@@ -205,7 +209,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
                 writer.AppendLine("if (value is null)");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine("throw new ArgumentNullException(nameof(value));");
+                    writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.ArgumentNull)}(nameof(value));");
                 }
             }
 
