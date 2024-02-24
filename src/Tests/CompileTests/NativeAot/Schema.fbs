@@ -2,25 +2,35 @@
 attribute "fs_serializer";
 attribute "fs_valueStruct";
 attribute "fs_vector";
+attribute "fs_sharedString";
+attribute "fs_writeThrough";
 
 namespace NativeAot;
 
-struct Vec3
+struct Vec3 (fs_valueStruct)
 {
     x : float;
     y : float;
     z : float;
 }
 
+struct Vec3Ref
+{
+    x : float (fs_writeThrough);
+    y : float (fs_writeThrough);
+    z : float (fs_writeThrough);
+}
+
 table KeyValuePair
 {
-    key : string (key);
+    key : string (key, fs_sharedString);
     value : int;
 }
 
 table Root (fs_serializer)
 {
-    struct_vector : [ Vec3 ];
+    struct_vector : [ Vec3 ] (fs_writeThrough);
     int_vector : [ int ];
     indexed_vector : [ KeyValuePair ] (fs_vector:"IIndexedVector");
+    ref_struct : Vec3Ref;
 }
