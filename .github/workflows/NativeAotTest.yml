@@ -51,14 +51,8 @@ jobs:
     - name: Build
       working-directory: src/Tests/CompileTests/NativeAot
       run: dotnet publish -c Release -r ${{ matrix.rid }} -f net8.0
-
-    - if: runner.os == 'Windows'
-      name: Run
-      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/${{ matrix.rid }}/publish
-      run: ./NativeAot
-
-    - if: runner.os != 'Windows'
-      name: Run
+      
+    - name: Run
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/${{ matrix.rid }}/publish
       run: ./NativeAot
       
