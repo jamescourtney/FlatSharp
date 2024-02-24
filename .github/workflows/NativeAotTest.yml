@@ -52,9 +52,15 @@ jobs:
       working-directory: src/Tests/CompileTests/NativeAot
       run: dotnet publish -c Release -r ${{ matrix.rid }} -f net8.0
 
-    - name: Run
+    - if: runner.os == 'Windows'
+      name: Run
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/${{ matrix.rid }}/publish
-      run: NativeAot
+      run: NativeAot.exe
+
+    - if: runner.os != 'Windows'
+      name: Run
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/${{ matrix.rid }}/publish
+      run: ./NativeAot
       
     - name: Upload Files
       uses: actions/upload-artifact@v3
