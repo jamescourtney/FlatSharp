@@ -14,6 +14,8 @@
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <Nullable>enable</Nullable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
