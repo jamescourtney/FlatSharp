@@ -17,6 +17,12 @@ namespace NativeAot
             Test_IndexedVector();
 
             Console.WriteLine();
+            Console.WriteLine("Benchmark -- first pass:");
+
+            RunBenchmark();
+
+            Console.WriteLine();
+            Console.WriteLine("Benchmark -- second pass:");
 
             RunBenchmark();
 
@@ -26,7 +32,7 @@ namespace NativeAot
         private static void RunBenchmark()
         {
             IndexedVector<string, KeyValuePair> indexedVector = new();
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 500; ++i)
             {
                 indexedVector.Add(new KeyValuePair { Key = Guid.NewGuid().ToString(), Value = i });
             }
@@ -49,13 +55,8 @@ namespace NativeAot
             byte[] buffer = new byte[maxSize];
             int bytesWritten = 0;
 
-            for (int i = 0; i < 10; ++i)
-            {
-                bytesWritten = Root.Serializer.Write(buffer, root);
-            }
-
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 2000; ++i)
             {
                 bytesWritten = Root.Serializer.Write(buffer, root);
             }
@@ -66,11 +67,11 @@ namespace NativeAot
 
             foreach (var option in Enum.GetValues<FlatBufferDeserializationOption>())
             {
-                Traverse<ArrayInputBuffer>(root, new(buffer), option);
-                Traverse<MemoryInputBuffer>(root, new(buffer), option);
-                Traverse<ReadOnlyMemoryInputBuffer>(root, new(buffer), option);
-                Traverse<ArraySegmentInputBuffer>(root, new(buffer), option);
-                Traverse<CustomInputBuffer>(root, new(new ArrayInputBuffer(buffer)), option);
+                BenchmarkTraverse<ArrayInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<MemoryInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<ReadOnlyMemoryInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<ArraySegmentInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<CustomInputBuffer>(root, new(new ArrayInputBuffer(buffer)), option);
                 Console.WriteLine();
             }
         }
@@ -253,16 +254,11 @@ namespace NativeAot
             }
         }
 
-        public static void Traverse<TInputBuffer>(Root original, TInputBuffer buffer, FlatBufferDeserializationOption option)
+        public static void BenchmarkTraverse<TInputBuffer>(Root original, TInputBuffer buffer, FlatBufferDeserializationOption option)
             where TInputBuffer : IInputBuffer
         {
-            for (int i = 0; i < 10; ++i)
-            {
-                ParseAndTraverse(original, buffer, option);
-            }
-
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 2000; ++i)
             {
                 ParseAndTraverse(original, buffer, option);
             }
