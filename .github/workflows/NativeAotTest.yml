@@ -39,14 +39,14 @@ jobs:
         # PowerShell script to execute in Actions-hydrated context
         script: |
           $fbs = (gci -r src/Tests/CompileTests/NativeAot/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/tests/CompileTests/NativeAot
+          dotnet src/FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/CompileTests/NativeAot
           
     - name: Build
-      working-directory: src/tests/CompileTests/NativeAot
+      working-directory: src/Tests/CompileTests/NativeAot
       run: dotnet publish -c Release -r win-x64 -f net8.0
 
     - name: Run
-      working-directory: src/tests/CompileTests/NativeAot/bin/Release/net8.0/win-x64/publish
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/win-x64/publish
       run: NativeAot
       
     - name: Upload Files
@@ -54,4 +54,4 @@ jobs:
       if: failure()
       with:
         name: generated-csharp
-        path: src/tests/CompileTests/NativeAot/bin/**/*.*
+        path: src/Tests/CompileTests/NativeAot/bin/**/*.*
