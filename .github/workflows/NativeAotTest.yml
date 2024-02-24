@@ -17,7 +17,7 @@ jobs:
           - os: ubuntu-latest
             rid: linux-x64
           - os: macos-latest
-            rid: macos-x64
+            rid: osx-x64
             
     runs-on: ${{ matrix.os }}
     env:
