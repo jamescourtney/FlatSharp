@@ -11,7 +11,14 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: macos-latest
+            rid: macos-x64
+            
     runs-on: ${{ matrix.os }}
     env:
       AppVeyorBuild: true
@@ -43,10 +50,10 @@ jobs:
           
     - name: Build
       working-directory: src/Tests/CompileTests/NativeAot
-      run: dotnet publish -c Release -r win-x64 -f net8.0
+      run: dotnet publish -c Release -r ${{ matrix.rid }} -f net8.0
 
     - name: Run
-      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/win-x64/publish
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/${{ matrix.rid }}/publish
       run: NativeAot
       
     - name: Upload Files
