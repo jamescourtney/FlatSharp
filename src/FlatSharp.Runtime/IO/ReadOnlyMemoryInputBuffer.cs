@@ -132,22 +132,6 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
         return this.pointer.memory;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        => serializer.ParseLazy(this, in arguments);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        => serializer.ParseProgressive(this, in arguments);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        => serializer.ParseGreedy(this, in arguments);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
-        => serializer.ParseGreedyMutable(this, in arguments);
-
     public Span<byte> GetSpan()
     {
         FSThrow.InvalidOperation(ErrorMessage);

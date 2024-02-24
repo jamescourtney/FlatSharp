@@ -14,6 +14,7 @@
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

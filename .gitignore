@@ -19,3 +19,4 @@
 /src/Benchmarks/ExperimentalBenchmark/FlatSharp.generated.cs
 /src/Tests/FlatSharpEndToEndTests_Generated/FlatSharpEndToEndTestsGenerated.xml
 **/BenchmarkDotNet.Artifacts/**
+/src/Tests/CompileTests/NativeAot/FlatSharp.generated.cs

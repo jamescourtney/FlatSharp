@@ -1,0 +1,26 @@
+
+attribute "fs_serializer";
+attribute "fs_valueStruct";
+attribute "fs_vector";
+
+namespace NativeAot;
+
+struct Vec3
+{
+    x : float;
+    y : float;
+    z : float;
+}
+
+table KeyValuePair
+{
+    key : string (key);
+    value : int;
+}
+
+table Root (fs_serializer)
+{
+    struct_vector : [ Vec3 ];
+    int_vector : [ int ];
+    indexed_vector : [ KeyValuePair ] (fs_vector:"IIndexedVector");
+}

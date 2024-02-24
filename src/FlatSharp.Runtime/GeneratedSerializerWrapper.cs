@@ -119,19 +119,19 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         switch (option ?? this.option)
         {
             case FlatBufferDeserializationOption.Lazy:
-                item = buffer.InvokeLazyParse(inner, in parseArgs);
+                item = inner.ParseLazy(buffer, in parseArgs);
                 break;
 
             case FlatBufferDeserializationOption.Greedy:
-                item = buffer.InvokeGreedyParse(inner, in parseArgs);
+                item = inner.ParseGreedy(buffer, in parseArgs);
                 break;
 
             case FlatBufferDeserializationOption.GreedyMutable:
-                item = buffer.InvokeGreedyMutableParse(inner, in parseArgs);
+                item = inner.ParseGreedyMutable(buffer, in parseArgs);
                 break;
 
             case FlatBufferDeserializationOption.Progressive:
-                item = buffer.InvokeProgressiveParse(inner, in parseArgs);
+                item = inner.ParseProgressive(buffer, in parseArgs);
                 break;
 
             default:
