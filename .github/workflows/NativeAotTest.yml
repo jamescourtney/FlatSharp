@@ -55,7 +55,7 @@ jobs:
     - if: runner.os == 'Windows'
       name: Run
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net8.0/${{ matrix.rid }}/publish
-      run: NativeAot
+      run: ./NativeAot
 
     - if: runner.os != 'Windows'
       name: Run
