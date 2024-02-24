@@ -1,15 +1,38 @@
 ﻿using FlatSharp;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace NativeAot
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static int ExitCode = 0;
+
+        static int Main(string[] args)
+        {
+            Test_WriteThrough_ValueStruct();
+            Test_WriteThrough_RefStruct();
+            Test_IntVector();
+            Test_IndexedVector();
+
+            Console.WriteLine();
+            Console.WriteLine("Benchmark -- first pass:");
+
+            RunBenchmark();
+
+            Console.WriteLine();
+            Console.WriteLine("Benchmark -- second pass:");
+
+            RunBenchmark();
+
+            return ExitCode;
+        }
+
+        private static void RunBenchmark()
         {
             IndexedVector<string, KeyValuePair> indexedVector = new();
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 500; ++i)
             {
                 indexedVector.Add(new KeyValuePair { Key = Guid.NewGuid().ToString(), Value = i });
             }
@@ -32,13 +55,8 @@ namespace NativeAot
             byte[] buffer = new byte[maxSize];
             int bytesWritten = 0;
 
-            for (int i = 0; i < 10; ++i)
-            {
-                bytesWritten = Root.Serializer.Write(buffer, root);
-            }
-
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 2000; ++i)
             {
                 bytesWritten = Root.Serializer.Write(buffer, root);
             }
@@ -49,25 +67,198 @@ namespace NativeAot
 
             foreach (var option in Enum.GetValues<FlatBufferDeserializationOption>())
             {
-                Traverse<ArrayInputBuffer>(root, new(buffer), option);
-                Traverse<MemoryInputBuffer>(root, new(buffer), option);
-                Traverse<ReadOnlyMemoryInputBuffer>(root, new(buffer), option);
-                Traverse<ArraySegmentInputBuffer>(root, new(buffer), option);
-                Traverse<CustomInputBuffer>(root, new(new ArrayInputBuffer(buffer)), option);
+                BenchmarkTraverse<ArrayInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<MemoryInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<ReadOnlyMemoryInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<ArraySegmentInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<CustomInputBuffer>(root, new(new ArrayInputBuffer(buffer)), option);
                 Console.WriteLine();
             }
         }
 
-        public static void Traverse<TInputBuffer>(Root original, TInputBuffer buffer, FlatBufferDeserializationOption option)
+        private static void Test_IntVector()
+        {
+            RunTest(Test);
+
+            static void Test(FlatBufferDeserializationOption option)
+            {
+                Root root = new()
+                {
+                    IntVector = new[] { 1, 2, 3, 4, 5, }
+                };
+
+                byte[] buffer = new byte[Root.Serializer.GetMaxSize(root)];
+                Root.Serializer.Write(buffer, root);
+
+                Root parsed = Root.Serializer.Parse(buffer, option);
+
+                Equal(5, parsed.IntVector.Count);
+                Equal(1, parsed.IntVector[0]);
+                Equal(2, parsed.IntVector[1]);
+                Equal(3, parsed.IntVector[2]);
+                Equal(4, parsed.IntVector[3]);
+                Equal(5, parsed.IntVector[4]);
+            }
+        }
+
+        private static void Test_IndexedVector()
+        {
+            RunTest(Test);
+
+            static void Test(FlatBufferDeserializationOption option)
+            {
+                IndexedVector<string, KeyValuePair> sourceVector = new();
+                for (int i = 0; i < 1000; ++i)
+                {
+                    sourceVector.Add(new() { Key = Guid.NewGuid().ToString(), Value = i });
+                }
+
+                Root root = new() { IndexedVector = sourceVector };
+
+                byte[] buffer = new byte[Root.Serializer.GetMaxSize(root)];
+                Root.Serializer.Write(buffer, root);
+
+                Root parsed = Root.Serializer.Parse(buffer, option);
+                IIndexedVector<string, KeyValuePair> parsedVector = parsed.IndexedVector;
+
+                Equal(sourceVector.Count, parsedVector.Count);
+
+                foreach (var kvp in sourceVector)
+                {
+                    string key = kvp.Key;
+                    KeyValuePair pair = kvp.Value;
+
+                    Equal(true, parsedVector.ContainsKey(pair.Key));
+                    Equal(true, parsedVector.TryGetValue(pair.Key, out _));
+                    Equal(pair.Value, parsedVector[pair.Key].Value);
+                }
+            }
+        }
+
+        private static void Test_WriteThrough_ValueStruct()
+        {
+            RunTest(Test);
+
+            static void Test(FlatBufferDeserializationOption option)
+            {
+                Root root = new()
+                {
+                    StructVector = new List<Vec3>
+                    {
+                        new() { X = 1, Y = 2, Z = 3 }
+                    }
+                };
+
+                byte[] buffer = new byte[Root.Serializer.GetMaxSize(root)];
+                Root.Serializer.Write(buffer, root);
+
+                Root parsed = Root.Serializer.Parse(buffer, option);
+                Root parsed2 = Root.Serializer.Parse(buffer, option);
+
+                if (option == FlatBufferDeserializationOption.Greedy || option == FlatBufferDeserializationOption.GreedyMutable)
+                {
+                    Throws(() => parsed.StructVector[0] = new() { X = 6, Y = 7, Z = 8 });
+                    return;
+                }
+
+                parsed.StructVector[0] = new() { X = 6, Y = 7, Z = 8 };
+
+                Equal(6, parsed.StructVector[0].X);
+                Equal(7, parsed.StructVector[0].Y);
+                Equal(8, parsed.StructVector[0].Z);
+
+                Equal(6, parsed2.StructVector[0].X);
+                Equal(7, parsed2.StructVector[0].Y);
+                Equal(8, parsed2.StructVector[0].Z);
+            }
+        }
+
+        private static void Test_WriteThrough_RefStruct()
+        {
+            RunTest(Test);
+
+            static void Test(FlatBufferDeserializationOption option)
+            {
+                Root root = new()
+                {
+                    RefStruct = new() { X = 1, Y = 2, Z = 3 }
+                };
+
+                byte[] buffer = new byte[Root.Serializer.GetMaxSize(root)];
+                Root.Serializer.Write(buffer, root);
+
+                Root parsed = Root.Serializer.Parse(buffer, option);
+                Root parsed2 = Root.Serializer.Parse(buffer, option);
+
+                if (option == FlatBufferDeserializationOption.Greedy || option == FlatBufferDeserializationOption.GreedyMutable)
+                {
+                    Throws(() => parsed.RefStruct.X = 1);
+                    Throws(() => parsed.RefStruct.Y = 1);
+                    Throws(() => parsed.RefStruct.Z = 1);
+                    return;
+                }
+
+                parsed.RefStruct.X = 5;
+                parsed.RefStruct.Y = 6;
+                parsed.RefStruct.Z = 7;
+
+                Equal(5, parsed.RefStruct.X);
+                Equal(6, parsed.RefStruct.Y);
+                Equal(7, parsed.RefStruct.Z);
+
+                Equal(5, parsed2.RefStruct.X);
+                Equal(6, parsed2.RefStruct.Y);
+                Equal(7, parsed2.RefStruct.Z);
+            }
+        }
+
+        private static void Throws(Action action)
+        {
+            try
+            {
+                action();
+                throw new Exception("Exception did not throw");
+            }
+            catch
+            {
+            }
+        }
+
+        private static void Equal<T>(T? expected, T? actual)
+        {
+            if (Comparer<T>.Default.Compare(expected, actual) != 0)
+            {
+                throw new Exception($"Assertion failed. Expected = '{expected}'. Actual = '{actual}'.");
+            }
+        }
+
+        private static void RunTest(Action<FlatBufferDeserializationOption> test, [CallerMemberName] string caller = "")
+        {
+            Run(test, FlatBufferDeserializationOption.Lazy, caller);
+            Run(test, FlatBufferDeserializationOption.Progressive, caller);
+            Run(test, FlatBufferDeserializationOption.Greedy, caller);
+            Run(test, FlatBufferDeserializationOption.GreedyMutable, caller);
+
+            static void Run(Action<FlatBufferDeserializationOption> test, FlatBufferDeserializationOption option, string caller)
+            {
+                try
+                {
+                    test(option);
+                    Console.WriteLine($"[Passed] {caller} ({option})");
+                }
+                catch (Exception ex)
+                {
+                    ExitCode = 1;
+                    Console.WriteLine($"[Failed] {caller} ({option}): {ex.GetType().FullName} {ex.Message}");
+                }
+            }
+        }
+
+        public static void BenchmarkTraverse<TInputBuffer>(Root original, TInputBuffer buffer, FlatBufferDeserializationOption option)
             where TInputBuffer : IInputBuffer
         {
-            for (int i = 0; i < 10; ++i)
-            {
-                ParseAndTraverse(original, buffer, option);
-            }
-
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 2000; ++i)
             {
                 ParseAndTraverse(original, buffer, option);
             }
