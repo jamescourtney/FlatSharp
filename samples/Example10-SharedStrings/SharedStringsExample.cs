@@ -81,7 +81,7 @@ public class SharedStringsExample : IFlatSharpSample
 /// this class will give optimal compression results, but will be considerably slower than FlatSharp's default implementation,
 /// which uses a hashtable with flush-on-evict semantics and may write shared strings more than once.
 /// </summary>
-public class PerfectSharedStringWriter : ISharedStringWriter
+public sealed class PerfectSharedStringWriter : ISharedStringWriter
 {
     private readonly Dictionary<string, List<int>> stringOffsetMap = new Dictionary<string, List<int>>();
 

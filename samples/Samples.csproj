@@ -31,12 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp.Compiler" Version="7.4.0">
+    <PackageReference Include="FlatSharp.Compiler" Version="7.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="7.4.0" />
-    <PackageReference Include="Grpc" Version="2.38.1" />
+    <PackageReference Include="FlatSharp.Runtime" Version="7.5.1" />
+    <PackageReference Include="Grpc" Version="2.46.6" />
   </ItemGroup>
 </Project>
 
