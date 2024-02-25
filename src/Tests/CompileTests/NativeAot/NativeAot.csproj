@@ -14,13 +14,6 @@
     <StripSymbols>true</StripSymbols>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-      <Reference Include="netstandard">
-        <Private>True</Private>
-      </Reference>
-      <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
   </ItemGroup>
