@@ -62,15 +62,21 @@ namespace NativeAot
             }
             sw.Stop();
 
-            Console.WriteLine($"Serialization complete. Bytes written = {bytesWritten}. TotalTime = {sw.Elapsed.TotalMicroseconds:N0}us");
+            Console.WriteLine($"Serialization complete. Bytes written = {bytesWritten}. TotalTime = {sw.Elapsed.TotalMilliseconds:N0}ms");
             Console.WriteLine();
 
-            foreach (var option in Enum.GetValues<FlatBufferDeserializationOption>())
+#if NETCOREAPP
+            FlatBufferDeserializationOption[] options = Enum.GetValues<FlatBufferDeserializationOption>();
+#else
+            FlatBufferDeserializationOption[] options = (FlatBufferDeserializationOption[])Enum.GetValues(typeof(FlatBufferDeserializationOption));
+#endif
+
+            foreach (FlatBufferDeserializationOption option in options)
             {
                 BenchmarkTraverse<ArrayInputBuffer>(root, new(buffer), option);
                 BenchmarkTraverse<MemoryInputBuffer>(root, new(buffer), option);
                 BenchmarkTraverse<ReadOnlyMemoryInputBuffer>(root, new(buffer), option);
-                BenchmarkTraverse<ArraySegmentInputBuffer>(root, new(buffer), option);
+                BenchmarkTraverse<ArraySegmentInputBuffer>(root, new(new ArraySegment<byte>(buffer)), option);
                 BenchmarkTraverse<CustomInputBuffer>(root, new(new ArrayInputBuffer(buffer)), option);
                 Console.WriteLine();
             }
@@ -264,7 +270,7 @@ namespace NativeAot
             }
             sw.Stop();
 
-            Console.WriteLine($"Parsing [ {option} ][ {typeof(TInputBuffer).Name} ]. TotalTime = {sw.Elapsed.TotalMicroseconds:N0}us");
+            Console.WriteLine($"Parsing [ {option} ][ {typeof(TInputBuffer).Name} ]. TotalTime = {sw.Elapsed.TotalMilliseconds:N0}ms");
 
             static void ParseAndTraverse(Root original, TInputBuffer buffer, FlatBufferDeserializationOption option)
             {
