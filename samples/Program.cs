@@ -23,9 +23,6 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine(RuntimeFeature.IsDynamicCodeSupported);
-        Console.WriteLine(RuntimeFeature.IsDynamicCodeCompiled);
-
         List<IFlatSharpSample> samples = new()
         {
             new Basics.Basics(),
