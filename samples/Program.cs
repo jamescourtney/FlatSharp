@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 namespace Samples;
 
 public static class Program
