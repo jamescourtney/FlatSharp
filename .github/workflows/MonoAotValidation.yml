@@ -67,9 +67,11 @@ jobs:
       run: mono -O=all --aot=full *.dll
 
     - name: Run (No AOT)
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono NativeAot.exe
 
     - name: Run (AOT)
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono --full-aot NativeAot.exe
       
     - name: Upload Files
