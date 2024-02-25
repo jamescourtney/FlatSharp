@@ -1,0 +1,79 @@
+name: Mono Aot Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      max-parallel: 1
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            
+    runs-on: ${{ matrix.os }}
+    env:
+      AppVeyorBuild: true
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Install Mono
+      run: sudo apt install mono-complete
+
+    - name: AOT Compile mscorlib
+      run: sudo mono -O=all --aot=full /usr/lib/mono/4.5/mscorlib.dll
+
+    - name: AOT Compile Other Libs
+      run: for i in /usr/lib/mono/gac/*/*/*.dll; do sudo mono -O=all --aot=full $i; done
+        
+    - name: Restore dependencies
+      working-directory: src
+      run: dotnet restore
+      
+    - name: Build FlatSharp.Compiler
+      working-directory: src/FlatSharp.Compiler
+      run: dotnet build -c Release
+      
+    - name: Run FlatSharp.Compiler
+      # You may pin to the exact commit or the version.
+      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
+      uses: Amadevus/pwsh-script@v2.0.3
+      with:
+        # PowerShell script to execute in Actions-hydrated context
+        script: |
+          $fbs = (gci -r src/Tests/CompileTests/NativeAot/*.fbs) -join ";"
+          dotnet src/FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/CompileTests/NativeAot
+          
+    - name: Build
+      working-directory: src/Tests/CompileTests/NativeAot
+      run: dotnet build -c Release
+      
+    - name: AOT Exes
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
+      run: mono -O=all --aot=full *.exe
+      
+    - name: AOT DLLs
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
+      run: mono -O=all --aot=full *.dll
+
+    - name: Run (No AOT)
+      run: mono NativeAot.exe
+
+    - name: Run (AOT)
+      run: mono --full-aot NativeAot.exe
+      
+    - name: Upload Files
+      uses: actions/upload-artifact@v3
+      with:
+        name: assembly
+        path: src/Tests/CompileTests/NativeAot/bin/**/*.*
