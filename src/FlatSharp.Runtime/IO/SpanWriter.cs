@@ -112,15 +112,6 @@ public struct SpanWriter : ISpanWriter
         return bytesWritten;
     }
 
-    public void InvokeWrite<TItemType>(IGeneratedSerializer<TItemType> serializer, Span<byte> destination, TItemType item, SerializationContext context)
-    {
-        serializer.Write(
-            this,
-            destination,
-            item,
-            context);
-    }
-
     public void FlushSharedStrings(ISharedStringWriter writer, Span<byte> destination, SerializationContext context)
     {
         writer.FlushWrites(this, destination, context);

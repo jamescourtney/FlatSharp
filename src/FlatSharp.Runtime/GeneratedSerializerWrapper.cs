@@ -192,7 +192,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 Debug.Assert(!sharedStringWriter.IsDirty);
             }
 
-            writer.InvokeWrite(this.innerSerializer, destination, item, serializationContext);
+            this.innerSerializer.Write(writer, destination, item, serializationContext);
 
             if (sharedStringWriter?.IsDirty == true)
             {
