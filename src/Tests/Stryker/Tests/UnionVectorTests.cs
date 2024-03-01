@@ -37,6 +37,11 @@ public class UnionVectorTests
                 object ri = right.Accept<Visitor, object>(new());
 
                 Assert.IsAssignableFrom(li.GetType(), ri);
+
+                li = left.Match<object>(a => a, b => b, c => c, d => d);
+                ri = right.Match<object>(a => a, b => b, c => c, d => d);
+
+                Assert.IsAssignableFrom(li.GetType(), ri);
             }
 
             switch (left.Kind)
