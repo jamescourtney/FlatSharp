@@ -219,7 +219,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
                 foreach (var item in components)
                 {
                     long index = item.value.Value;
-                    writer.AppendLine($"case {index}: return case{item.value.Key}(this.UncheckedGetItem{item.value.Value}());");
+                    writer.AppendLine($"case {index}: return case{item.value.Key}(this.value_{item.value.Value});");
                 }
 
                 writer.AppendLine($"default:");
