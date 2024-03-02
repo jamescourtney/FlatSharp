@@ -8,6 +8,7 @@
     <Nullable>annotations</Nullable>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
+    
   <ItemGroup>
     <Compile Include="..\..\FlatSharpEndToEndTests\DeserializationOptionClassData.cs" Link="DeserializationOptionClassData.cs" />
     <Compile Include="..\..\FlatSharpEndToEndTests\Helpers.cs" Link="Helpers.cs" />
@@ -16,6 +17,7 @@
   
   <ItemGroup>
     <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.abstractions" />
     <PackageReference Include="xunit.runner.utility" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
