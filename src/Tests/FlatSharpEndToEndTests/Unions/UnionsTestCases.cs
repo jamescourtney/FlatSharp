@@ -34,6 +34,25 @@ public class UnionsTestCases
         Assert.Equal(typeof(D), c.Value[3].Accept<UnionVisitor, Type>(visitor));
     }
 
+    [Fact]
+    public void Custom_Union_Match_Works()
+    {
+        var c = this.Setup();
+
+        Type[] expected = new[] { typeof(A), typeof(B), typeof(C), typeof(D) };
+
+        for (int i = 0; i < c.Value.Count; ++i)
+        {
+            Type result = c.Value[i].Match(
+                a => typeof(A),
+                b => typeof(B),
+                c => typeof(C),
+                d => typeof(D));
+
+            Assert.Equal(expected[i], result);
+        }
+    }
+
 #if NET6_0_OR_GREATER
     /// <summary>
     /// In this test, the FBS file lies about the size of <see cref="System.Numerics.Vector{T}"/>. Depending on the machine,

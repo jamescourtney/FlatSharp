@@ -88,6 +88,9 @@ public class UnionFieldTests
         ex = Assert.Throws<InvalidOperationException>(() => new FunUnion().Accept<Visitor, bool>(new Visitor()));
         Assert.Equal(message, ex.Message);
 
+        ex = Assert.Throws<InvalidOperationException>(() => new FunUnion().Match<bool>(null!, null!, null!, null!));
+        Assert.Equal(message, ex.Message);
+
         ex = Assert.Throws<InvalidOperationException>(() => new Root(root));
         Assert.Equal(message, ex.Message);
     }
