@@ -11,10 +11,10 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grpc.Core" Version="2.46.5" />
-    <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
+    <PackageReference Include="Grpc.Core" />
+    <PackageReference Include="Grpc.Core.Api" />
+    <PackageReference Include="Microsoft.CSharp" />
+    <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 
   <ItemGroup>

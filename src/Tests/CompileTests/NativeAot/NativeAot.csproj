@@ -7,6 +7,7 @@
     <Nullable>annotations</Nullable>
     <InvariantGlobalization>true</InvariantGlobalization>
     <LangVersion>11.0</LangVersion>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' != 'net472' ">
