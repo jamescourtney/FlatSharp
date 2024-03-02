@@ -11,10 +11,22 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="coverlet.collector" Condition=" '$(CoverageBuild)' == 'true' ">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Grpc.Core" />
     <PackageReference Include="Grpc.Core.Api" />
     <PackageReference Include="Microsoft.CSharp" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="xunit.runner.utility" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
