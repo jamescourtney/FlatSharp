@@ -1,5 +1,4 @@
 ﻿using FlatSharp.Internal;
-using NuGet.Frameworks;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
 using System.Threading;

@@ -1,5 +1,4 @@
 ﻿using FlatSharp.Internal;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using System.IO;
 using System.Linq.Expressions;
 using System.Threading;

@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\common.props" />
-
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
         <AssemblyName>FlatSharp</AssemblyName>
@@ -17,10 +15,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="SimpleLazyReferenceVector.txt" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Update="TypeModel\ScalarTypeModels.tt">
             <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
             <Generator>TextTemplatingFileGenerator</Generator>
@@ -32,13 +26,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
-        <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.8.0">
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+        <PackageReference Include="Microsoft.Net.Compilers.Toolset">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="System.Memory" Version="4.5.5" />
-        <PackageReference Include="NetStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
+        <PackageReference Include="System.Memory" />
+        <PackageReference Include="NetStandard.Library" VersionOverride="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\..\common.props" />
-
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
@@ -19,11 +17,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.10" />
-        <PackageReference Include="Grpc" Version="2.46.6" />
-        <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-        <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+        <PackageReference Include="BenchmarkDotNet" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+        <PackageReference Include="Grpc" />
+        <PackageReference Include="System.IO.FileSystem.Primitives" />
+        <PackageReference Include="System.Runtime.InteropServices" />
     </ItemGroup>
 
     <ItemGroup>

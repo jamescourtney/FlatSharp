@@ -1,7 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\common.props" />
-  <Import Project="..\unittest.props" />
-
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
@@ -10,26 +7,20 @@
     <RootNamespace>FlatSharpTests</RootNamespace>
     <Nullable>annotations</Nullable>
     <DeploymentEnabled>false</DeploymentEnabled>
+    <NoWarn>$(NoWarn);CA2255</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grpc.Core" Version="2.46.6" />
-    <PackageReference Include="Grpc.Core.Api" Version="2.61.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Grpc.Core" />
+    <PackageReference Include="Grpc.Core.Api" />
+    <PackageReference Include="Microsoft.CSharp" />
+    <PackageReference Include="xunit" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="xunit" Version="2.7.0" />
-    <PackageReference Update="xunit.runner.utility" Version="2.7.0" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.5.7">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 </Project>

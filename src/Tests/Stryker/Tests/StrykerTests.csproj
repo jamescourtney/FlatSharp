@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\unittest.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
@@ -15,6 +14,15 @@
     <Compile Include="..\..\FlatSharpEndToEndTests\Utf8StringComparer.cs" Link="Utf8StringComparer.cs" />
   </ItemGroup>
   
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.utility" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\CodeGen\CodeGen.csproj" />
