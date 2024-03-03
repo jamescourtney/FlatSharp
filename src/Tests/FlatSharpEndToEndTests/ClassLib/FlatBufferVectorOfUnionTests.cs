@@ -19,7 +19,7 @@ namespace FlatSharpEndToEndTests.ClassLib.FlatBufferVectorOfUnionTests;
 /// <summary>
 /// Tests for FlatSharp's IList of Union.
 /// </summary>
-
+[TestClass]
 public class FlatBufferVectorOfUnionTests
 {
     private TableVector vector;
@@ -39,47 +39,47 @@ public class FlatBufferVectorOfUnionTests
         this.vector = original.SerializeAndParse(FlatBufferDeserializationOption.Lazy);
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_OutOfRange()
     {
-        Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[-1]);
-        Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[5]);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => this.vector.Vector[-1]);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => this.vector.Vector[5]);
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_NotMutable()
     {
-        Assert.True(this.vector.Vector.IsReadOnly);
-        Assert.Throws<NotMutableException>(() => this.vector.Vector[0] = new MyUnion("foobar"));
-        Assert.Throws<NotMutableException>(() => this.vector.Vector.Add(new MyUnion("foobar")));
-        Assert.Throws<NotMutableException>(() => this.vector.Vector.Clear());
-        Assert.Throws<NotMutableException>(() => this.vector.Vector.Insert(0, new MyUnion("foobar")));
-        Assert.Throws<NotMutableException>(() => this.vector.Vector.Remove(new MyUnion("foobar")));
-        Assert.Throws<NotMutableException>(() => this.vector.Vector.RemoveAt(0));
+        Assert.IsTrue(this.vector.Vector.IsReadOnly);
+        Assert.ThrowsException<NotMutableException>(() => this.vector.Vector[0] = new MyUnion("foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Add(new MyUnion("foobar")));
+        Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Clear());
+        Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Insert(0, new MyUnion("foobar")));
+        Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Remove(new MyUnion("foobar")));
+        Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.RemoveAt(0));
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_GetEnumerator()
     {
         int i = 0;
         foreach (var item in this.vector.Vector)
         {
-            Assert.Equal(i + 1, item.Discriminator);
+            Assert.AreEqual(i + 1, item.Discriminator);
             i++;
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_Contains()
     {
-        Assert.True(this.vector.Vector.Contains(new MyUnion("foobar")));
-        Assert.False(this.vector.Vector.Contains(new MyUnion("blah")));
+        Assert.IsTrue(this.vector.Vector.Contains(new MyUnion("foobar")));
+        Assert.IsFalse(this.vector.Vector.Contains(new MyUnion("blah")));
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_IndexOf()
     {
-        Assert.Equal(0, this.vector.Vector.IndexOf(new MyUnion("foobar")));
-        Assert.Equal(-1, this.vector.Vector.IndexOf(new MyUnion("monster")));
+        Assert.AreEqual(0, this.vector.Vector.IndexOf(new MyUnion("foobar")));
+        Assert.AreEqual(-1, this.vector.Vector.IndexOf(new MyUnion("monster")));
     }
 }

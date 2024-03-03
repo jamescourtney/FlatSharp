@@ -19,32 +19,33 @@ using System.IO;
 
 namespace FlatSharpEndToEndTests.ClassLib.VTables;
 
+[TestClass]
 public class VTableTests
 {
     public delegate void CreateCallback<TVTable>(ArrayInputBuffer buffer, int offset, out TVTable vt);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTable4_Auto() => this.RunTests<VTable4>(3, VTable4.Create);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTable4_LE() => this.RunTests<VTable4>(3, VTable4.CreateLittleEndian);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTable4_BE() => this.RunTests<VTable4>(3, VTable4.CreateBigEndian);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTable8_Auto() => this.RunTests<VTable8>(7, VTable8.Create);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTable8_LE() => this.RunTests<VTable8>(7, VTable8.CreateLittleEndian);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTable8_BE() => this.RunTests<VTable8>(7, VTable8.CreateBigEndian);
 
-    [Fact]
+    [TestMethod]
     public void Test_VTableGeneric() => this.RunTests<VTableGeneric>(255, VTableGeneric.Create);
 
-    [Fact]
+    [TestMethod]
     public void InitializeVTable_NormalTable()
     {
         byte[] buffer =
@@ -64,12 +65,12 @@ public class VTableTests
             out nuint fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
-        Assert.Equal(0, vtableOffset);
-        Assert.Equal((nuint)2, fieldCount);
-        Assert.Equal(4, fieldData.Length);
+        Assert.AreEqual(0, vtableOffset);
+        Assert.AreEqual((nuint)2, fieldCount);
+        Assert.AreEqual(4, fieldData.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void InitializeVTable_EmptyTable()
     {
         byte[] buffer =
@@ -85,12 +86,12 @@ public class VTableTests
             out nuint fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
-        Assert.Equal(0, vtableOffset);
-        Assert.Equal((nuint)0, fieldCount);
-        Assert.Equal(0, fieldData.Length);
+        Assert.AreEqual(0, vtableOffset);
+        Assert.AreEqual((nuint)0, fieldCount);
+        Assert.AreEqual(0, fieldData.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void InitializeVTable_InvalidLength()
     {
         byte[] buffer =
@@ -100,23 +101,23 @@ public class VTableTests
             4, 0, 0, 0 // soffset to vtable.
         };
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
             new ArrayInputBuffer(buffer).InitializeVTable(4, out _, out _, out _));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "FlatBuffer was in an invalid format: VTable was not long enough to be valid.",
             ex.Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadUOffset()
     {
         byte[] buffer = { 4, 0, 0, 0 };
-        Assert.Equal(4, new ArrayInputBuffer(buffer).ReadUOffset(0));
+        Assert.AreEqual(4, new ArrayInputBuffer(buffer).ReadUOffset(0));
 
         buffer = new byte[] { 3, 0, 0, 0 };
-        var ex = Assert.Throws<InvalidDataException>(() => new ArrayInputBuffer(buffer).ReadUOffset(0));
-        Assert.Equal(
+        var ex = Assert.ThrowsException<InvalidDataException>(() => new ArrayInputBuffer(buffer).ReadUOffset(0));
+        Assert.AreEqual(
             "FlatBuffer was in an invalid format: Decoded uoffset_t had value less than 4. Value = 3",
             ex.Message);
     }
@@ -152,21 +153,21 @@ public class VTableTests
         var buffer = new ArrayInputBuffer(vtable);
         callback(buffer, 0, out TVTable vt);
 
-        Assert.Equal(expectedMaxIndex, vt.MaxSupportedIndex);
+        Assert.AreEqual(expectedMaxIndex, vt.MaxSupportedIndex);
 
         for (int i = 0; i <= Math.Max(actualMaxIndex, expectedMaxIndex); ++i)
         {
             if (i <= Math.Min(actualMaxIndex, expectedMaxIndex))
             {
-                Assert.Equal(i, vt.OffsetOf(buffer, i));
+                Assert.AreEqual(i, vt.OffsetOf(buffer, i));
             }
             else
             {
-                Assert.Equal(0, vt.OffsetOf(buffer, i));
+                Assert.AreEqual(0, vt.OffsetOf(buffer, i));
             }
         }
 
-        Assert.Equal(0, vt.OffsetOf(buffer, vt.MaxSupportedIndex + 1));
-        Assert.Equal(0, vt.OffsetOf(buffer, -1));
+        Assert.AreEqual(0, vt.OffsetOf(buffer, vt.MaxSupportedIndex + 1));
+        Assert.AreEqual(0, vt.OffsetOf(buffer, -1));
     }
 }

@@ -16,9 +16,10 @@
 
 namespace FlatSharpEndToEndTests.RawData;
 
+[TestClass]
 public class RawDataSharedStringTests
 {
-    [Fact]
+    [TestMethod]
     public void SharedStrings_Vector_Disabled()
     {
         var t = new SharedStringTable
@@ -55,10 +56,10 @@ public class RawDataSharedStringTests
             (byte)'n', (byte)'g', 0,  // null terminator
         };
 
-        Assert.True(expectedBytes.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void SharedStrings_Table_Disabled()
     {
         var t = new SharedStringTable
@@ -92,10 +93,10 @@ public class RawDataSharedStringTests
             (byte)'n', (byte)'g', 0, // null terminator.
         };
 
-        Assert.True(expectedBytes.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void SharedStrings_Table()
     {
         var t = new SharedStringTable
@@ -122,10 +123,10 @@ public class RawDataSharedStringTests
             (byte)'n', (byte)'g', 0, // null terminator.
         };
 
-        Assert.True(expectedBytes.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void SharedStrings_Table_WithNull()
     {
         var t = new SharedStringTable
@@ -149,10 +150,10 @@ public class RawDataSharedStringTests
             (byte)'n', (byte)'g', 0 // null terminator.
         };
 
-        Assert.True(expectedBytes.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void SharedStrings_Table_WithEviction()
     {
         var t = new SharedStringTable
@@ -185,10 +186,10 @@ public class RawDataSharedStringTests
             (byte)'n', (byte)'g', 0 // null terminator
         };
 
-        Assert.True(expectedBytes.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void SharedStrings_Vector()
     {
         var t = new SharedStringTable
@@ -217,6 +218,6 @@ public class RawDataSharedStringTests
             (byte)'n', (byte)'g', 0,
         };
 
-        Assert.True(expectedBytes.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(buffer));
     }
 }

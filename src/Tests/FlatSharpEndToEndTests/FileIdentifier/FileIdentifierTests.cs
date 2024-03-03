@@ -18,6 +18,7 @@ using System.IO;
 
 namespace FlatSharpEndToEndTests.FileIdentifiers;
 
+[TestClass]
 public class FileIdentifierTests
 {
     private static byte[] EmptyTableWithId =
@@ -37,17 +38,17 @@ public class FileIdentifierTests
         4, 0,                 // table length
     };
 
-    [Fact]
+    [TestMethod]
     public void FileIdentifier_Serialized()
     {
         byte[] buffer = new HasId().AllocateAndSerialize();
-        Assert.True(EmptyTableWithId.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(EmptyTableWithId.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void NoFileIdentifier_Serialized()
     {
         byte[] buffer = new NoId().AllocateAndSerialize();
-        Assert.True(EmptyTableWithoutId.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(EmptyTableWithoutId.AsSpan().SequenceEqual(buffer));
     }
 }
