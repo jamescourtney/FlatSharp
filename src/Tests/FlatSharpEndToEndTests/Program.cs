@@ -20,6 +20,7 @@ using Microsoft.Testing.Framework;
 using Microsoft.Testing.Platform.Builder;
 using System.Threading.Tasks;
 using Microsoft.Testing.Extensions;
+using Microsoft.Testing.Framework.Configurations;
 
 namespace FlatSharpEndToEndTests;
 
@@ -32,7 +33,10 @@ public static class Program
         var builder = TestApplication.CreateBuilderAsync(args).GetAwaiter().GetResult();
         // Registers TestFramework, with tree of test nodes 
         // that are generated into your project by source generator.
+
         builder.AddTestFramework(new SourceGeneratedTestNodesBuilder());
+        builder.AddTrxReportProvider();
+
         var app = builder.BuildAsync().GetAwaiter().GetResult();
         return app.RunAsync().GetAwaiter().GetResult();
     }

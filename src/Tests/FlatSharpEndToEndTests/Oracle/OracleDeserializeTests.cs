@@ -25,7 +25,7 @@ namespace FlatSharpEndToEndTests.Oracle;
 ///     Can we parse data we created using the official Google library?
 /// </summary>
 [TestClass]
-public partial class OracleDeserializeTests
+public class OracleDeserializeTests
 {
     [TestMethod]
     public void SimpleTypes()

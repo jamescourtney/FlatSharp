@@ -29,8 +29,9 @@
   </PropertyGroup>
     
   <ItemGroup Condition=" '$(BuildAot)' == 'true' ">
-    <PackageReference Include="MSTest.Engine" VersionOverride="1.0.0-alpha.24151.3" />
-    <PackageReference Include="MSTest.SourceGeneration" VersionOverride="1.0.0-alpha.24151.3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="MSTest.Engine" />
+    <PackageReference Include="MSTest.SourceGeneration" />
   </ItemGroup>
 
   <ItemGroup>

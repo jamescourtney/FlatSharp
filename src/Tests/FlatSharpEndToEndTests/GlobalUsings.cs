@@ -29,3 +29,5 @@ global using System.Runtime.CompilerServices;
 global using FlatSharp;
 global using FlatSharp.Attributes;
 global using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+[assembly: Parallelize(Scope = ExecutionScope.ClassLevel)]

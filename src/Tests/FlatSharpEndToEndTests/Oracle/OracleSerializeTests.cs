@@ -24,7 +24,7 @@ namespace FlatSharpEndToEndTests.Oracle;
 ///     Can the Google Flatbuffer code parse data we generated?
 /// </summary>
 [TestClass]
-public partial class OracleSerializeTests
+public class OracleSerializeTests
 {
     [TestMethod]
     public void SimpleTypes_WithValues()

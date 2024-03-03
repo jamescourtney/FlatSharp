@@ -17,7 +17,7 @@
 namespace FlatSharpEndToEndTests.TableMembers;
 
 [TestClass]
-public partial class TableMemberTests
+public class TableMemberTests
 {
     [TestMethod]
     [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
