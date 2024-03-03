@@ -77,8 +77,11 @@ jobs:
 
     - name: E2E Test (AOT)
       working-directory: src/Tests/FlatSharpEndToEndTests
+      env:
+        BuildAot: 'true'
       run: |
-        dotnet publish -c Release -f net8.0 -r ${{ matrix.rid }} -p:BuildAot=true
+        dotnet restore --configfile AlphaPackages.config -r ${{ matrix.rid }}
+        dotnet publish --no-restore -c Release -f net8.0 -r ${{ matrix.rid }}
         ./bin/Release/net8.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
 
     - name: Poolable E2E Test
