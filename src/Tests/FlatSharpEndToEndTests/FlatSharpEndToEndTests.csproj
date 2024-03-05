@@ -23,7 +23,6 @@
     <PublishAot>true</PublishAot>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <StartupObject>FlatSharpEndToEndTests.Program</StartupObject>
-    <PublishAot>true</PublishAot>
     <OutputType>exe</OutputType>
     <DefineConstants>$(DefineConstants);AOT</DefineConstants>
   </PropertyGroup>
