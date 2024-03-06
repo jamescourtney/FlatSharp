@@ -14,102 +14,99 @@
  * limitations under the License.
  */
 
-using System.Threading;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Other.Namespace.Foobar;
-using SChannel = System.Threading.Channels.Channel;
-
 namespace FlatSharpEndToEndTests.MetadataAttributes;
 
+[TestClass]
 public class MetadataAttributesTestCases
 {
-    [Fact]
+#if !AOT
+    [TestMethod]
     public void Enum_Attributes()
     {
         var attrs = GetAttributes<MyEnum>();
-        Assert.Single(attrs);
-        Assert.Equal("MyEnum", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("MyEnum", attrs["test"]);
 
         attrs = GetAttributes(typeof(MyEnum).GetMember("A").Single());
-        Assert.Single(attrs);
-        Assert.Equal("A", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("A", attrs["test"]);
 
         attrs = GetAttributes(typeof(MyEnum).GetMember("B").Single());
-        Assert.Single(attrs);
-        Assert.Equal("B", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("B", attrs["test"]);
     }
+#endif
 
-    [Fact]
+    [TestMethod]
     public void Union_Attributes()
     {
         var attrs = GetAttributes<MyUnion>();
-        Assert.Single(attrs);
-        Assert.Equal("MyUnion", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("MyUnion", attrs["test"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Value_Struct_Attributes()
     {
         var attrs = GetAttributes<ValueStruct>();
-        Assert.Equal(2, attrs.Count);
-        Assert.Equal("ValueStruct", attrs["test"]);
-        Assert.Equal("0", attrs["fs_valueStruct"]); // empty
+        Assert.AreEqual(2, attrs.Count);
+        Assert.AreEqual("ValueStruct", attrs["test"]);
+        Assert.AreEqual("0", attrs["fs_valueStruct"]); // empty
 
         attrs = GetAttributes(typeof(ValueStruct).GetField("I"));
-        Assert.Single(attrs);
-        Assert.Equal("i", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("i", attrs["test"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Ref_Struct_Attributes()
     {
         var attrs = GetAttributes<RefStruct>();
-        Assert.Single(attrs);
-        Assert.Equal("RefStruct", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("RefStruct", attrs["test"]);
 
         attrs = GetAttributes(typeof(RefStruct).GetProperty("I"));
-        Assert.Single(attrs);
-        Assert.Equal("i", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("i", attrs["test"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Service_Attributes()
     {
         var attrs = GetAttributes(typeof(EchoService));
-        Assert.Equal(2, attrs.Count);
-        Assert.Equal("0", attrs["fs_rpcInterface"]);
-        Assert.Equal("EchoService", attrs["test"]);
+        Assert.AreEqual(2, attrs.Count);
+        Assert.AreEqual("0", attrs["fs_rpcInterface"]);
+        Assert.AreEqual("EchoService", attrs["test"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Table_Attributes()
     {
         var attrs = GetAttributes<Message>();
-        Assert.Equal(2, attrs.Count);
-        Assert.Equal("Lazy", attrs["fs_serializer"]);
-        Assert.Equal("Message", attrs["test"]);
+        Assert.AreEqual(2, attrs.Count);
+        Assert.AreEqual("Lazy", attrs["fs_serializer"]);
+        Assert.AreEqual("Message", attrs["test"]);
 
         attrs = GetAttributes(typeof(Message).GetProperty("Value"));
-        Assert.Equal(3, attrs.Count);
-        Assert.Equal("0", attrs["required"]);
-        Assert.Equal("0", attrs["fs_sharedString"]);
-        Assert.Equal("value", attrs["test"]);
+        Assert.AreEqual(3, attrs.Count);
+        Assert.AreEqual("0", attrs["required"]);
+        Assert.AreEqual("0", attrs["fs_sharedString"]);
+        Assert.AreEqual("value", attrs["test"]);
 
         attrs = GetAttributes(typeof(Message).GetProperty("SingleInt"));
-        Assert.Single(attrs);
-        Assert.Equal("single_int", attrs["test"]);
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("single_int", attrs["test"]);
 
         attrs = GetAttributes(typeof(Message).GetProperty("VectorInt"));
-        Assert.Equal(2, attrs.Count);
-        Assert.Equal("IList", attrs["fs_vectorKind"]);
-        Assert.Equal("vector_int", attrs["test"]);
+        Assert.AreEqual(2, attrs.Count);
+        Assert.AreEqual("IList", attrs["fs_vectorKind"]);
+        Assert.AreEqual("vector_int", attrs["test"]);
 
         attrs = GetAttributes(typeof(Message).GetProperty("ValueStruct"));
-        Assert.Equal(3, attrs.Count);
-        Assert.Equal("0", attrs["required"]);
-        Assert.Equal("0", attrs["fs_writeThrough"]);
-        Assert.Equal("value_struct", attrs["test"]);
+        Assert.AreEqual(3, attrs.Count);
+        Assert.AreEqual("0", attrs["required"]);
+        Assert.AreEqual("0", attrs["fs_writeThrough"]);
+        Assert.AreEqual("value_struct", attrs["test"]);
     }
 
     private static Dictionary<string, string?> GetAttributes<T>() => GetAttributes(typeof(T));

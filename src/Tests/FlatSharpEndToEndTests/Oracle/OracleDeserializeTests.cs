@@ -24,9 +24,10 @@ namespace FlatSharpEndToEndTests.Oracle;
 /// Does oracle-based testing using Google's flatbuffers code. These tests all boil down to:
 ///     Can we parse data we created using the official Google library?
 /// </summary>
-public partial class OracleDeserializeTests
+[TestClass]
+public class OracleDeserializeTests
 {
-    [Fact]
+    [TestMethod]
     public void SimpleTypes()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -54,30 +55,30 @@ public partial class OracleDeserializeTests
 
         foreach (var parsed in new[] { simple })
         {
-            Assert.True(parsed.Bool);
-            Assert.Equal(oracle.Byte, parsed.Byte);
-            Assert.Equal(oracle.SByte, parsed.SByte);
+            Assert.IsTrue(parsed.Bool);
+            Assert.AreEqual(oracle.Byte, parsed.Byte);
+            Assert.AreEqual(oracle.SByte, parsed.SByte);
 
-            Assert.Equal(oracle.UShort, parsed.UShort);
-            Assert.Equal(oracle.Short, parsed.Short);
+            Assert.AreEqual(oracle.UShort, parsed.UShort);
+            Assert.AreEqual(oracle.Short, parsed.Short);
 
-            Assert.Equal(oracle.UInt, parsed.UInt);
-            Assert.Equal(oracle.Int, parsed.Int);
+            Assert.AreEqual(oracle.UInt, parsed.UInt);
+            Assert.AreEqual(oracle.Int, parsed.Int);
 
-            Assert.Equal(oracle.ULong, parsed.ULong);
-            Assert.Equal(oracle.Long, parsed.Long);
+            Assert.AreEqual(oracle.ULong, parsed.ULong);
+            Assert.AreEqual(oracle.Long, parsed.Long);
 
-            Assert.Equal(oracle.Float, parsed.Float);
-            Assert.Equal(oracle.Double, parsed.Double);
-            Assert.Equal("foobar", parsed.String);
+            Assert.AreEqual(oracle.Float, parsed.Float);
+            Assert.AreEqual(oracle.Double, parsed.Double);
+            Assert.AreEqual("foobar", parsed.String);
         }
 
         // Ensures the caching works correctly.
         //Assert.ReferenceEquals(cached.String, cached.String);
-        Assert.True(object.ReferenceEquals(simple.String, simple.String));
+        Assert.IsTrue(object.ReferenceEquals(simple.String, simple.String));
     }
 
-    [Fact]
+    [TestMethod]
     public void LinkedList()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -94,15 +95,15 @@ public partial class OracleDeserializeTests
 
         var linkedList = FS.LinkedListNode.Serializer.Parse(realBuffer);
 
-        Assert.NotNull(linkedList);
-        Assert.NotNull(linkedList.Next);
-        Assert.Null(linkedList.Next.Next);
+        Assert.IsNotNull(linkedList);
+        Assert.IsNotNull(linkedList.Next);
+        Assert.IsNull(linkedList.Next.Next);
 
-        Assert.Equal("node 1", linkedList.Value);
-        Assert.Equal("node 2", linkedList.Next.Value);
+        Assert.AreEqual("node 1", linkedList.Value);
+        Assert.AreEqual("node 2", linkedList.Next.Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void ScalarVectors()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -121,30 +122,30 @@ public partial class OracleDeserializeTests
         var parsed = FS.Vectors.Serializer.Parse(realBuffer);
 
         IList<int> intItems = parsed.IntVector;
-        Assert.Equal(6, intItems.Count);
+        Assert.AreEqual(6, intItems.Count);
         for (int i = 0; i < 6; ++i)
         {
-            Assert.Equal(1 + i, intItems[i]);
+            Assert.AreEqual(1 + i, intItems[i]);
         }
 
         IList<long> longItems = parsed.LongVector;
-        Assert.Equal(6, longItems.Count);
+        Assert.AreEqual(6, longItems.Count);
         for (int i = 0; i < 6; ++i)
         {
-            Assert.Equal(7 + i, longItems[i]);
+            Assert.AreEqual(7 + i, longItems[i]);
         }
 
         Memory<byte> mem = parsed.ByteVector2.Value;
-        Assert.Equal(5, mem.Length);
+        Assert.AreEqual(5, mem.Length);
         for (int i = 1; i <= 5; ++i)
         {
-            Assert.Equal(i, mem.Span[i - 1]);
+            Assert.AreEqual(i, mem.Span[i - 1]);
         }
 
-        Assert.True(parsed.ByteVector3.IsEmpty);
+        Assert.IsTrue(parsed.ByteVector3.IsEmpty);
     }
 
-    [Fact]
+    [TestMethod]
     public void LocationStruct()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -166,21 +167,21 @@ public partial class OracleDeserializeTests
         byte[] realBuffer = builder.SizedByteArray();
         var parsed = FS.LocationHolder.Serializer.Parse(realBuffer);
 
-        Assert.Equal("foobar", parsed.Fake);
-        Assert.Equal(0.1f, parsed.SingleLocation.X);
-        Assert.Equal(0.2f, parsed.SingleLocation.Y);
-        Assert.Equal(0.3f, parsed.SingleLocation.Z);
-        Assert.Equal(3, parsed.LocationVector.Count);
+        Assert.AreEqual("foobar", parsed.Fake);
+        Assert.AreEqual(0.1f, parsed.SingleLocation.X);
+        Assert.AreEqual(0.2f, parsed.SingleLocation.Y);
+        Assert.AreEqual(0.3f, parsed.SingleLocation.Z);
+        Assert.AreEqual(3, parsed.LocationVector.Count);
 
         for (int i = 0; i < 3; ++i)
         {
-            Assert.Equal((float)(3 * i + 1), parsed.LocationVector[i].X);
-            Assert.Equal((float)(3 * i + 2), parsed.LocationVector[i].Y);
-            Assert.Equal((float)(3 * i + 3), parsed.LocationVector[i].Z);
+            Assert.AreEqual((float)(3 * i + 1), parsed.LocationVector[i].X);
+            Assert.AreEqual((float)(3 * i + 2), parsed.LocationVector[i].Y);
+            Assert.AreEqual((float)(3 * i + 3), parsed.LocationVector[i].Z);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FiveByteStructVector()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -199,18 +200,18 @@ public partial class OracleDeserializeTests
         byte[] realBuffer = builder.SizedByteArray();
         var parsed = FS.FiveByteStructTable.Serializer.Parse(realBuffer);
 
-        Assert.Equal(3, parsed.Vector.Count);
+        Assert.AreEqual(3, parsed.Vector.Count);
 
-        Assert.Equal(1, parsed.Vector[0].Int);
-        Assert.Equal(2, parsed.Vector[1].Int);
-        Assert.Equal(3, parsed.Vector[2].Int);
+        Assert.AreEqual(1, parsed.Vector[0].Int);
+        Assert.AreEqual(2, parsed.Vector[1].Int);
+        Assert.AreEqual(3, parsed.Vector[2].Int);
 
-        Assert.Equal((byte)1, parsed.Vector[0].Byte);
-        Assert.Equal((byte)2, parsed.Vector[1].Byte);
-        Assert.Equal((byte)3, parsed.Vector[2].Byte);
+        Assert.AreEqual((byte)1, parsed.Vector[0].Byte);
+        Assert.AreEqual((byte)2, parsed.Vector[1].Byte);
+        Assert.AreEqual((byte)3, parsed.Vector[2].Byte);
     }
 
-    [Fact]
+    [TestMethod]
     public void Union_Table_BasicTypes()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -240,29 +241,29 @@ public partial class OracleDeserializeTests
         var oracle = Flatc.UnionTable.GetRootAsUnionTable(new ByteBuffer(realBuffer)).Value<Flatc.BasicTypes>().Value;
         var unionTable = FS.UnionTable.Serializer.Parse(realBuffer);
 
-        Assert.Equal(1, unionTable.Value.Value.Discriminator);
+        Assert.AreEqual(1, unionTable.Value.Value.Discriminator);
         var parsed = unionTable.Value.Value.Item1;
-        Assert.NotNull(parsed);
+        Assert.IsNotNull(parsed);
 
-        Assert.True(parsed.Bool);
-        Assert.Equal(oracle.Byte, parsed.Byte);
-        Assert.Equal(oracle.SByte, parsed.SByte);
+        Assert.IsTrue(parsed.Bool);
+        Assert.AreEqual(oracle.Byte, parsed.Byte);
+        Assert.AreEqual(oracle.SByte, parsed.SByte);
 
-        Assert.Equal(oracle.UShort, parsed.UShort);
-        Assert.Equal(oracle.Short, parsed.Short);
+        Assert.AreEqual(oracle.UShort, parsed.UShort);
+        Assert.AreEqual(oracle.Short, parsed.Short);
 
-        Assert.Equal(oracle.UInt, parsed.UInt);
-        Assert.Equal(oracle.Int, parsed.Int);
+        Assert.AreEqual(oracle.UInt, parsed.UInt);
+        Assert.AreEqual(oracle.Int, parsed.Int);
 
-        Assert.Equal(oracle.ULong, parsed.ULong);
-        Assert.Equal(oracle.Long, parsed.Long);
+        Assert.AreEqual(oracle.ULong, parsed.ULong);
+        Assert.AreEqual(oracle.Long, parsed.Long);
 
-        Assert.Equal(oracle.Float, parsed.Float);
-        Assert.Equal(oracle.Double, parsed.Double);
-        Assert.Equal("foobar", parsed.String);
+        Assert.AreEqual(oracle.Float, parsed.Float);
+        Assert.AreEqual(oracle.Double, parsed.Double);
+        Assert.AreEqual("foobar", parsed.String);
     }
 
-    [Fact]
+    [TestMethod]
     public void Union_Struct_Location()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -281,16 +282,16 @@ public partial class OracleDeserializeTests
         byte[] realBuffer = builder.DataBuffer.ToSizedArray();
         var unionTable = FS.UnionTable.Serializer.Parse(realBuffer);
 
-        Assert.Equal(2, unionTable.Value.Value.Discriminator);
+        Assert.AreEqual(2, unionTable.Value.Value.Discriminator);
         var parsed = unionTable.Value.Value.Item2;
-        Assert.NotNull(parsed);
+        Assert.IsNotNull(parsed);
 
-        Assert.Equal(1.0f, parsed.X);
-        Assert.Equal(2.0f, parsed.Y);
-        Assert.Equal(3.0f, parsed.Z);
+        Assert.AreEqual(1.0f, parsed.X);
+        Assert.AreEqual(2.0f, parsed.Y);
+        Assert.AreEqual(3.0f, parsed.Z);
     }
 
-    [Fact]
+    [TestMethod]
     public void Union_String()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -305,12 +306,12 @@ public partial class OracleDeserializeTests
         byte[] realBuffer = builder.DataBuffer.ToSizedArray();
         var unionTable = FS.UnionTable.Serializer.Parse(realBuffer);
 
-        Assert.Equal(3, unionTable.Value.Value.Discriminator);
+        Assert.AreEqual(3, unionTable.Value.Value.Discriminator);
         string parsed = unionTable.Value.Value.Item3;
-        Assert.Equal("foobar", parsed);
+        Assert.AreEqual("foobar", parsed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Union_NotSet()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -321,10 +322,10 @@ public partial class OracleDeserializeTests
         byte[] realBuffer = builder.DataBuffer.ToSizedArray();
 
         var unionTable = FS.UnionTable.Serializer.Parse(realBuffer);
-        Assert.Null(unionTable.Value);
+        Assert.IsNull(unionTable.Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void NestedStruct()
     {
         var builder = new FlatBufferBuilder(1024);
@@ -338,14 +339,14 @@ public partial class OracleDeserializeTests
 
         var parsed = FS.NestedStructs.Serializer.Parse(realBuffer);
 
-        Assert.NotNull(parsed.Outer?.Inner);
+        Assert.IsNotNull(parsed.Outer?.Inner);
 
-        Assert.Equal(401, parsed.Outer.Inner.A);
-        Assert.Equal(100, parsed.Outer.A);
+        Assert.AreEqual(401, parsed.Outer.Inner.A);
+        Assert.AreEqual(100, parsed.Outer.A);
     }
 
 
-    [Fact]
+    [TestMethod]
     public void VectorOfUnion()
     {
         Flatc.VectorOfUnionTableT table = new Flatc.VectorOfUnionTableT
@@ -365,26 +366,26 @@ public partial class OracleDeserializeTests
 
         var parsed = FS.VectorOfUnionTable.Serializer.Parse(data);
 
-        Assert.Equal(3, parsed.Value.Count);
+        Assert.AreEqual(3, parsed.Value.Count);
 
-        Assert.Equal(1, parsed.Value[0].Discriminator);
-        Assert.Equal(2, parsed.Value[1].Discriminator);
-        Assert.Equal(3, parsed.Value[2].Discriminator);
+        Assert.AreEqual(1, parsed.Value[0].Discriminator);
+        Assert.AreEqual(2, parsed.Value[1].Discriminator);
+        Assert.AreEqual(3, parsed.Value[2].Discriminator);
 
-        Assert.True(parsed.Value[0].TryGet(out FS.BasicTypes basicTypes));
-        Assert.Equal(7, basicTypes.Int);
+        Assert.IsTrue(parsed.Value[0].TryGet(out FS.BasicTypes basicTypes));
+        Assert.AreEqual(7, basicTypes.Int);
 
-        Assert.True(parsed.Value[1].TryGet(out FS.Location location));
-        Assert.Equal(1, location.X);
-        Assert.Equal(2, location.Y);
-        Assert.Equal(3, location.Z);
+        Assert.IsTrue(parsed.Value[1].TryGet(out FS.Location location));
+        Assert.AreEqual(1, location.X);
+        Assert.AreEqual(2, location.Y);
+        Assert.AreEqual(3, location.Z);
 
-        Assert.True(parsed.Value[2].TryGet(out string str));
-        Assert.Equal("foobar", str);
+        Assert.IsTrue(parsed.Value[2].TryGet(out string str));
+        Assert.AreEqual("foobar", str);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void SortedVectors(FlatBufferDeserializationOption option)
     {
         var builder = new FlatBufferBuilder(1024 * 1024);
@@ -439,7 +440,7 @@ public partial class OracleDeserializeTests
         VerifySorted<FS.SortedVectorDoubleTable, double>(parsed.Double, s => s.Value, Comparer<double>.Default, doubles, new List<double> { Math.PI, Math.E, Math.Sqrt(2) });
     }
 
-    [Fact]
+    [TestMethod]
     public void SortedVectors_NullKey_NotAllowed()
     {
         var builder = new FlatBufferBuilder(1024 * 1024);
@@ -459,7 +460,7 @@ public partial class OracleDeserializeTests
             stringOffsets.Add(Flatc.SortedVectorStringTable.CreateSortedVectorStringTable(builder, strOffset));
         }
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.ThrowsException<InvalidOperationException>(
             () => Flatc.SortedVectorStringTable.CreateSortedVectorOfSortedVectorStringTable(builder, stringOffsets.ToArray()));
     }
 
@@ -475,18 +476,18 @@ public partial class OracleDeserializeTests
         for (int i = 1; i < items.Count; ++i)
         {
             TKey current = keyGetter(items[i]);
-            Assert.True(comparer.Compare(previous, current) <= 0);
+            Assert.IsTrue(comparer.Compare(previous, current) <= 0);
         }
 
         foreach (var expectedItem in expectedItems)
         {
             var item = items.BinarySearchByFlatBufferKey(expectedItem);
-            Assert.NotNull(item);
+            Assert.IsNotNull(item);
         }
 
         foreach (var unexpectedItem in unexpectedItems)
         {
-            Assert.Null(items.BinarySearchByFlatBufferKey(unexpectedItem));
+            Assert.IsNull(items.BinarySearchByFlatBufferKey(unexpectedItem));
         }
     }
 

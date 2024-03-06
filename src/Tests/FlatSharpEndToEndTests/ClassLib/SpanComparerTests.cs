@@ -20,9 +20,10 @@ using System.Text;
 
 namespace FlatSharpEndToEndTests.ClassLib;
 
+[TestClass]
 public class SpanComparerTests
 {
-    [Fact]
+    [TestMethod]
     [ExcludeFromCodeCoverage]
     public void RandomFlatBufferStringComparison()
     {
@@ -47,38 +48,38 @@ public class SpanComparerTests
             Span<byte> span2 = SerializationHelpers.Encoding.GetBytes(str2);
 
             Utf8StringComparer utf8Comparer = new Utf8StringComparer();
-            Assert.Equal(0, StringSpanComparer.Instance.Compare(true, span, true, span));
-            Assert.Equal(0, utf8Comparer.Compare(str, str));
+            Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span, true, span));
+            Assert.AreEqual(0, utf8Comparer.Compare(str, str));
 
-            Assert.Equal(0, StringSpanComparer.Instance.Compare(true, span2, true, span2));
-            Assert.Equal(0, utf8Comparer.Compare(str2, str2));
+            Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span2, true, span2));
+            Assert.AreEqual(0, utf8Comparer.Compare(str2, str2));
 
             int expected = utf8Comparer.Compare(str, str2);
             int actual = StringSpanComparer.Instance.Compare(true, span, true, span2);
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
 
             expected = utf8Comparer.Compare(str2, str);
             actual = StringSpanComparer.Instance.Compare(true, span2, true, span);
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void StringComparer_NullItems()
     {
         StringSpanComparer comp = default;
 
-        var ex = Assert.Throws<InvalidOperationException>(() => comp.Compare(false, default, false, default));
-        Assert.Equal("Strings may not be null when used as sorted vector keys.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidOperationException>(() => comp.Compare(false, default, false, default));
+        Assert.AreEqual("Strings may not be null when used as sorted vector keys.", ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => comp.Compare(false, default, true, default));
-        Assert.Equal("Strings may not be null when used as sorted vector keys.", ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => comp.Compare(false, default, true, default));
+        Assert.AreEqual("Strings may not be null when used as sorted vector keys.", ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => comp.Compare(true, default, false, default));
-        Assert.Equal("Strings may not be null when used as sorted vector keys.", ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => comp.Compare(true, default, false, default));
+        Assert.AreEqual("Strings may not be null when used as sorted vector keys.", ex.Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void TestBoolComparer()
     {
         BoolSpanComparer comparer = new BoolSpanComparer(default);
@@ -86,40 +87,40 @@ public class SpanComparerTests
         Span<byte> f = new byte[1] { SerializationHelpers.False };
         Span<byte> t = new byte[1] { SerializationHelpers.True };
 
-        Assert.Equal(false.CompareTo(true), comparer.Compare(true, f, true, t));
-        Assert.Equal(false.CompareTo(false), comparer.Compare(true, f, true, f));
-        Assert.Equal(true.CompareTo(true), comparer.Compare(true, t, true, t));
-        Assert.Equal(true.CompareTo(false), comparer.Compare(true, t, true, f));
+        Assert.AreEqual(false.CompareTo(true), comparer.Compare(true, f, true, t));
+        Assert.AreEqual(false.CompareTo(false), comparer.Compare(true, f, true, f));
+        Assert.AreEqual(true.CompareTo(true), comparer.Compare(true, t, true, t));
+        Assert.AreEqual(true.CompareTo(false), comparer.Compare(true, t, true, f));
     }
 
-    [Fact]
+    [TestMethod]
     public void TestByteComparer() => this.Compare<byte>(new ByteSpanComparer(default), sizeof(byte));
 
-    [Fact]
+    [TestMethod]
     public void TestSByteComparer() => this.Compare<sbyte>(new SByteSpanComparer(default), sizeof(sbyte));
 
-    [Fact]
+    [TestMethod]
     public void TestUShortComparer() => this.Compare<ushort>(new UShortSpanComparer(default), sizeof(ushort));
 
-    [Fact]
+    [TestMethod]
     public void TestShortComparer() => this.Compare<short>(new ShortSpanComparer(default), sizeof(short));
 
-    [Fact]
+    [TestMethod]
     public void TestUIntComaprer() => this.Compare<uint>(new UIntSpanComparer(default), sizeof(uint));
 
-    [Fact]
+    [TestMethod]
     public void TestIntComparer() => this.Compare<int>(new IntSpanComparer(default), sizeof(int));
 
-    [Fact]
+    [TestMethod]
     public void TestULongComparer() => this.Compare<ulong>(new ULongSpanComparer(default), sizeof(ulong));
 
-    [Fact]
+    [TestMethod]
     public void TestLongComparer() => this.Compare<long>(new LongSpanComparer(default), sizeof(long));
 
-    [Fact]
+    [TestMethod]
     public void TestDoubleComparer() => this.Compare<double>(new DoubleSpanComparer(default), sizeof(double));
 
-    [Fact]
+    [TestMethod]
     public void TestFloatComparer() => this.Compare<float>(new FloatSpanComparer(default), sizeof(float));
 
     private void Compare<T>(ISpanComparer comparer, int size) where T : struct, IComparable<T>
@@ -139,22 +140,22 @@ public class SpanComparerTests
             var leftSpan = leftData.AsSpan().Slice(0, size);
             var rightSpan = rightData.AsSpan().Slice(0, size);
 
-            Assert.Equal(
+            Assert.AreEqual(
                 a.CompareTo(b),
                 comparer.Compare(true, leftSpan, true, rightSpan));
 
-            Assert.Equal(
+            Assert.AreEqual(
                 b.CompareTo(a),
                 comparer.Compare(true, rightSpan, true, leftSpan));
 
-            Assert.Equal(0, comparer.Compare(true, leftSpan, true, leftSpan));
-            Assert.Equal(0, comparer.Compare(true, rightSpan, true, rightSpan));
+            Assert.AreEqual(0, comparer.Compare(true, leftSpan, true, leftSpan));
+            Assert.AreEqual(0, comparer.Compare(true, rightSpan, true, rightSpan));
         }
 
         // Verify that the not-present case works as expected.
         byte[] defaultData = new byte[32];
-        Assert.Equal(0, comparer.Compare(true, defaultData, false, default));
-        Assert.Equal(0, comparer.Compare(false, default, true, defaultData));
-        Assert.Equal(0, comparer.Compare(false, default, false, default));
+        Assert.AreEqual(0, comparer.Compare(true, defaultData, false, default));
+        Assert.AreEqual(0, comparer.Compare(false, default, true, defaultData));
+        Assert.AreEqual(0, comparer.Compare(false, default, false, default));
     }
 }

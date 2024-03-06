@@ -18,9 +18,10 @@ using FlatSharp;
 
 namespace FlatSharpEndToEndTests.ClassLib;
 
+[TestClass]
 public class GeneratedSerializerWrapperTests
 {
-    [Fact]
+    [TestMethod]
     public void Serialize_DestinationBuffer_TooShort()
     {
         FlatBufferSerializerNonGenericTests.SomeTable table = new();
@@ -29,16 +30,16 @@ public class GeneratedSerializerWrapperTests
         var serializer = FlatBufferSerializerNonGenericTests.SomeTable.Serializer;
 
         byte[] destination = new byte[7];
-        Assert.Throws<BufferTooSmallException>(() => serializer.Write(destination, table));
+        Assert.ThrowsException<BufferTooSmallException>(() => serializer.Write(destination, table));
     }
 
-    [Fact]
+    [TestMethod]
     public void Serialize_RootTable_Null()
     {
         var serializer = FlatBufferSerializerNonGenericTests.SomeTable.Serializer;
 
         byte[] destination = new byte[7];
-        var ex = Assert.Throws<ArgumentNullException>(() => serializer.Write(destination, null));
-        Assert.Contains("The root table may not be null.", ex.Message);
+        var ex = Assert.ThrowsException<ArgumentNullException>(() => serializer.Write(destination, null));
+        Assert.IsTrue(ex.Message.Contains("The root table may not be null."));
     }
 }

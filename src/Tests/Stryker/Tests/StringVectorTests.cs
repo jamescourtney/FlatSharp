@@ -2,35 +2,35 @@
 using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
-using Xunit.Sdk;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class StringVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void StringTableField(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
         IList<string> theBoys = vectors.Str;
-        Assert.Equal(3, theBoys.Count);
-        Assert.Equal("billy", theBoys[0]);
-        Assert.Equal("mm", theBoys[1]);
-        Assert.Equal("frenchie", theBoys[2]);
+        Assert.AreEqual(3, theBoys.Count);
+        Assert.AreEqual("billy", theBoys[0]);
+        Assert.AreEqual("mm", theBoys[1]);
+        Assert.AreEqual("frenchie", theBoys[2]);
 
         Helpers.AssertMutationWorks(option, vectors, false, s => s.Str, new string[0]);
         Helpers.ValidateListVector(option, false, theBoys, string.Empty);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     });
 
-    [Fact]
+    [TestMethod]
     public void WithNull() => Helpers.Repeat(() =>
     {
         Root root = new()
@@ -41,15 +41,15 @@ public class StringVectorTests
             }
         };
 
-        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
 
-        ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
     });
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Big(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = new Root { Vectors = new() { Str = new List<string>() } };
@@ -64,12 +64,12 @@ public class StringVectorTests
 
         for (int i = 0; i < 1000; ++i)
         {
-            Assert.Equal(root.Vectors.Str[i], parsedList[i]);
+            Assert.AreEqual(root.Vectors.Str[i], parsedList[i]);
 
             Action<string, string> assert = option switch
             {
-                FlatBufferDeserializationOption.Lazy => Assert.NotSame,
-                _ => Assert.Same,
+                FlatBufferDeserializationOption.Lazy => Assert.AreNotSame,
+                _ => Assert.AreSame,
             };
 
             assert(parsedList[i], parsedList[i]);

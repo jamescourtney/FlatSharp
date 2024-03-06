@@ -16,37 +16,38 @@
 
 namespace FlatSharpEndToEndTests.DefaultValues;
 
+[TestClass]
 public class DefaultValuesTests
 {
-    [Fact]
+    [TestMethod]
     public void DefaultValue_Enum_Negative()
     {
         Defaults defaults = new();
 
-        Assert.Equal(long.MaxValue, (long)defaults.EnumLongMax);
-        Assert.Equal((long)-1, (long)defaults.EnumLongNegOne);
+        Assert.AreEqual(long.MaxValue, (long)defaults.EnumLongMax);
+        Assert.AreEqual((long)-1, (long)defaults.EnumLongNegOne);
 
-        Assert.Equal(long.MaxValue, defaults.LongMax);
-        Assert.Equal(-1, defaults.LongNegOne);
+        Assert.AreEqual(long.MaxValue, defaults.LongMax);
+        Assert.AreEqual(-1, defaults.LongNegOne);
 
-        Assert.Equal(0ul, defaults.ULongZero);
-
-        // FlatC bug: ulong values over 2^63 are not supported.
-        Assert.Equal(0ul, defaults.ULongMax);
-
-        Assert.Equal(0ul, (ulong)defaults.EnumULongZero);
+        Assert.AreEqual(0ul, defaults.ULongZero);
 
         // FlatC bug: ulong values over 2^63 are not supported.
-        Assert.Equal(0ul, (ulong)defaults.EnumULongMax);
+        Assert.AreEqual(0ul, defaults.ULongMax);
+
+        Assert.AreEqual(0ul, (ulong)defaults.EnumULongZero);
+
+        // FlatC bug: ulong values over 2^63 are not supported.
+        Assert.AreEqual(0ul, (ulong)defaults.EnumULongMax);
     }
 
-    [Fact]
+    [TestMethod]
     public void Enum_Values()
     {
-        Assert.Equal(-1L, (long)Int64Enum.NegOne);
-        Assert.Equal(long.MaxValue, (long)Int64Enum.LongMax);
+        Assert.AreEqual(-1L, (long)Int64Enum.NegOne);
+        Assert.AreEqual(long.MaxValue, (long)Int64Enum.LongMax);
 
-        Assert.Equal(0UL, (ulong)UInt64Enum.Zero);
-        Assert.Equal(ulong.MaxValue, (ulong)UInt64Enum.Max);
+        Assert.AreEqual(0UL, (ulong)UInt64Enum.Zero);
+        Assert.AreEqual(ulong.MaxValue, (ulong)UInt64Enum.Max);
     }
 }

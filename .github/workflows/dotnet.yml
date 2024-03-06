@@ -11,7 +11,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: macos-latest
+            rid: osx-x64
     runs-on: ${{ matrix.os }}
     env:
       AppVeyorBuild: true
@@ -65,9 +71,17 @@ jobs:
       working-directory: src
       run: dotnet build -c Release /p:SignAssembly=true
 
-    - name: E2E Test
+    - name: E2E Test (JIT)
       working-directory: src/Tests/FlatSharpEndToEndTests
       run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
+
+    - name: E2E Test (AOT)
+      working-directory: src/Tests/FlatSharpEndToEndTests
+      env:
+        BuildAot: 'true'
+      run: |
+        dotnet publish -c Release -f net8.0 -r ${{ matrix.rid }}
+        ./bin/Release/net8.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
 
     - name: Poolable E2E Test
       working-directory: src/Tests/FlatSharpPoolableEndToEndTests

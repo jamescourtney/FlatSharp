@@ -21,7 +21,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using Xunit.Abstractions;
 
 namespace FlatSharpEndToEndTests;
 
@@ -104,7 +103,7 @@ public static class Helpers
         Span<byte> actual)
     {
         //var combined = expected.ToArray().Zip(actual.ToArray()).ToArray();
-        Assert.Equal(expected.Length, actual.Length);
+        Assert.AreEqual(expected.Length, actual.Length);
 
         for (int i = 0; i < expected.Length; ++i)
         {
@@ -123,25 +122,25 @@ public static class Helpers
         TProperty newValue,
         Action<TProperty, TProperty>? assertEqual = null)
     {
-        Assert.True(parent is IFlatBufferDeserializedObject);
+        Assert.IsTrue(parent is IFlatBufferDeserializedObject);
 
         {
             var dobj = (IFlatBufferDeserializedObject)parent;
 
-            Assert.Equal(option, dobj.DeserializationContext.DeserializationOption);
-            Assert.Equal(typeof(TSource), dobj.TableOrStructType);
+            Assert.AreEqual(option, dobj.DeserializationContext.DeserializationOption);
+            Assert.AreEqual(typeof(TSource), dobj.TableOrStructType);
 
             switch (option)
             {
                 case FlatBufferDeserializationOption.Greedy:
                 case FlatBufferDeserializationOption.GreedyMutable:
-                    Assert.False(dobj.CanSerializeWithMemoryCopy);
-                    Assert.Null(dobj.InputBuffer);
+                    Assert.IsFalse(dobj.CanSerializeWithMemoryCopy);
+                    Assert.IsNull(dobj.InputBuffer);
                     break;
 
                 default:
-                    Assert.True(dobj.CanSerializeWithMemoryCopy);
-                    Assert.NotNull(dobj.InputBuffer);
+                    Assert.IsTrue(dobj.CanSerializeWithMemoryCopy);
+                    Assert.IsNotNull(dobj.InputBuffer);
                     break;
             }
         }
@@ -165,15 +164,15 @@ public static class Helpers
                 return;
 
             default:
-                var ex = Assert.Throws<NotMutableException>(new Action(() =>
+                var ex = Assert.ThrowsException<NotMutableException>(new Action(() =>
                 {
-                    var ex = Assert.Throws<TargetInvocationException>(set).InnerException;
+                    var ex = Assert.ThrowsException<TargetInvocationException>(set).InnerException;
                     throw ex;
                 }));
 
                 if (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable)
                 {
-                    Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
+                    Assert.AreEqual("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
                 }
 
                 return;
@@ -190,23 +189,23 @@ public static class Helpers
 
         if (items is IFlatBufferDeserializedVector vec)
         {
-            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(-1));
-            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.OffsetOf(items.Count));
+            Assert.ThrowsException<IndexOutOfRangeException>(() => vec.OffsetOf(-1));
+            Assert.ThrowsException<IndexOutOfRangeException>(() => vec.OffsetOf(items.Count));
 
             for (int i = 0; i < vec.Count; ++i)
             {
-                Assert.Equal(vec.OffsetOf(i), vec.OffsetBase + (i * vec.ItemSize));
+                Assert.AreEqual(vec.OffsetOf(i), vec.OffsetBase + (i * vec.ItemSize));
             }
 
-            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.ItemAt(-1));
-            Assert.ThrowsAny<IndexOutOfRangeException>(() => vec.ItemAt(items.Count));
+            Assert.ThrowsException<IndexOutOfRangeException>(() => vec.ItemAt(-1));
+            Assert.ThrowsException<IndexOutOfRangeException>(() => vec.ItemAt(items.Count));
         }
 
         {
             T[] target = new T[items.Count];
             items.CopyTo(target, 0);
 
-            Assert.Equal(items.Count, target.Length);
+            Assert.AreEqual(items.Count, target.Length);
 
             if (option != FlatBufferDeserializationOption.Lazy || typeof(T).IsPrimitive || typeof(T) == typeof(string))
             {
@@ -214,31 +213,31 @@ public static class Helpers
                 {
                     if (typeof(T).IsValueType || option == FlatBufferDeserializationOption.Lazy)
                     {
-                        Assert.Equal(items[i], target[i]);
+                        Assert.AreEqual(items[i], target[i]);
                     }
                     else
                     {
 #pragma warning disable xUnit2005 // Do not use identity check on value type
-                        Assert.Same(items[i], items[i]);
+                        Assert.AreSame(items[i], items[i]);
 #pragma warning restore xUnit2005 // Do not use identity check on value type
                     }
 
-                    Assert.Equal(i, items.IndexOf(items[i]));
-                    Assert.True(items.Contains(items[i]));
+                    Assert.AreEqual(i, items.IndexOf(items[i]));
+                    Assert.IsTrue(items.Contains(items[i]));
                 }
             }
             else if (!typeof(T).IsValueType)
             {
                 for (int i = 0; i < items.Count; ++i)
                 {
-                    Assert.NotEqual(i, items.IndexOf(items[i]));
-                    Assert.False(items.Contains(items[i]));
-                    Assert.NotEqual(items[i], target[i]);
+                    Assert.AreNotEqual(i, items.IndexOf(items[i]));
+                    Assert.IsFalse(items.Contains(items[i]));
+                    Assert.AreNotEqual(items[i], target[i]);
                 }
             }
         }
 
-        Assert.Equal(
+        Assert.AreEqual(
             items.IsReadOnly,
             option != FlatBufferDeserializationOption.GreedyMutable);
 
@@ -254,24 +253,24 @@ public static class Helpers
                     // For value types, validate that they are the same.
                     if (typeof(T).IsValueType)
                     {
-                        Assert.Equal<T>(newValue, items[i]);
+                        Assert.AreEqual<T>(newValue, items[i]);
                     }
                     else if (option != FlatBufferDeserializationOption.Lazy)
                     {
-                        Assert.True(object.ReferenceEquals(newValue, items[i]));
+                        Assert.IsTrue(object.ReferenceEquals(newValue, items[i]));
                     }
 
                     break;
 
                 default:
-                    var ex = Assert.Throws<NotMutableException>(new Action(() =>
+                    var ex = Assert.ThrowsException<NotMutableException>(new Action(() =>
                     {
                         items[i] = newValue;
                     }));
 
                     if (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable)
                     {
-                        Assert.Equal("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
+                        Assert.AreEqual("WriteThrough fields are implemented as readonly when using 'GreedyMutable' serializers.", ex.Message);
                     }
 
                     break;
@@ -281,27 +280,27 @@ public static class Helpers
         if (option == FlatBufferDeserializationOption.GreedyMutable && !isWriteThrough)
         {
             items.Clear();
-            Assert.Empty(items);
+            Assert.AreEqual(0, items.Count);
 
             items.Add(default);
-            Assert.Single(items);
+            Assert.AreEqual(1, items.Count);
 
             items.Remove(items[0]);
-            Assert.Empty(items);
+            Assert.AreEqual(0, items.Count);
 
             items.Insert(0, default);
-            Assert.Single(items);
+            Assert.AreEqual(1, items.Count);
 
             items.RemoveAt(0);
-            Assert.Empty(items);
+            Assert.AreEqual(0, items.Count);
         }
         else
         {
-            Assert.Throws<NotMutableException>(() => items.Clear());
-            Assert.Throws<NotMutableException>(() => items.Add(default));
-            Assert.Throws<NotMutableException>(() => items.Remove(items[0]));
-            Assert.Throws<NotMutableException>(() => items.Insert(0, default));
-            Assert.Throws<NotMutableException>(() => items.RemoveAt(0));
+            Assert.ThrowsException<NotMutableException>(() => items.Clear());
+            Assert.ThrowsException<NotMutableException>(() => items.Add(default));
+            Assert.ThrowsException<NotMutableException>(() => items.Remove(items[0]));
+            Assert.ThrowsException<NotMutableException>(() => items.Insert(0, default));
+            Assert.ThrowsException<NotMutableException>(() => items.RemoveAt(0));
         }
     }
 
@@ -332,23 +331,23 @@ public static class Helpers
             return vt.OffsetOf(obj.InputBuffer!, index) != 0;
         }
 
-        Assert.False(IsFieldLoaded());
-        Assert.Equal(expected, IsFieldPresent());
+        Assert.IsFalse(IsFieldLoaded());
+        Assert.AreEqual(expected, IsFieldPresent());
 
         for (int i = 0; i < 10; ++i)
         {
             T item = getter(parent);
 
-            Assert.True(IsFieldLoaded());
+            Assert.IsTrue(IsFieldLoaded());
             T next = getter(parent);
 
             if (typeof(T).IsValueType)
             {
-                Assert.Equal(item, next);
+                Assert.AreEqual(item, next);
             }
             else
             {
-                Assert.True(object.ReferenceEquals(item, next));
+                Assert.IsTrue(object.ReferenceEquals(item, next));
             }
         }
 
@@ -439,17 +438,17 @@ public static class Helpers
         {
             if (typeof(T).IsValueType && (typeof(T).IsPrimitive || typeof(T).IsEnum))
             {
-                assertEqual = (a, b) => Assert.Equal(a, b);
+                assertEqual = (a, b) => Assert.AreEqual(a, b);
             }
             else if (typeof(T) == typeof(string))
             {
-                assertEqual = (a, b) => Assert.Equal(a, b);
+                assertEqual = (a, b) => Assert.AreEqual(a, b);
             }
         }
 
         if (!typeof(T).IsValueType && option != FlatBufferDeserializationOption.Lazy)
         {
-            Assert.True(object.ReferenceEquals(a, b));
+            Assert.IsTrue(object.ReferenceEquals(a, b));
         }
 
         assertEqual?.Invoke(a, b);
@@ -459,25 +458,25 @@ public static class Helpers
     {
         if (option == FlatBufferDeserializationOption.Lazy || option == FlatBufferDeserializationOption.Progressive)
         {
-            Assert.Throws<IndexOutOfRangeException>(() => list[-1]);
-            Assert.Throws<IndexOutOfRangeException>(() => list[list.Count]);
-            Assert.Throws<IndexOutOfRangeException>(() => list[-1] = default);
-            Assert.Throws<IndexOutOfRangeException>(() => list[list.Count] = default);
+            Assert.ThrowsException<IndexOutOfRangeException>(() => list[-1]);
+            Assert.ThrowsException<IndexOutOfRangeException>(() => list[list.Count]);
+            Assert.ThrowsException<IndexOutOfRangeException>(() => list[-1] = default);
+            Assert.ThrowsException<IndexOutOfRangeException>(() => list[list.Count] = default);
         }
         else if (option == FlatBufferDeserializationOption.Greedy
              || (isWriteThrough && option == FlatBufferDeserializationOption.GreedyMutable))
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1]);
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[list.Count]);
-            Assert.Throws<NotMutableException>(() => list[-1] = default);
-            Assert.Throws<NotMutableException>(() => list[list.Count] = default);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list[-1]);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list[list.Count]);
+            Assert.ThrowsException<NotMutableException>(() => list[-1] = default);
+            Assert.ThrowsException<NotMutableException>(() => list[list.Count] = default);
         }
         else
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1]);
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[list.Count]);
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1] = default);
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[list.Count] = default);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list[-1]);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list[list.Count]);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list[-1] = default);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list[list.Count] = default);
         }
     }
 }

@@ -18,13 +18,14 @@ using System.IO;
 
 namespace FlatSharpEndToEndTests.Required;
 
+[TestClass]
 public class RequiredTests
 {
-    [Theory]
-    [InlineData("A")]
-    [InlineData("B")]
-    [InlineData("C")]
-    [InlineData("E")]
+    [TestMethod]
+    [DataRow("A")]
+    [DataRow("B")]
+    [DataRow("C")]
+    [DataRow("E")]
     public void Serialize_ReferenceFieldNotPresent(string fieldName)
     {
         RequiredTable table = new RequiredTable
@@ -39,15 +40,15 @@ public class RequiredTests
 
         typeof(RequiredTable).GetProperty(fieldName).SetMethod.Invoke(table, new object[] { null });
 
-        var ex = Assert.Throws<InvalidOperationException>(() => table.AllocateAndSerialize());
-        Assert.Equal(
+        var ex = Assert.ThrowsException<InvalidOperationException>(() => table.AllocateAndSerialize());
+        Assert.AreEqual(
             $"Table property 'FlatSharpEndToEndTests.Required.RequiredTable.{fieldName}' is marked as required, but was not set.",
             ex.Message);
     }
 
-    [Theory]
-    [InlineData("D")]
-    [InlineData("F")]
+    [TestMethod]
+    [DataRow("D")]
+    [DataRow("F")]
     public void Serialize_ValueFields(string fieldName)
     {
         RequiredTable table = new RequiredTable
@@ -61,13 +62,13 @@ public class RequiredTests
         };
 
         PropertyInfo info = typeof(RequiredTable).GetProperty(fieldName);
-        Assert.True(info.PropertyType.IsValueType);
-        Assert.Null(Nullable.GetUnderlyingType(info.PropertyType));
+        Assert.IsTrue(info.PropertyType.IsValueType);
+        Assert.IsNull(Nullable.GetUnderlyingType(info.PropertyType));
     }
 
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Parse(FlatBufferDeserializationOption option)
     {
         void ParseAndUse(string fieldName)
@@ -118,8 +119,8 @@ public class RequiredTests
 
         for (char c = 'A'; c <= 'F'; ++c)
         {
-            var ex = Assert.Throws<InvalidDataException>(() => ParseAndUse(c.ToString()));
-            Assert.Equal(
+            var ex = Assert.ThrowsException<InvalidDataException>(() => ParseAndUse(c.ToString()));
+            Assert.AreEqual(
                 $"Table property 'FlatSharpEndToEndTests.Required.RequiredTable.{c}' is marked as required, but was missing from the buffer.",
                 ex.Message);
         }

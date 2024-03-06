@@ -5,90 +5,91 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class UnionVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionVector(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
         IList<FunUnion> sourceUnions = root.Vectors.Union;
         IList<FunUnion> unions = vectors.Union;
 
-        Assert.NotNull(unions);
-        Assert.Equal(sourceUnions.Count, unions.Count);
+        Assert.IsNotNull(unions);
+        Assert.AreEqual(sourceUnions.Count, unions.Count);
 
         for (int i = 0; i < unions.Count; ++i)
         {
             FunUnion left = sourceUnions[i];
             FunUnion right = unions[i];
 
-            Assert.Equal(sourceUnions[i].Discriminator, unions[i].Discriminator);
-            Assert.Equal(sourceUnions[i].Kind, unions[i].Kind);
+            Assert.AreEqual(sourceUnions[i].Discriminator, unions[i].Discriminator);
+            Assert.AreEqual(sourceUnions[i].Kind, unions[i].Kind);
 
             {
                 object li = left.Accept<Visitor, object>(new());
                 object ri = right.Accept<Visitor, object>(new());
 
-                Assert.IsAssignableFrom(li.GetType(), ri);
+                Assert.IsInstanceOfType(ri, li.GetType());
 
                 li = left.Match<object>(a => a, b => b, c => c, d => d);
                 ri = right.Match<object>(a => a, b => b, c => c, d => d);
 
-                Assert.IsAssignableFrom(li.GetType(), ri);
+                Assert.IsInstanceOfType(ri, li.GetType());
             }
 
             switch (left.Kind)
             {
                 case FunUnion.ItemKind.Key:
                     {
-                        Assert.Equal(left.Key.Name, right.Key.Name);
-                        Assert.Equal(left.Item4.Value, right.Item4.Value);
+                        Assert.AreEqual(left.Key.Name, right.Key.Name);
+                        Assert.AreEqual(left.Item4.Value, right.Item4.Value);
 
-                        Assert.True(left.TryGet(out Key _));
-                        Assert.True(right.TryGet(out Key _));
-                        Assert.False(left.TryGet(out RefStruct _));
-                        Assert.False(right.TryGet(out RefStruct _));
+                        Assert.IsTrue(left.TryGet(out Key _));
+                        Assert.IsTrue(right.TryGet(out Key _));
+                        Assert.IsFalse(left.TryGet(out RefStruct _));
+                        Assert.IsFalse(right.TryGet(out RefStruct _));
                     }
                     break;
 
 
                 case FunUnion.ItemKind.RefStruct:
                     {
-                        Assert.Equal(left.RefStruct.A, right.RefStruct.A);
-                        Assert.Equal(left.Item1.B, right.Item1.B);
-                        Assert.True(left.TryGet(out RefStruct _));
-                        Assert.True(right.TryGet(out RefStruct _));
-                        Assert.False(left.TryGet(out Key _));
-                        Assert.False(right.TryGet(out Key _));
+                        Assert.AreEqual(left.RefStruct.A, right.RefStruct.A);
+                        Assert.AreEqual(left.Item1.B, right.Item1.B);
+                        Assert.IsTrue(left.TryGet(out RefStruct _));
+                        Assert.IsTrue(right.TryGet(out RefStruct _));
+                        Assert.IsFalse(left.TryGet(out Key _));
+                        Assert.IsFalse(right.TryGet(out Key _));
                     }
                     break;
 
                 case FunUnion.ItemKind.str:
                     {
-                        Assert.Equal(left.str, right.str);
-                        Assert.Equal(left.Item3, right.Item3);
-                        Assert.True(left.TryGet(out string _));
-                        Assert.True(right.TryGet(out string _));
-                        Assert.False(left.TryGet(out ValueStruct _));
-                        Assert.False(right.TryGet(out ValueStruct _));
+                        Assert.AreEqual(left.str, right.str);
+                        Assert.AreEqual(left.Item3, right.Item3);
+                        Assert.IsTrue(left.TryGet(out string _));
+                        Assert.IsTrue(right.TryGet(out string _));
+                        Assert.IsFalse(left.TryGet(out ValueStruct _));
+                        Assert.IsFalse(right.TryGet(out ValueStruct _));
                     }
                     break;
 
                 case FunUnion.ItemKind.ValueStruct:
                     {
-                        Assert.Equal(left.ValueStruct.A, right.ValueStruct.A);
-                        Assert.Equal(left.Item2.B, right.Item2.B);
-                        Assert.True(left.TryGet(out ValueStruct _));
-                        Assert.True(right.TryGet(out ValueStruct _));
-                        Assert.False(left.TryGet(out string _));
-                        Assert.False(right.TryGet(out string _));
+                        Assert.AreEqual(left.ValueStruct.A, right.ValueStruct.A);
+                        Assert.AreEqual(left.Item2.B, right.Item2.B);
+                        Assert.IsTrue(left.TryGet(out ValueStruct _));
+                        Assert.IsTrue(right.TryGet(out ValueStruct _));
+                        Assert.IsFalse(left.TryGet(out string _));
+                        Assert.IsFalse(right.TryGet(out string _));
                     }
                     break;
             }
@@ -98,8 +99,8 @@ public class UnionVectorTests
         Helpers.ValidateListVector(option, false, unions, new FunUnion("foo"));
     });
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Big(FlatBufferDeserializationOption option)
     {
         const int ChunkSize = 8; // this test needs to exercise some edge scenarios that require knowing the chunk size of the union vectors.
@@ -127,100 +128,100 @@ public class UnionVectorTests
             Root root = new Root { Vectors = new() { Union = expected } }.SerializeAndParse(option);
             IList<FunUnion> parsed = root.Vectors.Union;
 
-            Assert.Equal(expected.Count, parsed.Count);
+            Assert.AreEqual(expected.Count, parsed.Count);
             for (int i = 0; i < expected.Count; ++i)
             {
                 FunUnion e = expected[i];
                 FunUnion p = parsed[i];
 
-                Assert.Equal(e.Discriminator, p.Discriminator);
+                Assert.AreEqual(e.Discriminator, p.Discriminator);
             }
         }
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionVector_Invalid_MissingOffset(FlatBufferDeserializationOption option)
     {
         CreateInvalid_MissingOffset(out byte[] buffer);
 
-        Assert.Throws<InvalidDataException>(() =>
+        Assert.ThrowsException<InvalidDataException>(() =>
         {
             var item = Root.Serializer.Parse(buffer, option);
             var x = item.Vectors.Union[0];
         });
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionVector_Invalid_InvalidDiscriminator(FlatBufferDeserializationOption option)
     {
         CreateInvalid_InvalidDiscriminator(out byte[] buffer);
 
-        var ex = Assert.Throws<InvalidOperationException>(() =>
+        var ex = Assert.ThrowsException<InvalidOperationException>(() =>
         {
             var item = Root.Serializer.Parse(buffer, option);
             var x = item.Vectors.Union[0];
         });
 
-        Assert.Equal(
+        Assert.AreEqual(
             $"Unexpected union discriminator value '7' for Union {typeof(FunUnion).FullName}",
             ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionVector_Invalid_MismatchedCounts(FlatBufferDeserializationOption option)
     {
         CreateInvalid_MismatchedCounts(out byte[] buffer);
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
         {
             var item = Root.Serializer.Parse(buffer, option);
             var x = item.Vectors.Union[0];
         });
 
-        Assert.Equal("Union vector had mismatched number of discriminators and offsets.", ex.Message);
+        Assert.AreEqual("Union vector had mismatched number of discriminators and offsets.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionVector_Invalid_NoOffsetVector(FlatBufferDeserializationOption option)
     {
         CreateInvalid_NoOffsetVector(out byte[] buffer);
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
         {
             var item = Root.Serializer.Parse(buffer, option);
             var x = item.Vectors.Union[0];
         });
 
-        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Vectors.Union' was only partially included in the buffer.", ex.Message);
+        Assert.AreEqual("FlatBuffer table property 'FlatSharpStrykerTests.Vectors.Union' was only partially included in the buffer.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionVector_Invalid_NoDiscriminatorVector(FlatBufferDeserializationOption option)
     {
         CreateInvalid_NoOffsetVector(out byte[] buffer);
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
         {
             var item = Root.Serializer.Parse(buffer, option);
             var x = item.Vectors.Union[0];
         });
 
-        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Vectors.Union' was only partially included in the buffer.", ex.Message);
+        Assert.AreEqual("FlatBuffer table property 'FlatSharpStrykerTests.Vectors.Union' was only partially included in the buffer.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void NotPresent(FlatBufferDeserializationOption option)
     {
         Root root = new Root() { Vectors = new() };
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
-        Assert.Null(parsed.Vectors.Union);
+        Assert.IsNull(parsed.Vectors.Union);
     }
 
     private struct Visitor : FunUnion.Visitor<object>

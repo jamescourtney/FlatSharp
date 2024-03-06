@@ -18,9 +18,10 @@ using System;
 
 namespace FlatSharpEndToEndTests.RawData;
 
+[TestClass]
 public class RawDataTableTests
 {
-    [Fact]
+    [TestMethod]
     public void AllMembersNull()
     {
         SimpleTable table = new SimpleTable();
@@ -34,10 +35,10 @@ public class RawDataTableTests
             4, 0,
         };
 
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void TableWithStruct()
     {
         SimpleTable table = new SimpleTable
@@ -61,10 +62,10 @@ public class RawDataTableTests
             4, 0,                   // Index 1 offset
         };
 
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
     }
 
-    [Fact]
+    [TestMethod]
     public void TableWithStructAndString()
     {
         SimpleTable table = new SimpleTable
@@ -91,11 +92,11 @@ public class RawDataTableTests
             104, 105, 0,            // hi + null terminator
         };
 
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void TableWithNullReferenceStruct(FlatBufferDeserializationOption option)
     {
         SimpleTable table = new SimpleTable
@@ -124,16 +125,16 @@ public class RawDataTableTests
             4, 0,                   // Index 4 offset
         };
 
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
 
         SimpleTable parsed = SimpleTable.Serializer.Parse(buffer, option);
 
-        Assert.Equal(0u, parsed.OuterStruct.Inner.Uint);
-        Assert.Equal(0, parsed.OuterStruct.Inner.Byte);
-        Assert.Equal(0L, parsed.OuterStruct.Inner.Long);
+        Assert.AreEqual(0u, parsed.OuterStruct.Inner.Uint);
+        Assert.AreEqual(0, parsed.OuterStruct.Inner.Byte);
+        Assert.AreEqual(0L, parsed.OuterStruct.Inner.Long);
     }
 
-    [Fact]
+    [TestMethod]
     public void EmptyTable_Serialize_MaxSize()
     {
         EmptyTable table = new EmptyTable();
@@ -148,43 +149,43 @@ public class RawDataTableTests
             4, 0,
         };
 
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
 
         int maxSize = EmptyTable.Serializer.GetMaxSize(table);
-        Assert.Equal(23, maxSize);
+        Assert.AreEqual(23, maxSize);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Table_With_Default_Values(FlatBufferDeserializationOption option)
     {
         DefaultValueTypes defaults = new();
 
-        Assert.True(defaults.Bool);
-        Assert.Equal<byte>(1, defaults.Byte);
-        Assert.Equal<sbyte>(-1, defaults.Sbyte);
-        Assert.Equal<ushort>(ushort.MaxValue, defaults.Ushort);
-        Assert.Equal<short>(short.MinValue, defaults.Short);
-        Assert.Equal<uint>(uint.MaxValue, defaults.Uint);
-        Assert.Equal<int>(int.MinValue, defaults.Int);
-        Assert.Equal<float>(3.14f, defaults.Float);
-        Assert.Equal<ulong>(long.MaxValue, defaults.Ulong); // FlatC issue where it can't represent defaults over long.MaxValue
-        Assert.Equal<long>(long.MinValue, defaults.Long);
-        Assert.Equal<double>(3.14159d, defaults.Double);
-        Assert.Equal<SimpleEnum>(SimpleEnum.B, defaults.SimpleEnum);
+        Assert.IsTrue(defaults.Bool);
+        Assert.AreEqual<byte>(1, defaults.Byte);
+        Assert.AreEqual<sbyte>(-1, defaults.Sbyte);
+        Assert.AreEqual<ushort>(ushort.MaxValue, defaults.Ushort);
+        Assert.AreEqual<short>(short.MinValue, defaults.Short);
+        Assert.AreEqual<uint>(uint.MaxValue, defaults.Uint);
+        Assert.AreEqual<int>(int.MinValue, defaults.Int);
+        Assert.AreEqual<float>(3.14f, defaults.Float);
+        Assert.AreEqual<ulong>(long.MaxValue, defaults.Ulong); // FlatC issue where it can't represent defaults over long.MaxValue
+        Assert.AreEqual<long>(long.MinValue, defaults.Long);
+        Assert.AreEqual<double>(3.14159d, defaults.Double);
+        Assert.AreEqual<SimpleEnum>(SimpleEnum.B, defaults.SimpleEnum);
 
-        Assert.Null(defaults.OptBool);
-        Assert.Null(defaults.OptByte);
-        Assert.Null(defaults.OptSbyte);
-        Assert.Null(defaults.OptUshort);
-        Assert.Null(defaults.OptShort);
-        Assert.Null(defaults.OptInt);
-        Assert.Null(defaults.OptUint);
-        Assert.Null(defaults.OptFloat);
-        Assert.Null(defaults.OptUlong);
-        Assert.Null(defaults.OptLong);
-        Assert.Null(defaults.OptDouble);
-        Assert.Null(defaults.OptSimpleEnum);
+        Assert.IsNull(defaults.OptBool);
+        Assert.IsNull(defaults.OptByte);
+        Assert.IsNull(defaults.OptSbyte);
+        Assert.IsNull(defaults.OptUshort);
+        Assert.IsNull(defaults.OptShort);
+        Assert.IsNull(defaults.OptInt);
+        Assert.IsNull(defaults.OptUint);
+        Assert.IsNull(defaults.OptFloat);
+        Assert.IsNull(defaults.OptUlong);
+        Assert.IsNull(defaults.OptLong);
+        Assert.IsNull(defaults.OptDouble);
+        Assert.IsNull(defaults.OptSimpleEnum);
 
         byte[] buffer = defaults.AllocateAndSerialize();
 
@@ -196,39 +197,39 @@ public class RawDataTableTests
             4, 0,
         };
 
-        Assert.True(expectedData.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
 
         defaults = DefaultValueTypes.Serializer.Parse(buffer, option);
 
-        Assert.True(defaults.Bool);
-        Assert.Equal<byte>(1, defaults.Byte);
-        Assert.Equal<sbyte>(-1, defaults.Sbyte);
-        Assert.Equal<ushort>(ushort.MaxValue, defaults.Ushort);
-        Assert.Equal<short>(short.MinValue, defaults.Short);
-        Assert.Equal<uint>(uint.MaxValue, defaults.Uint);
-        Assert.Equal<int>(int.MinValue, defaults.Int);
-        Assert.Equal<float>(3.14f, defaults.Float);
-        Assert.Equal<ulong>(long.MaxValue, defaults.Ulong); // FlatC issue where it can't represent defaults over long.MaxValue
-        Assert.Equal<long>(long.MinValue, defaults.Long);
-        Assert.Equal<double>(3.14159d, defaults.Double);
-        Assert.Equal<SimpleEnum>(SimpleEnum.B, defaults.SimpleEnum);
+        Assert.IsTrue(defaults.Bool);
+        Assert.AreEqual<byte>(1, defaults.Byte);
+        Assert.AreEqual<sbyte>(-1, defaults.Sbyte);
+        Assert.AreEqual<ushort>(ushort.MaxValue, defaults.Ushort);
+        Assert.AreEqual<short>(short.MinValue, defaults.Short);
+        Assert.AreEqual<uint>(uint.MaxValue, defaults.Uint);
+        Assert.AreEqual<int>(int.MinValue, defaults.Int);
+        Assert.AreEqual<float>(3.14f, defaults.Float);
+        Assert.AreEqual<ulong>(long.MaxValue, defaults.Ulong); // FlatC issue where it can't represent defaults over long.MaxValue
+        Assert.AreEqual<long>(long.MinValue, defaults.Long);
+        Assert.AreEqual<double>(3.14159d, defaults.Double);
+        Assert.AreEqual<SimpleEnum>(SimpleEnum.B, defaults.SimpleEnum);
 
-        Assert.Null(defaults.OptBool);
-        Assert.Null(defaults.OptByte);
-        Assert.Null(defaults.OptSbyte);
-        Assert.Null(defaults.OptUshort);
-        Assert.Null(defaults.OptShort);
-        Assert.Null(defaults.OptInt);
-        Assert.Null(defaults.OptUint);
-        Assert.Null(defaults.OptFloat);
-        Assert.Null(defaults.OptUlong);
-        Assert.Null(defaults.OptLong);
-        Assert.Null(defaults.OptDouble);
-        Assert.Null(defaults.OptSimpleEnum);
+        Assert.IsNull(defaults.OptBool);
+        Assert.IsNull(defaults.OptByte);
+        Assert.IsNull(defaults.OptSbyte);
+        Assert.IsNull(defaults.OptUshort);
+        Assert.IsNull(defaults.OptShort);
+        Assert.IsNull(defaults.OptInt);
+        Assert.IsNull(defaults.OptUint);
+        Assert.IsNull(defaults.OptFloat);
+        Assert.IsNull(defaults.OptUlong);
+        Assert.IsNull(defaults.OptLong);
+        Assert.IsNull(defaults.OptDouble);
+        Assert.IsNull(defaults.OptSimpleEnum);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void DeprecatedValue_IgnoreOnRead(FlatBufferDeserializationOption option)
     {
         // hand-craft a table here:
@@ -248,17 +249,17 @@ public class RawDataTableTests
 
         var parsed = DeprecatedItemTable.Serializer.Parse(data, option);
 
-        Assert.Equal(0, parsed.Value);
-        Assert.Equal(255L, parsed.Other);
+        Assert.AreEqual(0, parsed.Value);
+        Assert.AreEqual(255L, parsed.Other);
 
         var nonDeprecatedParsed = NonDeprecatedItemTable.Serializer.Parse(data, option);
 
-        Assert.Equal(123, nonDeprecatedParsed.Value);
-        Assert.Equal(255L, nonDeprecatedParsed.Other);
+        Assert.AreEqual(123, nonDeprecatedParsed.Value);
+        Assert.AreEqual(255L, nonDeprecatedParsed.Other);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void DeprecatedValue_IgnoreOnWrite(FlatBufferDeserializationOption option)
     {
         var deprecatedTable = new DeprecatedItemTable
@@ -280,21 +281,21 @@ public class RawDataTableTests
         };
 
         byte[] buffer = deprecatedTable.AllocateAndSerialize();
-        Assert.True(data.AsSpan().SequenceEqual(buffer));
+        Assert.IsTrue(data.AsSpan().SequenceEqual(buffer));
 
         var nonDeprecatedParsed = NonDeprecatedItemTable.Serializer.Parse(data, option);
 
-        Assert.Equal(0, nonDeprecatedParsed.Value);
-        Assert.Equal(255L, nonDeprecatedParsed.Other);
+        Assert.AreEqual(0, nonDeprecatedParsed.Value);
+        Assert.AreEqual(255L, nonDeprecatedParsed.Other);
     }
 
-    [Fact]
+    [TestMethod]
     public void ForceWriteTable_WritesDefault()
     {
         var table = new ForceWriteTable();
         byte[] buffer = table.AllocateAndSerialize();
 
-        Assert.Equal(1, table.Value);
+        Assert.AreEqual(1, table.Value);
 
         byte[] expectedData =
         {
@@ -306,14 +307,14 @@ public class RawDataTableTests
             4, 0,
         };
 
-        Assert.True(buffer.AsSpan().SequenceEqual(expectedData));
+        Assert.IsTrue(buffer.AsSpan().SequenceEqual(expectedData));
     }
 
-    [Fact]
+    [TestMethod]
     public void NonForceWriteTable_DoesNotWriteDefault()
     {
         var table = new NonForceWriteTable();
-        Assert.Equal(1, table.Value);
+        Assert.AreEqual(1, table.Value);
         byte[] buffer = table.AllocateAndSerialize();
 
         byte[] expectedData =
@@ -324,6 +325,6 @@ public class RawDataTableTests
             4, 0,
         };
 
-        Assert.True(buffer.AsSpan().SequenceEqual(expectedData));
+        Assert.IsTrue(buffer.AsSpan().SequenceEqual(expectedData));
     }
 }

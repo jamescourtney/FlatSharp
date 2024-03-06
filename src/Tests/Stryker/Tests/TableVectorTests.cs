@@ -5,63 +5,64 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class TableVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
         IList<Key> vector = vectors.Table;
         IList<Key> expected = root.Vectors.Table;
 
-        Assert.Equal(expected.Count, vector.Count);
+        Assert.AreEqual(expected.Count, vector.Count);
 
         for (int i = 0; i < expected.Count; ++i)
         {
             var item = vector[i];
             var e = expected[i];
 
-            Assert.Equal(e.Name, item.Name);
-            Assert.Equal(e.Value, item.Value);
+            Assert.AreEqual(e.Name, item.Name);
+            Assert.AreEqual(e.Value, item.Value);
         }
 
         Helpers.AssertSequenceEqual(expectedData, buffer);
         Helpers.ValidateListVector(option, false, vector, new Key { Name = "johnny" });
     });
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Missing(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot_Missing(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
-        Assert.Null(vectors.Table);
+        Assert.IsNull(vectors.Table);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Fact]
+    [TestMethod]
     public void WithNull() => Helpers.Repeat(() =>
     {
-        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], CreateRoot_WithNullItem()));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], CreateRoot_WithNullItem()));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
 
-        ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(CreateRoot_WithNullItem()));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.GetMaxSize(CreateRoot_WithNullItem()));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
     });
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveSingleRead() => Helpers.Repeat(() =>
     {
         Root root = new() { Vectors = new() { Table = new[] { new Key() { Name = "foo", Value = Fruit.Strawberry } } } };
@@ -69,13 +70,13 @@ public class TableVectorTests
 
         Key item = parsed.Vectors.Table[0];
 
-        Assert.Equal("foo", item.Name);
-        Assert.Same(item.Name, item.Name);
-        Assert.Equal(Fruit.Strawberry, item.Value);
+        Assert.AreEqual("foo", item.Name);
+        Assert.AreSame(item.Name, item.Name);
+        Assert.AreEqual(Fruit.Strawberry, item.Value);
 
         buffer.AsSpan().Clear();
 
-        Assert.Equal(Fruit.Strawberry, item.Value);
+        Assert.AreEqual(Fruit.Strawberry, item.Value);
     });
 
     private Root CreateRoot(out byte[] expectedData)

@@ -19,22 +19,23 @@ using System.Runtime.InteropServices;
 
 namespace FlatSharpEndToEndTests.Unions;
 
+[TestClass]
 public class UnionsTestCases
 {
-    [Fact]
+    [TestMethod]
     public void Custom_Union_Accept_Works()
     {
         var c = this.Setup();
 
         UnionVisitor visitor = new();
 
-        Assert.Equal(typeof(A), c.Value[0].Accept<UnionVisitor, Type>(visitor));
-        Assert.Equal(typeof(B), c.Value[1].Accept<UnionVisitor, Type>(visitor));
-        Assert.Equal(typeof(C), c.Value[2].Accept<UnionVisitor, Type>(visitor));
-        Assert.Equal(typeof(D), c.Value[3].Accept<UnionVisitor, Type>(visitor));
+        Assert.AreEqual(typeof(A), c.Value[0].Accept<UnionVisitor, Type>(visitor));
+        Assert.AreEqual(typeof(B), c.Value[1].Accept<UnionVisitor, Type>(visitor));
+        Assert.AreEqual(typeof(C), c.Value[2].Accept<UnionVisitor, Type>(visitor));
+        Assert.AreEqual(typeof(D), c.Value[3].Accept<UnionVisitor, Type>(visitor));
     }
 
-    [Fact]
+    [TestMethod]
     public void Custom_Union_Match_Works()
     {
         var c = this.Setup();
@@ -49,7 +50,7 @@ public class UnionsTestCases
                 c => typeof(C),
                 d => typeof(D));
 
-            Assert.Equal(expected[i], result);
+            Assert.AreEqual(expected[i], result);
         }
     }
 
@@ -58,7 +59,7 @@ public class UnionsTestCases
     /// In this test, the FBS file lies about the size of <see cref="System.Numerics.Vector{T}"/>. Depending on the machine,
     /// the size should be 16 (SSE), 32 (AVX2), or 64 (AVX512). The FBS defines it as 4 bytes.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Unsafe_Unions_ExternalStruct_WrongSize()
     {
         long[] headerTrailer = new[] { 0L, -1L };
@@ -67,13 +68,13 @@ public class UnionsTestCases
         {
             Wrapper<UnsafeUnion> wrapper = new();
             Span<byte> wrapperBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Wrapper<UnsafeUnion>, byte>(ref wrapper), Unsafe.SizeOf<Wrapper<UnsafeUnion>>());
-            var ex = Assert.Throws<FlatSharpInternalException>(() => wrapper.Union = new(new System.Numerics.Vector<byte>(1)));
-            Assert.Contains("to have size 4. Unsafe.SizeOf reported size ", ex.Message);
+            var ex = Assert.ThrowsException<FlatSharpInternalException>(() => wrapper.Union = new(new System.Numerics.Vector<byte>(1)));
+            Assert.IsTrue(ex.Message.Contains("to have size 4. Unsafe.SizeOf reported size "));
         }
     }
 #endif
 
-    [Fact]
+    [TestMethod]
     public void Unsafe_Unions_ExternalStruct_CorrectSize()
     {
         long[] headerTrailer = new[] { 0L, -1L };
@@ -86,16 +87,16 @@ public class UnionsTestCases
             wrapper.Trailer = guard;
             wrapper.Union = new(new System.Numerics.Vector3(1, 2, 3));
 
-            Assert.Equal(UnsafeUnion.ItemKind.ExtCorrect, wrapper.Union.Kind);
-            Assert.Equal(1.0f, wrapper.Union.ExtCorrect.X);
-            Assert.Equal(2.0f, wrapper.Union.ExtCorrect.Y);
-            Assert.Equal(3.0f, wrapper.Union.ExtCorrect.Z);
-            Assert.Equal(guard, wrapper.Header);
-            Assert.Equal(guard, wrapper.Trailer);
+            Assert.AreEqual(UnsafeUnion.ItemKind.ExtCorrect, wrapper.Union.Kind);
+            Assert.AreEqual(1.0f, wrapper.Union.ExtCorrect.X);
+            Assert.AreEqual(2.0f, wrapper.Union.ExtCorrect.Y);
+            Assert.AreEqual(3.0f, wrapper.Union.ExtCorrect.Z);
+            Assert.AreEqual(guard, wrapper.Header);
+            Assert.AreEqual(guard, wrapper.Trailer);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Unsafe_Unions_DefinedStruct()
     {
         long[] headerTrailer = new[] { 0L, -1L };
@@ -108,13 +109,13 @@ public class UnionsTestCases
             wrapper.Trailer = guard;
             wrapper.Union = new(new ValueStructVec3 { X = 1, Y = 2, Z = 3 });
 
-            Assert.Equal(UnsafeUnion.ItemKind.ValueStructVec3, wrapper.Union.Kind);
+            Assert.AreEqual(UnsafeUnion.ItemKind.ValueStructVec3, wrapper.Union.Kind);
 
-            Assert.Equal(1.0f, wrapper.Union.ValueStructVec3.X);
-            Assert.Equal(2.0f, wrapper.Union.ValueStructVec3.Y);
-            Assert.Equal(3.0f, wrapper.Union.ValueStructVec3.Z);
-            Assert.Equal(guard, wrapper.Header);
-            Assert.Equal(guard, wrapper.Trailer);
+            Assert.AreEqual(1.0f, wrapper.Union.ValueStructVec3.X);
+            Assert.AreEqual(2.0f, wrapper.Union.ValueStructVec3.Y);
+            Assert.AreEqual(3.0f, wrapper.Union.ValueStructVec3.Z);
+            Assert.AreEqual(guard, wrapper.Header);
+            Assert.AreEqual(guard, wrapper.Trailer);
         }
     }
 

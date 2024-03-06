@@ -16,14 +16,15 @@
 
 namespace FlatSharpEndToEndTests.TableMembers;
 
-public partial class TableMemberTests
+[TestClass]
+public class TableMemberTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Bool(FlatBufferDeserializationOption option) => this.RunTest<bool, BoolTable>(true, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Byte(FlatBufferDeserializationOption option)
     {
          this.RunTest<byte, ByteTable>(1, option);
@@ -34,67 +35,67 @@ public partial class TableMemberTests
 
         ByteTable parsed = table.SerializeAndParse(option);
 
-        Assert.NotNull(parsed.ItemMemory);
-        Assert.NotNull(parsed.ItemReadonlyMemory);
+        Assert.IsNotNull(parsed.ItemMemory);
+        Assert.IsNotNull(parsed.ItemReadonlyMemory);
 
         Memory<byte> mem = parsed.ItemMemory.Value;
         ReadOnlyMemory<byte> romem = parsed.ItemReadonlyMemory.Value;
 
         for (int i = 0; i < table.ItemMemory.Value.Length; ++i)
         {
-            Assert.Equal(table.ItemMemory.Value.Span[i], mem.Span[i]);
-            Assert.Equal(table.ItemMemory.Value.Span[i], romem.Span[i]);
+            Assert.AreEqual(table.ItemMemory.Value.Span[i], mem.Span[i]);
+            Assert.AreEqual(table.ItemMemory.Value.Span[i], romem.Span[i]);
         }
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void SByte(FlatBufferDeserializationOption option) => this.RunTest<sbyte, SByteTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Short(FlatBufferDeserializationOption option) => this.RunTest<short, ShortTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UShort(FlatBufferDeserializationOption option) => this.RunTest<ushort, UShortTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Int(FlatBufferDeserializationOption option) => this.RunTest<int, IntTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UInt(FlatBufferDeserializationOption option) => this.RunTest<uint, UIntTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Long(FlatBufferDeserializationOption option) => this.RunTest<long, LongTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ULong(FlatBufferDeserializationOption option) => this.RunTest<ulong, ULongTable>(1, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Float(FlatBufferDeserializationOption option) => this.RunTest<float, FloatTable>(2.71f, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Double(FlatBufferDeserializationOption option) => this.RunTest<double, DoubleTable>(3.14, option);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void String(FlatBufferDeserializationOption option)
     {
         {
             byte[] emptyTable = new EmptyTable().AllocateAndSerialize();
             StringTable parsed = StringTable.Serializer.Parse(emptyTable, option);
 
-            Assert.Null(parsed.ItemDeprecated);
-            Assert.Null(parsed.ItemStandard);
-            Assert.Null(parsed.ItemVectorImplicit);
-            Assert.Null(parsed.ItemVectorReadonly);
+            Assert.IsNull(parsed.ItemDeprecated);
+            Assert.IsNull(parsed.ItemStandard);
+            Assert.IsNull(parsed.ItemVectorImplicit);
+            Assert.IsNull(parsed.ItemVectorReadonly);
         }
 
         {
@@ -108,19 +109,19 @@ public partial class TableMemberTests
 
             StringTable parsed = template.SerializeAndParse(option);
 
-            Assert.Null(parsed.ItemDeprecated);
-            Assert.Equal("standard", parsed.ItemStandard);
+            Assert.IsNull(parsed.ItemDeprecated);
+            Assert.AreEqual("standard", parsed.ItemStandard);
 
             IList<string> @implicit = parsed.ItemVectorImplicit;
-            Assert.Equal(2, @implicit.Count);
-            Assert.Equal("a", @implicit[0]);
-            Assert.Equal("b", @implicit[1]);
+            Assert.AreEqual(2, @implicit.Count);
+            Assert.AreEqual("a", @implicit[0]);
+            Assert.AreEqual("b", @implicit[1]);
 
             IReadOnlyList<string> rolist = parsed.ItemVectorReadonly;
-            Assert.Equal(3, rolist.Count);
-            Assert.Equal("c", rolist[0]);
-            Assert.Equal("d", rolist[1]);
-            Assert.Equal("e", rolist[2]);
+            Assert.AreEqual(3, rolist.Count);
+            Assert.AreEqual("c", rolist[0]);
+            Assert.AreEqual("d", rolist[1]);
+            Assert.AreEqual("e", rolist[2]);
         }
     }
 
@@ -133,12 +134,12 @@ public partial class TableMemberTests
         TTable @default = new();
 
         TTable parsed = @default.Serializer.Parse(emptyTable, option);
-        Assert.Null(parsed.ItemList);
-        Assert.Null(parsed.ItemReadonlyList);
-        Assert.Null(parsed.ItemOptional);
-        Assert.Equal(default(T), parsed.ItemStandard);
-        Assert.Equal(expectedDefault, @default.ItemWithDefault);
-        Assert.Equal(default(T), parsed.ItemDeprecated);
+        Assert.IsNull(parsed.ItemList);
+        Assert.IsNull(parsed.ItemReadonlyList);
+        Assert.IsNull(parsed.ItemOptional);
+        Assert.AreEqual(default(T), parsed.ItemStandard);
+        Assert.AreEqual(expectedDefault, @default.ItemWithDefault);
+        Assert.AreEqual(default(T), parsed.ItemDeprecated);
 
         TTable table = new()
         {
@@ -152,20 +153,20 @@ public partial class TableMemberTests
 
         parsed = table.SerializeAndParse(option);
 
-        Assert.NotNull(parsed.ItemList);
-        Assert.NotNull(parsed.ItemReadonlyList);
-        Assert.Equal(default(T), parsed.ItemOptional.Value);
-        Assert.Equal(expectedDefault, parsed.ItemStandard);
-        Assert.Equal(default(T), parsed.ItemWithDefault);
-        Assert.Equal(default(T), parsed.ItemDeprecated);
+        Assert.IsNotNull(parsed.ItemList);
+        Assert.IsNotNull(parsed.ItemReadonlyList);
+        Assert.AreEqual(default(T), parsed.ItemOptional.Value);
+        Assert.AreEqual(expectedDefault, parsed.ItemStandard);
+        Assert.AreEqual(default(T), parsed.ItemWithDefault);
+        Assert.AreEqual(default(T), parsed.ItemDeprecated);
 
-        Assert.Equal(2, parsed.ItemList.Count);
-        Assert.Equal(2, parsed.ItemReadonlyList.Count);
+        Assert.AreEqual(2, parsed.ItemList.Count);
+        Assert.AreEqual(2, parsed.ItemReadonlyList.Count);
 
         for (int i = 0; i < 2; ++i)
         {
-            Assert.Equal(expectedDefault, parsed.ItemReadonlyList[i]);
-            Assert.Equal(expectedDefault, parsed.ItemList[i]);
+            Assert.AreEqual(expectedDefault, parsed.ItemReadonlyList[i]);
+            Assert.AreEqual(expectedDefault, parsed.ItemList[i]);
         }
     }
 }

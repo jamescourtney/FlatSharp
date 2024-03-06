@@ -21,6 +21,7 @@ namespace FlatSharpEndToEndTests.ClassLib.FlatBufferVectorTests;
 /// <summary>
 /// Tests for FlatSharp's IList implementations.
 /// </summary>
+[TestClass]
 public class FlatBufferVectorTests
 {
     private static readonly IReadOnlyList<string> ExpectedStringContents = new List<string> { "one", "two", "three", "four", "five" };
@@ -48,90 +49,90 @@ public class FlatBufferVectorTests
         this.progressiveIntVector = originalIntVector.SerializeAndParse(FlatBufferDeserializationOption.Progressive);
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_OutOfRange()
     {
-        Assert.Throws<IndexOutOfRangeException>(() => this.stringVector.Vector[-1]);
-        Assert.Throws<IndexOutOfRangeException>(() => this.stringVector.Vector[5]);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => this.stringVector.Vector[-1]);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => this.stringVector.Vector[5]);
 
-        Assert.Throws<IndexOutOfRangeException>(() => this.progressiveStringVector.Vector[-1]);
-        Assert.Throws<IndexOutOfRangeException>(() => this.progressiveStringVector.Vector[5]);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => this.progressiveStringVector.Vector[-1]);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => this.progressiveStringVector.Vector[5]);
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_NotMutable()
     {
-        Assert.True(this.stringVector.Vector.IsReadOnly);
-        Assert.Throws<NotMutableException>(() => this.stringVector.Vector[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => this.stringVector.Vector.Add("foobar"));
-        Assert.Throws<NotMutableException>(() => this.stringVector.Vector.Clear());
-        Assert.Throws<NotMutableException>(() => this.stringVector.Vector.Insert(0, "foobar"));
-        Assert.Throws<NotMutableException>(() => this.stringVector.Vector.Remove("foobar"));
-        Assert.Throws<NotMutableException>(() => this.stringVector.Vector.RemoveAt(0));
+        Assert.IsTrue(this.stringVector.Vector.IsReadOnly);
+        Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Add("foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Clear());
+        Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Insert(0, "foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Remove("foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.RemoveAt(0));
 
-        Assert.True(this.progressiveStringVector.Vector.IsReadOnly);
-        Assert.Throws<NotMutableException>(() => this.progressiveStringVector.Vector[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => this.progressiveStringVector.Vector.Add("foobar"));
-        Assert.Throws<NotMutableException>(() => this.progressiveStringVector.Vector.Clear());
-        Assert.Throws<NotMutableException>(() => this.progressiveStringVector.Vector.Insert(0, "foobar"));
-        Assert.Throws<NotMutableException>(() => this.progressiveStringVector.Vector.Remove("foobar"));
-        Assert.Throws<NotMutableException>(() => this.progressiveStringVector.Vector.RemoveAt(0));
+        Assert.IsTrue(this.progressiveStringVector.Vector.IsReadOnly);
+        Assert.ThrowsException<NotMutableException>(() => this.progressiveStringVector.Vector[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => this.progressiveStringVector.Vector.Add("foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.progressiveStringVector.Vector.Clear());
+        Assert.ThrowsException<NotMutableException>(() => this.progressiveStringVector.Vector.Insert(0, "foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.progressiveStringVector.Vector.Remove("foobar"));
+        Assert.ThrowsException<NotMutableException>(() => this.progressiveStringVector.Vector.RemoveAt(0));
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_GetEnumerator()
     {
         int i = 0;
         foreach (var item in this.stringVector.Vector)
         {
-            Assert.Equal(item, ExpectedStringContents[i]);
+            Assert.AreEqual(item, ExpectedStringContents[i]);
             i++;
         }
 
         i = 0;
         foreach (var item in this.progressiveStringVector.Vector)
         {
-            Assert.Equal(item, ExpectedStringContents[i]);
+            Assert.AreEqual(item, ExpectedStringContents[i]);
             i++;
         }
 
         i = 0;
         foreach (var item in this.intVector.Vector)
         {
-            Assert.Equal(item, ExpectedIntContents[i]);
+            Assert.AreEqual(item, ExpectedIntContents[i]);
             i++;
         }
 
         i = 0;
         foreach (var item in this.progressiveIntVector.Vector)
         {
-            Assert.Equal(item, ExpectedIntContents[i]);
+            Assert.AreEqual(item, ExpectedIntContents[i]);
             i++;
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_Contains()
     {
-        Assert.True(this.stringVector.Vector.Contains("one"));
-        Assert.False(this.stringVector.Vector.Contains("foobar"));
-        Assert.False(this.stringVector.Vector.Contains(null));
+        Assert.IsTrue(this.stringVector.Vector.Contains("one"));
+        Assert.IsFalse(this.stringVector.Vector.Contains("foobar"));
+        Assert.IsFalse(this.stringVector.Vector.Contains(null));
 
-        Assert.True(this.progressiveStringVector.Vector.Contains("one"));
-        Assert.False(this.progressiveStringVector.Vector.Contains("foobar"));
-        Assert.False(this.progressiveStringVector.Vector.Contains(null));
+        Assert.IsTrue(this.progressiveStringVector.Vector.Contains("one"));
+        Assert.IsFalse(this.progressiveStringVector.Vector.Contains("foobar"));
+        Assert.IsFalse(this.progressiveStringVector.Vector.Contains(null));
 
-        Assert.False(this.intVector.Vector.Contains(-1));
-        Assert.False(this.progressiveIntVector.Vector.Contains(-1));
+        Assert.IsFalse(this.intVector.Vector.Contains(-1));
+        Assert.IsFalse(this.progressiveIntVector.Vector.Contains(-1));
 
         foreach (var i in ExpectedIntContents)
         {
-            Assert.True(this.intVector.Vector.Contains(i));
-            Assert.True(this.progressiveIntVector.Vector.Contains(i));
+            Assert.IsTrue(this.intVector.Vector.Contains(i));
+            Assert.IsTrue(this.progressiveIntVector.Vector.Contains(i));
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_CopyTo()
     {
         string[] array = new string[100];
@@ -140,17 +141,17 @@ public class FlatBufferVectorTests
 
         for (int i = 0; i < 50; ++i)
         {
-            Assert.Null(array[i]);
+            Assert.IsNull(array[i]);
         }
 
         for (int i = 0; i < ExpectedStringContents.Count; ++i)
         {
-            Assert.Equal(ExpectedStringContents[i], array[i + 50]);
+            Assert.AreEqual(ExpectedStringContents[i], array[i + 50]);
         }
 
         for (int i = 50 + ExpectedStringContents.Count; i < array.Length; ++i)
         {
-            Assert.Null(array[i]);
+            Assert.IsNull(array[i]);
         }
 
         array = new string[100];
@@ -159,21 +160,21 @@ public class FlatBufferVectorTests
 
         for (int i = 0; i < 50; ++i)
         {
-            Assert.Null(array[i]);
+            Assert.IsNull(array[i]);
         }
 
         for (int i = 0; i < ExpectedStringContents.Count; ++i)
         {
-            Assert.Equal(ExpectedStringContents[i], array[i + 50]);
+            Assert.AreEqual(ExpectedStringContents[i], array[i + 50]);
         }
 
         for (int i = 50 + ExpectedStringContents.Count; i < array.Length; ++i)
         {
-            Assert.Null(array[i]);
+            Assert.IsNull(array[i]);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_CopyTo_SizedArray()
     {
         string[] array = new string[this.stringVector.Vector.Count];
@@ -181,7 +182,7 @@ public class FlatBufferVectorTests
 
         for (int i = 0; i < ExpectedStringContents.Count; ++i)
         {
-            Assert.Equal(ExpectedStringContents[i], array[i]);
+            Assert.AreEqual(ExpectedStringContents[i], array[i]);
         }
 
         array = new string[this.progressiveStringVector.Vector.Count];
@@ -189,36 +190,36 @@ public class FlatBufferVectorTests
 
         for (int i = 0; i < ExpectedStringContents.Count; ++i)
         {
-            Assert.Equal(ExpectedStringContents[i], array[i]);
+            Assert.AreEqual(ExpectedStringContents[i], array[i]);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_IndexOf()
     {
         for (int i = 0; i < ExpectedStringContents.Count; ++i)
         {
-            Assert.Equal(i, this.stringVector.Vector.IndexOf(ExpectedStringContents[i]));
-            Assert.Equal(i, this.progressiveStringVector.Vector.IndexOf(ExpectedStringContents[i]));
+            Assert.AreEqual(i, this.stringVector.Vector.IndexOf(ExpectedStringContents[i]));
+            Assert.AreEqual(i, this.progressiveStringVector.Vector.IndexOf(ExpectedStringContents[i]));
         }
 
         for (int i = 0; i < ExpectedIntContents.Count; ++i)
         {
-            Assert.Equal(i, this.intVector.Vector.IndexOf(ExpectedIntContents[i]));
-            Assert.Equal(i, this.progressiveIntVector.Vector.IndexOf(ExpectedIntContents[i]));
+            Assert.AreEqual(i, this.intVector.Vector.IndexOf(ExpectedIntContents[i]));
+            Assert.AreEqual(i, this.progressiveIntVector.Vector.IndexOf(ExpectedIntContents[i]));
         }
 
-        Assert.Equal(-1, this.stringVector.Vector.IndexOf("foobar"));
-        Assert.Equal(-1, this.stringVector.Vector.IndexOf(null));
-        Assert.Equal(-1, this.progressiveStringVector.Vector.IndexOf("foobar"));
-        Assert.Equal(-1, this.progressiveStringVector.Vector.IndexOf(null));
-        Assert.Equal(-1, this.intVector.Vector.IndexOf(int.MinValue));
+        Assert.AreEqual(-1, this.stringVector.Vector.IndexOf("foobar"));
+        Assert.AreEqual(-1, this.stringVector.Vector.IndexOf(null));
+        Assert.AreEqual(-1, this.progressiveStringVector.Vector.IndexOf("foobar"));
+        Assert.AreEqual(-1, this.progressiveStringVector.Vector.IndexOf(null));
+        Assert.AreEqual(-1, this.intVector.Vector.IndexOf(int.MinValue));
     }
 
-    [Fact]
+    [TestMethod]
     public void FlatBufferVector_Caching()
     {
-        Assert.NotSame(this.stringVector.Vector[0], this.stringVector.Vector[0]);
-        Assert.Same(this.progressiveStringVector.Vector[0], this.progressiveStringVector.Vector[0]);
+        Assert.AreNotSame(this.stringVector.Vector[0], this.stringVector.Vector[0]);
+        Assert.AreSame(this.progressiveStringVector.Vector[0], this.progressiveStringVector.Vector[0]);
     }
 }

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+#if !AOT
+
 namespace FlatSharpEndToEndTests.FlatSharp;
 
 public static class Fake
 {
 }
+
+#endif

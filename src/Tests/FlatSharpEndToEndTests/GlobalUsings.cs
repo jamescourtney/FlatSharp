@@ -28,4 +28,6 @@ global using System.Reflection;
 global using System.Runtime.CompilerServices;
 global using FlatSharp;
 global using FlatSharp.Attributes;
-global using Xunit;
+global using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+[assembly: Parallelize(Scope = global::Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.ClassLevel)]
