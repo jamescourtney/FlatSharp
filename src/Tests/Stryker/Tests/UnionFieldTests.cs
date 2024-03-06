@@ -4,50 +4,51 @@ using System.Linq.Expressions;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class UnionFieldTests
 {
-    [Fact]
+    [TestMethod]
     public void InvalidConstructors()
     {
-        Assert.Throws<ArgumentNullException>(() => new FunUnion((string)null));
-        Assert.Throws<ArgumentNullException>(() => new FunUnion((RefStruct)null));
-        Assert.Throws<ArgumentNullException>(() => new FunUnion((Key)null));
+        Assert.ThrowsException<ArgumentNullException>(() => new FunUnion((string)null));
+        Assert.ThrowsException<ArgumentNullException>(() => new FunUnion((RefStruct)null));
+        Assert.ThrowsException<ArgumentNullException>(() => new FunUnion((Key)null));
     }
 
-    [Fact]
+    [TestMethod]
     public void InvalidGetters()
     {
         FunUnion a = new FunUnion(new RefStruct());
 
-        var ex = Assert.Throws<InvalidOperationException>(() => a.ValueStruct);
-        Assert.Equal("The union is not of the requested type.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidOperationException>(() => a.ValueStruct);
+        Assert.AreEqual("The union is not of the requested type.", ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => a.str);
-        Assert.Equal("The union is not of the requested type.", ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => a.str);
+        Assert.AreEqual("The union is not of the requested type.", ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => a.Key);
-        Assert.Equal("The union is not of the requested type.", ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => a.Key);
+        Assert.AreEqual("The union is not of the requested type.", ex.Message);
 
         a = new FunUnion(new ValueStruct());
-        ex = Assert.Throws<InvalidOperationException>(() => a.RefStruct);
-        Assert.Equal("The union is not of the requested type.", ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => a.RefStruct);
+        Assert.AreEqual("The union is not of the requested type.", ex.Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveClear()
     {
         Root parsed = new Root { Fields = new() { Union = new FunUnion("hi") } }.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
 
         Fields f = parsed.Fields;
-        Assert.Equal("hi", f.Union.Value.str);
+        Assert.AreEqual("hi", f.Union.Value.str);
 
         buffer.AsSpan().Clear();
 
-        Assert.Equal("hi", f.Union.Value.str);
+        Assert.AreEqual("hi", f.Union.Value.str);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void StringMember(FlatBufferDeserializationOption option)
     {
         Root root = this.CreateRoot_StringMember(out var expectedData);
@@ -56,43 +57,43 @@ public class UnionFieldTests
         Helpers.AssertSequenceEqual(expectedData, actualData);
 
         FunUnion union = parsed.Fields.Union.Value;
-        Assert.Equal(FunUnion.ItemKind.str, union.Kind);
-        Assert.Equal(3, union.Discriminator);
-        Assert.Equal("hello", union.str);
-        Assert.Equal("hello", union.Item3);
-        Assert.True(union.TryGet(out string str));
-        Assert.Equal("hello", str);
+        Assert.AreEqual(FunUnion.ItemKind.str, union.Kind);
+        Assert.AreEqual(3, union.Discriminator);
+        Assert.AreEqual("hello", union.str);
+        Assert.AreEqual("hello", union.Item3);
+        Assert.IsTrue(union.TryGet(out string str));
+        Assert.AreEqual("hello", str);
 
         Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, new FunUnion(string.Empty), (a, b) =>
         {
             var av = a.Value;
             var bv = b.Value;
-            Assert.Equal(av.Discriminator, bv.Discriminator);
-            Assert.Equal(av.str, bv.str);
+            Assert.AreEqual(av.Discriminator, bv.Discriminator);
+            Assert.AreEqual(av.str, bv.str);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void BrokenUnion()
     {
         string message = $"Unexpected union discriminator value '0' for Union {typeof(FunUnion).FullName}";
 
         Root root = new() { Fields = new() { Union = new FunUnion() } };
 
-        var ex = Assert.Throws<InvalidOperationException>(() => Root.Serializer.GetMaxSize(root));
-        Assert.Equal(message, ex.Message);
+        var ex = Assert.ThrowsException<InvalidOperationException>(() => Root.Serializer.GetMaxSize(root));
+        Assert.AreEqual(message, ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => Root.Serializer.Write(new byte[1024], root));
-        Assert.Equal(message, ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.AreEqual(message, ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => new FunUnion().Accept<Visitor, bool>(new Visitor()));
-        Assert.Equal(message, ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => new FunUnion().Accept<Visitor, bool>(new Visitor()));
+        Assert.AreEqual(message, ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => new FunUnion().Match<bool>(null!, null!, null!, null!));
-        Assert.Equal(message, ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => new FunUnion().Match<bool>(null!, null!, null!, null!));
+        Assert.AreEqual(message, ex.Message);
 
-        ex = Assert.Throws<InvalidOperationException>(() => new Root(root));
-        Assert.Equal(message, ex.Message);
+        ex = Assert.ThrowsException<InvalidOperationException>(() => new Root(root));
+        Assert.AreEqual(message, ex.Message);
     }
 
     private struct Visitor : FunUnion.Visitor<bool>
@@ -103,16 +104,16 @@ public class UnionFieldTests
         public bool Visit(Key item) => true;
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ValueStructMember(FlatBufferDeserializationOption option)
     {
         void VerifyVs(ValueStruct expected, ValueStruct actual)
         {
-            Assert.Equal(expected.A, actual.A);
-            Assert.Equal(expected.B, actual.B);
-            Assert.Equal(expected.C(0), actual.C(0));
-            Assert.Equal(expected.C(1), actual.C(1));
+            Assert.AreEqual(expected.A, actual.A);
+            Assert.AreEqual(expected.B, actual.B);
+            Assert.AreEqual(expected.C(0), actual.C(0));
+            Assert.AreEqual(expected.C(1), actual.C(1));
         }
 
         Root root = this.CreateRoot_ValueStructMember(out var expectedData);
@@ -123,29 +124,29 @@ public class UnionFieldTests
         FunUnion sourceUnion = root.Fields.Union.Value;
         FunUnion union = parsed.Fields.Union.Value;
 
-        Assert.Equal(FunUnion.ItemKind.ValueStruct, union.Kind);
-        Assert.Equal(2, union.Discriminator);
+        Assert.AreEqual(FunUnion.ItemKind.ValueStruct, union.Kind);
+        Assert.AreEqual(2, union.Discriminator);
         VerifyVs(sourceUnion.ValueStruct, union.ValueStruct);
         VerifyVs(sourceUnion.Item2, union.Item2);
 
-        Assert.True(union.TryGet(out ValueStruct test));
+        Assert.IsTrue(union.TryGet(out ValueStruct test));
         VerifyVs(sourceUnion.Item2, test);
 
         Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, default);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void RefStructMember(FlatBufferDeserializationOption option)
     {
         void VerifyVs(RefStruct expected, RefStruct actual)
         {
-            Assert.Equal(expected.A, actual.A);
-            Assert.Equal(expected.B, actual.B);
-            Assert.Equal(expected.C[0], actual.C[0]);
-            Assert.Equal(expected.C[1], actual.C[1]);
-            Assert.Equal(expected.D[0], actual.D[0]);
-            Assert.Equal(expected.D[1], actual.D[1]);
+            Assert.AreEqual(expected.A, actual.A);
+            Assert.AreEqual(expected.B, actual.B);
+            Assert.AreEqual(expected.C[0], actual.C[0]);
+            Assert.AreEqual(expected.C[1], actual.C[1]);
+            Assert.AreEqual(expected.D[0], actual.D[0]);
+            Assert.AreEqual(expected.D[1], actual.D[1]);
         }
 
         Root root = this.CreateRoot_RefStructMember(out var expectedData);
@@ -156,25 +157,25 @@ public class UnionFieldTests
         FunUnion sourceUnion = root.Fields.Union.Value;
         FunUnion union = parsed.Fields.Union.Value;
 
-        Assert.Equal(FunUnion.ItemKind.RefStruct, union.Kind);
-        Assert.Equal(1, union.Discriminator);
+        Assert.AreEqual(FunUnion.ItemKind.RefStruct, union.Kind);
+        Assert.AreEqual(1, union.Discriminator);
         VerifyVs(sourceUnion.RefStruct, union.RefStruct);
         VerifyVs(sourceUnion.Item1, union.Item1);
 
-        Assert.True(union.TryGet(out RefStruct test));
+        Assert.IsTrue(union.TryGet(out RefStruct test));
         VerifyVs(sourceUnion.Item1, test);
 
         Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, default);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void KeyTableMember(FlatBufferDeserializationOption option)
     {
         void VerifyVs(Key expected, Key actual)
         {
-            Assert.Equal(expected.Name, actual.Name);
-            Assert.Equal(expected.Value, actual.Value);
+            Assert.AreEqual(expected.Name, actual.Name);
+            Assert.AreEqual(expected.Value, actual.Value);
         }
 
         Root root = this.CreateRoot_KeyMember(out var expectedData);
@@ -185,77 +186,77 @@ public class UnionFieldTests
         FunUnion sourceUnion = root.Fields.Union.Value;
         FunUnion union = parsed.Fields.Union.Value;
 
-        Assert.Equal(FunUnion.ItemKind.Key, union.Kind);
-        Assert.Equal(4, union.Discriminator);
+        Assert.AreEqual(FunUnion.ItemKind.Key, union.Kind);
+        Assert.AreEqual(4, union.Discriminator);
         VerifyVs(sourceUnion.Key, union.Key);
         VerifyVs(sourceUnion.Item4, union.Item4);
 
-        Assert.True(union.TryGet(out Key test));
+        Assert.IsTrue(union.TryGet(out Key test));
         VerifyVs(sourceUnion.Item4, test);
 
         Helpers.AssertMutationWorks(option, test, false, k => k.Name, string.Empty);
         Helpers.AssertMutationWorks(option, test, false, k => k.Value, Fruit.Apple);
         Helpers.AssertMutationWorks(option, parsed.Fields, false, f => f.Union, default);
 
-        Assert.True(test.IsInitialized);
-        Assert.True(Key.IsStaticInitialized);
+        Assert.IsTrue(test.IsInitialized);
+        Assert.IsTrue(Key.IsStaticInitialized);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void InvalidUnion_NoOffset(FlatBufferDeserializationOption option)
     {
         this.Create_InvalidUnion_NoOffset(out byte[] data);
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
         {
             Root root = Root.Serializer.Parse(data, option);
             FunUnion union = root.Fields.Union.Value;
         });
 
-        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Fields.Union' was only partially included in the buffer.", ex.Message);
+        Assert.AreEqual("FlatBuffer table property 'FlatSharpStrykerTests.Fields.Union' was only partially included in the buffer.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void InvalidUnion_NoDiscriminator(FlatBufferDeserializationOption option)
     {
         this.Create_InvalidUnion_NoDiscriminator(out byte[] data);
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
         {
             Root root = Root.Serializer.Parse(data, option);
             FunUnion union = root.Fields.Union.Value;
         });
 
-        Assert.Equal("FlatBuffer table property 'FlatSharpStrykerTests.Fields.Union' was only partially included in the buffer.", ex.Message);
+        Assert.AreEqual("FlatBuffer table property 'FlatSharpStrykerTests.Fields.Union' was only partially included in the buffer.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void InvalidUnion_InvalidDiscriminator(FlatBufferDeserializationOption option)
     {
         this.Create_InvalidUnion_InvalidDiscriminator(out byte[] data);
 
-        var ex = Assert.Throws<InvalidOperationException>(() =>
+        var ex = Assert.ThrowsException<InvalidOperationException>(() =>
         {
             Root root = Root.Serializer.Parse(data, option);
             FunUnion union = root.Fields.Union.Value;
         });
 
-        Assert.Equal(
+        Assert.AreEqual(
             $"Unexpected union discriminator value '10' for Union {typeof(FunUnion).FullName}",
             ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UnionNotPresent(FlatBufferDeserializationOption option)
     {
         Root source = this.CreateRoot_UnionNotPresent(out byte[] expectedData);
         Root parsed = source.SerializeAndParse(option, out byte[] buffer);
 
-        Assert.Null(parsed.Fields.Union);
+        Assert.IsNull(parsed.Fields.Union);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 

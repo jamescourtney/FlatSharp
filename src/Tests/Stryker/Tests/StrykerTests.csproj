@@ -18,13 +18,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.abstractions" />
-    <PackageReference Include="xunit.runner.utility" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
 
   <ItemGroup>

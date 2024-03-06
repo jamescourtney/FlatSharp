@@ -1,12 +1,13 @@
 ﻿namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class RootObjectTests
 {
-    [Fact]
+    [TestMethod]
     public void InvalidConstructors()
     {
-        Assert.Throws<ArgumentNullException>(() => new FunUnion((string)null));
-        Assert.Throws<ArgumentNullException>(() => new FunUnion((RefStruct)null));
-        Assert.Throws<ArgumentNullException>(() => new FunUnion((Key)null));
+        Assert.ThrowsException<ArgumentNullException>(() => new FunUnion((string)null));
+        Assert.ThrowsException<ArgumentNullException>(() => new FunUnion((RefStruct)null));
+        Assert.ThrowsException<ArgumentNullException>(() => new FunUnion((Key)null));
     }
 }

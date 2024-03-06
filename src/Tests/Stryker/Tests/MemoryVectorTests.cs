@@ -4,38 +4,39 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class MemoryVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void MemoryVector(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
         Memory<byte> vector = vectors.Memory.Value;
-        Assert.Equal(5, vector.Length);
+        Assert.AreEqual(5, vector.Length);
         for (int i = 0; i < vector.Length; ++i)
         {
-            Assert.Equal(i + 1, vector.Span[i]);
+            Assert.AreEqual(i + 1, vector.Span[i]);
         }
 
         Helpers.AssertMutationWorks(option, vectors, false, s => s.Memory, new byte[0]);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void MemoryVector_NotPresent(FlatBufferDeserializationOption option)
     {
         Root root = new Root() { Vectors = new() };
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
-        Assert.Null(parsed.Vectors.Memory);
+        Assert.IsNull(parsed.Vectors.Memory);
     }
 
     private Root CreateRoot(out byte[] expectedData)
