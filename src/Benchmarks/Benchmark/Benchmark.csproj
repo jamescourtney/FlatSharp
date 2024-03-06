@@ -5,19 +5,49 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
     <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;RUN_COMPARISON_BENCHMARKS;FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
+    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
+    
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
-    <PackageReference Include="MessagePack" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="protobuf-net" />
+      <PackageReference Include="BenchmarkDotNet" />
+      <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+      <PackageReference Include="MessagePack" />
+      <PackageReference Include="Newtonsoft.Json" />
+      <PackageReference Include="protobuf-net" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
-    <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
+      <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+      <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="BenchmarkUtilities.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BenchmarkUtilities.tt</DependentUpon>
+    </None>
+    <Compile Update="BenchmarkUtilities.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BenchmarkUtilities.tt</DependentUpon>
+    </Compile>
+    <None Update="BenchmarkUtilities.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>BenchmarkUtilities.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+      <FlatSharpSchema Include="FBBench/FlatSharp.fbs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+    
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>

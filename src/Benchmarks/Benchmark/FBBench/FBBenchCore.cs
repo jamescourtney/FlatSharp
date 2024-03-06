@@ -14,1227 +14,606 @@
  * limitations under the License.
  */
 
-namespace Benchmark.FBBench
+namespace Benchmark.FBBench;
+
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using BenchmarkDotNet.Attributes;
+using FlatSharp;
+using FlatSharp.Attributes;
+using ProtoBuf;
+using InputBufferKind = FlatSharp.ArrayInputBuffer;
+using global::Google.FlatBuffers;
+
+public abstract class FBBenchCore
 {
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
-    using BenchmarkDotNet.Attributes;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using ProtoBuf;
-    using InputBufferKind = FlatSharp.ArrayInputBuffer;
-    using global::Google.FlatBuffers;
+    protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(1024 * 1024);
+    protected ByteBuffer google_ByteBuffer;
+    public GFB.FooBarContainerT google_defaultContainer;
 
-    public abstract class FBBenchCore
+    public FooBarListContainer defaultContainer;
+    public FooBarListContainer_ValueType defaultContainerWithValueStructs;
+    public FooBarListContainer_ValueType_NonVirtual defaultContainerWithValueStructsNonVirtual;
+    public SortedVectorTable<string> sortedStringContainer;
+    public SortedVectorTable<int> sortedIntContainer;
+    public UnsortedVectorTable<string> unsortedStringContainer;
+    public UnsortedVectorTable<int> unsortedIntContainer;
+    public ValueTableVector valueTableVector;
+
+    protected MemoryStream pbdn_writeBuffer = new MemoryStream(1024 * 1024);
+    protected MemoryStream pbdn_readBuffer = new MemoryStream(1024 * 1024);
+
+    private byte[] msgPackWriteData;
+
+    protected byte[] fs_readMemory;
+    protected readonly byte[] fs_writeMemory = new byte[1024 * 1024];
+    public InputBufferKind inputBuffer;
+
+    [Params(30)]
+    public virtual int VectorLength { get; set; }
+
+    public virtual int TraversalCount { get; set; }
+
+    public virtual FlatBufferDeserializationOption DeserializeOption { get; set; } = FlatBufferDeserializationOption.Default;
+
+    [GlobalSetup]
+    public virtual void GlobalSetup()
     {
-        protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(1024 * 1024);
-        protected ByteBuffer google_ByteBuffer;
-        public GFB.FooBarContainerT google_defaultContainer;
+        Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Idle;
 
-        public FooBarListContainer defaultContainer;
-        public FooBarListContainerNonVirtual defaultContainerNonVirtual;
-        public FooBarListContainer_ValueType defaultContainerWithValueStructs;
-        public FooBarListContainer_ValueType_NonVirtual defaultContainerWithValueStructsNonVirtual;
-        public SortedVectorTable<string> sortedStringContainer;
-        public SortedVectorTable<int> sortedIntContainer;
-        public UnsortedVectorTable<string> unsortedStringContainer;
-        public UnsortedVectorTable<int> unsortedIntContainer;
-        public ValueTableVector valueTableVector;
+        FooBar[] fooBars = new FooBar[this.VectorLength];
+        FooBar_ValueType[] fooBarsValue = new FooBar_ValueType[this.VectorLength];
+        FooBar_ValueType_NonVirtual[] fooBarsValue_NonVirtual = new FooBar_ValueType_NonVirtual[this.VectorLength];
 
-        protected MemoryStream pbdn_writeBuffer = new MemoryStream(1024 * 1024);
-        protected MemoryStream pbdn_readBuffer = new MemoryStream(1024 * 1024);
-
-        private FlatBufferSerializer fs_serializer;
-
-        private byte[] msgPackWriteData;
-
-        protected byte[] fs_readMemory;
-        protected readonly byte[] fs_writeMemory = new byte[1024 * 1024];
-        public InputBufferKind inputBuffer;
-
-        [Params(30)]
-        public virtual int VectorLength { get; set; }
-
-        public virtual int TraversalCount { get; set; }
-
-        public virtual FlatBufferDeserializationOption DeserializeOption { get; set; } = FlatBufferDeserializationOption.Default;
-
-        [GlobalSetup]
-        public virtual void GlobalSetup()
+        for (int i = 0; i < fooBars.Length; i++)
         {
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Idle;
-
-            FooBar[] fooBars = new FooBar[this.VectorLength];
-            FooBarNonVirtual[] fooBarsNV = new FooBarNonVirtual[this.VectorLength];
-            FooBar_ValueType[] fooBarsValue = new FooBar_ValueType[this.VectorLength];
-            FooBar_ValueType_NonVirtual[] fooBarsValue_NonVirtual = new FooBar_ValueType_NonVirtual[this.VectorLength];
-
-            for (int i = 0; i < fooBars.Length; i++)
+            var foo = new Foo
             {
-                var foo = new Foo
-                {
-                    Id = 0xABADCAFEABADCAFE + (ulong)i,
-                    Count = (short)(10000 + i),
-                    Prefix = (sbyte)('@' + i),
-                    Length = (uint)(1000000 + i)
-                };
-
-                var fooNV = new FooNonVirtual
-                {
-                    Id = 0xABADCAFEABADCAFE + (ulong)i,
-                    Count = (short)(10000 + i),
-                    Prefix = (sbyte)('@' + i),
-                    Length = (uint)(1000000 + i)
-                };
-
-                var fooValue = new Foo_ValueType
-                {
-                    Id = 0xABADCAFEABADCAFE + (ulong)i,
-                    Count = (short)(10000 + i),
-                    Prefix = (sbyte)('@' + i),
-                    Length = (uint)(1000000 + i)
-                };
-
-                var bar = new Bar
-                {
-                    Parent = foo,
-                    Ratio = 3.14159f + i,
-                    Size = (ushort)(10000 + i),
-                    Time = 123456 + i
-                };
-
-                var barNV = new BarNonVirtual
-                {
-                    Parent = fooNV,
-                    Ratio = 3.14159f + i,
-                    Size = (ushort)(10000 + i),
-                    Time = 123456 + i
-                };
-
-                var barValue = new Bar_ValueType
-                {
-                    Parent = fooValue,
-                    Ratio = 3.14159f + i,
-                    Size = (ushort)(10000 + i),
-                    Time = 123456 + i
-                };
-
-                var fooBar = new FooBar
-                {
-                    Name = Guid.NewGuid().ToString(),
-                    PostFix = (byte)('!' + i),
-                    Rating = 3.1415432432445543543 + i,
-                    Sibling = bar,
-                };
-
-                var fooBarNV = new FooBarNonVirtual
-                {
-                    Name = Guid.NewGuid().ToString(),
-                    PostFix = (byte)('!' + i),
-                    Rating = 3.1415432432445543543 + i,
-                    Sibling = barNV,
-                };
-
-                var fooBarValue = new FooBar_ValueType
-                {
-                    Name = Guid.NewGuid().ToString(),
-                    PostFix = (byte)('!' + i),
-                    Rating = 3.1415432432445543543 + i,
-                    Sibling = barValue,
-                };
-
-                var fooBarValueNV = new FooBar_ValueType_NonVirtual
-                {
-                    Name = Guid.NewGuid().ToString(),
-                    PostFix = (byte)('!' + i),
-                    Rating = 3.1415432432445543543 + i,
-                    Sibling = barValue,
-                };
-
-                fooBars[i] = fooBar;
-                fooBarsNV[i] = fooBarNV;
-                fooBarsValue[i] = fooBarValue;
-                fooBarsValue_NonVirtual[i] = fooBarValueNV;
-            }
-
-            this.defaultContainer = new FooBarListContainer
-            {
-                Fruit = 123,
-                Initialized = true,
-                Location = "http://google.com/flatbuffers/",
-                List = fooBars,
+                Id = 0xABADCAFEABADCAFE + (ulong)i,
+                Count = (short)(10000 + i),
+                Prefix = (sbyte)('@' + i),
+                Length = (uint)(1000000 + i)
             };
 
-            this.defaultContainerNonVirtual = new FooBarListContainerNonVirtual
+            var fooValue = new Foo_ValueType
             {
-                Fruit = 123,
-                Initialized = true,
-                Location = "http://google.com/flatbuffers/",
-                List = fooBarsNV,
+                Id = 0xABADCAFEABADCAFE + (ulong)i,
+                Count = (short)(10000 + i),
+                Prefix = (sbyte)('@' + i),
+                Length = (uint)(1000000 + i)
             };
 
-            this.defaultContainerWithValueStructs = new FooBarListContainer_ValueType
+            var bar = new Bar
             {
-                Fruit = 123,
-                Initialized = true,
-                Location = "http://google.com/flatbuffers/",
-                List = fooBarsValue,
+                Parent = foo,
+                Ratio = 3.14159f + i,
+                Size = (ushort)(10000 + i),
+                Time = 123456 + i
             };
 
-            this.defaultContainerWithValueStructsNonVirtual = new FooBarListContainer_ValueType_NonVirtual
+            var barValue = new Bar_ValueType
             {
-                Fruit = 123,
-                Initialized = true,
-                Location = "http://google.com/flatbuffers/",
-                List = fooBarsValue_NonVirtual,
+                Parent = fooValue,
+                Ratio = 3.14159f + i,
+                Size = (ushort)(10000 + i),
+                Time = 123456 + i
             };
 
-            Random rng = new Random();
-            this.sortedIntContainer = new SortedVectorTable<int> { Vector = new List<SortedVectorTableItem<int>>() };
-            this.sortedStringContainer = new SortedVectorTable<string> { Vector = new List<SortedVectorTableItem<string>>() };
-            this.unsortedIntContainer = new UnsortedVectorTable<int> { Vector = new List<UnsortedVectorTableItem<int>>() };
-            this.unsortedStringContainer = new UnsortedVectorTable<string> { Vector = new List<UnsortedVectorTableItem<string>>() };
-
-            for (int i = 0; i < this.VectorLength; ++i)
+            var fooBar = new FooBar
             {
-                this.sortedIntContainer.Vector.Add(new SortedVectorTableItem<int> { Key = rng.Next() });
-                this.sortedStringContainer.Vector.Add(new SortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
-                this.unsortedIntContainer.Vector.Add(new UnsortedVectorTableItem<int> { Key = rng.Next() });
-                this.unsortedStringContainer.Vector.Add(new UnsortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
-            }
-
-            this.valueTableVector = new ValueTableVector
-            {
-                ValueTables = Enumerable.Range(0, this.VectorLength).Select(x => new ValueTable
-                {
-                    A = 1,
-                    B = 2,
-                    C = 3,
-                    D = 4,
-                    E = 5,
-                    F = 6,
-                    G = 7,
-                    H = 8,
-                    I = 9,
-                    J = 10,
-                    K = true,
-                }).ToArray()
+                Name = Guid.NewGuid().ToString(),
+                PostFix = (byte)('!' + i),
+                Rating = 3.1415432432445543543 + i,
+                Sibling = bar,
             };
 
+            var fooBarValue = new FooBar_ValueType
             {
-                var options = new FlatBufferSerializerOptions(this.DeserializeOption);
+                Name = Guid.NewGuid().ToString(),
+                PostFix = (byte)('!' + i),
+                Rating = 3.1415432432445543543 + i,
+                Sibling = barValue,
+            };
 
-                this.fs_serializer = new FlatBufferSerializer(options);
-
-                int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
-                this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
-                this.inputBuffer = new InputBufferKind(this.fs_readMemory);
-                this.FlatSharp_ParseAndTraverse();
-            }
-
-            int googleLength = 0;
+            var fooBarValueNV = new FooBar_ValueType_NonVirtual
             {
-                this.google_ByteBuffer = new ByteBuffer(this.fs_readMemory.ToArray());
-                this.google_defaultContainer = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
-                googleLength = this.Google_FlatBuffers_Serialize_ObjectApi();
-            }
+                Name = Guid.NewGuid().ToString(),
+                PostFix = (byte)('!' + i),
+                Rating = 3.1415432432445543543 + i,
+                Sibling = barValue,
+            };
 
-            {
-                this.PBDN_Serialize();
-                this.pbdn_writeBuffer.Position = 0;
-                this.pbdn_writeBuffer.CopyTo(this.pbdn_readBuffer);
-                this.PBDN_ParseAndTraverse();
-            }
-
-            {
-                this.MsgPack_Serialize_NonVirtual();
-            }
-
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
-
-            Console.WriteLine($"Sizes: MsgPack: {this.msgPackWriteData.Length}");
-            Console.WriteLine($"Sizes: FlatSharp: {this.fs_readMemory.Length}");
-            Console.WriteLine($"Sizes: Google: {googleLength}");
-            Console.WriteLine($"Sizes: Pbdn: {this.pbdn_writeBuffer.Length}");
+            fooBars[i] = fooBar;
+            fooBarsValue[i] = fooBarValue;
+            fooBarsValue_NonVirtual[i] = fooBarValueNV;
         }
 
-        #region Google.FlatBuffers
-
-        public virtual void Google_FlatBuffers_Serialize()
+        this.defaultContainer = new FooBarListContainer
         {
-            var builder = this.google_flatBufferBuilder;
-            builder.Clear();
-            var vectorLength = this.VectorLength;
+            Fruit = 123,
+            Initialized = true,
+            Location = "http://google.com/flatbuffers/",
+            List = fooBars,
+        };
 
-            Offset<GFB.FooBar>[] offsets = new Offset<GFB.FooBar>[vectorLength];
-            for (int i = 0; i < vectorLength; i++)
+        this.defaultContainerWithValueStructs = new FooBarListContainer_ValueType
+        {
+            Fruit = 123,
+            Initialized = true,
+            Location = "http://google.com/flatbuffers/",
+            List = fooBarsValue,
+        };
+
+        this.defaultContainerWithValueStructsNonVirtual = new FooBarListContainer_ValueType_NonVirtual
+        {
+            Fruit = 123,
+            Initialized = true,
+            Location = "http://google.com/flatbuffers/",
+            List = fooBarsValue_NonVirtual,
+        };
+
+        Random rng = new Random();
+        this.sortedIntContainer = new SortedVectorTable<int> { Vector = new List<SortedVectorTableItem<int>>() };
+        this.sortedStringContainer = new SortedVectorTable<string> { Vector = new List<SortedVectorTableItem<string>>() };
+        this.unsortedIntContainer = new UnsortedVectorTable<int> { Vector = new List<UnsortedVectorTableItem<int>>() };
+        this.unsortedStringContainer = new UnsortedVectorTable<string> { Vector = new List<UnsortedVectorTableItem<string>>() };
+
+        for (int i = 0; i < this.VectorLength; ++i)
+        {
+            this.sortedIntContainer.Vector.Add(new SortedVectorTableItem<int> { Key = rng.Next() });
+            this.sortedStringContainer.Vector.Add(new SortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
+            this.unsortedIntContainer.Vector.Add(new UnsortedVectorTableItem<int> { Key = rng.Next() });
+            this.unsortedStringContainer.Vector.Add(new UnsortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
+        }
+
+        this.valueTableVector = new ValueTableVector
+        {
+            ValueTables = Enumerable.Range(0, this.VectorLength).Select(x => new ValueTable
             {
-                var str = builder.CreateString("Hello, World!");
-                GFB.FooBar.StartFooBar(builder);
-                GFB.FooBar.AddSibling(builder, GFB.Bar.CreateBar(
-                    builder,
-                    0xABADCAFEABADCAFE + (ulong)i,
-                    (short)(10000 + i),
-                    (sbyte)('@' + i),
-                    (uint)(1000000 + i),
-                    123456 + i,
-                    3.14159f + i,
-                    (ushort)(10000 + i)));
+                A = 1,
+                B = 2,
+                C = 3,
+                D = 4,
+                E = 5,
+                F = 6,
+                G = 7,
+                H = 8,
+                I = 9,
+                J = 10,
+                K = true,
+            }).ToArray()
+        };
 
-                GFB.FooBar.AddName(builder, str);
-                GFB.FooBar.AddRating(builder, 3.1415432432445543543 + i);
-                GFB.FooBar.AddPostfix(builder, (byte)('!' + i));
-                var offset = GFB.FooBar.EndFooBar(builder);
-                offsets[i] = offset;
-            }
+        {
+            var options = new FlatBufferSerializerOptions(this.DeserializeOption);
 
-            var foobarOffset = GFB.FooBarContainer.CreateFooBarContainer(
+            this.fs_serializer = new FlatBufferSerializer(options);
+
+            int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
+            this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
+            this.inputBuffer = new InputBufferKind(this.fs_readMemory);
+            this.FlatSharp_ParseAndTraverse();
+        }
+
+        int googleLength = 0;
+        {
+            this.google_ByteBuffer = new ByteBuffer(this.fs_readMemory.ToArray());
+            this.google_defaultContainer = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
+            googleLength = this.Google_FlatBuffers_Serialize_ObjectApi();
+        }
+
+        {
+            this.PBDN_Serialize();
+            this.pbdn_writeBuffer.Position = 0;
+            this.pbdn_writeBuffer.CopyTo(this.pbdn_readBuffer);
+            this.PBDN_ParseAndTraverse();
+        }
+
+        {
+            this.MsgPack_Serialize_NonVirtual();
+        }
+
+        Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+
+        Console.WriteLine($"Sizes: MsgPack: {this.msgPackWriteData.Length}");
+        Console.WriteLine($"Sizes: FlatSharp: {this.fs_readMemory.Length}");
+        Console.WriteLine($"Sizes: Google: {googleLength}");
+        Console.WriteLine($"Sizes: Pbdn: {this.pbdn_writeBuffer.Length}");
+    }
+
+    public virtual void Google_FlatBuffers_Serialize()
+    {
+        var builder = this.google_flatBufferBuilder;
+        builder.Clear();
+        var vectorLength = this.VectorLength;
+
+        Offset<GFB.FooBar>[] offsets = new Offset<GFB.FooBar>[vectorLength];
+        for (int i = 0; i < vectorLength; i++)
+        {
+            var str = builder.CreateString("Hello, World!");
+            GFB.FooBar.StartFooBar(builder);
+            GFB.FooBar.AddSibling(builder, GFB.Bar.CreateBar(
                 builder,
-                builder.CreateVectorOfTables(offsets),
-                true,
-                123,
-                builder.CreateString("http://google.com/flatbuffers/"));
+                0xABADCAFEABADCAFE + (ulong)i,
+                (short)(10000 + i),
+                (sbyte)('@' + i),
+                (uint)(1000000 + i),
+                123456 + i,
+                3.14159f + i,
+                (ushort)(10000 + i)));
 
-            builder.Finish(foobarOffset.Value);
+            GFB.FooBar.AddName(builder, str);
+            GFB.FooBar.AddRating(builder, 3.1415432432445543543 + i);
+            GFB.FooBar.AddPostfix(builder, (byte)('!' + i));
+            var offset = GFB.FooBar.EndFooBar(builder);
+            offsets[i] = offset;
         }
 
-        public virtual int Google_FlatBuffers_Serialize_ObjectApi()
-        {
-            var builder = this.google_flatBufferBuilder;
-            builder.Clear();
-            var offset = GFB.FooBarContainer.Pack(builder, this.google_defaultContainer);
-            builder.Finish(offset.Value);
-            return offset.Value;
-        }
-
-        public virtual int Google_Flatbuffers_ParseAndTraverse()
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                var foobar = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
-
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                int listLength = foobar.ListLength;
-                for (int i = 0; i < listLength; ++i)
-                {
-                    var item = foobar.List(i).Value;
-                    sum += item.Name.Length;
-                    sum += item.Postfix;
-                    sum += (int)item.Rating;
-
-                    var bar = item.Sibling.Value;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
-                }
-            }
-
-            return sum;
-        }
-
-        public virtual int Google_Flatbuffers_ParseAndTraverse_ObjectApi()
-        {
-            var @struct = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
-            var foobar = @struct.UnPack();
-
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                int listLength = foobar.List.Count;
-                for (int i = 0; i < listLength; ++i)
-                {
-                    var item = foobar.List[i];
-                    sum += item.Name.Length;
-                    sum += item.Postfix;
-                    sum += (int)item.Rating;
-
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
-                }
-            }
-
-            return sum;
-        }
-
-        public virtual int Google_Flatbuffers_ParseAndTraversePartial()
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                var foobar = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
-
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                int listLength = foobar.ListLength;
-                for (int i = 0; i < listLength; ++i)
-                {
-                    var item = foobar.List(i).Value;
-                    sum += item.Name.Length;
-
-                    var bar = item.Sibling.Value;
-                    sum += (int)bar.Ratio;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                }
-            }
-
-            return sum;
-        }
-
-        public virtual int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi()
-        {
-            var @struct = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
-            var foobar = @struct.UnPack();
-
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                int listLength = foobar.List.Count;
-                for (int i = 0; i < listLength; ++i)
-                {
-                    var item = foobar.List[i];
-                    sum += item.Name.Length;
-
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                }
-            }
-
-            return sum;
-        }
-
-        public virtual void Google_Flatbuffers_StringVector_Sorted()
-        {
-            var builder = this.google_flatBufferBuilder;
-            builder.Clear();
-
-            var offsets = this.CreateSortedStringVectorOffsets(builder);
-            var vectorOffset = GFB.SortedVectorStringKey.CreateSortedVectorOfSortedVectorStringKey(builder, offsets);
-            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
-            builder.Finish(tableOffset.Value);
-        }
-
-        public virtual void Google_Flatbuffers_IntVector_Sorted()
-        {
-            var builder = this.google_flatBufferBuilder;
-            builder.Clear();
-
-            var offsets = this.CreateSortedIntVectorOffsets(builder);
-            var vectorOffset = GFB.SortedVectorIntKey.CreateSortedVectorOfSortedVectorIntKey(builder, offsets);
-            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
-            builder.Finish(tableOffset.Value);
-        }
-
-        public virtual void Google_Flatbuffers_StringVector_Unsorted()
-        {
-            var builder = this.google_flatBufferBuilder;
-            builder.Clear();
-
-            var offsets = this.CreateSortedStringVectorOffsets(builder);
-            var vectorOffset = GFB.SortedVectorContainer.CreateStringVectorVector(builder, offsets);
-            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
-            builder.Finish(tableOffset.Value);
-        }
-
-        public virtual void Google_Flatbuffers_IntVector_Unsorted()
-        {
-            var builder = this.google_flatBufferBuilder;
-            builder.Clear();
-
-            var offsets = this.CreateSortedIntVectorOffsets(builder);
-            var vectorOffset = GFB.SortedVectorContainer.CreateIntVectorVector(builder, offsets);
-            var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
-            builder.Finish(tableOffset.Value);
-        }
-
-        private Offset<GFB.SortedVectorStringKey>[] CreateSortedStringVectorOffsets(FlatBufferBuilder builder)
-        {
-            var stringVector = this.sortedStringContainer.Vector;
-            int stringVectorLength = stringVector.Count;
-
-            var offsets = new Offset<GFB.SortedVectorStringKey>[stringVectorLength];
-            for (int i = 0; i < stringVectorLength; ++i)
-            {
-                offsets[i] = GFB.SortedVectorStringKey.CreateSortedVectorStringKey(
-                    builder,
-                    builder.CreateString(stringVector[i].Key));
-            }
-
-            return offsets;
-        }
-
-        private Offset<GFB.SortedVectorIntKey>[] CreateSortedIntVectorOffsets(FlatBufferBuilder builder)
-        {
-            var intVector = this.sortedIntContainer.Vector;
-            int intVectorLength = intVector.Count;
-
-            var offsets = new Offset<GFB.SortedVectorIntKey>[intVectorLength];
-            for (int i = 0; i < intVectorLength; ++i)
-            {
-                offsets[i] = GFB.SortedVectorIntKey.CreateSortedVectorIntKey(
-                    builder,
-                    intVector[i].Key);
-            }
-
-            return offsets;
-        }
-
-        #endregion
-
-        #region FlatSharp
-
-        public virtual void FlatSharp_GetMaxSize()
-        {
-            this.fs_serializer.GetMaxSize(this.defaultContainer);
-        }
-
-        public virtual void FlatSharp_Serialize()
-        {
-            this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
-        }
-
-        public virtual void FlatSharp_Serialize_ValueStructs()
-        {
-            this.fs_serializer.Serialize(this.defaultContainerWithValueStructs, this.fs_writeMemory);
-        }
-
-        public virtual void FlatSharp_ParseAndTraverse()
-        {
-            var item = this.Parse<FooBarListContainer, InputBufferKind>(this.inputBuffer);
-            this.TraverseFooBarContainer(item);
-        }
-
-        public virtual void FlatSharp_ParseAndTraversePartial()
-        {
-            var item = this.Parse<FooBarListContainer, InputBufferKind>(this.inputBuffer);
-            this.TraverseFooBarContainerPartial(item);
-        }
-
-        public virtual void FlatSharp_ParseAndTraverse_ValueStructs()
-        {
-            var item = this.Parse<FooBarListContainer_ValueType, InputBufferKind>(this.inputBuffer);
-            this.TraverseFooBarContainer(item);
-        }
-
-        public virtual void FlatSharp_ParseAndTraversePartial_ValueStructs()
-        {
-            var item = this.Parse<FooBarListContainer_ValueType, InputBufferKind>(this.inputBuffer);
-            this.TraverseFooBarContainerPartial(item);
-        }
-
-        public virtual void FlatSharp_Serialize_StringVector_Sorted()
-        {
-            this.fs_serializer.Serialize(this.sortedStringContainer, this.fs_writeMemory);
-        }
-
-        public virtual void FlatSharp_Serialize_IntVector_Sorted()
-        {
-            this.fs_serializer.Serialize(this.sortedIntContainer, this.fs_writeMemory);
-        }
-
-        public virtual void FlatSharp_Serialize_StringVector_Unsorted()
-        {
-            this.fs_serializer.Serialize(this.unsortedStringContainer, this.fs_writeMemory);
-        }
-
-        public virtual void FlatSharp_Serialize_IntVector_Unsorted()
-        {
-            this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
-        }
-
-        public virtual void FlatSharp_Serialize_ValueTableVector()
-        {
-            this.fs_serializer.Serialize(this.valueTableVector, this.fs_writeMemory);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T Parse<T, TInputBuffer>(TInputBuffer buffer) 
-            where TInputBuffer : IInputBuffer
-            where T : class
-        {
-            return this.fs_serializer.Parse<T>(buffer);
-        }
-
-        #endregion
-
-        #region PBDN
-
-        public virtual void PBDN_Serialize()
-        {
-            this.pbdn_writeBuffer.Position = 0;
-            ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainer);
-        }
-
-        public virtual void PBDN_Serialize_NonVirtual()
-        {
-            this.pbdn_writeBuffer.Position = 0;
-            ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainerNonVirtual);
-        }
-
-        public virtual void PBDN_ParseAndTraverse()
-        {
-            this.pbdn_readBuffer.Position = 0;
-            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainer>(this.pbdn_readBuffer);
-            this.TraverseFooBarContainer(item);
-        }
-
-        public virtual void PBDN_ParseAndTraversePartial()
-        {
-            this.pbdn_readBuffer.Position = 0;
-            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainer>(this.pbdn_readBuffer);
-            this.TraverseFooBarContainerPartial(item);
-        }
-
-        public virtual void PBDN_ParseAndTraverse_NonVirtual()
-        {
-            this.pbdn_readBuffer.Position = 0;
-            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainerNonVirtual>(this.pbdn_readBuffer);
-            this.TraverseFooBarContainer(item);
-        }
-
-        public virtual void PBDN_ParseAndTraversePartial_NonVirtual()
-        {
-            this.pbdn_readBuffer.Position = 0;
-            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainerNonVirtual>(this.pbdn_readBuffer);
-            this.TraverseFooBarContainerPartial(item);
-        }
-
-#endregion
-
-#region MsgPack
-
-        public virtual void MsgPack_Serialize_NonVirtual()
-        {
-            this.msgPackWriteData = MessagePack.MessagePackSerializer.Serialize(this.defaultContainerNonVirtual);
-        }
-
-        public virtual void MsgPack_ParseAndTraverse()
-        {
-            var item = MessagePack.MessagePackSerializer.Deserialize<FooBarListContainerNonVirtual>(this.msgPackWriteData, out int len);
-            this.TraverseFooBarContainer(item);
-        }
-
-        public virtual void MsgPack_ParseAndTraversePartial()
-        {
-            var item = MessagePack.MessagePackSerializer.Deserialize<FooBarListContainerNonVirtual>(this.msgPackWriteData, out int len);
-            this.TraverseFooBarContainerPartial(item);
-        }
-
-#endregion
-
-        public int TraverseFooBarContainer(FooBarListContainer foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-                    sum += item.PostFix;
-                    sum += (int)item.Rating;
-
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
-                }
-            }
-
-            return sum;
-        }
-
-        public int TraverseFooBarContainer(FooBarListContainer_ValueType foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-                    sum += item.PostFix;
-                    sum += (int)item.Rating;
-
-                    var bar = item.Sibling.Value;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
-                }
-            }
-
-            return sum;
-        }
-
-        private int TraverseFooBarContainerPartial(FooBarListContainer_ValueType foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-
-                    var bar = item.Sibling.Value;
-                    sum += (int)bar.Ratio;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                }
-            }
-
-            return sum;
-        }
-
-        public int TraverseFooBarContainer(FooBarListContainer_ValueType_NonVirtual foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-                    sum += item.PostFix;
-                    sum += (int)item.Rating;
-
-                    var bar = item.Sibling.Value;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
-                }
-            }
-
-            return sum;
-        }
-
-        private int TraverseFooBarContainerPartial(FooBarListContainer foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                }
-            }
-
-            return sum;
-        }
-
-        public int TraverseFooBarContainer(FooBarListContainerNonVirtual foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-                    sum += item.PostFix;
-                    sum += (int)item.Rating;
-
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-                    sum += bar.Size;
-                    sum += bar.Time;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                    sum += (int)parent.Id;
-                    sum += (int)parent.Length;
-                    sum += parent.Prefix;
-                }
-            }
-
-            return sum;
-        }
-
-        private int TraverseFooBarContainerPartial(FooBarListContainerNonVirtual foobar)
-        {
-            var iterations = this.TraversalCount;
-            int sum = 0;
-
-            for (int loop = 0; loop < iterations; ++loop)
-            {
-                sum += foobar.Initialized ? 1 : 0;
-                sum += foobar.Location.Length;
-                sum += foobar.Fruit;
-
-                var list = foobar.List;
-                int count = list.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var item = list[i];
-                    sum += item.Name.Length;
-
-                    var bar = item.Sibling;
-                    sum += (int)bar.Ratio;
-
-                    var parent = bar.Parent;
-                    sum += parent.Count;
-                }
-            }
-
-            return sum;
-        }
+        var foobarOffset = GFB.FooBarContainer.CreateFooBarContainer(
+            builder,
+            builder.CreateVectorOfTables(offsets),
+            true,
+            123,
+            builder.CreateString("http://google.com/flatbuffers/"));
+
+        builder.Finish(foobarOffset.Value);
     }
 
-#region Shared Contracts -- Virtual
-
-    [ProtoContract]
-    [FlatBufferStruct]
-    public class Foo
+    public virtual int Google_FlatBuffers_Serialize_ObjectApi()
     {
-        [ProtoMember(1), FlatBufferItem(0)]
-        public virtual ulong Id { get; set; }
-
-        [ProtoMember(2), FlatBufferItem(1)]
-        public virtual short Count { get; set; }
-
-        [ProtoMember(3), FlatBufferItem(2)]
-        public virtual sbyte Prefix { get; set; }
-
-        [ProtoMember(4), FlatBufferItem(3)]
-        public virtual uint Length { get; set; }
+        var builder = this.google_flatBufferBuilder;
+        builder.Clear();
+        var offset = GFB.FooBarContainer.Pack(builder, this.google_defaultContainer);
+        builder.Finish(offset.Value);
+        return offset.Value;
     }
 
-    [ProtoContract]
-    [FlatBufferStruct]
-    [StructLayout(LayoutKind.Explicit, Size = 16)]
-    public struct Foo_ValueType
+    public virtual int Google_Flatbuffers_ParseAndTraverse()
     {
-        [ProtoMember(1), FieldOffset(0)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Id")]
-        public ulong Id;
+        var iterations = this.TraversalCount;
+        int sum = 0;
 
-        [ProtoMember(2), FieldOffset(8)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Count")]
-        public short Count;
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            var foobar = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
 
-        [ProtoMember(3), FieldOffset(10)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Prefix")]
-        public sbyte Prefix;
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
 
-        [ProtoMember(4), FieldOffset(12)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Length")]
-        public uint Length;
+            int listLength = foobar.ListLength;
+            for (int i = 0; i < listLength; ++i)
+            {
+                var item = foobar.List(i).Value;
+                sum += item.Name.Length;
+                sum += item.Postfix;
+                sum += (int)item.Rating;
+
+                var bar = item.Sibling.Value;
+                sum += (int)bar.Ratio;
+                sum += bar.Size;
+                sum += bar.Time;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+                sum += (int)parent.Id;
+                sum += (int)parent.Length;
+                sum += parent.Prefix;
+            }
+        }
+
+        return sum;
     }
 
-    [ProtoContract]
-    [FlatBufferStruct]
-    public class Bar
+    public virtual int Google_Flatbuffers_ParseAndTraverse_ObjectApi()
     {
-        [ProtoMember(1), FlatBufferItem(0)]
-        public virtual Foo Parent { get; set; }
+        var @struct = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+        var foobar = @struct.UnPack();
 
-        [ProtoMember(2), FlatBufferItem(1)]
-        public virtual int Time { get; set; }
+        var iterations = this.TraversalCount;
+        int sum = 0;
 
-        [ProtoMember(3), FlatBufferItem(2)]
-        public virtual float Ratio { get; set; }
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
 
-        [ProtoMember(4), FlatBufferItem(3)]
-        public virtual ushort Size { get; set; }
+            int listLength = foobar.List.Count;
+            for (int i = 0; i < listLength; ++i)
+            {
+                var item = foobar.List[i];
+                sum += item.Name.Length;
+                sum += item.Postfix;
+                sum += (int)item.Rating;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+                sum += bar.Size;
+                sum += bar.Time;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+                sum += (int)parent.Id;
+                sum += (int)parent.Length;
+                sum += parent.Prefix;
+            }
+        }
+
+        return sum;
     }
 
-    [ProtoContract]
-    [FlatBufferStruct]
-    [StructLayout(LayoutKind.Explicit, Size = 26)]
-    public struct Bar_ValueType
+    public virtual int Google_Flatbuffers_ParseAndTraversePartial()
     {
-        [ProtoMember(1), FieldOffset(0)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Parent")]
-        public Foo_ValueType Parent;
+        var iterations = this.TraversalCount;
+        int sum = 0;
 
-        [ProtoMember(2), FieldOffset(16)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Time")]
-        public int Time;
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            var foobar = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
 
-        [ProtoMember(3), FieldOffset(20)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Ratio")]
-        public float Ratio;
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
 
-        [ProtoMember(4), FieldOffset(24)]
-        [FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, "", "Size")]
-        public ushort Size;
+            int listLength = foobar.ListLength;
+            for (int i = 0; i < listLength; ++i)
+            {
+                var item = foobar.List(i).Value;
+                sum += item.Name.Length;
+
+                var bar = item.Sibling.Value;
+                sum += (int)bar.Ratio;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+            }
+        }
+
+        return sum;
     }
 
-    [ProtoContract]
-    [FlatBufferTable]
-    public class FooBar
+    public virtual int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi()
     {
-        [ProtoMember(1), FlatBufferItem(0)]
-        public virtual Bar Sibling { get; set; }
+        var @struct = GFB.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+        var foobar = @struct.UnPack();
 
-        [ProtoMember(2), FlatBufferItem(1)]
-        public virtual string Name { get; set; }
+        var iterations = this.TraversalCount;
+        int sum = 0;
 
-        [ProtoMember(3), FlatBufferItem(2)]
-        public virtual double Rating { get; set; }
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
 
-        [ProtoMember(4), FlatBufferItem(3)]
-        public virtual byte PostFix { get; set; }
+            int listLength = foobar.List.Count;
+            for (int i = 0; i < listLength; ++i)
+            {
+                var item = foobar.List[i];
+                sum += item.Name.Length;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+            }
+        }
+
+        return sum;
     }
 
-    [ProtoContract]
-    [FlatBufferTable]
-    public class FooBar_ValueType
+    public virtual void Google_Flatbuffers_StringVector_Sorted()
     {
-        [ProtoMember(1), FlatBufferItem(0)]
-        public virtual Bar_ValueType? Sibling { get; set; }
+        var builder = this.google_flatBufferBuilder;
+        builder.Clear();
 
-        [ProtoMember(2), FlatBufferItem(1)]
-        public virtual string Name { get; set; }
-
-        [ProtoMember(3), FlatBufferItem(2)]
-        public virtual double Rating { get; set; }
-
-        [ProtoMember(4), FlatBufferItem(3)]
-        public virtual byte PostFix { get; set; }
+        var offsets = this.CreateSortedStringVectorOffsets(builder);
+        var vectorOffset = GFB.SortedVectorStringKey.CreateSortedVectorOfSortedVectorStringKey(builder, offsets);
+        var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
+        builder.Finish(tableOffset.Value);
     }
 
-    [ProtoContract]
-    public class FooBar_ValueType_NonVirtual
+    public virtual void Google_Flatbuffers_IntVector_Sorted()
     {
-        [ProtoMember(1)]
-        public Bar_ValueType? Sibling { get; set; }
+        var builder = this.google_flatBufferBuilder;
+        builder.Clear();
 
-        [ProtoMember(2)]
-        public string Name { get; set; }
-
-        [ProtoMember(3)]
-        public double Rating { get; set; }
-
-        [ProtoMember(4)]
-        public byte PostFix { get; set; }
+        var offsets = this.CreateSortedIntVectorOffsets(builder);
+        var vectorOffset = GFB.SortedVectorIntKey.CreateSortedVectorOfSortedVectorIntKey(builder, offsets);
+        var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
+        builder.Finish(tableOffset.Value);
     }
 
-    [ProtoContract]
-    [FlatBufferTable]
-    public class FooBarListContainer
+    public virtual void Google_Flatbuffers_StringVector_Unsorted()
     {
-        [ProtoMember(1), FlatBufferItem(0)]
-        public virtual IList<FooBar> List { get; set; }
+        var builder = this.google_flatBufferBuilder;
+        builder.Clear();
 
-        [ProtoMember(2), FlatBufferItem(1)]
-        public virtual bool Initialized { get; set; }
-
-        [ProtoMember(3), FlatBufferItem(2)]
-        public virtual short Fruit { get; set; }
-
-        [ProtoMember(4), FlatBufferItem(3)]
-        public virtual string Location { get; set; }
+        var offsets = this.CreateSortedStringVectorOffsets(builder);
+        var vectorOffset = GFB.SortedVectorContainer.CreateStringVectorVector(builder, offsets);
+        var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
+        builder.Finish(tableOffset.Value);
     }
 
-    [ProtoContract]
-    [FlatBufferTable]
-    public class FooBarListContainer_ValueType
+    public virtual void Google_Flatbuffers_IntVector_Unsorted()
     {
-        [ProtoMember(1), FlatBufferItem(0)]
-        public virtual IList<FooBar_ValueType> List { get; set; }
+        var builder = this.google_flatBufferBuilder;
+        builder.Clear();
 
-        [ProtoMember(2), FlatBufferItem(1)]
-        public virtual bool Initialized { get; set; }
-
-        [ProtoMember(3), FlatBufferItem(2)]
-        public virtual short Fruit { get; set; }
-
-        [ProtoMember(4), FlatBufferItem(3)]
-        public virtual string Location { get; set; }
+        var offsets = this.CreateSortedIntVectorOffsets(builder);
+        var vectorOffset = GFB.SortedVectorContainer.CreateIntVectorVector(builder, offsets);
+        var tableOffset = GFB.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
+        builder.Finish(tableOffset.Value);
     }
 
-    [ProtoContract]
-    public class FooBarListContainer_ValueType_NonVirtual
+    private Offset<GFB.SortedVectorStringKey>[] CreateSortedStringVectorOffsets(FlatBufferBuilder builder)
     {
-        [ProtoMember(1)]
-        public IList<FooBar_ValueType_NonVirtual> List { get; set; }
+        var stringVector = this.sortedStringContainer.Vector;
+        int stringVectorLength = stringVector.Count;
 
-        [ProtoMember(2)]
-        public bool Initialized { get; set; }
+        var offsets = new Offset<GFB.SortedVectorStringKey>[stringVectorLength];
+        for (int i = 0; i < stringVectorLength; ++i)
+        {
+            offsets[i] = GFB.SortedVectorStringKey.CreateSortedVectorStringKey(
+                builder,
+                builder.CreateString(stringVector[i].Key));
+        }
 
-        [ProtoMember(3)]
-        public short Fruit { get; set; }
-
-        [ProtoMember(4)]
-        public string Location { get; set; }
+        return offsets;
     }
 
-    [FlatBufferTable]
-    public class ValueTableVector
+    private Offset<GFB.SortedVectorIntKey>[] CreateSortedIntVectorOffsets(FlatBufferBuilder builder)
     {
-        [FlatBufferItem(0)]
-        public ValueTable[] ValueTables { get; set; }
-    }
+        var intVector = this.sortedIntContainer.Vector;
+        int intVectorLength = intVector.Count;
 
-    [FlatBufferTable]
-    public class ValueTable
-    {
-        [FlatBufferItem(0)]
-        public byte A { get; set; }
+        var offsets = new Offset<GFB.SortedVectorIntKey>[intVectorLength];
+        for (int i = 0; i < intVectorLength; ++i)
+        {
+            offsets[i] = GFB.SortedVectorIntKey.CreateSortedVectorIntKey(
+                builder,
+                intVector[i].Key);
+        }
 
-        [FlatBufferItem(1)]
-        public sbyte B { get; set; }
-
-        [FlatBufferItem(2)]
-        public ushort C { get; set; }
-
-        [FlatBufferItem(3)]
-        public short D { get; set; }
-
-        [FlatBufferItem(4)]
-        public uint E { get; set; }
-
-        [FlatBufferItem(5)]
-        public int F { get; set; }
-
-        [FlatBufferItem(6)]
-        public float G { get; set; }
-
-        [FlatBufferItem(7)]
-        public ulong H { get; set; }
-
-        [FlatBufferItem(8)]
-        public long I { get; set; }
-
-        [FlatBufferItem(9)]
-        public double J { get; set; }
-
-        [FlatBufferItem(10)]
-        public bool K { get; set; }
+        return offsets;
     }
 
 #endregion
 
-#region Shared Contracts -- NonVirtual
-
-    [ProtoContract]
-    [MessagePack.MessagePackObject]
-    public class FooNonVirtual
+    public virtual void FlatSharp_GetMaxSize()
     {
-        [ProtoMember(1), MessagePack.Key(0)]
-        public ulong Id { get; set; }
-
-        [ProtoMember(2), MessagePack.Key(1)]
-        public short Count { get; set; }
-
-        [ProtoMember(3), MessagePack.Key(2)]
-        public sbyte Prefix { get; set; }
-
-        [ProtoMember(4), MessagePack.Key(3)]
-        public uint Length { get; set; }
+        this.fs_serializer.GetMaxSize(this.defaultContainer);
     }
 
-    [ProtoContract]
-    [FlatBufferStruct]
-    [MessagePack.MessagePackObject]
-    public class BarNonVirtual
+    public virtual void FlatSharp_Serialize()
     {
-        [ProtoMember(1), MessagePack.Key(0)]
-        public FooNonVirtual Parent { get; set; }
-
-        [ProtoMember(2), MessagePack.Key(1)]
-        public int Time { get; set; }
-
-        [ProtoMember(3), MessagePack.Key(2)]
-        public float Ratio { get; set; }
-
-        [ProtoMember(4), MessagePack.Key(3)]
-        public ushort Size { get; set; }
+        this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
     }
 
-    [ProtoContract]
-    [MessagePack.MessagePackObject]
-    public class FooBarNonVirtual
+    public virtual void FlatSharp_Serialize_ValueStructs()
     {
-        [ProtoMember(1), MessagePack.Key(0)]
-        public BarNonVirtual Sibling { get; set; }
-
-        [ProtoMember(2), MessagePack.Key(1)]
-        public string Name { get; set; }
-
-        [ProtoMember(3), MessagePack.Key(2)]
-        public double Rating { get; set; }
-
-        [ProtoMember(4), MessagePack.Key(3)]
-        public byte PostFix { get; set; }
+        this.fs_serializer.Serialize(this.defaultContainerWithValueStructs, this.fs_writeMemory);
     }
 
-    [ProtoContract]
-    [MessagePack.MessagePackObject]
-    public class FooBarListContainerNonVirtual
+    public virtual void FlatSharp_ParseAndTraverse()
     {
-        [ProtoMember(1), MessagePack.Key(0)]
-        public IList<FooBarNonVirtual> List { get; set; }
-
-        [ProtoMember(2), MessagePack.Key(1)]
-        public bool Initialized { get; set; }
-
-        [ProtoMember(3), MessagePack.Key(2)]
-        public short Fruit { get; set; }
-
-        [ProtoMember(4), MessagePack.Key(3)]
-        public string Location { get; set; }
+        var item = this.Parse<FooBarListContainer, InputBufferKind>(this.inputBuffer);
+        this.TraverseFooBarContainer(item);
     }
 
-#endregion
-
-#region Sorted Vector Contracts
-
-    [FlatBufferTable]
-    public class SortedVectorTable<T>
+    public virtual void FlatSharp_ParseAndTraversePartial()
     {
-        [FlatBufferItem(0, SortedVector = true)]
-        public virtual IList<SortedVectorTableItem<T>> Vector { get; set; }
+        var item = this.Parse<FooBarListContainer, InputBufferKind>(this.inputBuffer);
+        this.TraverseFooBarContainerPartial(item);
     }
 
-    [FlatBufferTable]
-    public class UnsortedVectorTable<T>
+    public virtual void FlatSharp_ParseAndTraverse_ValueStructs()
     {
-        [FlatBufferItem(0)]
-        public virtual IList<UnsortedVectorTableItem<T>> Vector { get; set; }
+        var item = this.Parse<FooBarListContainer_ValueType, InputBufferKind>(this.inputBuffer);
+        this.TraverseFooBarContainer(item);
     }
 
-    [FlatBufferTable]
-    public class SortedVectorTableItem<T>
+    public virtual void FlatSharp_ParseAndTraversePartial_ValueStructs()
     {
-        [FlatBufferItem(0, Key = true)]
-        public virtual T Key { get; set; }
+        var item = this.Parse<FooBarListContainer_ValueType, InputBufferKind>(this.inputBuffer);
+        this.TraverseFooBarContainerPartial(item);
     }
 
-    [FlatBufferTable]
-    public class UnsortedVectorTableItem<T>
+    public virtual void FlatSharp_Serialize_StringVector_Sorted()
     {
-        [FlatBufferItem(0)]
-        public virtual T Key { get; set; }
+        this.fs_serializer.Serialize(this.sortedStringContainer, this.fs_writeMemory);
     }
 
-#endregion
+    public virtual void FlatSharp_Serialize_IntVector_Sorted()
+    {
+        this.fs_serializer.Serialize(this.sortedIntContainer, this.fs_writeMemory);
+    }
+
+    public virtual void FlatSharp_Serialize_StringVector_Unsorted()
+    {
+        this.fs_serializer.Serialize(this.unsortedStringContainer, this.fs_writeMemory);
+    }
+
+    public virtual void FlatSharp_Serialize_IntVector_Unsorted()
+    {
+        this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
+    }
+
+    public virtual void FlatSharp_Serialize_ValueTableVector()
+    {
+        this.fs_serializer.Serialize(this.valueTableVector, this.fs_writeMemory);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private T Parse<T, TInputBuffer>(TInputBuffer buffer)
+        where TInputBuffer : IInputBuffer
+        where T : class
+    {
+        return this.fs_serializer.Parse<T>(buffer);
+    }
+
+    public virtual void PBDN_Serialize()
+    {
+        this.pbdn_writeBuffer.Position = 0;
+        ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainer);
+    }
+
+    public virtual void PBDN_Serialize_NonVirtual()
+    {
+        this.pbdn_writeBuffer.Position = 0;
+        ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainerNonVirtual);
+    }
+
+    public virtual void PBDN_ParseAndTraverse()
+    {
+        this.pbdn_readBuffer.Position = 0;
+        var item = ProtoBuf.Serializer.Deserialize<FooBarListContainer>(this.pbdn_readBuffer);
+        this.TraverseFooBarContainer(item);
+    }
+
+    public virtual void PBDN_ParseAndTraversePartial()
+    {
+        this.pbdn_readBuffer.Position = 0;
+        var item = ProtoBuf.Serializer.Deserialize<FooBarListContainer>(this.pbdn_readBuffer);
+        this.TraverseFooBarContainerPartial(item);
+    }
+
+    public virtual void PBDN_ParseAndTraverse_NonVirtual()
+    {
+        this.pbdn_readBuffer.Position = 0;
+        var item = ProtoBuf.Serializer.Deserialize<FooBarListContainerNonVirtual>(this.pbdn_readBuffer);
+        this.TraverseFooBarContainer(item);
+    }
+
+    public virtual void PBDN_ParseAndTraversePartial_NonVirtual()
+    {
+        this.pbdn_readBuffer.Position = 0;
+        var item = ProtoBuf.Serializer.Deserialize<FooBarListContainerNonVirtual>(this.pbdn_readBuffer);
+        this.TraverseFooBarContainerPartial(item);
+    }
+
+    public virtual void MsgPack_Serialize_NonVirtual()
+    {
+        this.msgPackWriteData = MessagePack.MessagePackSerializer.Serialize(this.defaultContainerNonVirtual);
+    }
+
+    public virtual void MsgPack_ParseAndTraverse()
+    {
+        var item = MessagePack.MessagePackSerializer.Deserialize<FooBarListContainerNonVirtual>(this.msgPackWriteData, out int len);
+        this.TraverseFooBarContainer(item);
+    }
+
+    public virtual void MsgPack_ParseAndTraversePartial()
+    {
+        var item = MessagePack.MessagePackSerializer.Deserialize<FooBarListContainerNonVirtual>(this.msgPackWriteData, out int len);
+        this.TraverseFooBarContainerPartial(item);
+    }
 }
