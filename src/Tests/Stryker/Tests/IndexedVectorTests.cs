@@ -5,22 +5,23 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class IndexedVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Present(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
         IIndexedVector<string, Key> vector = vectors.Indexed;
 
-        Assert.Equal(option != FlatBufferDeserializationOption.GreedyMutable, vector.IsReadOnly);
+        Assert.AreEqual(option != FlatBufferDeserializationOption.GreedyMutable, vector.IsReadOnly);
 
         var expected = root.Vectors.Indexed.ToArray();
 
@@ -29,40 +30,40 @@ public class IndexedVectorTests
             Fruit f = pair.Value.Value;
             string name = pair.Value.Name;
 
-            Assert.True(vector.TryGetValue(name, out Key key));
-            Assert.Equal(f, key.Value);
-            Assert.Equal(name, key.Name);
+            Assert.IsTrue(vector.TryGetValue(name, out Key key));
+            Assert.AreEqual(f, key.Value);
+            Assert.AreEqual(name, key.Name);
 
             key = vector[name];
-            Assert.Equal(f, key.Value);
+            Assert.AreEqual(f, key.Value);
 
-            Assert.True(vector.ContainsKey(name));
+            Assert.IsTrue(vector.ContainsKey(name));
         }
 
-        Assert.False(vector.ContainsKey("z"));
-        Assert.False(vector.TryGetValue("z", out _));
+        Assert.IsFalse(vector.ContainsKey("z"));
+        Assert.IsFalse(vector.TryGetValue("z", out _));
 
         Helpers.AssertMutationWorks(option, vectors, false, v => v.Indexed, new IndexedVector<string, Key>());
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Missing(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot_Missing(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Vectors vectors = parsed.Vectors;
-        Assert.True(vectors.IsInitialized);
-        Assert.True(Vectors.IsStaticInitialized);
+        Assert.IsTrue(vectors.IsInitialized);
+        Assert.IsTrue(Vectors.IsStaticInitialized);
 
-        Assert.Null(vectors.Indexed);
+        Assert.IsNull(vectors.Indexed);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void KeyNotSet_Serialize(FlatBufferDeserializationOption option)
     {
         Key key = new Key { Name = "fred", Value = Fruit.Apple };
@@ -80,11 +81,11 @@ public class IndexedVectorTests
 
         key.Name = null!;
 
-        var ex = Assert.Throws<InvalidOperationException>(() => root.SerializeAndParse(option));
-        Assert.Equal("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was not set.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidOperationException>(() => root.SerializeAndParse(option));
+        Assert.AreEqual("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was not set.", ex.Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void NullItem_Serialize()
     {
         Root root = new() 
@@ -99,15 +100,15 @@ public class IndexedVectorTests
         var backingDictionary = (Dictionary<string, Key>)typeof(IndexedVector<string, Key>).GetField("backingDictionary", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(root.Vectors.Indexed);
         backingDictionary["foo"] = null;
 
-        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.GetMaxSize(root));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
 
-        ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void KeyNotSet_Parse(FlatBufferDeserializationOption option)
     {
         // missing required field.
@@ -138,17 +139,17 @@ public class IndexedVectorTests
             0, 0, 4, 0,
         };
 
-        var ex = Assert.Throws<InvalidDataException>(() =>
+        var ex = Assert.ThrowsException<InvalidDataException>(() =>
         {
             var root = Root.Serializer.Parse(data, option);
             string name = root.Fields.Union.Value.Key.Name;
         });
 
-        Assert.Equal("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was missing from the buffer.", ex.Message);
+        Assert.AreEqual("Table property 'FlatSharpStrykerTests.Key.Name' is marked as required, but was missing from the buffer.", ex.Message);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Big(FlatBufferDeserializationOption option)
     {
         Root root = new Root
@@ -173,21 +174,21 @@ public class IndexedVectorTests
 
         for (int i = 0; i < expectedKeys.Count; ++i)
         {
-            Assert.True(parsedIndexed.ContainsKey(expectedKeys[i]));
-            Assert.NotNull(parsedIndexed[expectedKeys[i]]);
-            Assert.True(parsedIndexed.TryGetValue(expectedKeys[i], out Key key));
-            Assert.NotNull(key);
-            Assert.Equal(expectedKeys[i], key.Name);
+            Assert.IsTrue(parsedIndexed.ContainsKey(expectedKeys[i]));
+            Assert.IsNotNull(parsedIndexed[expectedKeys[i]]);
+            Assert.IsTrue(parsedIndexed.TryGetValue(expectedKeys[i], out Key key));
+            Assert.IsNotNull(key);
+            Assert.AreEqual(expectedKeys[i], key.Name);
         }
 
         for (int i = 0; i < expectedKeys.Count; ++i)
         {
             string unexpectedKey = Guid.NewGuid().ToString("n");
 
-            Assert.False(parsedIndexed.ContainsKey(unexpectedKey));
-            Assert.Throws<KeyNotFoundException>(() => parsedIndexed[unexpectedKey]);
-            Assert.False(parsedIndexed.TryGetValue(unexpectedKey, out Key key));
-            Assert.Null(key);
+            Assert.IsFalse(parsedIndexed.ContainsKey(unexpectedKey));
+            Assert.ThrowsException<KeyNotFoundException>(() => parsedIndexed[unexpectedKey]);
+            Assert.IsFalse(parsedIndexed.TryGetValue(unexpectedKey, out Key key));
+            Assert.IsNull(key);
         }
     }
 

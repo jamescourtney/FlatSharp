@@ -5,31 +5,32 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class ValueStructVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] actualData);
 
-        Assert.NotNull(parsed.Vectors.ValueStruct);
+        Assert.IsNotNull(parsed.Vectors.ValueStruct);
 
         var vsr = root.Vectors.ValueStruct;
         var vsp = parsed.Vectors.ValueStruct;
 
-        Assert.Equal(vsr.Count, vsp.Count);
+        Assert.AreEqual(vsr.Count, vsp.Count);
 
         for (int i = 0; i < vsr.Count; ++i)
         {
             var r = vsr[i];
             var p = vsp[i];
 
-            Assert.Equal(r.A, p.A);
-            Assert.Equal(r.B, p.B);
-            Assert.Equal(r.C(0), p.C(0));
-            Assert.Equal(r.C(1), p.C(1));
+            Assert.AreEqual(r.A, p.A);
+            Assert.AreEqual(r.B, p.B);
+            Assert.AreEqual(r.C(0), p.C(0));
+            Assert.AreEqual(r.C(1), p.C(1));
         }
 
         Helpers.AssertSequenceEqual(expectedData, actualData);
@@ -37,8 +38,8 @@ public class ValueStructVectorTests
         Helpers.ValidateListVector(option, true, vsp, new ValueStruct());
     });
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void WriteThroughDisabled(FlatBufferDeserializationOption option)
     {
         if (option == FlatBufferDeserializationOption.Greedy)
@@ -55,26 +56,26 @@ public class ValueStructVectorTests
         FieldInfo field = list.GetType().GetField("fieldContext", BindingFlags.NonPublic | BindingFlags.Instance);
         TableFieldContext context = (TableFieldContext)field.GetValue(list);
 
-        Assert.True(context.WriteThrough);
+        Assert.IsTrue(context.WriteThrough);
         context = new TableFieldContext(context.FullName, context.SharedString, writeThrough: false);
         field.SetValue(list, context);
 
         Helpers.ValidateListVector(option, false, list, new ValueStruct());
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Missing(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot_Missing(out byte[] expectedData);
         root.SerializeAndParse(option, out byte[] actualData);
 
-        Assert.Null(root.Vectors.ValueStruct);
+        Assert.IsNull(root.Vectors.ValueStruct);
         Helpers.AssertSequenceEqual(expectedData, actualData);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Big(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = new Root { Vectors = new() { ValueStruct = new List<ValueStruct>() } };
@@ -89,35 +90,35 @@ public class ValueStructVectorTests
 
         for (int i = 0; i < 1000; ++i)
         {
-            Assert.Equal(root.Vectors.ValueStruct[i].A, parsedList[i].A);
+            Assert.AreEqual(root.Vectors.ValueStruct[i].A, parsedList[i].A);
         }
     });
 
-    [Theory]
-    [InlineData(FlatBufferDeserializationOption.Lazy)]
-    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    [TestMethod]
+    [DataRow(FlatBufferDeserializationOption.Lazy)]
+    [DataRow(FlatBufferDeserializationOption.Progressive)]
     public void WriteThroughValidation(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = new Root { Vectors = new() { ValueStruct = new List<ValueStruct> { new ValueStruct { A = 1 }, new ValueStruct { A = 2 } } } };
         Root parsed1 = root.SerializeAndParse(option, out byte[] rawData);
 
-        Assert.Equal(1, parsed1.Vectors.ValueStruct[0].A);
-        Assert.Equal(2, parsed1.Vectors.ValueStruct[1].A);
+        Assert.AreEqual(1, parsed1.Vectors.ValueStruct[0].A);
+        Assert.AreEqual(2, parsed1.Vectors.ValueStruct[1].A);
 
         parsed1.Vectors.ValueStruct[0] = new() { A = 5 };
         parsed1.Vectors.ValueStruct[1] = new() { A = 10 };
 
-        Assert.Throws<IndexOutOfRangeException>(() => parsed1.Vectors.ValueStruct[-1] = default);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => parsed1.Vectors.ValueStruct[-1] = default);
 
-        Assert.Equal(5, parsed1.Vectors.ValueStruct[0].A);
-        Assert.Equal(10, parsed1.Vectors.ValueStruct[1].A);
+        Assert.AreEqual(5, parsed1.Vectors.ValueStruct[0].A);
+        Assert.AreEqual(10, parsed1.Vectors.ValueStruct[1].A);
 
         Root parsed2 = Root.Serializer.Parse(rawData, option);
-        Assert.Equal(5, parsed2.Vectors.ValueStruct[0].A);
-        Assert.Equal(10, parsed2.Vectors.ValueStruct[1].A);
+        Assert.AreEqual(5, parsed2.Vectors.ValueStruct[0].A);
+        Assert.AreEqual(10, parsed2.Vectors.ValueStruct[1].A);
     });
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveClear()
     {
         Root root = new Root { Vectors = new() { ValueStruct = new[] { new ValueStruct { A = 1, B = 2 } } } };
@@ -127,15 +128,15 @@ public class ValueStructVectorTests
         var vectors = parsed.Vectors.ValueStruct;
 
         // Load item 0 into memory.
-        Assert.Equal(1, vectors[0].A);
-        Assert.Equal(2, vectors[0].B);
+        Assert.AreEqual(1, vectors[0].A);
+        Assert.AreEqual(2, vectors[0].B);
 
         // Clear the span.
         buffer.AsSpan().Clear();
 
         // Verify item 0 is still cached.
-        Assert.Equal(1, vectors[0].A);
-        Assert.Equal(2, vectors[0].B);
+        Assert.AreEqual(1, vectors[0].A);
+        Assert.AreEqual(2, vectors[0].B);
     }
 
     private Root CreateRoot(out byte[] expectedData)

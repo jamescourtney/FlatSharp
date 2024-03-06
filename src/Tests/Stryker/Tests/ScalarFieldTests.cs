@@ -3,16 +3,17 @@ using System.Linq.Expressions;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class ScalarFieldTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ValueStructTableField(FlatBufferDeserializationOption option)
     {
         Root r = CreateTableWithScalarField(out byte[] buffer);
         Root parsed = r.SerializeAndParse(option, out byte[] actual);
 
-        Assert.Equal(r.Fields.Memory, parsed.Fields.Memory);
+        Assert.AreEqual(r.Fields.Memory, parsed.Fields.Memory);
         Helpers.AssertSequenceEqual(buffer, actual);
     }
 

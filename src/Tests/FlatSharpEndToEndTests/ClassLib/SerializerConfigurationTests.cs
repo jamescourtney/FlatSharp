@@ -19,10 +19,11 @@ using System.IO;
 
 namespace FlatSharpEndToEndTests.ClassLib.SerializerConfigurationTests;
 
+[TestClass]
 public class SerializerConfigurationTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UseDeserializationMode(FlatBufferDeserializationOption option)
     {
         var item = new Root { StringVector = new string[] { "a", "b", "c" } };
@@ -31,10 +32,10 @@ public class SerializerConfigurationTests
 
         Root parsed = item.SerializeAndParse(serializer);
         IFlatBufferDeserializedObject obj = parsed as IFlatBufferDeserializedObject;
-        Assert.Equal(option, obj.DeserializationContext.DeserializationOption);
+        Assert.AreEqual(option, obj.DeserializationContext.DeserializationOption);
     }
 
-    [Fact]
+    [TestMethod]
     public void UseLazyDeserialization()
     {
         var item = new Root { StringVector = new string[] { "a", "b", "c" } };
@@ -43,10 +44,10 @@ public class SerializerConfigurationTests
 
         Root parsed = item.SerializeAndParse(serializer);
         IFlatBufferDeserializedObject obj = parsed as IFlatBufferDeserializedObject;
-        Assert.Equal(FlatBufferDeserializationOption.Lazy, obj.DeserializationContext.DeserializationOption);
+        Assert.AreEqual(FlatBufferDeserializationOption.Lazy, obj.DeserializationContext.DeserializationOption);
     }
 
-    [Fact]
+    [TestMethod]
     public void UseProgressiveDeserialization()
     {
         var item = new Root { StringVector = new string[] { "a", "b", "c" } };
@@ -55,10 +56,10 @@ public class SerializerConfigurationTests
 
         Root parsed = item.SerializeAndParse(serializer);
         IFlatBufferDeserializedObject obj = parsed as IFlatBufferDeserializedObject;
-        Assert.Equal(FlatBufferDeserializationOption.Progressive, obj.DeserializationContext.DeserializationOption);
+        Assert.AreEqual(FlatBufferDeserializationOption.Progressive, obj.DeserializationContext.DeserializationOption);
     }
 
-    [Fact]
+    [TestMethod]
     public void UseGreedyDeserialization()
     {
         var item = new Root { StringVector = new string[] { "a", "b", "c" } };
@@ -67,10 +68,10 @@ public class SerializerConfigurationTests
 
         Root parsed = item.SerializeAndParse(serializer);
         IFlatBufferDeserializedObject obj = parsed as IFlatBufferDeserializedObject;
-        Assert.Equal(FlatBufferDeserializationOption.Greedy, obj.DeserializationContext.DeserializationOption);
+        Assert.AreEqual(FlatBufferDeserializationOption.Greedy, obj.DeserializationContext.DeserializationOption);
     }
 
-    [Fact]
+    [TestMethod]
     public void UseGreedyMutableDeserialization()
     {
         var item = new Root { StringVector = new string[] { "a", "b", "c" } };
@@ -79,18 +80,18 @@ public class SerializerConfigurationTests
 
         Root parsed = item.SerializeAndParse(serializer);
         IFlatBufferDeserializedObject obj = parsed as IFlatBufferDeserializedObject;
-        Assert.Equal(FlatBufferDeserializationOption.GreedyMutable, obj.DeserializationContext.DeserializationOption);
+        Assert.AreEqual(FlatBufferDeserializationOption.GreedyMutable, obj.DeserializationContext.DeserializationOption);
     }
 
-    [Theory]
-    [InlineData(FlatBufferDeserializationOption.Lazy, false, false)]
-    [InlineData(FlatBufferDeserializationOption.Lazy, true, true)]
-    [InlineData(FlatBufferDeserializationOption.Progressive, false, false)]
-    [InlineData(FlatBufferDeserializationOption.Progressive, true, true)]
-    [InlineData(FlatBufferDeserializationOption.Greedy, false, false)]
-    [InlineData(FlatBufferDeserializationOption.Greedy, true, false)]
-    [InlineData(FlatBufferDeserializationOption.GreedyMutable, false, false)]
-    [InlineData(FlatBufferDeserializationOption.GreedyMutable, true, false)]
+    [TestMethod]
+    [DataRow(FlatBufferDeserializationOption.Lazy, false, false)]
+    [DataRow(FlatBufferDeserializationOption.Lazy, true, true)]
+    [DataRow(FlatBufferDeserializationOption.Progressive, false, false)]
+    [DataRow(FlatBufferDeserializationOption.Progressive, true, true)]
+    [DataRow(FlatBufferDeserializationOption.Greedy, false, false)]
+    [DataRow(FlatBufferDeserializationOption.Greedy, true, false)]
+    [DataRow(FlatBufferDeserializationOption.GreedyMutable, false, false)]
+    [DataRow(FlatBufferDeserializationOption.GreedyMutable, true, false)]
     public void UseMemoryCopySerialization(FlatBufferDeserializationOption option, bool enableMemCopy, bool expectMemCopy)
     {
         Root t = new() { StringVector = new[] { "A", "b", "c", } };
@@ -101,9 +102,9 @@ public class SerializerConfigurationTests
         byte[] data = new byte[1024];
 
         int maxBytes = compiled.GetMaxSize(t);
-        Assert.Equal(88, maxBytes);
+        Assert.AreEqual(88, maxBytes);
         int actualBytes = compiled.Write(data, t);
-        Assert.Equal(58, actualBytes);
+        Assert.AreEqual(58, actualBytes);
 
         // First test: Parse the array but don't trim the buffer. This causes the underlying
         // buffer to be much larger than the actual data.
@@ -113,28 +114,28 @@ public class SerializerConfigurationTests
 
         if (expectMemCopy)
         {
-            Assert.Equal(1024, bytesWritten); // We use mem copy serialization here, and we gave it 1024 bytes when we parsed. So we get 1024 bytes back out.
-            Assert.Equal(1024, compiled.GetMaxSize(parsed));
-            Assert.Throws<BufferTooSmallException>(() => compiled.Write(new byte[maxBytes], parsed));
+            Assert.AreEqual(1024, bytesWritten); // We use mem copy serialization here, and we gave it 1024 bytes when we parsed. So we get 1024 bytes back out.
+            Assert.AreEqual(1024, compiled.GetMaxSize(parsed));
+            Assert.ThrowsException<BufferTooSmallException>(() => compiled.Write(new byte[maxBytes], parsed));
 
             // Repeat, but now using the trimmed array.
             parsed = compiled.Parse(data.AsMemory().Slice(0, actualBytes));
             bytesWritten = compiled.Write(data2, parsed);
-            Assert.Equal(58, bytesWritten);
-            Assert.Equal(58, compiled.GetMaxSize(parsed));
+            Assert.AreEqual(58, bytesWritten);
+            Assert.AreEqual(58, compiled.GetMaxSize(parsed));
 
             // Default still returns 88.
-            Assert.Equal(88, Root.Serializer.GetMaxSize(parsed));
+            Assert.AreEqual(88, Root.Serializer.GetMaxSize(parsed));
         }
         else
         {
-            Assert.Equal(58, bytesWritten); 
-            Assert.Equal(88, compiled.GetMaxSize(parsed));
+            Assert.AreEqual(58, bytesWritten); 
+            Assert.AreEqual(88, compiled.GetMaxSize(parsed));
             compiled.Write(new byte[maxBytes], parsed);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void SharedStringWriters()
     {
         ISerializer<Root> noSharedStrings = Root.Serializer.WithSettings(opt => opt.DisableSharedStrings());
@@ -151,9 +152,9 @@ public class SerializerConfigurationTests
             byte[] perfectShared = root.AllocateAndSerialize(perfectSharedStrings);
 
             // Small shared doesn't accomplish anything since it alternates.
-            Assert.Equal(notShared.Length, smallShared.Length);
-            Assert.True(largeShared.Length < smallShared.Length);
-            Assert.Equal(largeShared.Length, perfectShared.Length);
+            Assert.AreEqual(notShared.Length, smallShared.Length);
+            Assert.IsTrue(largeShared.Length < smallShared.Length);
+            Assert.AreEqual(largeShared.Length, perfectShared.Length);
         }
 
         {
@@ -165,9 +166,9 @@ public class SerializerConfigurationTests
             byte[] perfectShared = root.AllocateAndSerialize(perfectSharedStrings);
 
             // Small shared doesn't accomplish anything since it alternates.
-            Assert.True(smallShared.Length < notShared.Length);
-            Assert.Equal(largeShared.Length, smallShared.Length);
-            Assert.Equal(largeShared.Length, perfectShared.Length);
+            Assert.IsTrue(smallShared.Length < notShared.Length);
+            Assert.AreEqual(largeShared.Length, smallShared.Length);
+            Assert.AreEqual(largeShared.Length, perfectShared.Length);
         }
     }
 

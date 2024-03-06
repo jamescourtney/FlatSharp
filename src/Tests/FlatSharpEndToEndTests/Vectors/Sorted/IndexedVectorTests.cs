@@ -20,18 +20,13 @@ using System.Runtime.InteropServices;
 
 namespace FlatSharpEndToEndTests.Vectors.Sorted;
 
+[TestClass]
 public class IndexedVectorTests
 {
     private static readonly Random Rng = new();
-    private readonly Xunit.Abstractions.ITestOutputHelper outputHelper;
 
-    public IndexedVectorTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
-    {
-        this.outputHelper = outputHelper;
-    }
-
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Bool(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<bool, BoolKey>(
         opt,
         x => x.IndexedVectorOfBool,
@@ -39,8 +34,8 @@ public class IndexedVectorTests
         () => new BoolKey { Key = Rng.Next() % 2 == 0 },
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Byte(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<byte, ByteKey>(
         opt,
         x => x.IndexedVectorOfByte,
@@ -48,8 +43,8 @@ public class IndexedVectorTests
         GetValueFactory<byte, ByteKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void SByte(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<sbyte, SByteKey>(
         opt,
         x => x.IndexedVectorOfSbyte,
@@ -57,8 +52,8 @@ public class IndexedVectorTests
         GetValueFactory<sbyte, SByteKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Short(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<short, ShortKey>(
         opt,
         x => x.IndexedVectorOfShort,
@@ -66,8 +61,8 @@ public class IndexedVectorTests
         GetValueFactory<short, ShortKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UShort(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<ushort, UShortKey>(
         opt,
         x => x.IndexedVectorOfUshort,
@@ -75,8 +70,8 @@ public class IndexedVectorTests
         GetValueFactory<ushort, UShortKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Int(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<int, IntKey>(
         opt,
         x => x.IndexedVectorOfInt,
@@ -84,8 +79,8 @@ public class IndexedVectorTests
         GetValueFactory<int, IntKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void UInt(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<uint, UIntKey>(
         opt,
         x => x.IndexedVectorOfUint,
@@ -93,8 +88,8 @@ public class IndexedVectorTests
         GetValueFactory<uint, UIntKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Long(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<long, LongKey>(
         opt,
         x => x.IndexedVectorOfLong,
@@ -102,8 +97,8 @@ public class IndexedVectorTests
         GetValueFactory<long, LongKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ULong(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<ulong, ULongKey>(
         opt,
         x => x.IndexedVectorOfUlong,
@@ -111,8 +106,8 @@ public class IndexedVectorTests
         GetValueFactory<ulong, ULongKey>((k, v) => k.Key = v),
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Float(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<float, FloatKey>(
         opt,
         x => x.IndexedVectorOfFloat,
@@ -120,8 +115,8 @@ public class IndexedVectorTests
         () => new FloatKey { Key = (float)Rng.NextDouble() },
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Double(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<double, DoubleKey>(
         opt,
         x => x.IndexedVectorOfDouble,
@@ -129,8 +124,8 @@ public class IndexedVectorTests
         () => new DoubleKey { Key = Rng.NextDouble() },
         k => k.Key);
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void String(FlatBufferDeserializationOption opt) => this.IndexedVectorTest<string, StringKey>(
         opt,
         x => x.IndexedVectorOfString,
@@ -191,15 +186,15 @@ public class IndexedVectorTests
 
         IIndexedVector<TKey, TValue> vector = getVector(parsed);
 
-        Assert.Equal(knownKeys.Count, vector.Count);
+        Assert.AreEqual(knownKeys.Count, vector.Count);
 
         foreach (var key in knownKeys)
         {
-            Assert.True(vector.TryGetValue(key, out TValue value));
-            Assert.True(vector.ContainsKey(key));
-            Assert.NotNull(vector[key]);
-            Assert.NotNull(value);
-            Assert.Equal(key, getKey(value));
+            Assert.IsTrue(vector.TryGetValue(key, out TValue value));
+            Assert.IsTrue(vector.ContainsKey(key));
+            Assert.IsNotNull(vector[key]);
+            Assert.IsNotNull(value);
+            Assert.AreEqual(key, getKey(value));
         }
 
         for (int i = 0; i < 100; ++i)
@@ -208,15 +203,11 @@ public class IndexedVectorTests
             if (!knownKeys.Contains(key))
             {
                 bool result = vector.TryGetValue(key, out TValue value);
-                if (result)
-                {
-                    this.outputHelper.WriteLine($"Unexpected result: Key = {key}. ActualKey = {getKey(value)}");
-                }
 
-                Assert.False(result);
-                Assert.Null(value);
-                Assert.False(vector.ContainsKey(key));
-                Assert.Throws<KeyNotFoundException>(() => vector[key]);
+                Assert.IsFalse(result);
+                Assert.IsNull(value);
+                Assert.IsFalse(vector.ContainsKey(key));
+                Assert.ThrowsException<KeyNotFoundException>(() => vector[key]);
             }
         }
     }

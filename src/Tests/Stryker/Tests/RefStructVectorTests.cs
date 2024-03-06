@@ -5,39 +5,40 @@ using System.Threading;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class RefStructVectorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Present(FlatBufferDeserializationOption option) => Helpers.Repeat(() =>
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] actualData);
 
-        Assert.NotNull(root.Vectors.RefStruct);
+        Assert.IsNotNull(root.Vectors.RefStruct);
 
         var vsr = root.Vectors.RefStruct;
         var vsp = parsed.Vectors.RefStruct;
 
-        Assert.Equal(vsr.Count, vsp.Count);
+        Assert.AreEqual(vsr.Count, vsp.Count);
 
         for (int i = 0; i < vsr.Count; ++i)
         {
             var r = vsr[i];
             var p = vsp[i];
 
-            Assert.Equal(r.A, p.A);
-            Assert.Equal(r.B, p.B);
-            Assert.Equal(r.C[0], p.C[0]);
-            Assert.Equal(r.C[1], p.C[1]);
-            Assert.Equal(r.D[0], p.D[0]);
-            Assert.Equal(r.D[1], p.D[1]);
+            Assert.AreEqual(r.A, p.A);
+            Assert.AreEqual(r.B, p.B);
+            Assert.AreEqual(r.C[0], p.C[0]);
+            Assert.AreEqual(r.C[1], p.C[1]);
+            Assert.AreEqual(r.D[0], p.D[0]);
+            Assert.AreEqual(r.D[1], p.D[1]);
 
-            Assert.Equal(r.C.ToArray()[0], p.C.ToArray()[0]);
-            Assert.Equal(r.D.ToArray()[0], p.D.ToArray()[0]);
+            Assert.AreEqual(r.C.ToArray()[0], p.C.ToArray()[0]);
+            Assert.AreEqual(r.D.ToArray()[0], p.D.ToArray()[0]);
 
-            Assert.Same(p.D, p.D);
-            Assert.Same(p.C, p.C);
+            Assert.AreSame(p.D, p.D);
+            Assert.AreSame(p.C, p.C);
         }
 
         Helpers.AssertSequenceEqual(expectedData, actualData);
@@ -45,18 +46,18 @@ public class RefStructVectorTests
         Helpers.ValidateListVector(option, false, vsp, new RefStruct());
     });
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Missing(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot_Missing(out byte[] expectedData);
         root.SerializeAndParse(option, out byte[] actualData);
 
-        Assert.Null(root.Vectors.RefStruct);
+        Assert.IsNull(root.Vectors.RefStruct);
         Helpers.AssertSequenceEqual(expectedData, actualData);
     }
 
-    [Fact]
+    [TestMethod]
     public void WithNull() => Helpers.Repeat(() =>
     {
         Root root = new()
@@ -67,8 +68,8 @@ public class RefStructVectorTests
             }
         };
 
-        var ex = Assert.Throws<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
-        Assert.Equal("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
+        var ex = Assert.ThrowsException<InvalidDataException>(() => Root.Serializer.Write(new byte[1024], root));
+        Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
 
         // no exception here. Reason is that structs are constant size, so we don't traverse the vector to figure out the max size.
         int maxSize = Root.Serializer.GetMaxSize(root);

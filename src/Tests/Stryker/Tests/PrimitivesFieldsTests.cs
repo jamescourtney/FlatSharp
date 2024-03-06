@@ -3,87 +3,88 @@ using System.Linq.Expressions;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class PrimitivesFieldsTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void StringTableField(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
         Fields fields = parsed.Fields;
-        Assert.Equal("hello", fields.Str);
+        Assert.AreEqual("hello", fields.Str);
 
         Helpers.AssertMutationWorks(option, fields, false, s => s.Str, string.Empty);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ScalarTableField(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
         Fields fields = parsed.Fields;
 
-        Assert.Equal(3, fields.Memory);
+        Assert.AreEqual(3, fields.Memory);
         Helpers.AssertMutationWorks(option, fields, false, s => s.Memory, (byte)0);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ScalarTableField_WithDefaultValue(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
         Fields fields = parsed.Fields;
 
-        Assert.Equal(3, fields.ScalarWithDefault);
+        Assert.AreEqual(3, fields.ScalarWithDefault);
         Helpers.AssertMutationWorks(option, fields, false, s => s.ScalarWithDefault, 8);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ScalarTableField_WithoutDefaultValue(FlatBufferDeserializationOption option)
     {
         Root root = CreateRoot_NotDefault(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
         Fields fields = parsed.Fields;
 
-        Assert.Equal(root.Fields.ScalarWithDefault, fields.ScalarWithDefault);
+        Assert.AreEqual(root.Fields.ScalarWithDefault, fields.ScalarWithDefault);
         Helpers.AssertMutationWorks(option, fields, false, s => s.ScalarWithDefault, 8);
         Helpers.AssertSequenceEqual(expectedData, buffer);
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveStringTableField()
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
         Fields fields = parsed.Fields;
-        Assert.Equal("hello", Helpers.TestProgressiveFieldLoad(3, true, fields, f => f.Str));
+        Assert.AreEqual("hello", Helpers.TestProgressiveFieldLoad(3, true, fields, f => f.Str));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveScalarTableField()
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
         Fields fields = parsed.Fields;
-        Assert.Equal(3, Helpers.TestProgressiveFieldLoad(2, true, fields, f => f.Memory));
+        Assert.AreEqual(3, Helpers.TestProgressiveFieldLoad(2, true, fields, f => f.Memory));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveScalarTableFieldWithDefaultValue()
     {
         Root root = CreateRoot(out byte[] expectedData);
         Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
         Fields fields = parsed.Fields;
-        Assert.Equal(3, Helpers.TestProgressiveFieldLoad(6, false, fields, f => f.ScalarWithDefault));
+        Assert.AreEqual(3, Helpers.TestProgressiveFieldLoad(6, false, fields, f => f.ScalarWithDefault));
     }
 
     private Root CreateRoot(out byte[] expectedData)

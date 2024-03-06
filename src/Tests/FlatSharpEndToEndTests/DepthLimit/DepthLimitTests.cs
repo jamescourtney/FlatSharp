@@ -18,20 +18,21 @@ using System.IO;
 
 namespace FlatSharpEndToEndTests.DepthLimit;
 
+[TestClass]
 public class DepthLimitTests
 {
-    [Fact]
+    [TestMethod]
     public void DepthLimit_Negative()
     {
-        var ex = Assert.Throws<ArgumentException>(
+        var ex = Assert.ThrowsException<ArgumentException>(
             () => LLNode.Serializer.WithSettings(opt => opt.WithObjectDepthLimit(-1)));
 
-        Assert.Contains("ObjectDepthLimit must be nonnegative.", ex.Message);
+        Assert.IsTrue(ex.Message.Contains("ObjectDepthLimit must be nonnegative."));
     }
 
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void DepthLimit_OneOver(FlatBufferDeserializationOption option)
     {
         const int Limit = 50;
@@ -40,14 +41,14 @@ public class DepthLimitTests
 
         LLNode head = CreateList(Limit + 1);
 
-        var ex = Assert.Throws<InvalidDataException>(
+        var ex = Assert.ThrowsException<InvalidDataException>(
             () => ParseAndTraverseList(head, serializer));
 
-        Assert.Contains("FlatSharp passed the configured depth limit when deserializing.", ex.Message);
+        Assert.IsTrue(ex.Message.Contains("FlatSharp passed the configured depth limit when deserializing."));
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void DepthLimit_Exact(FlatBufferDeserializationOption option)
     {
         const int Limit = 50;

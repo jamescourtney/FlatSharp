@@ -21,20 +21,13 @@ namespace FlatSharpEndToEndTests.ClassLib.NonScalarVectorTests;
 /// <summary>
 /// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for non-primitive types.
 /// </summary>
+[TestClass]
 public class NonScalarVectorTests
 {
     private static readonly Random r = new Random();
 
-    public static IEnumerable<object[]> EnumValues()
-    {
-        foreach (var item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-        {
-            yield return new object[] { item };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(EnumValues))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void StringVector(FlatBufferDeserializationOption option)
     {
         this.TestType<Root, RootReadOnly, string>(
@@ -47,8 +40,8 @@ public class NonScalarVectorTests
             });
     }
 
-    [Theory]
-    [MemberData(nameof(EnumValues))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void TableVector(FlatBufferDeserializationOption option)
     {
         this.TestType<Root, RootReadOnly, InnerTable>(
@@ -61,8 +54,8 @@ public class NonScalarVectorTests
             });
     }
 
-    [Theory]
-    [MemberData(nameof(EnumValues))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void StructVector(FlatBufferDeserializationOption option)
     {
         this.TestType<Root, RootReadOnly, InnerStruct>(
@@ -89,10 +82,10 @@ public class NonScalarVectorTests
 
             for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
             {
-                Assert.Equal<T>(memoryTable.Vector[i], resultVector[i]);
+                Assert.AreEqual<T>(memoryTable.Vector[i], resultVector[i]);
 
                 // reference equality should correspond to the serializer.
-                Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
+                Assert.AreEqual(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
             }
         }
 
@@ -107,10 +100,10 @@ public class NonScalarVectorTests
 
             for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
             {
-                Assert.Equal(memoryTable.Vector[i], resultVector[i]);
+                Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
 
                 // reference equality should correspond to the serializer.
-                Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
+                Assert.AreEqual(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
             }
         }
     }

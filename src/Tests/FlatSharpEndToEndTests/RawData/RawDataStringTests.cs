@@ -18,9 +18,10 @@ namespace FlatSharpEndToEndTests.RawData;
 
 using StringTable = FlatSharpEndToEndTests.TableMembers.StringTable;
 
+[TestClass]
 public class RawDataStringTests
 {
-    [Fact]
+    [TestMethod]
     public void EmptyString()
     {
         var root = new StringTable
@@ -43,10 +44,10 @@ public class RawDataStringTests
             0,                   // null terminator (special case for strings).
         };
 
-        Assert.True(expectedResult.AsSpan().SequenceEqual(data));
+        Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(data));
     }
 
-    [Fact]
+    [TestMethod]
     public void DeprecatedString()
     {
         var root = new StringTable
@@ -64,10 +65,10 @@ public class RawDataStringTests
             4, 0,                // table length
         };
 
-        Assert.True(expectedResult.AsSpan().SequenceEqual(data));
+        Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(data));
     }
 
-    [Fact]
+    [TestMethod]
     public void SimpleString()
     {
         var root = new StringTable
@@ -90,10 +91,10 @@ public class RawDataStringTests
             1, 2, 3, 0,          // data + null terminator (special case for string vectors).
         };
 
-        Assert.True(expectedResult.AsSpan().SequenceEqual(target));
+        Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
     }
 
-    [Fact]
+    [TestMethod]
     public void StringVector()
     {
         var root = new StringTable
@@ -128,6 +129,6 @@ public class RawDataStringTests
             (byte)'g', (byte)'h', (byte)'i', 0, // string 2
         };
 
-        Assert.True(expectedResult.AsSpan().SequenceEqual(data));
+        Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(data));
     }
 }

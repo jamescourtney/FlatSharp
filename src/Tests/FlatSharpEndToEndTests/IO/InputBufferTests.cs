@@ -21,6 +21,7 @@ using FlatSharp.Internal;
 
 namespace FlatSharpEndToEndTests.IO.InputBufferTests;
 
+[TestClass]
 public class InputBufferTests
 {
     private const string StringData = "how now brown cow";
@@ -45,8 +46,8 @@ public class InputBufferTests
         StringInput = stringData;
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void SerializationInvocations(FlatBufferDeserializationOption option)
     {
         var serializer = PrimitiveTypesTable.Serializer.WithSettings(settings => settings.UseDeserializationMode(option));
@@ -68,16 +69,16 @@ public class InputBufferTests
 
             if (item is IFlatBufferDeserializedObject obj)
             {
-                Assert.Equal(option, obj.DeserializationContext.DeserializationOption);
+                Assert.AreEqual(option, obj.DeserializationContext.DeserializationOption);
             }
             else
             {
-                Assert.False(true);
+                Assert.IsFalse(true);
             }
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void MemoryInputBuffer()
     {
         this.InputBufferTest(new MemoryInputBuffer(Input));
@@ -89,7 +90,7 @@ public class InputBufferTests
             (s, b) => s.Parse(b.AsMemory()));
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadOnlyMemoryInputBuffer()
     {
         this.InputBufferTest(new ReadOnlyMemoryInputBuffer(Input));
@@ -97,16 +98,16 @@ public class InputBufferTests
 
         this.TestDeserialize<ReadOnlyMemoryInputBuffer, ReadOnlyMemoryTable>(b => new ReadOnlyMemoryInputBuffer(b));
         this.TestReadByteArray(true, b => new ReadOnlyMemoryInputBuffer(b));
-        var ex = Assert.Throws<InvalidOperationException>(
+        var ex = Assert.ThrowsException<InvalidOperationException>(
             () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
-        Assert.Equal("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
+        Assert.AreEqual("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
 
         this.TableSerializationTest(
             default(SpanWriter),
             (s, b) => s.Parse((ReadOnlyMemory<byte>)b.AsMemory()));
     }
 
-    [Fact]
+    [TestMethod]
     public void ArrayInputBuffer()
     {
         this.InputBufferTest(new ArrayInputBuffer(Input));
@@ -118,7 +119,7 @@ public class InputBufferTests
             (s, b) => s.Parse(b));
     }
 
-    [Fact]
+    [TestMethod]
     public void ArraySegmentInputBuffer()
     {
         this.InputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(Input)));
@@ -155,27 +156,27 @@ public class InputBufferTests
         PrimitiveTypesTable.Serializer.Write(writer, data, original);
         PrimitiveTypesTable parsed = parse(PrimitiveTypesTable.Serializer, data);
 
-        Assert.Equal(original.A, parsed.A);
-        Assert.Equal(original.B, parsed.B);
-        Assert.Equal(original.C, parsed.C);
-        Assert.Equal(original.D, parsed.D);
-        Assert.Equal(original.E, parsed.E);
-        Assert.Equal(original.F, parsed.F);
-        Assert.Equal(original.G, parsed.G);
-        Assert.Equal(original.H, parsed.H);
-        Assert.Equal(original.I, parsed.I);
-        Assert.Equal(original.J, parsed.J);
-        Assert.Equal(original.K, parsed.K);
-        Assert.Equal(original.L, parsed.L);
-        Assert.Equal(original.M, parsed.M);
+        Assert.AreEqual(original.A, parsed.A);
+        Assert.AreEqual(original.B, parsed.B);
+        Assert.AreEqual(original.C, parsed.C);
+        Assert.AreEqual(original.D, parsed.D);
+        Assert.AreEqual(original.E, parsed.E);
+        Assert.AreEqual(original.F, parsed.F);
+        Assert.AreEqual(original.G, parsed.G);
+        Assert.AreEqual(original.H, parsed.H);
+        Assert.AreEqual(original.I, parsed.I);
+        Assert.AreEqual(original.J, parsed.J);
+        Assert.AreEqual(original.K, parsed.K);
+        Assert.AreEqual(original.L, parsed.L);
+        Assert.AreEqual(original.M, parsed.M);
     }
 
     private void InputBufferTest(IInputBuffer ib)
     {
         var mem = new Memory<byte>(Input);
 
-        Assert.False(ib.ReadBool(0));
-        Assert.True(ib.ReadBool(1));
+        Assert.IsFalse(ib.ReadBool(0));
+        Assert.IsTrue(ib.ReadBool(1));
 
         this.CompareEqual<byte>(sizeof(byte), i => mem.Span[i], i => ib.ReadByte(i));
         this.CompareEqual<sbyte>(sizeof(sbyte), i => (sbyte)mem.Span[i], i => ib.ReadSByte(i));
@@ -197,7 +198,7 @@ public class InputBufferTests
 
     private void StringInputBufferTest(IInputBuffer ib)
     {
-        Assert.Equal(StringData, ib.ReadString(0));
+        Assert.AreEqual(StringData, ib.ReadString(0));
     }
 
     private void CompareEqual<T>(
@@ -209,7 +210,7 @@ public class InputBufferTests
         {
             var memory = readMemoryAtIndex(i);
             var bufferValue = readAtIndex(i);
-            Assert.Equal(memory, bufferValue);
+            Assert.AreEqual(memory, bufferValue);
         }
     }
 
@@ -226,22 +227,22 @@ public class InputBufferTests
 
         byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, };
 
-        Assert.True(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
-        Assert.Equal(isReadOnly, inputBuffer.IsReadOnly);
+        Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
+        Assert.AreEqual(isReadOnly, inputBuffer.IsReadOnly);
         
-        Assert.True(inputBuffer.GetReadOnlySpan().SequenceEqual(buffer));
-        Assert.True(inputBuffer.GetReadOnlyMemory().Span.SequenceEqual(buffer));
+        Assert.IsTrue(inputBuffer.GetReadOnlySpan().SequenceEqual(buffer));
+        Assert.IsTrue(inputBuffer.GetReadOnlyMemory().Span.SequenceEqual(buffer));
 
         if (isReadOnly)
         {
-            Assert.Throws<InvalidOperationException>(() => inputBuffer.GetSpan());
-            Assert.Throws<InvalidOperationException>(() => inputBuffer.GetMemory());
+            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetSpan());
+            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetMemory());
         }
         else
         {
-            Assert.True(inputBuffer.GetMemory().Span.SequenceEqual(buffer));
-            Assert.True(inputBuffer.GetSpan().SequenceEqual(buffer));
-            Assert.True(inputBuffer.ReadByteMemoryBlock(0).Span.SequenceEqual(expected));
+            Assert.IsTrue(inputBuffer.GetMemory().Span.SequenceEqual(buffer));
+            Assert.IsTrue(inputBuffer.GetSpan().SequenceEqual(buffer));
+            Assert.IsTrue(inputBuffer.ReadByteMemoryBlock(0).Span.SequenceEqual(expected));
         }
     }
 
@@ -261,7 +262,7 @@ public class InputBufferTests
         var parsed = table.Serializer.Parse(buffer);
         for (int i = 1; i <= 5; ++i)
         {
-            Assert.Equal(i + 5, parsed.Memory.Span[i - 1]);
+            Assert.AreEqual(i + 5, parsed.Memory.Span[i - 1]);
         }
     }
 }

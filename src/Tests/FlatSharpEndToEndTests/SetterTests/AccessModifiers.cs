@@ -16,69 +16,70 @@
 
 namespace FlatSharpEndToEndTests.AccessModifiers;
 
+[TestClass]
 public class SetterTests
 {
-    [Fact]
+    [TestMethod]
     public void NoSetter()
     {
         var method = this.GetSetMethod(nameof(Table.None));
-        Assert.Null(method);
+        Assert.IsNull(method);
     }
 
-    [Fact]
+    [TestMethod]
     public void PublicImplicitSet()
     {
         var method = this.GetSetMethod(nameof(Table.PublicImplicit));
-        Assert.True(method.IsPublic);
-        Assert.False(IsInitMethod(method));
+        Assert.IsTrue(method.IsPublic);
+        Assert.IsFalse(IsInitMethod(method));
     }
 
-    [Fact]
+    [TestMethod]
     public void PublicExplicitSet()
     {
         var method = this.GetSetMethod(nameof(Table.Public));
-        Assert.True(method.IsPublic);
-        Assert.False(IsInitMethod(method));
+        Assert.IsTrue(method.IsPublic);
+        Assert.IsFalse(IsInitMethod(method));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProtectedSet()
     {
         var method = this.GetSetMethod(nameof(Table.Protected));
-        Assert.True(method.IsFamily);
-        Assert.False(IsInitMethod(method));
+        Assert.IsTrue(method.IsFamily);
+        Assert.IsFalse(IsInitMethod(method));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProtectedInternalSet()
     {
         var method = this.GetSetMethod(nameof(Table.ProtectedInternal));
-        Assert.True(method.IsFamilyOrAssembly);
-        Assert.False(IsInitMethod(method));
+        Assert.IsTrue(method.IsFamilyOrAssembly);
+        Assert.IsFalse(IsInitMethod(method));
     }
 
-    [Fact]
+    [TestMethod]
     public void PublicExplicitInit()
     {
         var method = this.GetSetMethod(nameof(Table.PublicInit));
-        Assert.True(method.IsPublic);
-        Assert.True(IsInitMethod(method));
+        Assert.IsTrue(method.IsPublic);
+        Assert.IsTrue(IsInitMethod(method));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProtectedInit()
     {
         var method = this.GetSetMethod(nameof(Table.ProtectedInit));
-        Assert.True(method.IsFamily);
-        Assert.True(IsInitMethod(method));
+        Assert.IsTrue(method.IsFamily);
+        Assert.IsTrue(IsInitMethod(method));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProtectedInternalInit()
     {
         var method = this.GetSetMethod(nameof(Table.ProtectedInternalInit));
-        Assert.True(method.IsFamilyOrAssembly);
-        Assert.True(IsInitMethod(method));
+        Assert.IsTrue(method.IsFamilyOrAssembly);
+        Assert.IsTrue(IsInitMethod(method));
     }
 
     private MethodInfo? GetSetMethod(string name)

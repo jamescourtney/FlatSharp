@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 
 namespace FlatSharpEndToEndTests.Vectors.Standard;
 
+[TestClass]
 public class StandardVectorTests
 {
     private static readonly string[] Strings = new[] { string.Empty, "a", "ab", "abc", "abcd", "abcde" };
@@ -28,546 +29,546 @@ public class StandardVectorTests
 
     #region Lazy
 
-    [Fact]
+    [TestMethod]
     public void Lazy_String_IList_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out _);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         IList<string> list = table.ImplicitStringList;
         //Assert.Contains("FlatBufferVectorBase", list.GetType().FullName);
 
         // lazy returns unique instances.
-        Assert.False(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
-        Assert.False(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsFalse(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
+        Assert.IsFalse(object.ReferenceEquals(list[5], list[5]));
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Throws<NotMutableException>(() => list[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => list.Clear());
+        Assert.ThrowsException<NotMutableException>(() => list[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => list.Clear());
     }
 
-    [Fact]
+    [TestMethod]
     public void Lazy_String_IList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out _);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         IList<string> list = table.ExplicitStringList;
         //Assert.Contains("FlatBufferVectorBase", list.GetType().FullName);
 
         // lazy returns unique instances.
-        Assert.False(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
-        Assert.False(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsFalse(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
+        Assert.IsFalse(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
-        Assert.Throws<NotMutableException>(() => list[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => list.Clear());
+        Assert.AreEqual(Strings.Length, list.Count);
+        Assert.ThrowsException<NotMutableException>(() => list[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => list.Clear());
     }
 
-    [Fact]
+    [TestMethod]
     public void Lazy_String_IReadOnlyList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out _);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         IReadOnlyList<string> list = table.ReadOnlyStringList;
         //Assert.Contains("FlatBufferVectorBase", list.GetType().FullName);
 
         // lazy returns unique instances.
-        Assert.False(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
-        Assert.False(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsFalse(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
+        Assert.IsFalse(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void Lazy_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ExplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.True(memory.Span.Overlaps(inputBuffer));
+        Assert.IsTrue(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Lazy_Memory_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ImplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.True(memory.Span.Overlaps(inputBuffer));
+        Assert.IsTrue(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Lazy_ReadOnly_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         ReadOnlyMemory<byte>? nullableMemory = table.ReadOnlyMemory;
         ReadOnlyMemory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.True(memory.Span.Overlaps(inputBuffer));
+        Assert.IsTrue(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Lazy_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.Lazy, true, true);
 
-    [Fact]
+    [TestMethod]
     public void Lazy_Unity_NotPinned() => this.ValidateUnity_ExpectPinningError(FlatBufferDeserializationOption.Lazy);
 
     #endregion
 
     #region Progressive
 
-    [Fact]
+    [TestMethod]
     public void Progressive_String_IList_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         IList<string> list = table.ImplicitStringList;
         //Assert.Contains("FlatBufferProgressiveVector", list.GetType().FullName);
 
-        Assert.True(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Throws<NotMutableException>(() => list[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => list.Clear());
+        Assert.ThrowsException<NotMutableException>(() => list[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => list.Clear());
     }
 
-    [Fact]
+    [TestMethod]
     public void Progressive_String_IList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         IList<string> list = table.ExplicitStringList;
         //Assert.Contains("FlatBufferProgressiveVector", list.GetType().FullName);
 
         // Progressive returns the same instance.
-        Assert.True(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
-        Assert.Throws<NotMutableException>(() => list[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => list.Clear());
+        Assert.AreEqual(Strings.Length, list.Count);
+        Assert.ThrowsException<NotMutableException>(() => list[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => list.Clear());
     }
 
-    [Fact]
+    [TestMethod]
     public void Progressive_String_IReadOnlyList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         IReadOnlyList<string> list = table.ReadOnlyStringList;
         //Assert.Contains("FlatBufferProgressiveVector", list.GetType().FullName);
 
-        Assert.True(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void Progressive_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ExplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.True(memory.Span.Overlaps(inputBuffer));
+        Assert.IsTrue(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Progressive_Memory_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ImplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.True(memory.Span.Overlaps(inputBuffer));
+        Assert.IsTrue(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Progressive_ReadOnly_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out var inputBuffer);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
         ReadOnlyMemory<byte>? nullableMemory = table.ReadOnlyMemory;
         ReadOnlyMemory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.True(memory.Span.Overlaps(inputBuffer));
+        Assert.IsTrue(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Progressive_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.Progressive, true, true);
 
-    [Fact]
+    [TestMethod]
     public void Progressive_Unity_NotPinned() => this.ValidateUnity_ExpectPinningError(FlatBufferDeserializationOption.Progressive);
 
     #endregion
 
     #region Greedy
 
-    [Fact]
+    [TestMethod]
     public void Greedy_String_IList_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         IList<string> list = table.ImplicitStringList;
         //Assert.Contains("ImmutableList", list.GetType().FullName);
 
-        Assert.True(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Throws<NotMutableException>(() => list[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => list.Clear());
+        Assert.ThrowsException<NotMutableException>(() => list[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => list.Clear());
     }
 
-    [Fact]
+    [TestMethod]
     public void Greedy_String_IList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         IList<string> list = table.ExplicitStringList;
         //Assert.Contains("ImmutableList", list.GetType().FullName);
 
         // Progressive returns the same instance.
-        Assert.True(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
-        Assert.Throws<NotMutableException>(() => list[0] = "foobar");
-        Assert.Throws<NotMutableException>(() => list.Clear());
+        Assert.AreEqual(Strings.Length, list.Count);
+        Assert.ThrowsException<NotMutableException>(() => list[0] = "foobar");
+        Assert.ThrowsException<NotMutableException>(() => list.Clear());
     }
 
-    [Fact]
+    [TestMethod]
     public void Greedy_String_IReadOnlyList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         IReadOnlyList<string> list = table.ReadOnlyStringList;
         //Assert.Contains("ImmutableList", list.GetType().FullName);
 
-        Assert.True(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void Greedy_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out var inputBuffer);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ExplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.False(memory.Span.Overlaps(inputBuffer));
+        Assert.IsFalse(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Greedy_Memory_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out var inputBuffer);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ImplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.False(memory.Span.Overlaps(inputBuffer));
+        Assert.IsFalse(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Greedy_ReadOnly_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out var inputBuffer);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         ReadOnlyMemory<byte>? nullableMemory = table.ReadOnlyMemory;
         ReadOnlyMemory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.False(memory.Span.Overlaps(inputBuffer));
+        Assert.IsFalse(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void Greedy_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.Greedy, true, false);
 
-    [Fact]
+    [TestMethod]
     public void Greedy_Unity_NotPinned() => this.ValidateUnity(FlatBufferDeserializationOption.Greedy, false, false);
 
     #endregion
 
     #region GreedyMutable
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_String_IList_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         IList<string> list = table.ImplicitStringList;
         //Assert.Contains("PoolableList", list.GetType().FullName);
 
-        Assert.True(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ImplicitStringList, table.ImplicitStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
         list[0] = "foobar";
         list.Clear();
     }
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_String_IList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         IList<string> list = table.ExplicitStringList;
         //Assert.Contains("PoolableList", list.GetType().FullName);
 
         // Progressive returns the same instance.
-        Assert.True(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ExplicitStringList, table.ExplicitStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
         list[0] = "foobar";
         list.Clear();
     }
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_String_IReadOnlyList_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         IReadOnlyList<string> list = table.ReadOnlyStringList;
         //Assert.Contains("PoolableList", list.GetType().FullName);
 
-        Assert.True(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
-        Assert.True(object.ReferenceEquals(list[5], list[5]));
+        Assert.IsTrue(object.ReferenceEquals(table.ReadOnlyStringList, table.ReadOnlyStringList));
+        Assert.IsTrue(object.ReferenceEquals(list[5], list[5]));
 
         for (int i = 0; i < Strings.Length; ++i)
         {
-            Assert.Equal(Strings[i], list[i]);
+            Assert.AreEqual(Strings[i], list[i]);
         }
 
-        Assert.Equal(Strings.Length, list.Count);
+        Assert.AreEqual(Strings.Length, list.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out var inputBuffer);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ExplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.False(memory.Span.Overlaps(inputBuffer));
+        Assert.IsFalse(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_Memory_Implicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out var inputBuffer);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         Memory<byte>? nullableMemory = table.ImplicitMemory;
         Memory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.False(memory.Span.Overlaps(inputBuffer));
+        Assert.IsFalse(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_ReadOnly_Memory_Explicit()
     {
         var table = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out var inputBuffer);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
         ReadOnlyMemory<byte>? nullableMemory = table.ReadOnlyMemory;
         ReadOnlyMemory<byte> memory = nullableMemory.Value;
 
         // Each span overlaps the input buffer. Means we are not eagerly copying out.
-        Assert.False(memory.Span.Overlaps(inputBuffer));
+        Assert.IsFalse(memory.Span.Overlaps(inputBuffer));
 
         for (int i = 0; i < Bytes.Length; ++i)
         {
-            Assert.Equal(Bytes[i], memory.Span[i]);
+            Assert.AreEqual(Bytes[i], memory.Span[i]);
         }
 
-        Assert.Equal(Bytes.Length, memory.Length);
+        Assert.AreEqual(Bytes.Length, memory.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_Unity_Pinned() => this.ValidateUnity(FlatBufferDeserializationOption.GreedyMutable, true, false);
 
-    [Fact]
+    [TestMethod]
     public void GreedyMutable_Unity_NotPinned() => this.ValidateUnity(FlatBufferDeserializationOption.GreedyMutable, false, false);
 
     #endregion
@@ -582,17 +583,17 @@ public class StandardVectorTests
             MemoryInputBuffer inputBuffer = new MemoryInputBuffer(buffer, isPinned: pin);
 
             var result = StandardVectorTable.Serializer.Parse(inputBuffer, option);
-            Assert.NotNull(result.UnityNative);
+            Assert.IsNotNull(result.UnityNative);
             var nativeArray = result.UnityNative.Value;
 
-            Assert.Equal(Ints.Length, nativeArray.Length);
+            Assert.AreEqual(Ints.Length, nativeArray.Length);
 
             for (int i = 0; i < Ints.Length; ++i)
             {
-                Assert.Equal(Ints[i], nativeArray[i]);
+                Assert.AreEqual(Ints[i], nativeArray[i]);
             }
 
-            Assert.Equal(
+            Assert.AreEqual(
                 expectOverlap,
                 MemoryMarshal.Cast<int, byte>(nativeArray.AsSpan()).Overlaps(buffer.AsSpan()));
         }
@@ -604,8 +605,8 @@ public class StandardVectorTests
 
     private void ValidateUnity_ExpectPinningError(FlatBufferDeserializationOption option)
     {
-        var ex = Assert.Throws<NotSupportedException>(() => this.ValidateUnity(option, false, false));
-        Assert.Equal("Non-greedy parsing of a NativeArray requires a pinned buffer.", ex.Message);
+        var ex = Assert.ThrowsException<NotSupportedException>(() => this.ValidateUnity(option, false, false));
+        Assert.AreEqual("Non-greedy parsing of a NativeArray requires a pinned buffer.", ex.Message);
     }
 
     private StandardVectorTable SerializeAndParse(FlatBufferDeserializationOption option, out IFlatBufferDeserializedObject obj, out byte[] inputBuffer)
@@ -627,8 +628,8 @@ public class StandardVectorTests
 
         obj = table as IFlatBufferDeserializedObject;
 
-        Assert.NotNull(obj);
-        Assert.Equal(option, obj.DeserializationContext.DeserializationOption);
+        Assert.IsNotNull(obj);
+        Assert.AreEqual(option, obj.DeserializationContext.DeserializationOption);
         return table;
     }
 }

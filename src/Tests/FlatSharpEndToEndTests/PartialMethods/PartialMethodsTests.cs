@@ -16,10 +16,11 @@
 
 namespace FlatSharpEndToEndTests.PartialMethods;
 
+[TestClass]
 public class PartialMethods
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void OnInitialized(FlatBufferDeserializationOption option)
     {
         Table template = new()
@@ -27,16 +28,16 @@ public class PartialMethods
             S = new() { A = 4 }
         };
 
-        Assert.Null(template.OnInitializedContext);
-        Assert.Null(template.S.OnInitializedContext);
+        Assert.IsNull(template.OnInitializedContext);
+        Assert.IsNull(template.S.OnInitializedContext);
 
         Table parsed = template.SerializeAndParse(option);
 
-        Assert.NotNull(parsed.OnInitializedContext);
-        Assert.NotNull(parsed.S.OnInitializedContext);
+        Assert.IsNotNull(parsed.OnInitializedContext);
+        Assert.IsNotNull(parsed.S.OnInitializedContext);
 
-        Assert.Equal(option, parsed.OnInitializedContext.Value.DeserializationOption);
-        Assert.Equal(option, parsed.S.OnInitializedContext.Value.DeserializationOption);
+        Assert.AreEqual(option, parsed.OnInitializedContext.Value.DeserializationOption);
+        Assert.AreEqual(option, parsed.S.OnInitializedContext.Value.DeserializationOption);
     }
 }
 

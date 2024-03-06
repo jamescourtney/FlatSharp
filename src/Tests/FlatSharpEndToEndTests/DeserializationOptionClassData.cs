@@ -16,19 +16,19 @@
 
 namespace FlatSharpEndToEndTests;
 
-public class DeserializationOptionClassData : IEnumerable<object[]>
+public static class DynamicDataHelper
 {
-    public IEnumerator<object[]> GetEnumerator()
+    public static IEnumerable<object[]> DeserializationModes
     {
-        yield return new object[] { FlatBufferDeserializationOption.Lazy };
-        yield return new object[] { FlatBufferDeserializationOption.Progressive };
-        yield return new object[] { FlatBufferDeserializationOption.Greedy };
-        yield return new object[] { FlatBufferDeserializationOption.GreedyMutable };
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return this.GetEnumerator();
+        get
+        {
+            return new[]
+            {
+                new object[] { FlatBufferDeserializationOption.Lazy },
+                new object[] { FlatBufferDeserializationOption.Progressive },
+                new object[] { FlatBufferDeserializationOption.Greedy },
+                new object[] { FlatBufferDeserializationOption.GreedyMutable },
+            };
+        }
     }
 }
-

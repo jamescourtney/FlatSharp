@@ -16,6 +16,7 @@
 
 namespace FlatSharpEndToEndTests.Documentation;
 
+[TestClass]
 public class DocumentationTestCases
 {
     private System.Xml.XmlDocument xmlDoc;
@@ -26,131 +27,131 @@ public class DocumentationTestCases
         this.xmlDoc.Load("FlatSharpEndToEndTests.xml");
     }
 
-    [Fact]
+    [TestMethod]
     public void EnumDocumentation()
     {
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:73c67946-5c52-4643-baa9-a1a0c0d758d7",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.TestEnum"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:282048b4-2817-4312-93ec-8c21e8d42f8d",
             this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.TestEnum.A"));
 
-        Assert.Null(this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.TestEnum.Uncommented"));
-        Assert.Null(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UndocumentedEnum"));
+        Assert.IsNull(this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.TestEnum.Uncommented"));
+        Assert.IsNull(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UndocumentedEnum"));
     }
 
-    [Fact]
+    [TestMethod]
     public void UnionDocumentation()
     {
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:d54eef2c-f1d0-497f-874f-eeb0e47588b6",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.TestUnion"));
 
-        Assert.Null(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UndocumentedUnion"));
+        Assert.IsNull(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UndocumentedUnion"));
     }
 
-    [Fact]
+    [TestMethod]
     public void TableDocumentation()
     {
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:eb9a0f9a-6f4e-4839-be67-e719b411a274",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.Table"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:41b60a53-10a9-4f4a-9d36-3bf73fb95392",
             this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.Table.Property"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "<><>",
             this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.Table.EscapeTest"));
 
-        Assert.Null(this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.Table.Uncommented"));
-        Assert.Null(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UndocumentedTable"));
+        Assert.IsNull(this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.Table.Uncommented"));
+        Assert.IsNull(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UndocumentedTable"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RefStructDocumentation()
     {
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:cb1b9369-c724-4106-b02b-2afe4984cf89",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.RefStruct"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:95571f1b-c255-4191-a489-2b06ddcae495",
             this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.RefStruct.Property"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:93efd448-fa30-4ddb-9d3b-56ca3f10b403",
             this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.RefStruct.Vector"));
 
-        Assert.Null(this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.RefStruct.UncommentedProperty"));
-        Assert.Null(this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.RefStruct.UncommentedVector"));
-        Assert.Null(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UncommentedRefStruct"));
+        Assert.IsNull(this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.RefStruct.UncommentedProperty"));
+        Assert.IsNull(this.GetSummaryText("P:FlatSharpEndToEndTests.Documentation.RefStruct.UncommentedVector"));
+        Assert.IsNull(this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.UncommentedRefStruct"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ValueStructDocumentation()
     {
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:7a379625-7511-48f9-8b57-34b41c073da8",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.ValueStruct"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:62d5d69b-b3a0-4446-9abe-d0b314555a4b",
             this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.ValueStruct.Property"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:30add22e-345d-46e2-a1a2-346043cfd444",
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.ValueStruct.Vector_Item(FlatSharpEndToEndTests.Documentation.ValueStruct@,System.Int32)"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:30add22e-345d-46e2-a1a2-346043cfd444",
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.ValueStruct__FlatSharpExtensions.Vector(FlatSharpEndToEndTests.Documentation.ValueStruct@,System.Int32)"));
 
-        Assert.Null(
+        Assert.IsNull(
             this.GetSummaryText("F:FlatSharpEndToEndTests.Documentation.ValueStruct.UncommentedProperty"));
 
-        Assert.Null(
+        Assert.IsNull(
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.ValueStruct.UncommentedVector_Item(FlatSharpEndToEndTests.Documentation.ValueStruct@,System.Int32)"));
 
-        Assert.Null(
+        Assert.IsNull(
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.ValueStruct__FlatSharpExtensions.UncommentedVector(FlatSharpEndToEndTests.Documentation.ValueStruct@,System.Int32)"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RpcServiceDocumentation()
     {
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:d9232e86-035e-4b86-bc77-a3cb04575ba1",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.Service"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:d9232e86-035e-4b86-bc77-a3cb04575ba1",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.Service.ServiceServerBase"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:d9232e86-035e-4b86-bc77-a3cb04575ba1",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.Service.ServiceClient"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:d9232e86-035e-4b86-bc77-a3cb04575ba1",
             this.GetSummaryText("T:FlatSharpEndToEndTests.Documentation.IService"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:932b099d-1cff-4533-81f3-b0eef65e21f3",
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.IService.MethodCall(FlatSharpEndToEndTests.Documentation.Table,System.Threading.CancellationToken)"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:932b099d-1cff-4533-81f3-b0eef65e21f3",
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.Service.ServiceServerBase.MethodCall(FlatSharpEndToEndTests.Documentation.Table,Grpc.Core.ServerCallContext)"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:932b099d-1cff-4533-81f3-b0eef65e21f3",
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.Service.ServiceClient.MethodCall(FlatSharpEndToEndTests.Documentation.Table,Grpc.Core.Metadata,System.Nullable{System.DateTime},System.Threading.CancellationToken)"));
 
-        Assert.Equal(
+        Assert.AreEqual(
             "CommentTest:932b099d-1cff-4533-81f3-b0eef65e21f3",
             this.GetSummaryText("M:FlatSharpEndToEndTests.Documentation.Service.ServiceClient.MethodCall(FlatSharpEndToEndTests.Documentation.Table,Grpc.Core.CallOptions)"));
     }

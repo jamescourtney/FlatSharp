@@ -16,6 +16,7 @@
 
 namespace FlatSharpEndToEndTests.TableMembers;
 
+[TestClass]
 public class DeserializationOptionsTests
 {
     private readonly DeserializationOptionsTable Template = new()
@@ -26,125 +27,125 @@ public class DeserializationOptionsTests
         Union = new("banana"),
     };
 
-    [Fact]
+    [TestMethod]
     public void DeserializationOption_Lazy()
     {
         DeserializationOptionsTable parsed = this.SerializeAndParse(FlatBufferDeserializationOption.Lazy, out var obj, out _);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
-        Assert.NotSame(parsed.Str, parsed.Str);
-        Assert.NotSame(parsed.FirstStruct, parsed.FirstStruct);
-        Assert.NotSame(parsed.SecondStruct, parsed.SecondStruct);
+        Assert.AreNotSame(parsed.Str, parsed.Str);
+        Assert.AreNotSame(parsed.FirstStruct, parsed.FirstStruct);
+        Assert.AreNotSame(parsed.SecondStruct, parsed.SecondStruct);
 
         var first = parsed.FirstStruct;
-        Assert.NotSame(first.SecondStruct, first.SecondStruct);
+        Assert.AreNotSame(first.SecondStruct, first.SecondStruct);
 
-        Assert.Equal(Template.Str, parsed.Str);
-        Assert.Equal(Template.FirstStruct.First, parsed.FirstStruct.First);
-        Assert.Equal(Template.FirstStruct.Second, parsed.FirstStruct.Second);
-        Assert.Equal(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
+        Assert.AreEqual(Template.Str, parsed.Str);
+        Assert.AreEqual(Template.FirstStruct.First, parsed.FirstStruct.First);
+        Assert.AreEqual(Template.FirstStruct.Second, parsed.FirstStruct.Second);
+        Assert.AreEqual(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
 
-        Assert.Equal(3, parsed.Union.Value.Discriminator);
+        Assert.AreEqual(3, parsed.Union.Value.Discriminator);
 
         var union = parsed.Union.Value;
-        Assert.Equal("banana", union.str);
-        Assert.Same(union.str, union.str);
+        Assert.AreEqual("banana", union.str);
+        Assert.AreSame(union.str, union.str);
 
-        Assert.Throws<NotMutableException>(() => parsed.Str = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.First = 0);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.SecondStruct = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.SecondStruct.Value = 0);
-        Assert.Throws<NotMutableException>(() => parsed.Union = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.Str = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.First = 0);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.SecondStruct = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.SecondStruct.Value = 0);
+        Assert.ThrowsException<NotMutableException>(() => parsed.Union = null);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeserializationOption_Progressive()
     {
         DeserializationOptionsTable parsed = this.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out var obj, out _);
-        Assert.NotNull(obj.InputBuffer);
+        Assert.IsNotNull(obj.InputBuffer);
 
-        Assert.Same(parsed.Str, parsed.Str);
-        Assert.Same(parsed.FirstStruct, parsed.FirstStruct);
-        Assert.Same(parsed.SecondStruct, parsed.SecondStruct);
+        Assert.AreSame(parsed.Str, parsed.Str);
+        Assert.AreSame(parsed.FirstStruct, parsed.FirstStruct);
+        Assert.AreSame(parsed.SecondStruct, parsed.SecondStruct);
 
         var first = parsed.FirstStruct;
-        Assert.Same(first.SecondStruct, first.SecondStruct);
+        Assert.AreSame(first.SecondStruct, first.SecondStruct);
 
-        Assert.Equal(Template.Str, parsed.Str);
-        Assert.Equal(Template.FirstStruct.First, parsed.FirstStruct.First);
-        Assert.Equal(Template.FirstStruct.Second, parsed.FirstStruct.Second);
-        Assert.Equal(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
+        Assert.AreEqual(Template.Str, parsed.Str);
+        Assert.AreEqual(Template.FirstStruct.First, parsed.FirstStruct.First);
+        Assert.AreEqual(Template.FirstStruct.Second, parsed.FirstStruct.Second);
+        Assert.AreEqual(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
 
-        Assert.Equal(3, parsed.Union.Value.Discriminator);
+        Assert.AreEqual(3, parsed.Union.Value.Discriminator);
 
         var union = parsed.Union.Value;
-        Assert.Equal("banana", union.str);
-        Assert.Same(union.str, union.str);
+        Assert.AreEqual("banana", union.str);
+        Assert.AreSame(union.str, union.str);
 
-        Assert.Throws<NotMutableException>(() => parsed.Str = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.First = 0);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.SecondStruct = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.SecondStruct.Value = 0);
-        Assert.Throws<NotMutableException>(() => parsed.Union = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.Str = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.First = 0);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.SecondStruct = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.SecondStruct.Value = 0);
+        Assert.ThrowsException<NotMutableException>(() => parsed.Union = null);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeserializationOption_Greedy()
     {
         DeserializationOptionsTable parsed = this.SerializeAndParse(FlatBufferDeserializationOption.Greedy, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
-        Assert.Same(parsed.Str, parsed.Str);
-        Assert.Same(parsed.FirstStruct, parsed.FirstStruct);
-        Assert.Same(parsed.SecondStruct, parsed.SecondStruct);
+        Assert.AreSame(parsed.Str, parsed.Str);
+        Assert.AreSame(parsed.FirstStruct, parsed.FirstStruct);
+        Assert.AreSame(parsed.SecondStruct, parsed.SecondStruct);
 
         var first = parsed.FirstStruct;
-        Assert.Same(first.SecondStruct, first.SecondStruct);
+        Assert.AreSame(first.SecondStruct, first.SecondStruct);
 
-        Assert.Equal(Template.Str, parsed.Str);
-        Assert.Equal(Template.FirstStruct.First, parsed.FirstStruct.First);
-        Assert.Equal(Template.FirstStruct.Second, parsed.FirstStruct.Second);
-        Assert.Equal(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
+        Assert.AreEqual(Template.Str, parsed.Str);
+        Assert.AreEqual(Template.FirstStruct.First, parsed.FirstStruct.First);
+        Assert.AreEqual(Template.FirstStruct.Second, parsed.FirstStruct.Second);
+        Assert.AreEqual(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
 
-        Assert.Equal(3, parsed.Union.Value.Discriminator);
+        Assert.AreEqual(3, parsed.Union.Value.Discriminator);
 
         var union = parsed.Union.Value;
-        Assert.Equal("banana", union.str);
-        Assert.Same(union.str, union.str);
+        Assert.AreEqual("banana", union.str);
+        Assert.AreSame(union.str, union.str);
 
-        Assert.Throws<NotMutableException>(() => parsed.Str = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.First = 0);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.SecondStruct = null);
-        Assert.Throws<NotMutableException>(() => parsed.FirstStruct.SecondStruct.Value = 0);
-        Assert.Throws<NotMutableException>(() => parsed.Union = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.Str = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.First = 0);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.SecondStruct = null);
+        Assert.ThrowsException<NotMutableException>(() => parsed.FirstStruct.SecondStruct.Value = 0);
+        Assert.ThrowsException<NotMutableException>(() => parsed.Union = null);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeserializationOption_GreedyMutable()
     {
         DeserializationOptionsTable parsed = this.SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable, out var obj, out _);
-        Assert.Null(obj.InputBuffer);
+        Assert.IsNull(obj.InputBuffer);
 
-        Assert.Same(parsed.Str, parsed.Str);
-        Assert.Same(parsed.FirstStruct, parsed.FirstStruct);
-        Assert.Same(parsed.SecondStruct, parsed.SecondStruct);
+        Assert.AreSame(parsed.Str, parsed.Str);
+        Assert.AreSame(parsed.FirstStruct, parsed.FirstStruct);
+        Assert.AreSame(parsed.SecondStruct, parsed.SecondStruct);
 
         var first = parsed.FirstStruct;
-        Assert.Same(first.SecondStruct, first.SecondStruct);
+        Assert.AreSame(first.SecondStruct, first.SecondStruct);
 
-        Assert.Equal(Template.Str, parsed.Str);
-        Assert.Equal(Template.FirstStruct.First, parsed.FirstStruct.First);
-        Assert.Equal(Template.FirstStruct.Second, parsed.FirstStruct.Second);
-        Assert.Equal(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
+        Assert.AreEqual(Template.Str, parsed.Str);
+        Assert.AreEqual(Template.FirstStruct.First, parsed.FirstStruct.First);
+        Assert.AreEqual(Template.FirstStruct.Second, parsed.FirstStruct.Second);
+        Assert.AreEqual(Template.FirstStruct.SecondStruct.Value, parsed.FirstStruct.SecondStruct.Value);
 
-        Assert.Equal(3, parsed.Union.Value.Discriminator);
+        Assert.AreEqual(3, parsed.Union.Value.Discriminator);
 
         var union = parsed.Union.Value;
-        Assert.Equal("banana", union.str);
-        Assert.Same(union.str, union.str);
+        Assert.AreEqual("banana", union.str);
+        Assert.AreSame(union.str, union.str);
 
         parsed.FirstStruct.SecondStruct.Value = 0;
         parsed.FirstStruct.SecondStruct = null;
@@ -156,7 +157,7 @@ public class DeserializationOptionsTests
 
         // everything is default now. Reparse
         byte[] reserialized = parsed.AllocateAndSerialize();
-        Assert.Equal(12, reserialized.Length); // empty buffer.
+        Assert.AreEqual(12, reserialized.Length); // empty buffer.
     }
 
     private DeserializationOptionsTable SerializeAndParse(FlatBufferDeserializationOption option, out IFlatBufferDeserializedObject obj, out byte[] inputBuffer)
@@ -167,8 +168,8 @@ public class DeserializationOptionsTests
 
         obj = table as IFlatBufferDeserializedObject;
 
-        Assert.NotNull(obj);
-        Assert.Equal(option, obj.DeserializationContext.DeserializationOption);
+        Assert.IsNotNull(obj);
+        Assert.AreEqual(option, obj.DeserializationContext.DeserializationOption);
         return table;
     }
 }

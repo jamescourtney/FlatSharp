@@ -3,10 +3,11 @@ using System.Linq.Expressions;
 
 namespace FlatSharpStrykerTests;
 
+[TestClass]
 public class StructFieldTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ValueStructTableField(FlatBufferDeserializationOption option)
     {
         try
@@ -24,8 +25,8 @@ public class StructFieldTests
                 vs.C(0) = 1;
                 vs.C(1) = 2;
 
-                Assert.Throws<IndexOutOfRangeException>(() => vs.C(2) = 4);
-                Assert.Throws<IndexOutOfRangeException>(() => vs.C(-1) = 4);
+                Assert.ThrowsException<IndexOutOfRangeException>(() => vs.C(2) = 4);
+                Assert.ThrowsException<IndexOutOfRangeException>(() => vs.C(-1) = 4);
 
                 Root root = new Root
                 {
@@ -38,17 +39,17 @@ public class StructFieldTests
                 Root parsed = root.SerializeAndParse(option, out byte[] buffer);
                 Fields fields = parsed.Fields;
 
-                Assert.NotNull(fields);
-                Assert.Null(parsed.Vectors);
+                Assert.IsNotNull(fields);
+                Assert.IsNull(parsed.Vectors);
 
-                Assert.NotNull(parsed.Fields.ValueStruct);
+                Assert.IsNotNull(parsed.Fields.ValueStruct);
 
                 ValueStruct vsParsed = parsed.Fields.ValueStruct.Value;
 
-                Assert.Equal(vs.A, vsParsed.A);
-                Assert.Equal(vs.B, vsParsed.B);
-                Assert.Equal(vs.C(0), vsParsed.C(0));
-                Assert.Equal(vs.C(1), vsParsed.C(1));
+                Assert.AreEqual(vs.A, vsParsed.A);
+                Assert.AreEqual(vs.B, vsParsed.B);
+                Assert.AreEqual(vs.C(0), vsParsed.C(0));
+                Assert.AreEqual(vs.C(1), vsParsed.C(1));
 
                 byte[] expectedBytes =
                 {
@@ -78,10 +79,10 @@ public class StructFieldTests
                     var av = a.Value;
                     var bv = b.Value;
 
-                    Assert.Equal(av.A, bv.A);
-                    Assert.Equal(av.B, bv.B);
-                    Assert.Equal(av.C(0), bv.C(0));
-                    Assert.Equal(av.C(1), bv.C(1));
+                    Assert.AreEqual(av.A, bv.A);
+                    Assert.AreEqual(av.B, bv.B);
+                    Assert.AreEqual(av.C(0), bv.C(0));
+                    Assert.AreEqual(av.C(1), bv.C(1));
                 });
             }
         }
@@ -91,62 +92,62 @@ public class StructFieldTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ValueStructTableField_ProgressiveClear()
     {
         Root root = new Root() { Fields = new() { ValueStruct = new ValueStruct { A = 5 } } }.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
 
         var fields = root.Fields;
-        Assert.Equal(5, fields.ValueStruct.Value.A);
+        Assert.AreEqual(5, fields.ValueStruct.Value.A);
         buffer.AsSpan().Clear();
-        Assert.Equal(5, fields.ValueStruct.Value.A);
+        Assert.AreEqual(5, fields.ValueStruct.Value.A);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValueStructStructField_ProgressiveClear()
     {
         Root root = new Root() { Fields = new() { RefStruct = new() { E = new ValueStruct { A = 5 } } } }.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
 
         var fields = root.Fields.RefStruct;
-        Assert.Equal(5, fields.E.A);
+        Assert.AreEqual(5, fields.E.A);
         buffer.AsSpan().Clear();
-        Assert.Equal(5, fields.E.A);
+        Assert.AreEqual(5, fields.E.A);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ReferenceStructTableField(FlatBufferDeserializationOption option)
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
         Root parsed = root.SerializeAndParse(option, out byte[] buffer);
 
-        Assert.Throws<IndexOutOfRangeException>(() => rs.C[-1] = 4);
-        Assert.Throws<IndexOutOfRangeException>(() => rs.D[3] = 4);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => rs.C[-1] = 4);
+        Assert.ThrowsException<IndexOutOfRangeException>(() => rs.D[3] = 4);
 
-        Assert.NotNull(parsed.Fields);
-        Assert.Null(parsed.Vectors);
-        Assert.NotNull(parsed.Fields.RefStruct);
+        Assert.IsNotNull(parsed.Fields);
+        Assert.IsNull(parsed.Vectors);
+        Assert.IsNotNull(parsed.Fields.RefStruct);
 
         RefStruct rsParsed = parsed.Fields.RefStruct;
-        Assert.Equal(rs.A, rsParsed.A);
-        Assert.Equal(rs.B, rsParsed.B);
-        Assert.Equal(rs.C[0], rsParsed.C[0]);
-        Assert.Equal(rs.C[1], rsParsed.C[1]);
-        Assert.Equal(rs.D[0], rsParsed.D[0]);
-        Assert.Equal(rs.D[1], rsParsed.D[1]);
+        Assert.AreEqual(rs.A, rsParsed.A);
+        Assert.AreEqual(rs.B, rsParsed.B);
+        Assert.AreEqual(rs.C[0], rsParsed.C[0]);
+        Assert.AreEqual(rs.C[1], rsParsed.C[1]);
+        Assert.AreEqual(rs.D[0], rsParsed.D[0]);
+        Assert.AreEqual(rs.D[1], rsParsed.D[1]);
 
         ValueStruct vsParsed = rsParsed.E;
-        Assert.Equal(vs.A, vsParsed.A);
-        Assert.Equal(vs.B, vsParsed.B);
-        Assert.Equal(vs.C(0), vsParsed.C(0));
-        Assert.Equal(vs.C(1), vsParsed.C(1));
+        Assert.AreEqual(vs.A, vsParsed.A);
+        Assert.AreEqual(vs.B, vsParsed.B);
+        Assert.AreEqual(vs.C(0), vsParsed.C(0));
+        Assert.AreEqual(vs.C(1), vsParsed.C(1));
 
         Helpers.AssertSequenceEqual(expectedBytes, buffer);
         Helpers.AssertMutationWorks(option, parsed.Fields, false, p => p.RefStruct, new RefStruct());
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ReferenceStructWriteThrough(FlatBufferDeserializationOption option)
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
@@ -162,20 +163,20 @@ public class StructFieldTests
         Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.__flatsharp__D_1, (sbyte)6);
         Helpers.AssertMutationWorks(option, rsp, false, rsp => rsp.E, new ValueStruct(), (a, b) =>
         {
-            Assert.Equal(a.A, b.A);
-            Assert.Equal(a.B, b.B);
-            Assert.Equal(a.C(0), b.C(0));
-            Assert.Equal(a.C(1), b.C(1));
+            Assert.AreEqual(a.A, b.A);
+            Assert.AreEqual(a.B, b.B);
+            Assert.AreEqual(a.C(0), b.C(0));
+            Assert.AreEqual(a.C(1), b.C(1));
         });
 
         var parsed2 = Root.Serializer.Parse(buffer, option);
 
-        Assert.Equal(rsp.A, parsed2.Fields.RefStruct.A);
-        Assert.Equal(rsp.C[0], parsed2.Fields.RefStruct.C[0]);
-        Assert.Equal(rsp.C[1], parsed2.Fields.RefStruct.C[1]);
+        Assert.AreEqual(rsp.A, parsed2.Fields.RefStruct.A);
+        Assert.AreEqual(rsp.C[0], parsed2.Fields.RefStruct.C[0]);
+        Assert.AreEqual(rsp.C[1], parsed2.Fields.RefStruct.C[1]);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReferenceStructWriteThrough_Progressive()
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
@@ -192,13 +193,13 @@ public class StructFieldTests
         buffer.AsSpan().Clear();
 
         // now read. Expect the same values back.
-        Assert.Equal(4, rsp.A);
-        Assert.Equal(6, rsp.C[0]);
-        Assert.Equal(7, rsp.C[1]);
+        Assert.AreEqual(4, rsp.A);
+        Assert.AreEqual(6, rsp.C[0]);
+        Assert.AreEqual(7, rsp.C[1]);
     }
 
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void ReferenceStructOnDeserialized(FlatBufferDeserializationOption option)
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
@@ -207,33 +208,33 @@ public class StructFieldTests
         Fields fields = parsed.Fields;
         RefStruct rsp = fields.RefStruct;
 
-        Assert.True(parsed.IsInitialized);
-        Assert.True(Root.IsStaticInitialized);
+        Assert.IsTrue(parsed.IsInitialized);
+        Assert.IsTrue(Root.IsStaticInitialized);
 
-        Assert.True(fields.IsInitialized);
-        Assert.True(Fields.IsStaticInitialized);
+        Assert.IsTrue(fields.IsInitialized);
+        Assert.IsTrue(Fields.IsStaticInitialized);
 
-        Assert.True(rsp.IsInitialized);
-        Assert.True(RefStruct.IsStaticInitialized);
+        Assert.IsTrue(rsp.IsInitialized);
+        Assert.IsTrue(RefStruct.IsStaticInitialized);
     }
 
-    [Fact]
+    [TestMethod]
     public void ProgressiveFieldLoads()
     {
         Root root = CreateRootReferenceStruct(out RefStruct rs, out ValueStruct vs, out byte[] expectedBytes);
         Root parsed = root.SerializeAndParse(FlatBufferDeserializationOption.Progressive, out byte[] buffer);
 
         Fields fields = Helpers.TestProgressiveFieldLoad(0, true, parsed, p => p.Fields);
-        Assert.NotNull(fields);
+        Assert.IsNotNull(fields);
 
         {
             RefStruct @ref = Helpers.TestProgressiveFieldLoad(0, true, fields, f => f.RefStruct);
-            Assert.Equal(root.Fields.RefStruct.A, Helpers.TestProgressiveFieldLoad(0, true, @ref, r => r.A));
-            Assert.Equal(root.Fields.RefStruct.B, Helpers.TestProgressiveFieldLoad(1, true, @ref, r => r.B));
-            Assert.Equal(root.Fields.RefStruct.C[0], Helpers.TestProgressiveFieldLoad(2, true, @ref, r => r.__flatsharp__C_0));
-            Assert.Equal(root.Fields.RefStruct.C[1], Helpers.TestProgressiveFieldLoad(3, true, @ref, r => r.__flatsharp__C_1));
-            Assert.Equal(root.Fields.RefStruct.D[0], Helpers.TestProgressiveFieldLoad(4, true, @ref, r => r.__flatsharp__D_0));
-            Assert.Equal(root.Fields.RefStruct.D[1], Helpers.TestProgressiveFieldLoad(5, true, @ref, r => r.__flatsharp__D_1));
+            Assert.AreEqual(root.Fields.RefStruct.A, Helpers.TestProgressiveFieldLoad(0, true, @ref, r => r.A));
+            Assert.AreEqual(root.Fields.RefStruct.B, Helpers.TestProgressiveFieldLoad(1, true, @ref, r => r.B));
+            Assert.AreEqual(root.Fields.RefStruct.C[0], Helpers.TestProgressiveFieldLoad(2, true, @ref, r => r.__flatsharp__C_0));
+            Assert.AreEqual(root.Fields.RefStruct.C[1], Helpers.TestProgressiveFieldLoad(3, true, @ref, r => r.__flatsharp__C_1));
+            Assert.AreEqual(root.Fields.RefStruct.D[0], Helpers.TestProgressiveFieldLoad(4, true, @ref, r => r.__flatsharp__D_0));
+            Assert.AreEqual(root.Fields.RefStruct.D[1], Helpers.TestProgressiveFieldLoad(5, true, @ref, r => r.__flatsharp__D_1));
             Helpers.TestProgressiveFieldLoad(6, true, @ref, r => r.E);
         }
     }

@@ -16,10 +16,11 @@
 
 namespace FlatSharpEndToEndTests.CopyConstructors;
 
+[TestClass]
 public class CopyConstructorTests
 {
-    [Theory]
-    [ClassData(typeof(DeserializationOptionClassData))]
+    [TestMethod]
+    [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void CopyConstructorsTest(FlatBufferDeserializationOption option)
     {
         OuterTable original = new OuterTable
@@ -74,81 +75,81 @@ public class CopyConstructorTests
         OuterTable copied = new OuterTable(parsed);
 
         // Strings can be copied by reference since they are immutable.
-        Assert.Equal(original.A, copied.A);
-        Assert.Equal(original.A, parsed.A);
+        Assert.AreEqual(original.A, copied.A);
+        Assert.AreEqual(original.A, parsed.A);
 
-        Assert.Equal(original.B, copied.B);
-        Assert.Equal(original.C, copied.C);
-        Assert.Equal(original.D, copied.D);
-        Assert.Equal(original.E, copied.E);
-        Assert.Equal(original.F, copied.F);
-        Assert.Equal(original.G, copied.G);
-        Assert.Equal(original.H, copied.H);
-        Assert.Equal(original.I, copied.I);
+        Assert.AreEqual(original.B, copied.B);
+        Assert.AreEqual(original.C, copied.C);
+        Assert.AreEqual(original.D, copied.D);
+        Assert.AreEqual(original.E, copied.E);
+        Assert.AreEqual(original.F, copied.F);
+        Assert.AreEqual(original.G, copied.G);
+        Assert.AreEqual(original.H, copied.H);
+        Assert.AreEqual(original.I, copied.I);
 
         DeepCompareIntVector(original.IntVectorArray, parsed.IntVectorArray, copied.IntVectorArray);
         DeepCompareIntVector(original.IntVectorList, parsed.IntVectorList, copied.IntVectorList);
         DeepCompareIntVector(original.IntVectorRoList, parsed.IntVectorRoList, copied.IntVectorRoList);
 
-        Assert.Equal((byte)3, original.UnionVal.Value.Discriminator);
-        Assert.Equal((byte)3, parsed.UnionVal.Value.Discriminator);
-        Assert.Equal((byte)3, copied.UnionVal.Value.Discriminator);
+        Assert.AreEqual((byte)3, original.UnionVal.Value.Discriminator);
+        Assert.AreEqual((byte)3, parsed.UnionVal.Value.Discriminator);
+        Assert.AreEqual((byte)3, copied.UnionVal.Value.Discriminator);
 
-        Assert.True(copied.UnionVal.Value.TryGet(out OuterStruct? _));
-        Assert.NotNull(copied.UnionVal.Value.Item3);
+        Assert.IsTrue(copied.UnionVal.Value.TryGet(out OuterStruct? _));
+        Assert.IsNotNull(copied.UnionVal.Value.Item3);
 
-        Assert.IsType<OuterStruct>(copied.UnionVal.Value.Item3);
-        Assert.IsNotType<OuterStruct>(parsed.UnionVal.Value.Item3);
-
-        for (int i = 1; i <= 4; ++i)
-        {
-            Assert.Equal((byte)i, original.VectorOfUnion[i - 1].Discriminator);
-            Assert.Equal((byte)i, parsed.VectorOfUnion[i - 1].Discriminator);
-            Assert.Equal((byte)i, copied.VectorOfUnion[i - 1].Discriminator);
-        }
-
-        Assert.NotSame(parsed.VectorOfUnion[0].Item1, copied.VectorOfUnion[0].Item1);
-        Assert.NotSame(parsed.VectorOfUnion[1].Item2, copied.VectorOfUnion[1].Item2);
-        Assert.NotSame(parsed.VectorOfUnion[2].Item3, copied.VectorOfUnion[2].Item3);
-        Assert.NotSame(parsed.VectorOfUnion[3].Item4, copied.VectorOfUnion[3].Item4);
+        Assert.IsInstanceOfType<OuterStruct>(copied.UnionVal.Value.Item3);
+        Assert.AreNotEqual(typeof(OuterStruct), parsed.UnionVal.Value.Item3.GetType());
 
         for (int i = 1; i <= 4; ++i)
         {
-            Assert.Equal((byte)i, original.VectorOfUnionRoList[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)parsed.VectorOfUnionRoList[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)copied.VectorOfUnionRoList[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, original.VectorOfUnion[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, parsed.VectorOfUnion[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, copied.VectorOfUnion[i - 1].Discriminator);
         }
 
-        Assert.NotSame(parsed.VectorOfUnionRoList[0].Item1, copied.VectorOfUnionRoList[0].Item1);
-        Assert.NotSame(parsed.VectorOfUnionRoList[1].Item2, copied.VectorOfUnionRoList[1].Item2);
-        Assert.NotSame(parsed.VectorOfUnionRoList[2].Item3, copied.VectorOfUnionRoList[2].Item3);
-        Assert.NotSame(parsed.VectorOfUnionRoList[3].Item4, copied.VectorOfUnionRoList[3].Item4);
+        Assert.AreNotSame(parsed.VectorOfUnion[0].Item1, copied.VectorOfUnion[0].Item1);
+        Assert.AreNotSame(parsed.VectorOfUnion[1].Item2, copied.VectorOfUnion[1].Item2);
+        Assert.AreNotSame(parsed.VectorOfUnion[2].Item3, copied.VectorOfUnion[2].Item3);
+        Assert.AreNotSame(parsed.VectorOfUnion[3].Item4, copied.VectorOfUnion[3].Item4);
 
         for (int i = 1; i <= 4; ++i)
         {
-            Assert.Equal((byte)i, original.VectorOfUnionArray[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)parsed.VectorOfUnionArray[i - 1].Discriminator);
-            Assert.Equal((byte)i, (byte)copied.VectorOfUnionArray[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, original.VectorOfUnionRoList[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, (byte)parsed.VectorOfUnionRoList[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, (byte)copied.VectorOfUnionRoList[i - 1].Discriminator);
         }
 
-        Assert.NotSame(parsed.VectorOfUnionArray[0].Item1, copied.VectorOfUnionArray[0].Item1);
-        Assert.NotSame(parsed.VectorOfUnionArray[1].Item2, copied.VectorOfUnionArray[1].Item2);
-        Assert.NotSame(parsed.VectorOfUnionArray[2].Item3, copied.VectorOfUnionArray[2].Item3);
-        Assert.NotSame(parsed.VectorOfUnionArray[3].Item4, copied.VectorOfUnionArray[3].Item4);
+        Assert.AreNotSame(parsed.VectorOfUnionRoList[0].Item1, copied.VectorOfUnionRoList[0].Item1);
+        Assert.AreNotSame(parsed.VectorOfUnionRoList[1].Item2, copied.VectorOfUnionRoList[1].Item2);
+        Assert.AreNotSame(parsed.VectorOfUnionRoList[2].Item3, copied.VectorOfUnionRoList[2].Item3);
+        Assert.AreNotSame(parsed.VectorOfUnionRoList[3].Item4, copied.VectorOfUnionRoList[3].Item4);
+
+        for (int i = 1; i <= 4; ++i)
+        {
+            Assert.AreEqual((byte)i, original.VectorOfUnionArray[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, (byte)parsed.VectorOfUnionArray[i - 1].Discriminator);
+            Assert.AreEqual((byte)i, (byte)copied.VectorOfUnionArray[i - 1].Discriminator);
+        }
+
+        Assert.AreNotSame(parsed.VectorOfUnionArray[0].Item1, copied.VectorOfUnionArray[0].Item1);
+        Assert.AreNotSame(parsed.VectorOfUnionArray[1].Item2, copied.VectorOfUnionArray[1].Item2);
+        Assert.AreNotSame(parsed.VectorOfUnionArray[2].Item3, copied.VectorOfUnionArray[2].Item3);
+        Assert.AreNotSame(parsed.VectorOfUnionArray[3].Item4, copied.VectorOfUnionArray[3].Item4);
 
         Memory<byte>? mem = copied.ByteVector;
         Memory<byte>? pMem = parsed.ByteVector;
-        Assert.True(original.ByteVector.Value.Span.SequenceEqual(mem.Value.Span));
-        Assert.False(mem.Value.Span.Overlaps(pMem.Value.Span));
+        Assert.IsTrue(original.ByteVector.Value.Span.SequenceEqual(mem.Value.Span));
+        Assert.IsFalse(mem.Value.Span.Overlaps(pMem.Value.Span));
 
         ReadOnlyMemory<byte>? roMem = copied.ByteVectorRO;
         ReadOnlyMemory<byte>? pRoMem = parsed.ByteVectorRO;
-        Assert.True(original.ByteVectorRO.Value.Span.SequenceEqual(roMem.Value.Span));
-        Assert.False(roMem.Value.Span.Overlaps(pRoMem.Value.Span));
+        Assert.IsTrue(original.ByteVectorRO.Value.Span.SequenceEqual(roMem.Value.Span));
+        Assert.IsFalse(roMem.Value.Span.Overlaps(pRoMem.Value.Span));
 
         // array of table
         {
-            Assert.NotSame(parsed.TableVectorArray, copied.TableVectorArray);
+            Assert.AreNotSame(parsed.TableVectorArray, copied.TableVectorArray);
             DeepCompareInnerTableList(
                 (IReadOnlyList<InnerTable>)original.TableVectorArray,
                 (IReadOnlyList<InnerTable>)parsed.TableVectorArray,
@@ -157,7 +158,7 @@ public class CopyConstructorTests
 
         // list of table.
         {
-            Assert.NotSame(parsed.TableVectorList, copied.TableVectorList);
+            Assert.AreNotSame(parsed.TableVectorList, copied.TableVectorList);
 
             DeepCompareInnerTableList(
                 (IReadOnlyList<InnerTable>)original.TableVectorList,
@@ -167,7 +168,7 @@ public class CopyConstructorTests
 
         // read only list of table.
         {
-            Assert.NotSame(parsed.TableVectorRoList, copied.TableVectorRoList);
+            Assert.AreNotSame(parsed.TableVectorRoList, copied.TableVectorRoList);
 
             DeepCompareInnerTableList(
                 original.TableVectorRoList,
@@ -177,7 +178,7 @@ public class CopyConstructorTests
 
         // indexed vector of table.
         {
-            Assert.NotSame(parsed.TableVectorIndexed, copied.TableVectorIndexed);
+            Assert.AreNotSame(parsed.TableVectorIndexed, copied.TableVectorIndexed);
             foreach (var kvp in original.TableVectorIndexed)
             {
                 string key = kvp.Key;
@@ -186,8 +187,8 @@ public class CopyConstructorTests
                 var parsedValue = parsed.TableVectorIndexed[key];
                 var copiedValue = copied.TableVectorIndexed[key];
 
-                Assert.NotNull(parsedValue);
-                Assert.NotNull(copiedValue);
+                Assert.IsNotNull(parsedValue);
+                Assert.IsNotNull(copiedValue);
 
                 DeepCompareInnerTable(value, parsedValue, copiedValue);
             }
@@ -196,25 +197,25 @@ public class CopyConstructorTests
 
     private void DeepCompareIntVector(IReadOnlyList<int> a, IReadOnlyList<int> b, IReadOnlyList<int> c)
     {
-        Assert.Equal(a.Count, b.Count);
-        Assert.Equal(a.Count, c.Count);
+        Assert.AreEqual(a.Count, b.Count);
+        Assert.AreEqual(a.Count, c.Count);
 
         for (int i = 0; i < a.Count; ++i)
         {
-            Assert.Equal(a[i], b[i]);
-            Assert.Equal(a[i], c[i]);
+            Assert.AreEqual(a[i], b[i]);
+            Assert.AreEqual(a[i], c[i]);
         }
     }
 
     private void DeepCompareIntVector(IList<int> a, IList<int> b, IList<int> c)
     {
-        Assert.Equal(a.Count, b.Count);
-        Assert.Equal(a.Count, c.Count);
+        Assert.AreEqual(a.Count, b.Count);
+        Assert.AreEqual(a.Count, c.Count);
 
         for (int i = 0; i < a.Count; ++i)
         {
-            Assert.Equal(a[i], b[i]);
-            Assert.Equal(a[i], c[i]);
+            Assert.AreEqual(a[i], b[i]);
+            Assert.AreEqual(a[i], c[i]);
         }
     }
 
@@ -242,8 +243,8 @@ public class CopyConstructorTests
 
     private static void DeepCompareInnerTableList(IReadOnlyList<InnerTable> aList, IReadOnlyList<InnerTable> pList, IReadOnlyList<InnerTable> cList)
     {
-        Assert.Equal(aList.Count, pList.Count);
-        Assert.Equal(pList.Count, cList.Count);
+        Assert.AreEqual(aList.Count, pList.Count);
+        Assert.AreEqual(pList.Count, cList.Count);
 
         for (int i = 0; i < pList.Count; ++i)
         {
@@ -257,39 +258,39 @@ public class CopyConstructorTests
 
     private static void DeepCompareInnerTable(InnerTable a, InnerTable p, InnerTable c)
     {
-        Assert.NotSame(p, c);
+        Assert.AreNotSame(p, c);
 
-        Assert.IsNotType<InnerTable>(p);
-        Assert.IsType<InnerTable>(c);
-        Assert.IsType<InnerTable>(a);
+        Assert.AreNotEqual(typeof(InnerTable), p.GetType());
+        Assert.IsInstanceOfType<InnerTable>(c);
+        Assert.IsInstanceOfType<InnerTable>(a);
 
-        Assert.Equal(a.Name, p.Name);
-        Assert.Equal(a.Name, c.Name);
+        Assert.AreEqual(a.Name, p.Name);
+        Assert.AreEqual(a.Name, c.Name);
 
         var aOuter = a.OuterStructVal;
         var pOuter = p.OuterStructVal;
         var cOuter = c.OuterStructVal;
 
-        Assert.NotSame(pOuter, cOuter);
+        Assert.AreNotSame(pOuter, cOuter);
 
-        Assert.IsType<OuterStruct>(aOuter);
-        Assert.IsType<OuterStruct>(cOuter);
-        Assert.IsNotType<OuterStruct>(pOuter);
+        Assert.IsInstanceOfType<OuterStruct>(aOuter);
+        Assert.IsInstanceOfType<OuterStruct>(cOuter);
+        Assert.AreNotEqual(typeof(OuterStruct), pOuter.GetType());
 
-        Assert.Equal(aOuter.Value, pOuter.Value);
-        Assert.Equal(aOuter.Value, cOuter.Value);
+        Assert.AreEqual(aOuter.Value, pOuter.Value);
+        Assert.AreEqual(aOuter.Value, cOuter.Value);
 
         var pInner = pOuter.InnerStructVal;
         var cInner = cOuter.InnerStructVal;
         var aInner = aOuter.InnerStructVal;
 
-        Assert.NotSame(pInner, cInner);
+        Assert.AreNotSame(pInner, cInner);
 
-        Assert.IsType<InnerStruct>(aInner);
-        Assert.IsType<InnerStruct>(cInner);
-        Assert.IsNotType<InnerStruct>(pInner);
+        Assert.IsInstanceOfType<InnerStruct>(aInner);
+        Assert.IsInstanceOfType<InnerStruct>(cInner);
+        Assert.AreNotEqual(typeof(InnerStruct), pInner.GetType());
 
-        Assert.Equal(aInner.LongValue, pInner.LongValue);
-        Assert.Equal(aInner.LongValue, cInner.LongValue);
+        Assert.AreEqual(aInner.LongValue, pInner.LongValue);
+        Assert.AreEqual(aInner.LongValue, cInner.LongValue);
     }
 }
