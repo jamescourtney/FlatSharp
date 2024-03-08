@@ -25,6 +25,7 @@
 #>
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 public static partial class BenchmarkUtilities
 {
@@ -82,7 +83,8 @@ public static partial class BenchmarkUtilities
     }
 
     <# } #>
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainer(<#= containerFull #> foobar, int iterations)
     {
         int sum = 0;
@@ -118,7 +120,8 @@ public static partial class BenchmarkUtilities
 
         return sum;
     }
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainerPartial(<#= containerFull #> foobar, int iterations)
     {
         int sum = 0;

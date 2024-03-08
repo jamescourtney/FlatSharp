@@ -1,6 +1,7 @@
 ﻿
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 public static partial class BenchmarkUtilities
 {
@@ -49,7 +50,8 @@ public static partial class BenchmarkUtilities
         };
     }
 
-    
+        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainer(Benchmark.FBBench.FS.FooBarContainer foobar, int iterations)
     {
         int sum = 0;
@@ -85,7 +87,8 @@ public static partial class BenchmarkUtilities
 
         return sum;
     }
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainerPartial(Benchmark.FBBench.FS.FooBarContainer foobar, int iterations)
     {
         int sum = 0;
@@ -160,7 +163,8 @@ public static partial class BenchmarkUtilities
         };
     }
 
-    
+        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainer(Benchmark.FBBench.FS.FooBarContainerValue foobar, int iterations)
     {
         int sum = 0;
@@ -196,7 +200,8 @@ public static partial class BenchmarkUtilities
 
         return sum;
     }
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainerPartial(Benchmark.FBBench.FS.FooBarContainerValue foobar, int iterations)
     {
         int sum = 0;
@@ -271,7 +276,8 @@ public static partial class BenchmarkUtilities
         };
     }
 
-    
+        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainer(Benchmark.FBBench.ReflectionBased.FooBarListContainer foobar, int iterations)
     {
         int sum = 0;
@@ -307,7 +313,8 @@ public static partial class BenchmarkUtilities
 
         return sum;
     }
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainerPartial(Benchmark.FBBench.ReflectionBased.FooBarListContainer foobar, int iterations)
     {
         int sum = 0;
@@ -382,7 +389,8 @@ public static partial class BenchmarkUtilities
         };
     }
 
-    
+        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainer(Benchmark.FBBench.GFB.FooBarContainerT foobar, int iterations)
     {
         int sum = 0;
@@ -418,7 +426,8 @@ public static partial class BenchmarkUtilities
 
         return sum;
     }
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainerPartial(Benchmark.FBBench.GFB.FooBarContainerT foobar, int iterations)
     {
         int sum = 0;
@@ -449,7 +458,8 @@ public static partial class BenchmarkUtilities
     }
 
     
-    
+        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainer(Benchmark.FBBench.PB.FooBarContainer foobar, int iterations)
     {
         int sum = 0;
@@ -485,7 +495,8 @@ public static partial class BenchmarkUtilities
 
         return sum;
     }
-
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TraverseFooBarContainerPartial(Benchmark.FBBench.PB.FooBarContainer foobar, int iterations)
     {
         int sum = 0;
