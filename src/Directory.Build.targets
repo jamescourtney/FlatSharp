@@ -1,26 +1,52 @@
 <Project>
-  <PropertyGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' and '$(RuntimeIdentifier)' == '' ">
-    <FlatSharpCompilerPath>$(MSBuildThisFileDirectory)FlatSharp.Compiler/bin/$(Configuration)/net8.0/FlatSharp.Compiler.dll</FlatSharpCompilerPath>
+  <PropertyGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
+    <FlatSharpCompilerPath>$(MSBuildThisFileDirectory)FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll</FlatSharpCompilerPath>
     <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' and '$(RuntimeIdentifier)' != '' ">
-    <FlatSharpCompilerPath>$(MSBuildThisFileDirectory)FlatSharp.Compiler/bin/$(Configuration)/net8.0/$(RuntimeIdentifier)/FlatSharp.Compiler.dll</FlatSharpCompilerPath>
-    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
-  </PropertyGroup>
+  <UsingTask
+    TaskName="BuildUnderLock"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <CompilerPath ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Threading"/>
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[
+      
+        using (Mutex mutex = new Mutex(false, "FlatSharpCompilationMutex"))
+        {
+          if (mutex.WaitOne(TimeSpan.FromSeconds(30)))
+          {
+            try
+            {
+              Success = BuildEngine9.BuildProjectFile(CompilerPath, null, new Dictionary<string, string> { { "Configuration", "Release" }, { "TargetFramework", "net8.0" } }, null, null);
+            }
+            finally
+            {
+              mutex.ReleaseMutex();
+            }
+          }
+          else
+          {
+            Log.LogError("Unable to acquire FlatSharp.Compiler mutex");
+            Success = false;
+          }
+        }
+        
+        
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 
-  <!--
   <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile" Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
-    <MSBuild Projects="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.csproj" Properties="Configuration=Release;TargetFramework=net8.0;OutputPath=$(MSBuildProjectDirectory)/bin/compiler/;RuntimeIdentifier=" RebaseOutputs="true"/>
+    <BuildUnderLock CompilerPath="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.csproj" />
   </Target>
-  -->
-  
 
-  <ItemGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-  </ItemGroup>
-    
   <Import Project="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.targets" Condition=" '$(NeedsFlatSharpCompiler)' == 'true' "/>
 </Project>
