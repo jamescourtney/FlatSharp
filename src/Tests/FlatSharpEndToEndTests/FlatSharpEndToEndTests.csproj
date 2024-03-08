@@ -12,7 +12,7 @@
     <Nullable>annotations</Nullable>
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
-    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\Release\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
     <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
@@ -51,18 +51,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
-
-  <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile">
-    <Exec Command="dotnet build ../../FlatSharp.Compiler -f net8.0 -c Release" />
-  </Target>
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets"/>
+    
+  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(PipelineBuild)' != 'true' " />
 </Project>
 

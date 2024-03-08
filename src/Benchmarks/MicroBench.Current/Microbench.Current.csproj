@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE;VECTOR_VISITORS</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\Release\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
+        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
         <FlatSharpPoolable>false</FlatSharpPoolable>
         <FlatSharpNullable>false</FlatSharpNullable>
     </PropertyGroup>
@@ -35,8 +35,5 @@
         <None Include="..\Microbench.fbs" />
     </ItemGroup>
 
-  <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile">
-    <MSBuild Projects="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Properties="Configuration=Release;TargetFramework=net8.0" />
-  </Target>
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets"/>
+    <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>
