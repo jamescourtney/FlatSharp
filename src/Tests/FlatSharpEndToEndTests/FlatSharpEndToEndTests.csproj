@@ -60,7 +60,7 @@
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
 
-  <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile" Condition=" '$(BuildAot)' != 'true' ">
+  <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile">
     <Exec Command="dotnet build ../../FlatSharp.Compiler -f net8.0 -c Release" />
   </Target>
   <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets"/>
