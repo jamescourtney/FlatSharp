@@ -1,12 +1,23 @@
-﻿using MessagePack;
-using ProtoBuf;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Benchmark.FBBench.RefelctionBased;
+namespace Benchmark.FBBench.ReflectionBased;
+
+#if AOT
+
+public class ProtoContractAttribute : Attribute { }
+public class ProtoMemberAttribute : Attribute { public ProtoMemberAttribute(int i) { } }
+public class KeyAttribute : Attribute { public KeyAttribute(int i) { } }
+public class MessagePackObjectAttribute : Attribute { }
+
+#else
+using MessagePack;
+using ProtoBuf;
+#endif
 
 [ProtoContract]
 [MessagePackObject]
@@ -90,8 +101,4 @@ public sealed class Foo
     [ProtoMember(4)]
     [Key(3)]
     public uint Length { get; set; }
-
-    void Test()
-    {
-    }
 }

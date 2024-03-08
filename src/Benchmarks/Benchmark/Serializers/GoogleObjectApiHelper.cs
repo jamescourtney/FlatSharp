@@ -1,6 +1,5 @@
 ﻿using FlatSharp;
 using Google.FlatBuffers;
-using MessagePack;
 using System;
 using System.IO;
 
@@ -13,11 +12,14 @@ internal class GoogleObjectApiHelper
     private static Offset<GFB.FooBarContainer> offset;
     private static GFB.FooBarContainerT container;
 
-    public static void Prepare(int length)
+    public static int Prepare(int length)
     {
         BenchmarkUtilities.Prepare(length, out container);
         int offset = Serialize();
-        readBuffer = new(builder.SizedByteArray());
+        byte[] sizedArray = builder.SizedByteArray();
+        readBuffer = new(sizedArray);
+
+        return sizedArray.Length;
     }
 
     public static int Serialize()
@@ -32,12 +34,12 @@ internal class GoogleObjectApiHelper
     public static int ParseAndTraverse(int iterations)
     {
         var parsed = GFB.FooBarContainer.GetRootAsFooBarContainer(readBuffer).UnPack();
-        return BenchmarkUtilities.TraverseFooBarContainer(container, iterations);
+        return BenchmarkUtilities.TraverseFooBarContainer(parsed, iterations);
     }
 
-    public static int ParseAndTraversePartial(int iterations, FlatBufferDeserializationOption option)
+    public static int ParseAndTraversePartial(int iterations)
     {
         var parsed = GFB.FooBarContainer.GetRootAsFooBarContainer(readBuffer).UnPack();
-        return BenchmarkUtilities.TraverseFooBarContainerPartial(container, iterations);
+        return BenchmarkUtilities.TraverseFooBarContainerPartial(parsed, iterations);
     }
 }

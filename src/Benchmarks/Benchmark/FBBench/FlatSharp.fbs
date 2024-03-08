@@ -82,8 +82,11 @@ table FooBarContainer (fs_serializer) {
 }
 
 table SortedVectorContainer (fs_serializer) {
-    StringVector:[SortedVectorStringKey] (fs_sortedVector);
-    IntVector:[SortedVectorIntKey] (fs_sortedVector);
+    SortedStrings : [ SortedVectorStringKey ] (fs_sortedVector);
+    UnsortedStrings : [ SortedVectorStringKey ];
+
+    SortedInts : [ SortedVectorIntKey ] (fs_sortedVector);
+    UnsortedInts : [ SortedVectorIntKey ];
 }
 
 table SortedVectorStringKey { Key:string (key); }

@@ -17,7 +17,7 @@
 namespace Benchmark.FBBench
 {
     using BenchmarkDotNet.Attributes;
-    using FlatSharp;
+    using global::FlatSharp;
 
     public class OthersDeserializeBench : FBBenchCore
     {
@@ -39,21 +39,25 @@ namespace Benchmark.FBBench
         public override int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi() => base.Google_Flatbuffers_ParseAndTraversePartial_ObjectApi();
 
         [Benchmark]
+        public override void Protobuf_ParseAndTraverse() => base.Protobuf_ParseAndTraverse();
+
+        [Benchmark]
+        public override void Protobuf_ParseAndTraversePartial() => base.Protobuf_ParseAndTraversePartial();
+
+#if !AOT
+
+        [Benchmark]
         public override void PBDN_ParseAndTraverse() => base.PBDN_ParseAndTraverse();
 
         [Benchmark]
         public override void PBDN_ParseAndTraversePartial() => base.PBDN_ParseAndTraversePartial();
 
         [Benchmark]
-        public override void PBDN_ParseAndTraverse_NonVirtual() => base.PBDN_ParseAndTraverse_NonVirtual();
-
-        [Benchmark]
-        public override void PBDN_ParseAndTraversePartial_NonVirtual() => base.PBDN_ParseAndTraversePartial_NonVirtual();
-
-        [Benchmark]
         public override void MsgPack_ParseAndTraverse() => base.MsgPack_ParseAndTraverse();
 
         [Benchmark]
         public override void MsgPack_ParseAndTraversePartial() => base.MsgPack_ParseAndTraversePartial();
+
+#endif
     }
 }

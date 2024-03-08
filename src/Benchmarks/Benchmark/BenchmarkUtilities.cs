@@ -1,11 +1,14 @@
 ﻿
 
+using System.Collections.Generic;
+
 public static partial class BenchmarkUtilities
 {
     
+    
     public static void Prepare(int length, out Benchmark.FBBench.FS.FooBarContainer container)
     {
-        var foobars = new Benchmark.FBBench.FS.FooBar[length];
+        var foobars = new List<Benchmark.FBBench.FS.FooBar>();
         for (int i = 0; i < length; ++i)
         {
             var foo = new Benchmark.FBBench.FS.Foo
@@ -34,7 +37,7 @@ public static partial class BenchmarkUtilities
                 Sibling = bar,
             };
 
-            foobars[i] = fooBar;
+            foobars.Add(fooBar);
         }
 
         container = new Benchmark.FBBench.FS.FooBarContainer
@@ -46,6 +49,7 @@ public static partial class BenchmarkUtilities
         };
     }
 
+    
     public static int TraverseFooBarContainer(Benchmark.FBBench.FS.FooBarContainer foobar, int iterations)
     {
         int sum = 0;
@@ -63,12 +67,12 @@ public static partial class BenchmarkUtilities
             {
                 var item = list[i]; 
                 sum += item.Name.Length;
-                sum += item.Postfix;
+                sum += (int)item.Postfix;
                 sum += (int)item.Rating;
 
                 var bar = item.Sibling;
                 sum += (int)bar.Ratio;
-                sum += bar.Size;
+                sum += (int)bar.Size;
                 sum += bar.Time;
 
                 var parent = bar.Parent;
@@ -112,9 +116,10 @@ public static partial class BenchmarkUtilities
     }
 
     
+    
     public static void Prepare(int length, out Benchmark.FBBench.FS.FooBarContainerValue container)
     {
-        var foobars = new Benchmark.FBBench.FS.FooBarValue[length];
+        var foobars = new List<Benchmark.FBBench.FS.FooBarValue>();
         for (int i = 0; i < length; ++i)
         {
             var foo = new Benchmark.FBBench.FS.FooValue
@@ -143,7 +148,7 @@ public static partial class BenchmarkUtilities
                 Sibling = bar,
             };
 
-            foobars[i] = fooBar;
+            foobars.Add(fooBar);
         }
 
         container = new Benchmark.FBBench.FS.FooBarContainerValue
@@ -155,6 +160,7 @@ public static partial class BenchmarkUtilities
         };
     }
 
+    
     public static int TraverseFooBarContainer(Benchmark.FBBench.FS.FooBarContainerValue foobar, int iterations)
     {
         int sum = 0;
@@ -172,12 +178,12 @@ public static partial class BenchmarkUtilities
             {
                 var item = list[i]; 
                 sum += item.Name.Length;
-                sum += item.Postfix;
+                sum += (int)item.Postfix;
                 sum += (int)item.Rating;
 
                 var bar = item.Sibling;
                 sum += (int)bar.Ratio;
-                sum += bar.Size;
+                sum += (int)bar.Size;
                 sum += bar.Time;
 
                 var parent = bar.Parent;
@@ -221,12 +227,13 @@ public static partial class BenchmarkUtilities
     }
 
     
-    public static void Prepare(int length, out Benchmark.FBBench.RefelctionBased.FooBarListContainer container)
+    
+    public static void Prepare(int length, out Benchmark.FBBench.ReflectionBased.FooBarListContainer container)
     {
-        var foobars = new Benchmark.FBBench.RefelctionBased.FooBar[length];
+        var foobars = new List<Benchmark.FBBench.ReflectionBased.FooBar>();
         for (int i = 0; i < length; ++i)
         {
-            var foo = new Benchmark.FBBench.RefelctionBased.Foo
+            var foo = new Benchmark.FBBench.ReflectionBased.Foo
             {
                 Id = 0xABADCAFEABADCAFE + (ulong)i,
                 Count = (short)(10000 + i),
@@ -235,7 +242,7 @@ public static partial class BenchmarkUtilities
             };
 
             
-            var bar = new Benchmark.FBBench.RefelctionBased.Bar
+            var bar = new Benchmark.FBBench.ReflectionBased.Bar
             {
                 Parent = foo,
                 Ratio = 3.14159f + i,
@@ -244,7 +251,7 @@ public static partial class BenchmarkUtilities
             };
 
             
-            var fooBar = new Benchmark.FBBench.RefelctionBased.FooBar
+            var fooBar = new Benchmark.FBBench.ReflectionBased.FooBar
             {
                 Name = System.Guid.NewGuid().ToString(),
                 Postfix = (byte)('!' + i),
@@ -252,10 +259,10 @@ public static partial class BenchmarkUtilities
                 Sibling = bar,
             };
 
-            foobars[i] = fooBar;
+            foobars.Add(fooBar);
         }
 
-        container = new Benchmark.FBBench.RefelctionBased.FooBarListContainer
+        container = new Benchmark.FBBench.ReflectionBased.FooBarListContainer
         {
             Fruit = 123,
             Initialized = true,
@@ -264,7 +271,8 @@ public static partial class BenchmarkUtilities
         };
     }
 
-    public static int TraverseFooBarContainer(Benchmark.FBBench.RefelctionBased.FooBarListContainer foobar, int iterations)
+    
+    public static int TraverseFooBarContainer(Benchmark.FBBench.ReflectionBased.FooBarListContainer foobar, int iterations)
     {
         int sum = 0;
 
@@ -281,12 +289,12 @@ public static partial class BenchmarkUtilities
             {
                 var item = list[i]; 
                 sum += item.Name.Length;
-                sum += item.Postfix;
+                sum += (int)item.Postfix;
                 sum += (int)item.Rating;
 
                 var bar = item.Sibling;
                 sum += (int)bar.Ratio;
-                sum += bar.Size;
+                sum += (int)bar.Size;
                 sum += bar.Time;
 
                 var parent = bar.Parent;
@@ -300,7 +308,7 @@ public static partial class BenchmarkUtilities
         return sum;
     }
 
-    public static int TraverseFooBarContainerPartial(Benchmark.FBBench.RefelctionBased.FooBarListContainer foobar, int iterations)
+    public static int TraverseFooBarContainerPartial(Benchmark.FBBench.ReflectionBased.FooBarListContainer foobar, int iterations)
     {
         int sum = 0;
 
@@ -330,9 +338,10 @@ public static partial class BenchmarkUtilities
     }
 
     
+    
     public static void Prepare(int length, out Benchmark.FBBench.GFB.FooBarContainerT container)
     {
-        var foobars = new Benchmark.FBBench.GFB.FooBarT[length];
+        var foobars = new List<Benchmark.FBBench.GFB.FooBarT>();
         for (int i = 0; i < length; ++i)
         {
             var foo = new Benchmark.FBBench.GFB.FooT
@@ -361,7 +370,7 @@ public static partial class BenchmarkUtilities
                 Sibling = bar,
             };
 
-            foobars[i] = fooBar;
+            foobars.Add(fooBar);
         }
 
         container = new Benchmark.FBBench.GFB.FooBarContainerT
@@ -373,6 +382,7 @@ public static partial class BenchmarkUtilities
         };
     }
 
+    
     public static int TraverseFooBarContainer(Benchmark.FBBench.GFB.FooBarContainerT foobar, int iterations)
     {
         int sum = 0;
@@ -390,12 +400,12 @@ public static partial class BenchmarkUtilities
             {
                 var item = list[i]; 
                 sum += item.Name.Length;
-                sum += item.Postfix;
+                sum += (int)item.Postfix;
                 sum += (int)item.Rating;
 
                 var bar = item.Sibling;
                 sum += (int)bar.Ratio;
-                sum += bar.Size;
+                sum += (int)bar.Size;
                 sum += bar.Time;
 
                 var parent = bar.Parent;
@@ -410,6 +420,73 @@ public static partial class BenchmarkUtilities
     }
 
     public static int TraverseFooBarContainerPartial(Benchmark.FBBench.GFB.FooBarContainerT foobar, int iterations)
+    {
+        int sum = 0;
+
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
+
+            var list = foobar.List;
+            int count = list.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = list[i];
+                sum += item.Name.Length;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+            }
+        }
+
+        return sum;
+    }
+
+    
+    
+    public static int TraverseFooBarContainer(Benchmark.FBBench.PB.FooBarContainer foobar, int iterations)
+    {
+        int sum = 0;
+
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
+
+            var list = foobar.List;
+            int count = list.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = list[i]; 
+                sum += item.Name.Length;
+                sum += (int)item.Postfix;
+                sum += (int)item.Rating;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+                sum += (int)bar.Size;
+                sum += bar.Time;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+                sum += (int)parent.Id;
+                sum += (int)parent.Length;
+                sum += parent.Prefix;
+            }
+        }
+
+        return sum;
+    }
+
+    public static int TraverseFooBarContainerPartial(Benchmark.FBBench.PB.FooBarContainer foobar, int iterations)
     {
         int sum = 0;
 

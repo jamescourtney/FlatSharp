@@ -7,9 +7,11 @@
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.12" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="3.1.2" />
+    <PackageVersion Include="Google.Protobuf" Version="3.25.3" />
     <PackageVersion Include="Grpc" Version="2.46.6" />
     <PackageVersion Include="Grpc.Core" Version="2.46.6" />
     <PackageVersion Include="Grpc.Core.Api" Version="2.61.0" />
+    <PackageVersion Include="Grpc.Tools" Version="2.62.0" />
     <PackageVersion Include="MessagePack" Version="2.5.140" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.9.2" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />

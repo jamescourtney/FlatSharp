@@ -6,15 +6,25 @@
 <#@ output extension=".cs" #>
 
 <#
-    (string ns, string containerName, string fooBarName, string fooName, string barName)[] rootTypes = new (string ns, string containerName, string fooBarName, string fooName, string barName)[] 
+    (
+        string ns, 
+        string containerName, 
+        string fooBarName, 
+        string fooName, 
+        string barName,
+        bool genPrepare
+    )[] rootTypes = new[] 
     { 
 
-        ("Benchmark.FBBench.FS", "FooBarContainer", "FooBar", "Foo", "Bar"),
-        ("Benchmark.FBBench.FS", "FooBarContainerValue", "FooBarValue", "FooValue", "BarValue"),
-        ("Benchmark.FBBench.RefelctionBased","FooBarListContainer", "FooBar", "Foo", "Bar"),
-        ("Benchmark.FBBench.GFB", "FooBarContainerT", "FooBarT", "FooT", "BarT"),
+        ("Benchmark.FBBench.FS", "FooBarContainer", "FooBar", "Foo", "Bar", true),
+        ("Benchmark.FBBench.FS", "FooBarContainerValue", "FooBarValue", "FooValue", "BarValue", true),
+        ("Benchmark.FBBench.ReflectionBased","FooBarListContainer", "FooBar", "Foo", "Bar", true),
+        ("Benchmark.FBBench.GFB", "FooBarContainerT", "FooBarT", "FooT", "BarT", true),
+        ("Benchmark.FBBench.PB", "FooBarContainer", "FooBar", "Foo", "Bar", false)
     };
 #>
+
+using System.Collections.Generic;
 
 public static partial class BenchmarkUtilities
 {
@@ -26,9 +36,11 @@ public static partial class BenchmarkUtilities
         string fooFull = $"{rootType.ns}.{rootType.fooName}";
     #>
 
+    <# if (rootType.genPrepare) { #>
+
     public static void Prepare(int length, out <#= containerFull #> container)
     {
-        var foobars = new <#= fooBarFull #>[length];
+        var foobars = new List<<#= fooBarFull #>>();
         for (int i = 0; i < length; ++i)
         {
             var foo = new <#= fooFull #>
@@ -57,7 +69,7 @@ public static partial class BenchmarkUtilities
                 Sibling = bar,
             };
 
-            foobars[i] = fooBar;
+            foobars.Add(fooBar);
         }
 
         container = new <#= containerFull #>
@@ -68,6 +80,8 @@ public static partial class BenchmarkUtilities
             List = foobars,
         };
     }
+
+    <# } #>
 
     public static int TraverseFooBarContainer(<#= containerFull #> foobar, int iterations)
     {
@@ -86,12 +100,12 @@ public static partial class BenchmarkUtilities
             {
                 var item = list[i]; 
                 sum += item.Name.Length;
-                sum += item.Postfix;
+                sum += (int)item.Postfix;
                 sum += (int)item.Rating;
 
                 var bar = item.Sibling;
                 sum += (int)bar.Ratio;
-                sum += bar.Size;
+                sum += (int)bar.Size;
                 sum += bar.Time;
 
                 var parent = bar.Parent;
