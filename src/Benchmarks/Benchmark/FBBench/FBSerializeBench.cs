@@ -44,7 +44,7 @@ namespace Benchmark.FBBench
         public override void PBDN_Serialize() => base.PBDN_Serialize();
 
         [Benchmark]
-        public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
+        public override void MsgPack_Serialize() => base.MsgPack_Serialize();
 #endif
 
 #endif

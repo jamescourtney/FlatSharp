@@ -125,7 +125,7 @@ public abstract class FBBenchCore
     public virtual void PBDN_ParseAndTraversePartial()
         => PbdnHelper.ParseAndTraversePartial(this.TraversalCount);
 
-    public virtual void MsgPack_Serialize_NonVirtual()
+    public virtual void MsgPack_Serialize()
         => MsgPackHelper.Serialize();
 
     public virtual void MsgPack_ParseAndTraverse()
