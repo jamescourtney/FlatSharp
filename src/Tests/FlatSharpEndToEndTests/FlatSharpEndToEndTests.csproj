@@ -61,7 +61,7 @@
   </ItemGroup>
 
   <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile" Condition=" '$(BuildAot)' != 'true' ">
-    <Exec Command="dotnet build ..\..\FlatSharp.Compiler -f net8.0 -c Release" />
+    <Exec Command="dotnet build ../../FlatSharp.Compiler -f net8.0 -c Release" />
   </Target>
   <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets"/>
 </Project>
