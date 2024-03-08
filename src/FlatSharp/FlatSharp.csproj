@@ -1,61 +1,61 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
-        <AssemblyName>FlatSharp</AssemblyName>
-        <RootNamespace>FlatSharp</RootNamespace>
-        <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
-        <Nullable>annotations</Nullable>
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
+    <AssemblyName>FlatSharp</AssemblyName>
+    <RootNamespace>FlatSharp</RootNamespace>
+    <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
+    <Nullable>annotations</Nullable>
 
-        <!-- Suppress warnings about explicit references to .net standard. -->
-        <NoWarn>$(NoWarn);NETSDK1023;NU5104</NoWarn>
-    </PropertyGroup>
+    <!-- Suppress warnings about explicit references to .net standard. -->
+    <NoWarn>$(NoWarn);NETSDK1023;NU5104</NoWarn>
+  </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <None Update="TypeModel\ScalarTypeModels.tt">
-            <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
-            <Generator>TextTemplatingFileGenerator</Generator>
-        </None>
-        <None Update="UnionTypes.tt">
-          <LastGenOutput>UnionTypes.cs</LastGenOutput>
-          <Generator>TextTemplatingFileGenerator</Generator>
-        </None>
-    </ItemGroup>
+  <ItemGroup>
+    <None Update="TypeModel\ScalarTypeModels.tt">
+      <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="UnionTypes.tt">
+      <LastGenOutput>UnionTypes.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-        <PackageReference Include="Microsoft.Net.Compilers.Toolset">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="System.Memory" />
-        <PackageReference Include="NetStandard.Library" VersionOverride="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="NetStandard.Library" VersionOverride="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\netstandard.dll" />
-        <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Collections.dll" />
-        <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Runtime.dll" />
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\netstandard.dll" />
+    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Collections.dll" />
+    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Runtime.dll" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-    </ItemGroup>
-    
-    <ItemGroup>
-        <Compile Update="TypeModel\ScalarTypeModels.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>ScalarTypeModels.tt</DependentUpon>
-        </Compile>
-        <Compile Update="UnionTypes.cs">
-          <DependentUpon>UnionTypes.tt</DependentUpon>
-          <DesignTime>True</DesignTime>
-          <AutoGen>True</AutoGen>
-        </Compile>
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="TypeModel\ScalarTypeModels.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ScalarTypeModels.tt</DependentUpon>
+    </Compile>
+    <Compile Update="UnionTypes.cs">
+      <DependentUpon>UnionTypes.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
 </Project>

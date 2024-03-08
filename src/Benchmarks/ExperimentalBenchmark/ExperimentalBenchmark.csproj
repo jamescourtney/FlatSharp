@@ -1,30 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFrameworks>net8.0</TargetFrameworks>
-        <DelaySign>false</DelaySign>
-        <SignAssembly>false</SignAssembly>
-        <!--<PublishAot>true</PublishAot>-->
-        <IsPackable>false</IsPackable>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>false</SignAssembly>
+    <!--<PublishAot>true</PublishAot>-->
+    <IsPackable>false</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj">
-            <PrivateAssets>all</PrivateAssets>
-        </ProjectReference>
-        <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <FlatSharpSchema Include="Benchmark.fbs" />
-    </ItemGroup>
-
-    <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
+  <ItemGroup>
+    <FlatSharpSchema Include="Benchmark.fbs" />
+  </ItemGroup>
 </Project>

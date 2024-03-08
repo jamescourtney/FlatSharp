@@ -9,7 +9,7 @@
     <DeploymentEnabled>false</DeploymentEnabled>
     <NoWarn>$(NoWarn);CA2255</NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Condition=" '$(CoverageBuild)' == 'true' ">
       <PrivateAssets>all</PrivateAssets>

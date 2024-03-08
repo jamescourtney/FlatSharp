@@ -1,39 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
-        <DelaySign>false</DelaySign>
-        <SignAssembly>false</SignAssembly>
-        <Nullable>enable</Nullable>
-        <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE;VECTOR_VISITORS</DefineConstants>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
-        <FlatSharpPoolable>false</FlatSharpPoolable>
-        <FlatSharpNullable>false</FlatSharpNullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>false</SignAssembly>
+    <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);PUBLIC_IVTABLE;VECTOR_VISITORS</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <FlatSharpPoolable>false</FlatSharpPoolable>
+    <FlatSharpNullable>false</FlatSharpNullable>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
+  </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
-        <DefineConstants>$(DefineConstants);POOLABLE</DefineConstants>
-    </PropertyGroup>
+  <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
+    <DefineConstants>$(DefineConstants);POOLABLE</DefineConstants>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
-        <PackageReference Include="Grpc" />
-        <PackageReference Include="System.IO.FileSystem.Primitives" />
-        <PackageReference Include="System.Runtime.InteropServices" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+    <PackageReference Include="Grpc" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" />
+    <PackageReference Include="System.Runtime.InteropServices" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
-        <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-        <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
-    </ItemGroup>
-    
-    <ItemGroup>
-        <FlatSharpSchema Include="..\Microbench.fbs" />
-        <None Include="..\Microbench.fbs" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
 
-    <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
+  <ItemGroup>
+    <FlatSharpSchema Include="..\Microbench.fbs" />
+    <None Include="..\Microbench.fbs" />
+  </ItemGroup>
 </Project>
