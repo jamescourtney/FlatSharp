@@ -17,13 +17,32 @@
 // 1 array of 3 elements, each element: 1 string, 3 nested objects, 9 scalars
 // root element has the array, additional string and a short
 
-namespace Benchmark.FBBench.GFB;
+attribute "fs_valueStruct";
+attribute "fs_serializer";
+attribute "fs_vector";
+attribute "fs_sortedVector";
+
+namespace Benchmark.FBBench.FS;
+
+struct FooValue (fs_valueStruct) {
+  id:ulong;
+  count:short;
+  prefix:byte;
+  length:uint;
+}
 
 struct Foo {
   id:ulong;
   count:short;
   prefix:byte;
   length:uint;
+}
+
+struct BarValue (fs_valueStruct) {
+  parent:FooValue;
+  time:int;
+  ratio:float;
+  size:ushort;
 }
 
 struct Bar {
@@ -33,6 +52,14 @@ struct Bar {
   size:ushort;
 }
 
+
+table FooBarValue {
+  sibling:BarValue  (required);
+  name:string;
+  rating:double;
+  postfix:ubyte;
+}
+
 table FooBar {
   sibling:Bar;
   name:string;
@@ -40,16 +67,26 @@ table FooBar {
   postfix:ubyte;
 }
 
-table FooBarContainer {
+table FooBarContainerValue (fs_serializer) {
+  list:[FooBarValue];  // 3 copies of the above
+  initialized:bool;
+  fruit:short;
+  location:string;
+}
+
+table FooBarContainer (fs_serializer) {
   list:[FooBar];  // 3 copies of the above
   initialized:bool;
   fruit:short;
   location:string;
 }
 
-table SortedVectorContainer {
-    StringVector:[SortedVectorStringKey];
-    IntVector:[SortedVectorIntKey];
+table SortedVectorContainer (fs_serializer) {
+    SortedStrings : [ SortedVectorStringKey ] (fs_sortedVector);
+    UnsortedStrings : [ SortedVectorStringKey ];
+
+    SortedInts : [ SortedVectorIntKey ] (fs_sortedVector);
+    UnsortedInts : [ SortedVectorIntKey ];
 }
 
 table SortedVectorStringKey { Key:string (key); }

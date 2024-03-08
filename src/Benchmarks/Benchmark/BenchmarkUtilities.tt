@@ -1,0 +1,155 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+<#
+    (
+        string ns, 
+        string containerName, 
+        string fooBarName, 
+        string fooName, 
+        string barName,
+        bool genPrepare
+    )[] rootTypes = new[] 
+    { 
+
+        ("Benchmark.FBBench.FS", "FooBarContainer", "FooBar", "Foo", "Bar", true),
+        ("Benchmark.FBBench.FS", "FooBarContainerValue", "FooBarValue", "FooValue", "BarValue", true),
+        ("Benchmark.FBBench.ReflectionBased","FooBarListContainer", "FooBar", "Foo", "Bar", true),
+        ("Benchmark.FBBench.GFB", "FooBarContainerT", "FooBarT", "FooT", "BarT", true),
+        ("Benchmark.FBBench.PB", "FooBarContainer", "FooBar", "Foo", "Bar", false)
+    };
+#>
+
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+public static partial class BenchmarkUtilities
+{
+    <# foreach (var rootType in rootTypes) 
+    { 
+        string containerFull = $"{rootType.ns}.{rootType.containerName}";
+        string fooBarFull = $"{rootType.ns}.{rootType.fooBarName}";
+        string barFull = $"{rootType.ns}.{rootType.barName}";
+        string fooFull = $"{rootType.ns}.{rootType.fooName}";
+    #>
+
+    <# if (rootType.genPrepare) { #>
+
+    public static void Prepare(int length, out <#= containerFull #> container)
+    {
+        var foobars = new List<<#= fooBarFull #>>();
+        for (int i = 0; i < length; ++i)
+        {
+            var foo = new <#= fooFull #>
+            {
+                Id = 0xABADCAFEABADCAFE + (ulong)i,
+                Count = (short)(10000 + i),
+                Prefix = (sbyte)('@' + i),
+                Length = (uint)(1000000 + i)
+            };
+
+            
+            var bar = new <#= barFull #>
+            {
+                Parent = foo,
+                Ratio = 3.14159f + i,
+                Size = (ushort)(10000 + i),
+                Time = 123456 + i
+            };
+
+            
+            var fooBar = new <#= fooBarFull #>
+            {
+                Name = System.Guid.NewGuid().ToString(),
+                Postfix = (byte)('!' + i),
+                Rating = 3.1415432432445543543 + i,
+                Sibling = bar,
+            };
+
+            foobars.Add(fooBar);
+        }
+
+        container = new <#= containerFull #>
+        {
+            Fruit = 123,
+            Initialized = true,
+            Location = "http://google.com/flatbuffers/",
+            List = foobars,
+        };
+    }
+
+    <# } #>
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int TraverseFooBarContainer(<#= containerFull #> foobar, int iterations)
+    {
+        int sum = 0;
+
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
+
+            var list = foobar.List;
+            int count = list.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = list[i]; 
+                sum += item.Name.Length;
+                sum += (int)item.Postfix;
+                sum += (int)item.Rating;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+                sum += (int)bar.Size;
+                sum += bar.Time;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+                sum += (int)parent.Id;
+                sum += (int)parent.Length;
+                sum += parent.Prefix;
+            }
+        }
+
+        return sum;
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int TraverseFooBarContainerPartial(<#= containerFull #> foobar, int iterations)
+    {
+        int sum = 0;
+
+        for (int loop = 0; loop < iterations; ++loop)
+        {
+            sum += foobar.Initialized ? 1 : 0;
+            sum += foobar.Location.Length;
+            sum += foobar.Fruit;
+
+            var list = foobar.List;
+            int count = list.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                var item = list[i];
+                sum += item.Name.Length;
+
+                var bar = item.Sibling;
+                sum += (int)bar.Ratio;
+
+                var parent = bar.Parent;
+                sum += parent.Count;
+            }
+        }
+
+        return sum;
+    }
+
+    <# } #>
+}

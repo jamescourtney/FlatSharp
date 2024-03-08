@@ -17,7 +17,7 @@
 namespace Benchmark.FBBench
 {
     using BenchmarkDotNet.Attributes;
-    using FlatSharp;
+    using global::FlatSharp;
     using System;
 
     public class FBDeserializeBench : FBBenchCore

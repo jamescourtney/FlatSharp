@@ -1,30 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
     <DefineConstants>$(DefineContants);FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Include="../Benchmark/*.cs" />
-        <Compile Include="../Benchmark/FBBench/*.cs" />
-        <Compile Include="../Benchmark/Internal/*.cs" />
-    </ItemGroup>
+  <PropertyGroup Condition=" '$(BuildAot)' == 'true' ">
+    <DefineConstants>$(DefineConstants);AOT</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+    <Compile Include="../Benchmark/*.cs" />
+    <Compile Include="../Benchmark/FBBench/*.cs" />
+    <Compile Include="../Benchmark/Internal/*.cs" />
+    <Compile Include="../Benchmark/Serializers/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(BuildAot)' != 'true' ">
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="protobuf-net" />
-    <PackageReference Include="FlatSharp" VersionOverride="7.4.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+    <PackageReference Include="FlatSharp.Compiler" VersionOverride="7.4.0" />
     <PackageReference Include="FlatSharp.Runtime" VersionOverride="7.4.0" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
+    <FlatSharpSchema Include="../Benchmark/FBBench/FlatSharp.fbs" />
+    <Protobuf Include="../Benchmark/FBBench/Benchmark.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../Google.FlatBuffers/Google.FlatBuffers.csproj" />
   </ItemGroup>
 
 </Project>

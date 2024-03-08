@@ -18,7 +18,7 @@ namespace Benchmark
 {
     using System;
     using System.Collections.Generic;
-
+    using Benchmark.FBBench;
     using BenchmarkDotNet.Columns;
     using BenchmarkDotNet.Configs;
     using BenchmarkDotNet.Diagnosers;
@@ -28,6 +28,8 @@ namespace Benchmark
     using BenchmarkDotNet.Loggers;
     using BenchmarkDotNet.Reports;
     using BenchmarkDotNet.Running;
+    using BenchmarkDotNet.Toolchains;
+    using BenchmarkDotNet.Toolchains.NativeAot;
 
     public class Program
     {
@@ -35,13 +37,30 @@ namespace Benchmark
         {
             List<Summary> summaries = new List<Summary>();
 
+#if AOT
+            IToolchain toolChain = NativeAotToolchainBuilder.Create()
+                 .UseNuGet()
+                 .IlcInstructionSet("base,sse,sse2,sse3,ssse3,sse4.1,sse4.2,avx,avx2,aes,bmi,bmi2,fma,lzcnt,pclmul,popcnt")
+                 .TargetFrameworkMoniker("net8.0")
+                 .ToToolchain();
+#endif
+
+
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
                 .WithLaunchCount(7)
                 .WithWarmupCount(3)
                 .WithIterationCount(5)
-                .WithRuntime(CoreRuntime.Core80);
-                //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "0"));
+#if AOT
+                .WithToolchain(toolChain)
+                .WithRuntime(NativeAotRuntime.Net80)
+                .WithArguments(new[] { new MsBuildArgument("/p:BuildAot=true") })
+#else
+                .WithRuntime(CoreRuntime.Core80)
+#endif
+                ;
+
+            // job = job.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "0"));
 
             var config = DefaultConfig.Instance
                  .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
@@ -50,13 +69,9 @@ namespace Benchmark
 
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));
+
 #if RUN_COMPARISON_BENCHMARKS
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
-#endif
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.WriteThroughBench), config));
-#if CURRENT_VERSION_ONLY
-            //summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)
