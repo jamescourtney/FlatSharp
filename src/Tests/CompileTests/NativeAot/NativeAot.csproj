@@ -2,17 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>annotations</Nullable>
     <InvariantGlobalization>true</InvariantGlobalization>
     <LangVersion>11.0</LangVersion>
     <IsPackable>false</IsPackable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net472' ">
-    <PublishAot>true</PublishAot>
-    <StripSymbols>true</StripSymbols>
   </PropertyGroup>
 
   <ItemGroup>

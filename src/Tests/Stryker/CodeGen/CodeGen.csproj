@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
+    <FlatSharpMutationTestingMode>true</FlatSharpMutationTestingMode>
     <AssemblyName>StrykerTestsCodeGen</AssemblyName>
     <RootNamespace>FlatSharpStrykerTests</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -11,6 +13,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FlatSharpSchema Include="Schema.fbs" />
   </ItemGroup>
 
 </Project>

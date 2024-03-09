@@ -1,33 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
 
-    <Choose>
-        <When Condition=" '$(MSBuildVersion.Substring(0,2))' >= 16 Or
+  <Choose>
+    <When Condition=" '$(MSBuildVersion.Substring(0,2))' >= 16 Or
                          ('$(MSBuildVersion.Substring(0,2))' == 15 And '$(MSBuildVersion.Substring(3,1))' >= 8) ">
-            <PropertyGroup>
-                <TaskFactory>RoslynCodeTaskFactory</TaskFactory>
-            </PropertyGroup>
-        </When>
-        <Otherwise>
-            <PropertyGroup>
-                <TaskFactory>CodeTaskFactory</TaskFactory>
-            </PropertyGroup>
-        </Otherwise>
-    </Choose>
+      <PropertyGroup>
+        <TaskFactory>RoslynCodeTaskFactory</TaskFactory>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <TaskFactory>CodeTaskFactory</TaskFactory>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
-    <!-- Task to process the FlatSharpSchema:
+  <!-- Task to process the FlatSharpSchema:
        - Filters out duplicate files.
        - Transforms the 'IncludePath' metadata property to absolute paths (semi-colon separated). -->
-    <UsingTask TaskName="ProcessFlatSharpSchema" TaskFactory="$(TaskFactory)" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-        <ParameterGroup>
-            <Inputs ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-            <IncludeDirectories ParameterType="System.String" Output="true" />
-        </ParameterGroup>
-        <Task>
-            <Using Namespace="System" />
-            <Using Namespace="System.IO" />
-            <Code Type="Fragment" Language="cs">
-                <![CDATA[
+  <UsingTask TaskName="ProcessFlatSharpSchema" TaskFactory="$(TaskFactory)" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Inputs ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <IncludeDirectories ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
                 IncludeDirectories = string.Empty;
                 if (Inputs == null || Inputs.Length == 0)
                 {
@@ -79,90 +79,99 @@
                 {
                 }
 ]]>
-            </Code>
-        </Task>
-    </UsingTask>
+      </Code>
+    </Task>
+  </UsingTask>
 
-    <!-- Tell Visual Studio that fbs files can result in build changes. 
+  <!-- Tell Visual Studio that fbs files can result in build changes. 
        https://github.com/dotnet/project-system/blob/cd275918ef9f181f6efab96715a91db7aabec832/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(FlatSharpSchema)" />
+  </ItemGroup>
+
+  <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences" Condition=" '@(FlatSharpSchema)' != '' ">
+    <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
+      <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
+    </ProcessFlatSharpSchema>
+
+    <!-- Query the installed SDKs. -->
+    <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="false">
+      <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
+    </Exec>
+
+    <PropertyGroup>
+      <CompilerVersion>net8.0</CompilerVersion>
+    </PropertyGroup>
+
+    <!-- try .net6.0. -->
+    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
+      <CompilerVersion>net6.0</CompilerVersion>
+    </PropertyGroup>
+
+    <!-- try .net7.0. -->
+    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
+      <CompilerVersion>net7.0</CompilerVersion>
+    </PropertyGroup>
+
+    <!-- try .net8.0. -->
+    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+')) ">
+      <CompilerVersion>net8.0</CompilerVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
+      <FlatSharpOutput Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">$(MSBuildProjectDirectory)</FlatSharpOutput>
+    </PropertyGroup>
+
+    <!-- find compiler and set base command -->
+    <PropertyGroup>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\$(CompilerVersion)\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
+      <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(FlatSharpOutput)</CompilerCommand>
+    </PropertyGroup>
+
+    <!-- Initialize FlatSharpNullable if not set -->
+    <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
+      <FlatSharpNullable>false</FlatSharpNullable>
+      <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
+    </PropertyGroup>
+
+    <!-- Append nullability to command line -->
+    <PropertyGroup>
+      <CompilerCommand>$(CompilerCommand) --nullable-warnings $(FlatSharpNullable)</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
+      <CompilerCommand>$(CompilerCommand) --gen-poolable</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpDeserializers)' != '' ">
+      <CompilerCommand>$(CompilerCommand) --deserializers &quot;$(FlatSharpDeserializers)&quot;</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' != '' ">
+      <CompilerCommand>$(CompilerCommand) --normalize-field-names $(FlatSharpNameNormalization)</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpClassDefinitionsOnly)' == 'true' ">
+      <CompilerCommand>$(CompilerCommand) --class-definitions-only</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpInputFilesOnly)' == 'true' ">
+      <CompilerCommand>$(CompilerCommand) --input-files-only</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">
+      <CompilerCommand>$(CompilerCommand) --mutation-testing-mode</CompilerCommand>
+    </PropertyGroup>
+
+    <Message Text="$(CompilerCommand)" Importance="high" />
+    <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
+
     <ItemGroup>
-        <UpToDateCheckInput Include="@(FlatSharpSchema)" />
+      <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
+      <Compile Include="@(GeneratedFbs)" />
+      <FileWrites Include="@(GeneratedFbs)" />
     </ItemGroup>
-
-    <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences" Condition=" '@(FlatSharpSchema)' != '' ">
-        <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
-            <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
-        </ProcessFlatSharpSchema>
-
-        <!-- Query the installed SDKs. -->
-        <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="false">
-            <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
-        </Exec>
-        
-        <PropertyGroup>
-            <CompilerVersion>net8.0</CompilerVersion>
-        </PropertyGroup>
-
-        <!-- try .net6.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
-            <CompilerVersion>net6.0</CompilerVersion>
-        </PropertyGroup>
-
-        <!-- try .net7.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
-            <CompilerVersion>net7.0</CompilerVersion>
-        </PropertyGroup>
-        
-        <!-- try .net8.0. -->
-        <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+')) ">
-            <CompilerVersion>net8.0</CompilerVersion>
-        </PropertyGroup>
-        
-        <!-- find compiler and set base command -->
-        <PropertyGroup>
-            <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\$(CompilerVersion)\FlatSharp.Compiler.dll'))</CompilerPath>
-            <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
-            <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)</CompilerCommand>
-        </PropertyGroup>
-
-        <!-- Initialize FlatSharpNullable if not set -->
-        <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
-            <FlatSharpNullable>false</FlatSharpNullable>
-            <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
-        </PropertyGroup>
-
-        <!-- Append nullability to command line -->
-        <PropertyGroup>
-            <CompilerCommand>$(CompilerCommand) --nullable-warnings $(FlatSharpNullable)</CompilerCommand>
-        </PropertyGroup>
-
-        <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
-            <CompilerCommand>$(CompilerCommand) --gen-poolable</CompilerCommand>
-        </PropertyGroup>
-
-        <PropertyGroup Condition=" '$(FlatSharpDeserializers)' != '' ">
-            <CompilerCommand>$(CompilerCommand) --deserializers &quot;$(FlatSharpDeserializers)&quot;</CompilerCommand>
-        </PropertyGroup>
-
-        <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' != '' ">
-            <CompilerCommand>$(CompilerCommand) --normalize-field-names $(FlatSharpNameNormalization)</CompilerCommand>
-        </PropertyGroup>
-
-        <PropertyGroup Condition=" '$(FlatSharpClassDefinitionsOnly)' == 'true' ">
-            <CompilerCommand>$(CompilerCommand) --class-definitions-only</CompilerCommand>
-        </PropertyGroup>
-
-        <PropertyGroup Condition=" '$(FlatSharpInputFilesOnly)' == 'true' ">
-            <CompilerCommand>$(CompilerCommand) --input-files-only</CompilerCommand>
-        </PropertyGroup>
-
-        <Message Text="$(CompilerCommand)" Importance="high" />
-        <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
-
-        <ItemGroup>
-            <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
-            <Compile Include="@(GeneratedFbs)" />
-            <FileWrites Include="@(GeneratedFbs)" />
-        </ItemGroup>
-    </Target>
+  </Target>
 </Project>
