@@ -40,23 +40,13 @@ jobs:
       working-directory: src
       run: dotnet restore
       
-    - name: Build FlatSharp.Compiler
-      working-directory: src/FlatSharp.Compiler
-      run: dotnet build -c Release
-      
-    - name: Run FlatSharp.Compiler
-      # You may pin to the exact commit or the version.
-      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
-      uses: Amadevus/pwsh-script@v2.0.3
-      with:
-        # PowerShell script to execute in Actions-hydrated context
-        script: |
-          $fbs = (gci -r src/Tests/CompileTests/NativeAot/*.fbs) -join ";"
-          dotnet src/FlatSharp.Compiler/bin/Release/net8.0/FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input "$fbs" -o src/Tests/CompileTests/NativeAot
-          
     - name: Build
       working-directory: src/Tests/CompileTests/NativeAot
       run: dotnet build -c Release
+      
+    - name: Run (No AOT)
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
+      run: mono NativeAot.exe
       
     - name: AOT Exes
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
@@ -65,10 +55,6 @@ jobs:
     - name: AOT DLLs
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono -O=all --aot=full *.dll
-
-    - name: Run (No AOT)
-      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
-      run: mono NativeAot.exe
 
     - name: Run (AOT)
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
