@@ -4,48 +4,16 @@
     <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
   </PropertyGroup>
 
-  <UsingTask
-    TaskName="BuildUnderLock"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
-    <ParameterGroup>
-      <CompilerPath ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System"/>
-      <Using Namespace="System.IO"/>
-      <Using Namespace="System.Threading"/>
-      <Code Type="Fragment" Language="cs">
-      <![CDATA[
-
-	BuildEngine9.Yield();
-	using (Mutex mutex = new Mutex(false, "FlatSharpCompilationMutex"))
-	{
-		while (true)
-		{
-			if (mutex.WaitOne(TimeSpan.FromMilliseconds(50)))
-			{
-				try
-				{
-					BuildEngine9.Reacquire();
-					Success = BuildEngine9.BuildProjectFile(CompilerPath, null, new Dictionary<string, string> { { "Configuration", "Release" }, { "TargetFramework", "net8.0" } }, null, null);
-					break;
-				}
-				finally
-				{
-					mutex.ReleaseMutex();
-				}
-			}
-		}
-	}
-      ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
-  <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile" Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
-    <BuildUnderLock CompilerPath="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.csproj" />
-  </Target>
+  <ItemGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.csproj">
+      <Private>false</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <GlobalPropertiesToRemove>RuntimeIdentifier</GlobalPropertiesToRemove>
+      <SetConfiguration>Configuration=Release</SetConfiguration>
+      <AdditionalProperties>Configuration=Release</AdditionalProperties>
+      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
+    </ProjectReference>
+  </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.targets" Condition=" '$(NeedsFlatSharpCompiler)' == 'true' "/>
 </Project>
