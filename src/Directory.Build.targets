@@ -20,7 +20,7 @@
       
         using (Mutex mutex = new Mutex(false, "FlatSharpCompilationMutex"))
         {
-          if (mutex.WaitOne(TimeSpan.FromSeconds(30)))
+          if (mutex.WaitOne(TimeSpan.FromSeconds(300)))
           {
             try
             {
@@ -37,8 +37,6 @@
             Success = false;
           }
         }
-        
-        
       ]]>
       </Code>
     </Task>
