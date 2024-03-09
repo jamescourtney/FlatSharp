@@ -58,6 +58,10 @@ jobs:
       working-directory: src/Tests/CompileTests/NativeAot
       run: dotnet build -c Release
       
+    - name: Run (No AOT)
+      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
+      run: mono NativeAot.exe
+      
     - name: AOT Exes
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono -O=all --aot=full *.exe
@@ -65,10 +69,6 @@ jobs:
     - name: AOT DLLs
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono -O=all --aot=full *.dll
-
-    - name: Run (No AOT)
-      working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
-      run: mono NativeAot.exe
 
     - name: Run (AOT)
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
