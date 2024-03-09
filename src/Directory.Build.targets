@@ -17,26 +17,27 @@
       <Using Namespace="System.Threading"/>
       <Code Type="Fragment" Language="cs">
       <![CDATA[
-      
-        using (Mutex mutex = new Mutex(false, "FlatSharpCompilationMutex"))
-        {
-          if (mutex.WaitOne(TimeSpan.FromSeconds(300)))
-          {
-            try
-            {
-              Success = BuildEngine9.BuildProjectFile(CompilerPath, null, new Dictionary<string, string> { { "Configuration", "Release" }, { "TargetFramework", "net8.0" } }, null, null);
-            }
-            finally
-            {
-              mutex.ReleaseMutex();
-            }
-          }
-          else
-          {
-            Log.LogError("Unable to acquire FlatSharp.Compiler mutex");
-            Success = false;
-          }
-        }
+
+	BuildEngine9.Yield();
+	using (Mutex mutex = new Mutex(false, "FlatSharpCompilationMutex"))
+	{
+		while (true)
+		{
+			if (mutex.WaitOne(TimeSpan.FromMilliseconds(50)))
+			{
+				try
+				{
+					BuildEngine9.Reacquire();
+					Success = BuildEngine9.BuildProjectFile(CompilerPath, null, new Dictionary<string, string> { { "Configuration", "Release" }, { "TargetFramework", "net8.0" } }, null, null);
+					break;
+				}
+				finally
+				{
+					mutex.ReleaseMutex();
+				}
+			}
+		}
+	}
       ]]>
       </Code>
     </Task>
