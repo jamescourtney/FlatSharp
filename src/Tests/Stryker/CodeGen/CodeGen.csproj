@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <Compile Remove="FlatSharp.cs" />
   </ItemGroup>
 
   <ItemGroup>

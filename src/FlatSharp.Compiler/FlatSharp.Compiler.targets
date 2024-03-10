@@ -120,7 +120,7 @@
 
     <PropertyGroup>
       <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
-      <FlatSharpOutput Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">$(MSBuildProjectDirectory)</FlatSharpOutput>
+      <FlatSharpOutput Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">$(MSBuildProjectDirectory)/</FlatSharpOutput>
     </PropertyGroup>
 
     <!-- find compiler and set base command -->
@@ -169,7 +169,7 @@
     <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
 
     <ItemGroup>
-      <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
+      <GeneratedFbs Include="$([MSBuild]::EnsureTrailingSlash('$(FlatSharpOutput)'))FlatSharp*.cs" />
       <Compile Include="@(GeneratedFbs)" />
       <FileWrites Include="@(GeneratedFbs)" />
     </ItemGroup>
