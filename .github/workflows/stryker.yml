@@ -22,13 +22,14 @@ jobs:
         
     - name: Install Stryker
       run: dotnet tool install -g dotnet-stryker
+      
     - name: Build
       working-directory: src/Tests/Stryker/Tests
-      run: dotnet build -c Release
+      run: dotnet build -c Debug
       
     - name: Test
       working-directory: src/Tests/Stryker/Tests
-      run: dotnet test -c Release
+      run: dotnet test -c Debug
       
     - name: Mutate
       working-directory: src/Tests/Stryker/Tests
