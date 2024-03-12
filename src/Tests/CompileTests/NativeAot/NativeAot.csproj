@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
     <OutputType>Exe</OutputType>
     <TargetFramework>net472</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <FlatSharpSchema Include="Schema.fbs" />
   </ItemGroup>
 
 </Project>
