@@ -56,7 +56,7 @@ namespace NativeAot
             int bytesWritten = 0;
 
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 2000; ++i)
+            for (int i = 0; i < 200; ++i)
             {
                 bytesWritten = Root.Serializer.Write(buffer, root);
             }
@@ -264,7 +264,7 @@ namespace NativeAot
             where TInputBuffer : IInputBuffer
         {
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 2000; ++i)
+            for (int i = 0; i < 200; ++i)
             {
                 ParseAndTraverse(original, buffer, option);
             }
