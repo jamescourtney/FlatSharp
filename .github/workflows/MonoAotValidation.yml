@@ -25,17 +25,11 @@ jobs:
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 8.0.200
+        dotnet-version: 8.0.x
 
     - name: Install Mono
       run: sudo apt install mono-complete
 
-    - name: AOT Compile mscorlib
-      run: sudo mono -O=all --aot=full /usr/lib/mono/4.5/mscorlib.dll
-
-    - name: AOT Compile Other Libs
-      run: for i in /usr/lib/mono/gac/*/*/*.dll; do sudo mono -O=all --aot=full $i; done
-        
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
@@ -48,6 +42,12 @@ jobs:
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono NativeAot.exe
       
+    - name: AOT Compile mscorlib
+      run: sudo mono -O=all --aot=full /usr/lib/mono/4.5/mscorlib.dll
+
+    - name: AOT Compile Other Libs
+      run: for i in /usr/lib/mono/gac/*/*/*.dll; do sudo mono -O=all --aot=full $i; done
+        
     - name: AOT Exes
       working-directory: src/Tests/CompileTests/NativeAot/bin/Release/net472
       run: mono -O=all --aot=full *.exe
