@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
+    <FlatSharpCompilerPath>$(MSBuildThisFileDirectory)FlatSharp.Compiler/bin/$(Configuration)/net8.0/FlatSharp.Compiler.dll</FlatSharpCompilerPath>
+    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.csproj">
+      <Private>false</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <GlobalPropertiesToRemove>RuntimeIdentifier</GlobalPropertiesToRemove>
+      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)FlatSharp.Compiler/FlatSharp.Compiler.targets" Condition=" '$(NeedsFlatSharpCompiler)' == 'true' "/>
+</Project>

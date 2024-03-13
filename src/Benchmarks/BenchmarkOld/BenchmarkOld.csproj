@@ -23,7 +23,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="protobuf-net" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />

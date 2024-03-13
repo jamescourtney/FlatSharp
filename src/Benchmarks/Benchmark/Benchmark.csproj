@@ -5,9 +5,8 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
     <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;RUN_COMPARISON_BENCHMARKS;FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
-    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\Release\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
-    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAot)' == 'true' ">
@@ -56,11 +55,4 @@
     <FlatSharpSchema Include="FBBench/FlatSharp.fbs" />
     <Protobuf Include="FBBench/Benchmark.proto" />
   </ItemGroup>
-
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
-
-  <Target Name="BuildCompiler" BeforeTargets="FlatSharpFbsCompile">
-    <MSBuild Projects="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Properties="Configuration=Release;TargetFramework=net8.0" />
-  </Target>
-
 </Project>

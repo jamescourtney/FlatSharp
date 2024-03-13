@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
     <TargetFrameworks>net472;netstandard2.0;netstandard2.1</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>CSharp8CompileTest</AssemblyName>
@@ -15,6 +16,13 @@
     <PackageReference Include="Grpc.Core.Api" />
     <PackageReference Include="Microsoft.CSharp" />
     <PackageReference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FlatSharpSchema Include="../../FlatSharpEndToEndTests/**/*.fbs" />
+    
+    <!-- IsExternalInit not compatible with downstream languages. -->
+    <FlatSharpSchema Remove="../../FlatSharpEndToEndTests/**/AccessModifiers.fbs" />
   </ItemGroup>
 
   <ItemGroup>

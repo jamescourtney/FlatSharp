@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
     <PipelineBuild>false</PipelineBuild>
     <PipelineBuild Condition=" '$(AppVeyorBuild)' == 'true' or '$(CoverageBuild)' == 'true' ">true</PipelineBuild>
     <TargetFrameworks>net7.0;net6.0;net8.0</TargetFrameworks>
@@ -12,8 +13,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>annotations</Nullable>
     <NoWarn>CS1591</NoWarn>
-    <FlatSharpCompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\FlatSharp.Compiler\bin\$(Configuration)\net8.0\FlatSharp.Compiler.dll'))</FlatSharpCompilerPath>
-    <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
     <FlatSharpPoolable>true</FlatSharpPoolable>
   </PropertyGroup>
   
@@ -38,17 +37,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp.UnityPolyfills\FlatSharp.UnityPolyfills.csproj" />
-    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" Condition=" '$(PipelineBuild)' != 'true' " />
     <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
   </ItemGroup>
-    
-  <Import Project="..\..\FlatSharp.Compiler\FlatSharp.Compiler.targets" Condition=" '$(PipelineBuild)' != 'true' " />
 </Project>
 
