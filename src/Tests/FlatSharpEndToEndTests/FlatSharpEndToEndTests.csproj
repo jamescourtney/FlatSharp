@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
-    <PipelineBuild>false</PipelineBuild>
-    <PipelineBuild Condition=" '$(AppVeyorBuild)' == 'true' or '$(CoverageBuild)' == 'true'">true</PipelineBuild>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(PipelineBuild)' == 'true' and '$([MSBuild]::IsOSUnixLike())' != 'true' ">net472;net6.0;net7.0;net8.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(PipelineBuild)' == 'true' and '$([MSBuild]::IsOSUnixLike())' == 'true' ">net6.0;net7.0;net8.0</TargetFrameworks>

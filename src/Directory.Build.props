@@ -7,6 +7,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS8032</NoWarn>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <PipelineBuild>false</PipelineBuild>
+    <PipelineBuild Condition=" '$(AppVeyorBuild)' == 'true' or '$(CoverageBuild)' == 'true'">true</PipelineBuild>
+    <IsPackable>false</IsPackable>
+    <IsPackable Condition=" '$(PipelineBuild)' == 'true' ">true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(SignAssembly)' != 'false' ">
