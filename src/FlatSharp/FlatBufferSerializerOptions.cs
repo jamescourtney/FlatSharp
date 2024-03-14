@@ -87,4 +87,9 @@ public record class FlatBufferSerializerOptions
     /// is not wholly sufficient to enable them.
     /// </summary>
     public bool EnableValueStructMemoryMarshalDeserialization { get; set; } = true;
+
+    /// <summary>
+    /// Prefer 'file' visibility over 'internal'.
+    /// </summary>
+    public bool EnableFileVisibility { get; set; }
 }

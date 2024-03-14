@@ -500,7 +500,7 @@ $@"
         string code = $@"
         namespace {resolvedName.@namespace}
         {{
-            internal class {resolvedName.name} : {nameof(IGeneratedSerializer<byte>)}<{rootType.GetGlobalCompilableTypeName()}>
+            {(this.options.EnableFileVisibility ? "file" : "internal")} class {resolvedName.name} : {nameof(IGeneratedSerializer<byte>)}<{rootType.GetGlobalCompilableTypeName()}>
             {{    
                 // Method generated to help AOT compilers make good decisions about generics.
                 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -650,7 +650,7 @@ $@"
                 // Ensures that extension methods, etc are available.
                 using {typeModel.ClrType.Namespace};
 
-                internal static class {name}
+                {(this.options.EnableFileVisibility ? "file" : "internal")} static class {name}
                 {{
                     {string.Join("\r\n", methods)}
                 }}

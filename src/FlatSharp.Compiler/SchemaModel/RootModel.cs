@@ -165,7 +165,7 @@ public class RootModel
 
     private static void WriteHelperClass(Type type, CompileContext context, CodeWriter writer)
     {
-        var options = new FlatBufferSerializerOptions();
+        var options = new FlatBufferSerializerOptions { EnableFileVisibility = context.Options.FileVisibility };
         var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
         string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), context.Options.Deserializers);
 

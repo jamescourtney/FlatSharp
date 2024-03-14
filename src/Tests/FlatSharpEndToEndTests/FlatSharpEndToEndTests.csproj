@@ -14,6 +14,7 @@
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
+    <FlatSharpFileVisibility>true</FlatSharpFileVisibility>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAot)' == 'true' ">

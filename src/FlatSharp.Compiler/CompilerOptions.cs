@@ -38,6 +38,9 @@ public record CompilerOptions
     [Option("nullable-warnings", Default = false, HelpText = "Emit full nullable annotations and enable warnings.")]
     public bool? NullableWarnings { get; set; }
 
+    [Option("file-visibility", Default = false, HelpText = "Use file visibility for FlatSharp-generated types. Requires C# 11 or later.")]
+    public bool FileVisibility { get; set; }
+
     [Option("gen-poolable", Hidden = false, Default = false, HelpText = "EXPERIMENTAL: Generate extra code to enable object pooling for allocation reductions.")]
     public bool GeneratePoolableObjects { get; set; }
 
