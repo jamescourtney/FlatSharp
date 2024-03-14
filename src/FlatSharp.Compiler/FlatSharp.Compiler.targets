@@ -165,6 +165,10 @@
       <CompilerCommand>$(CompilerCommand) --mutation-testing-mode</CompilerCommand>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(FlatSharpFileVisibility)' == 'true' ">
+      <CompilerCommand>$(CompilerCommand) --file-visibility</CompilerCommand>
+    </PropertyGroup>
+
     <Message Text="$(CompilerCommand)" Importance="high" />
     <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
 

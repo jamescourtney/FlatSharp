@@ -59,7 +59,9 @@ internal static class CloneMethodsGenerator
         writer.AppendLine($"namespace {@namespace}");
         using (writer.WithBlock())
         {
-            writer.AppendLine($"internal static class {className}");
+            string visibility = options.FileVisibility ? "file" : "internal";
+
+            writer.AppendLine($"{visibility} static class {className}");
             using (writer.WithBlock())
             {
                 foreach (var seenType in seenTypes)
