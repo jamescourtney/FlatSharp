@@ -126,24 +126,26 @@ Serialization benchmarks are not reflective of "real-world" performance, because
 #### Serialization
 This data shows the mean time it takes to serialize a typical message containing a 30-item vector containing a variety of data types:
 
-| Library                         | Time     | Relative Performance | Data Size |
-|---------------------------------|----------|----------------------|-----------|
-| FlatSharp                       | 806 ns   | 100%                 | 3085      |
-| Message Pack C#                 | 2,007    | 249%                 | 2497      |
-| Google Flatbuffers              | 2,712    | 336%                 | 3312      |
-| Google Flatbuffers (Object API) | 2,739    | 340%                 | 3312      |
-| Protobuf.NET                    | 5,714    | 709%                 | 2646      |
+| Library            | Time (JIT) | Time (NativeAOT) | Data Size |
+|--------------------|------------|------------------|-----------|
+| FlatSharp          |     732 ns |           809 ns |      3085 |
+| Message Pack C#    |      1,998 |              N/A |      2497 |
+| Google FlatBuffers |      2,544 |            4,324 |      3312 |
+| Protobuf           |      2,688 |            3,092 |      2646 |
+| Protobuf.NET       |      5,038 |              N/A |      2646 |
 
 #### Deserialization
 How much time does it take to parse and then fully enumerate the message from the serialization benchmark?
-| Library                         | Time     | Relative Performance |
-|---------------------------------|----------|----------------------|
-| FlatSharp (Lazy)                | 1,352 ns | 100%                 |
-| FlatSharp (Greedy)              | 1,603    | 119%                 |
-| Message Pack C#                 | 3,025    | 224%                 |
-| Google Flatbuffers              | 1,865    | 138%                 |
-| Google Flatbuffers (Object API) | 2,793    | 207%                 |
-| Protobuf.NET                    | 6,326    | 468%                 |
+
+| Library                         | Time (JIT) | Time (NativeAOT) |
+|---------------------------------|------------|------------------|
+| FlatSharp (Lazy)                |   1,263 ns |         1,347 ns |
+| FlatSharp (Greedy)              |      1,130 |            2,641 |
+| Message Pack C#                 |      2,777 |              N/A |
+| Google FlatBuffers              |      1,741 |            3,070 |
+| Google FlatBuffers (Object API) |      2,660 |            5,009 |
+| Protobuf                        |      3,289 |            3,575 |
+| Protobuf.NET                    |      5,092 |              N/A |
 
 Finally, FlatSharp scales quite well in scenarios without PGO such as AOT compilation and older runtimes.
 
