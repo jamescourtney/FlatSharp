@@ -1,0 +1,37 @@
+// Declare FlatSharp attributes.
+
+attribute "fs_serializer";
+attribute "fs_valueStruct";
+
+namespace FlatSharpEndToEndTests.ToStringMethods;
+
+
+table MyTable (fs_serializer) {
+    FieldA: string;
+    FieldB: int;
+}
+
+table MyEmptyTable (fs_serializer) {
+}
+
+struct MyStruct {
+    FieldA: int;
+    FieldB: int;
+}
+
+
+struct MyValueStruct (fs_valueStruct) {
+    FieldX: float;
+    FieldY: float;
+}
+
+struct A { V : uint; }
+struct B { V : uint; }
+struct C { V : uint; }
+struct D { V : uint; }
+
+union StructUnion { A, B, C, D }
+
+union TableUnion { MyTable, MyEmptyTable }
+
+union MixedUnion { A, B, MyTable, MyEmptyTable }
