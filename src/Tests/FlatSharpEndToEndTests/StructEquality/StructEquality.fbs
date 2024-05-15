@@ -1,0 +1,12 @@
+attribute "fs_valueStruct";
+
+namespace FlatSharpEndToEndTests.StructEquality;
+
+struct MixedValueStruct (fs_valueStruct) { X : int; Y : float; Z : ushort; }
+
+struct A (fs_valueStruct) { V : uint; }
+struct B (fs_valueStruct) { V : uint; }
+struct C (fs_valueStruct) { V : uint; }
+struct D (fs_valueStruct) { V : uint; }
+
+union StructUnion { A, B, C, D }
