@@ -139,13 +139,15 @@ public class RequiredTests
     [DataRow(nameof(RequiredTable_Setters.None), false)]
     public void Only_Public_Setters_Are_CSharp_Required(string propertyName, bool expectRequired)
     {
-        // Make sure the property is flagged as being required.
         PropertyInfo property = typeof(RequiredTable_Setters).GetProperty(propertyName);
 
+#if NET7_0_OR_GREATER
+        // Make sure the property is flagged as being required.
         Assert.AreEqual(
             expectRequired,
             typeof(RequiredTable_Setters).GetProperty(propertyName).GetCustomAttributes().Any(x => x.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute"));
-        
+#endif
+
         // Now make sure that FlatSharp still throws the error for required property missing even if the C# property is not required.
         RequiredTable_Setters table;
         if (propertyName == nameof(RequiredTable_Setters.None))
@@ -167,7 +169,9 @@ public class RequiredTests
 
 public partial class RequiredTable_Setters
 {
+#if NET7_0_OR_GREATER
     [SetsRequiredMembers]
+#endif
     public RequiredTable_Setters(bool setNone)
     {
         this.Pub = "a";
