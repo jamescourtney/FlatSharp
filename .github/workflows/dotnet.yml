@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2022
             rid: win-x64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             rid: linux-x64
-          - os: macos-latest
+          - os: macos-12
             rid: osx-x64
     runs-on: ${{ matrix.os }}
     env:
