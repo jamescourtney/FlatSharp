@@ -102,6 +102,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
             {
                 this.WriteConstructor(writer, item.resolvedType, item.value, item.propertyType);
                 this.AddUnionMember(writer, item.resolvedType, item.value, item.propertyType, context);
+                this.WriteImplicitOperator(writer, item.resolvedType);
             }
 
             this.WriteDefaultConstructor(writer);
@@ -251,7 +252,16 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
         }
     }
 
-    private void WriteDefaultConstructor(CodeWriter writer)
+    private void WriteImplicitOperator(CodeWriter writer, string resolvedType)
+    {
+        writer.AppendLine($"public static implicit operator {this.Name}({resolvedType} value)");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine($"return new {this.Name}(value);");
+        }
+    }
+
+        private void WriteDefaultConstructor(CodeWriter writer)
     {
         writer.AppendLine($"protected {this.Name}()");
         using (writer.WithBlock())
