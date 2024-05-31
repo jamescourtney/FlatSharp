@@ -52,12 +52,7 @@ public enum SetterKind
     ProtectedInternalInit = 5,
 
     /// <summary>
-    /// A private setter.
-    /// </summary>
-    Private = 6,
-
-    /// <summary>
     /// No setter.
     /// </summary>
-    None = 7,
+    None = 6,
 }

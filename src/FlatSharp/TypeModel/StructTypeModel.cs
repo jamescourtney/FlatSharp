@@ -32,9 +32,11 @@ public class StructTypeModel : RuntimeTypeModel
     private ConstructorInfo? preferredConstructor;
     private MethodInfo? onDeserializeMethod;
     private readonly Guid guid = Guid.NewGuid();
+    private readonly FlatBufferStructAttribute? attribute;
 
     internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
     {
+        this.attribute = clrType.GetCustomAttribute<FlatBufferStructAttribute>();
     }
 
     /// <summary>
@@ -102,10 +104,12 @@ public class StructTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
+        FlatSharpInternal.Assert(this.attribute is not null, "Attribute shouldn't be null");
+
         // We have to implement two items: The table class and the overall "read" method.
         // Let's start with the read method.
         string className = this.GetDeserializedClassName(context.Options.DeserializationOption);
-        DeserializeClassDefinition classDef = DeserializeClassDefinition.Create(
+        DeserializeClassDefinition classDef = new(
             className,
             this.onDeserializeMethod,
             this,
@@ -191,10 +195,7 @@ public class StructTypeModel : RuntimeTypeModel
     {
         base.Validate();
 
-        {
-            FlatBufferStructAttribute? attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-            FlatSharpInternal.Assert(attribute != null, "Missing attribute.");
-        }
+        FlatSharpInternal.Assert(this.attribute is not null, "Missing attribute");
         
         // Reset in case validation is invoked multiple times.
         this.inlineSize = 0;

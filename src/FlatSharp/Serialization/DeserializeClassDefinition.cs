@@ -45,7 +45,7 @@ internal class DeserializeClassDefinition
     protected readonly string vtableAccessor;
     protected readonly string remainingDepthAccessor;
 
-    private DeserializeClassDefinition(
+    public DeserializeClassDefinition(
         string className,
         MethodInfo? onDeserializeMethod,
         ITypeModel typeModel,
@@ -99,16 +99,6 @@ internal class DeserializeClassDefinition
                 this.instanceFieldDefinitions[VTableVariableName] = $"private {this.vtableTypeName} {VTableVariableName};";
             }
         }
-    }
-
-    public static DeserializeClassDefinition Create(
-        string className,
-        MethodInfo? onDeserializeMethod,
-        ITypeModel typeModel,
-        int maxVTableIndex,
-        FlatBufferSerializerOptions options)
-    {
-        return new DeserializeClassDefinition(className, onDeserializeMethod, typeModel, maxVTableIndex, options);
     }
 
     public bool HasEmbeddedBufferReference => !this.options.GreedyDeserialize;
@@ -222,8 +212,11 @@ internal class DeserializeClassDefinition
         }
 
         string required = string.Empty;
-        if (itemModel.IsRequired)
+
+        // Net 6.0 doesn't define this, so leave open the opportunity for users to add their own polyfills.
+        if (itemModel.PropertyInfo.GetCustomAttributes().Any(x => x.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute"))
         {
+            FlatSharpInternal.Assert(itemModel.IsRequired, "Expecting the item to be required");
             required = " required";
         }
 

@@ -128,5 +128,59 @@ public class RequiredTests
         // Finally, make sure something doesn't throw:
         ParseAndUse("__");
     }
+
+    [TestMethod]
+    [DataRow(nameof(RequiredTable_Setters.Pub), true)]
+    [DataRow(nameof(RequiredTable_Setters.PubInit), true)]
+    [DataRow(nameof(RequiredTable_Setters.Prot), false)]
+    [DataRow(nameof(RequiredTable_Setters.ProtectedInit), false)]
+    [DataRow(nameof(RequiredTable_Setters.ProtectedInternal), false)]
+    [DataRow(nameof(RequiredTable_Setters.ProtectedInternalInit), false)]
+    [DataRow(nameof(RequiredTable_Setters.None), false)]
+    public void Only_Public_Setters_Are_CSharp_Required(string propertyName, bool expectRequired)
+    {
+        // Make sure the property is flagged as being required.
+        PropertyInfo property = typeof(RequiredTable_Setters).GetProperty(propertyName);
+
+        Assert.AreEqual(
+            expectRequired,
+            typeof(RequiredTable_Setters).GetProperty(propertyName).GetCustomAttributes().Any(x => x.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute"));
+        
+        // Now make sure that FlatSharp still throws the error for required property missing even if the C# property is not required.
+        RequiredTable_Setters table;
+        if (propertyName == nameof(RequiredTable_Setters.None))
+        {
+            table = new(false);
+        }
+        else
+        {
+            table = new(true);
+
+            // Set to null.
+            property.SetMethod.Invoke(table, new object[] { null });
+        }
+
+        // Serialize and expect error.
+        Assert.ThrowsException<InvalidOperationException>(() => RequiredTable_Setters.Serializer.Write(new byte[1024], table));
+    }
+}
+
+public partial class RequiredTable_Setters
+{
+    [SetsRequiredMembers]
+    public RequiredTable_Setters(bool setNone)
+    {
+        this.Pub = "a";
+        this.PubInit = "b";
+        this.Prot = "c";
+        this.ProtectedInit = "d";
+        this.ProtectedInternal = "e";
+        this.ProtectedInternalInit = "f";
+
+        if (setNone)
+        {
+            this.None = "g";
+        }
+    }
 }
 
