@@ -23,6 +23,9 @@
     
     <!-- IsExternalInit not compatible with downstream languages. -->
     <FlatSharpSchema Remove="../../FlatSharpEndToEndTests/**/AccessModifiers.fbs" />
+
+    <!-- Required not compatible with C# 8. -->
+    <FlatSharpSchema Remove="../../FlatSharpEndToEndTests/**/Required.fbs" />
   </ItemGroup>
 
   <ItemGroup>

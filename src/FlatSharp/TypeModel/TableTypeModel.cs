@@ -669,7 +669,7 @@ $@"
 
         // We have to implement two items: The table class and the overall "read" method.
         // Let's start with the read method.
-        var classDef = DeserializeClassDefinition.Create(className, this.onDeserializeMethod, this, this.MaxIndex, context.Options);
+        var classDef = new DeserializeClassDefinition(className, this.onDeserializeMethod, this, this.MaxIndex, context.Options);
 
         // Build up a list of property overrides.
         foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
