@@ -153,6 +153,10 @@
       <CompilerCommand>$(CompilerCommand) --normalize-field-names $(FlatSharpNameNormalization)</CompilerCommand>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(FlatSharpGenerateMethods)' == 'true' ">
+	    <CompilerCommand>$(CompilerCommand) --generate-methods</CompilerCommand>
+    </PropertyGroup>
+
     <PropertyGroup Condition=" '$(FlatSharpClassDefinitionsOnly)' == 'true' ">
       <CompilerCommand>$(CompilerCommand) --class-definitions-only</CompilerCommand>
     </PropertyGroup>
