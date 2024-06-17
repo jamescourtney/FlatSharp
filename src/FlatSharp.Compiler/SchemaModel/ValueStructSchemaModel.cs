@@ -149,10 +149,13 @@ public class ValueStructSchemaModel : BaseSchemaModel
                 writer.AppendLine();
             }
 
-            // This matches C# records
-            string fieldStrings = string.Join(", ", this.fields.Select(x => $"{x.Name} = {{this.{x.Name}}}"));
-            string fieldStringsWithSpace = this.fields.Count == 0 ? " " : $" {fieldStrings} ";
-            writer.AppendLine($"public override string ToString() => $\"{this.Name} {{{{{fieldStringsWithSpace}}}}}\";");
+            if (context.Options.GenerateMethods)
+            {
+                // This matches C# records
+                string fieldStrings = string.Join(", ", this.fields.Select(x => $"{x.Name} = {{this.{x.Name}}}"));
+                string fieldStringsWithSpace = this.fields.Count == 0 ? " " : $" {fieldStrings} ";
+                writer.AppendLine($"public override string ToString() => $\"{this.Name} {{{{{fieldStringsWithSpace}}}}}\";");
+            }
 
             foreach (var sv in this.structVectors)
             {

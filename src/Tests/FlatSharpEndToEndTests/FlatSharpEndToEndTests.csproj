@@ -56,6 +56,36 @@
 
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
+    <FlatSharpSchema Remove="ToStringMethods/ToStringMethods.fbs" />
   </ItemGroup>
-</Project>
 
+  <Target Name="FlatSharpFbsCompileToString" BeforeTargets="ResolveAssemblyReferences">
+    <PropertyGroup>
+      <CompilerVersion>net8.0</CompilerVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+	  <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
+      <FlatSharpOutput Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">$(MSBuildProjectDirectory)/</FlatSharpOutput>
+      <FlatSharpOutput>$(FlatSharpOutput)ToStringMethods</FlatSharpOutput>
+    </PropertyGroup>
+
+	<MakeDir Directories="$(FlatSharpOutput)" Condition="!Exists('$(FlatSharpOutput)')" />
+
+	<!-- find compiler and set base command -->
+    <PropertyGroup>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\$(CompilerVersion)\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
+      <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;ToStringMethods/ToStringMethods.fbs&quot; --output &quot;$(FlatSharpOutput)&quot; --generate-methods</CompilerCommand>
+    </PropertyGroup>
+
+    <Message Text="$(CompilerCommand)" Importance="high" />
+    <Exec Command="$(CompilerCommand)" CustomErrorRegularExpression=".*" />
+
+    <ItemGroup>
+      <GeneratedFbsToString Include="$([MSBuild]::EnsureTrailingSlash('$(FlatSharpOutput)'))FlatSharp*.cs" />
+      <Compile Include="@(GeneratedFbsToString)" />
+      <FileWrites Include="@(GeneratedFbsToString)" />
+    </ItemGroup>
+  </Target>
+</Project>  

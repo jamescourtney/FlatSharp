@@ -1,0 +1,25 @@
+attribute "fs_serializer";
+attribute "fs_valueStruct";
+
+namespace FlatSharpEndToEndTests.UnionImplicitOperator;
+
+struct A { V : uint; }
+
+table MyTable {
+	Field : string;
+	Value : uint;
+}
+
+struct Vec3 (fs_valueStruct) {
+	X : uint;
+	Y : uint;
+	Z : uint;
+}
+
+table VectorTable {
+	InnerVector : [ string ];
+}
+
+union StructUnion { A, Vec3 }
+
+union TableUnion { MyTable, VectorTable }

@@ -159,7 +159,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             writer.AppendLine();
             writer.AppendLine("public byte Discriminator { get; }");
 
-            if (!generateUnsafeItems)
+            if (!generateUnsafeItems && context.Options.GenerateMethods)
             {
                 string item = this.union.Values.Count == 0 ? " " : $" this.value ";
                 writer.AppendLine($"public override string ToString() => $\"{this.Name} {{{{ {{{item}}} }}}}\";");
@@ -181,6 +181,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                 }
 
                 this.WriteConstructor(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
+                this.WriteImplicitOperator(writer, item.resolvedType);
                 this.WriteUncheckedGetItemMethod(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
 
                 writer.AppendLine();
@@ -367,6 +368,15 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             {
                 writer.AppendLine($"this.value = value;");
             }
+        }
+    }
+
+    private void WriteImplicitOperator(CodeWriter writer, string resolvedType)
+    {
+        writer.AppendLine($"public static implicit operator {this.Name}({resolvedType} value)");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine($"return new {this.Name}(value);");
         }
     }
 }

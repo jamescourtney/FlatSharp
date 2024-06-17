@@ -132,14 +132,15 @@ public record PropertyFieldModel
 
         this.Attributes.EmitAsMetadata(writer);
 
-        string setter = this.Attributes.SetterKind switch
+        SetterKind setterKind = this.Attributes.SetterKind ?? SetterKind.Public;
+
+        string setter = setterKind switch
         {
             SetterKind.PublicInit => "init;",
             SetterKind.Protected => "protected set;",
             SetterKind.ProtectedInternal => "protected internal set;",
             SetterKind.ProtectedInit => "protected init;",
             SetterKind.ProtectedInternalInit => "protected internal init;",
-            SetterKind.Private => "private set;",
             SetterKind.None => string.Empty,
             SetterKind.Public or _ => "set;",
         };
@@ -153,8 +154,11 @@ public record PropertyFieldModel
         }
 
         string property = $"{access} virtual {typeName} {this.FieldName} {{ get; {setter} }}";
-        if (this.Field.Required == true)
+
+        bool isPublicSetter = setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit;
+        if (this.Field.Required == true && isPublicSetter)
         {
+            // Required keyword is tricky with visibility and setters.
             writer.BeginPreprocessorIf(CSharpHelpers.Net7PreprocessorVariable, $"required {property}")
                   .Else(property)
                   .Flush();
