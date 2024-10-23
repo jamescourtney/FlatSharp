@@ -85,6 +85,12 @@ public class FlatSharpCompiler
             Console.Error.WriteLine("FlatSharp compiler: No output directory specified.");
             return -1;
         }
+        
+        // Create the output directory if it doesn't exist.
+        if (!Directory.Exists(options.OutputDirectory))
+        {
+            Directory.CreateDirectory(options.OutputDirectory);
+        }
 
         if (!string.IsNullOrEmpty(options.UnityAssemblyPath) && !File.Exists(options.UnityAssemblyPath))
         {
