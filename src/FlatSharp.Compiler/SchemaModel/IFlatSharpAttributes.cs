@@ -64,7 +64,7 @@ public static class IFlatSharpAttributesExtensions
             string key = pair.Key;
             string? value = pair.Value.Value;
 
-            // Append backslash to escape backslashes and quotes: 
+            // Prepend backslash to escape backslashes and quotes: 
             // \ => \\
             // " => \"
             if (value is not null)
