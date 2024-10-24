@@ -61,7 +61,7 @@ jobs:
       run: mono --full-aot NativeAot.exe
       
     - name: Upload Files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: assembly
         path: src/Tests/CompileTests/NativeAot/bin/**/*.*
