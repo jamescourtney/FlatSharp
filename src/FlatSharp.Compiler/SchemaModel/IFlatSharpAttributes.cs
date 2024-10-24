@@ -61,7 +61,7 @@ public static class IFlatSharpAttributesExtensions
         foreach (var pair in attributes.RawAttributes)
         {
             string key = pair.Key;
-            string? value = pair.Value.Value;
+            string? value = pair.Value.Value?.Replace("\"", "\\\"");
 
             writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.FbsAttribute, \"{key}\", \"{value}\")]");
         }
