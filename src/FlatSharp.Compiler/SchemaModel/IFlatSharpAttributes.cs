@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Text.RegularExpressions;
 using FlatSharp.Attributes;
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -62,6 +63,14 @@ public static class IFlatSharpAttributesExtensions
         {
             string key = pair.Key;
             string? value = pair.Value.Value;
+
+            // Prepend backslash to escape backslashes and quotes: 
+            // \ => \\
+            // " => \"
+            if (value is not null)
+            {
+                value = Regex.Replace(value!, "([\\\\\"])", "\\${1}");
+            }
 
             writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.FbsAttribute, \"{key}\", \"{value}\")]");
         }
