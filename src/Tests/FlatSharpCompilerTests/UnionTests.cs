@@ -110,19 +110,4 @@ public class UnionTests
 
         Assert.Contains("FlatSharp unions may not contain duplicate types. Union = UnionTests.MyUnion", ex.Message);
     }
-
-    [Fact]
-    public void Union_WithCustomEnumValue()
-    {
-        string schema = @"
-            namespace UnionTests;
-            table A {}
-            table B {}
-            union C { A = 2, B = 4 }
-        ";
-
-        FlatSharpCompiler.CompileAndLoadAssembly(
-            schema,
-            new());
-    }
 }

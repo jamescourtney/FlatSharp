@@ -1,0 +1,5 @@
+namespace FlatSharpEndToEndTests.UnionWithCustomEnumValues;
+
+table A {}
+table B {}
+union C { A = 2, B = 4 }
