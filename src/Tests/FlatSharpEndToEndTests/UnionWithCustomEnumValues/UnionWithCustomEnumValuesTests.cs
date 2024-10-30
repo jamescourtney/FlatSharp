@@ -40,4 +40,62 @@ public class UnionWithCustomEnumValuesTests
         c = new C(b);
         Assert.AreEqual(c.Discriminator, 4);
     }
+
+    [TestMethod]
+    public void UnionWithCustomEnumValues_Accept()
+    {
+        C c = new C(new A());
+
+        Assert.AreEqual(2, c.Discriminator);
+        Assert.AreEqual(C.ItemKind.A, c.Kind);
+
+        Assert.IsNotNull(c.Item1);
+        Assert.ThrowsException<InvalidOperationException>(() => c.Item2);
+
+        Assert.AreEqual("A", c.Accept<Visitor, string>(new()));
+
+        Assert.AreEqual(
+            "A",
+            c.Match(
+                (A a) => "A",
+                (B b) => "B"));
+
+        c = new C(new B());
+
+        Assert.AreEqual(4, c.Discriminator);
+        Assert.AreEqual(C.ItemKind.B, c.Kind);
+
+        Assert.IsNotNull(c.Item2);
+        Assert.ThrowsException<InvalidOperationException>(() => c.Item1);
+
+        Assert.AreEqual("B", c.Accept<Visitor, string>(new()));
+
+        Assert.AreEqual(
+            "B",
+            c.Match(
+                (A a) => "A",
+                (B b) => "B"));
+    }
+
+    [TestMethod]
+    public void UnionWithCustomEnumValues_Clone()
+    {
+        Outer outer = new()
+        {
+            Union = new(new B())
+        };
+
+        Outer parsed = outer.SerializeAndParse();
+        Assert.AreEqual(4, parsed.Union.Value.Discriminator);
+
+        Outer cloned = new Outer(parsed);
+        Assert.AreEqual(4, cloned.Union.Value.Discriminator);
+    }
+
+    private struct Visitor : C.Visitor<string>
+    {
+        public string Visit(A item) => typeof(A).Name;
+
+        public string Visit(B item) => typeof(B).Name;
+    }
 }
