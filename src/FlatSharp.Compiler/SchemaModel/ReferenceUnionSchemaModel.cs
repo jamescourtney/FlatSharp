@@ -40,6 +40,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
         List<(string resolvedType, EnumVal value, Type? propertyType)> innerTypes = new();
+        int itemIndex = 1;
         foreach (var inner in this.union.Values.Select(x => x.Value))
         {
             // Skip "none".
@@ -61,8 +62,9 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
                 FlatSharpInternal.Assert(previousType is not null, "PreviousType was null");
 
                 propertyClrType = previousType
-                    .GetProperty($"Item{inner.Value}", BindingFlags.Public | BindingFlags.Instance)?
+                    .GetProperty($"Item{itemIndex}", BindingFlags.Public | BindingFlags.Instance)?
                     .PropertyType;
+                ++itemIndex;
 
                 FlatSharpInternal.Assert(propertyClrType is not null, "Couldn't find property");
             }
@@ -98,11 +100,13 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
             writer.AppendLine();
             writer.AppendLine("public byte Discriminator => (byte)this.discriminator;");
 
+            int index = 1;
             foreach (var item in innerTypes)
             {
-                this.WriteConstructor(writer, item.resolvedType, item.value, item.propertyType);
-                this.AddUnionMember(writer, item.resolvedType, item.value, item.propertyType, context);
+                this.WriteConstructor(writer, index, item.resolvedType, item.value, item.propertyType);
+                this.AddUnionMember(writer, index, item.resolvedType, item.value, item.propertyType, context);
                 this.WriteImplicitOperator(writer, item.resolvedType);
+                ++index;
             }
 
             this.WriteDefaultConstructor(writer);
@@ -112,13 +116,13 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
         }
     }
 
-    private void AddUnionMember(CodeWriter writer, string resolvedType, EnumVal value, Type? propertyClrType, CompileContext context)
+    private void AddUnionMember(CodeWriter writer, int index, string resolvedType, EnumVal value, Type? propertyClrType, CompileContext context)
     {
         writer.AppendLine();
         writer.AppendLine($"private {resolvedType}{(propertyClrType?.IsValueType == false ? "?" : string.Empty)} value_{value.Value};");
 
         writer.AppendLine();
-        writer.AppendLine($"public {resolvedType} Item{value.Value}");
+        writer.AppendLine($"public {resolvedType} Item{index}");
         using (writer.WithBlock())
         {
             writer.AppendLine("get");
@@ -233,7 +237,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
         }
     }
 
-    private void WriteConstructor(CodeWriter writer, string resolvedType, EnumVal unionValue, Type? propertyType)
+    private void WriteConstructor(CodeWriter writer, int index, string resolvedType, EnumVal unionValue, Type? propertyType)
     {
         writer.AppendLine($"public {this.Name}({resolvedType} value)");
         using (writer.WithBlock())
@@ -248,7 +252,7 @@ public class ReferenceUnionSchemaModel : BaseSchemaModel
             }
 
             writer.AppendLine($"this.discriminator = {unionValue.Value};");
-            writer.AppendLine($"this.Item{unionValue.Value} = value;");
+            writer.AppendLine($"this.Item{index} = value;");
         }
     }
 
