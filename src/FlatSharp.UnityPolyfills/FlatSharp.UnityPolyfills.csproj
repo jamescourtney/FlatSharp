@@ -1,16 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>FlatSharp.UnityPolyfills</RootNamespace>
     <Description>FlatSharp.UnityPolyfills is a utility assembly to expose the Unity API needed for FlatSharp support of UnityEngine.Collections.NativeArray.</Description>
     <Nullable>annotations</Nullable>
     <DefineConstants>$(DefineContants);FLATSHARP_UNITY_POLYFILLS</DefineConstants>
     <PackageId>FlatSharp.UnityPolyfills</PackageId>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

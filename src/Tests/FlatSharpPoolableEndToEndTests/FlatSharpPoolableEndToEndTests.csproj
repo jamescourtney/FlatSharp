@@ -3,10 +3,7 @@
     <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
     <PipelineBuild>false</PipelineBuild>
     <PipelineBuild Condition=" '$(AppVeyorBuild)' == 'true' or '$(CoverageBuild)' == 'true' ">true</PipelineBuild>
-    <TargetFrameworks>net7.0;net6.0;net8.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(PipelineBuild)' == 'true' and '$([MSBuild]::IsOSUnixLike())' != 'true' ">net472;net6.0;net7.0;net8.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(PipelineBuild)' == 'true' and '$([MSBuild]::IsOSUnixLike())' == 'true' ">net6.0;net7.0;net8.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(CoverageBuild)' == 'true' ">net8.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>PoolingTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>

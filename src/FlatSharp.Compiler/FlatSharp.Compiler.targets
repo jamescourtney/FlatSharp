@@ -103,19 +103,9 @@
       <CompilerVersion>net8.0</CompilerVersion>
     </PropertyGroup>
 
-    <!-- try .net6.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
-      <CompilerVersion>net6.0</CompilerVersion>
-    </PropertyGroup>
-
-    <!-- try .net7.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
-      <CompilerVersion>net7.0</CompilerVersion>
-    </PropertyGroup>
-
-    <!-- try .net8.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+')) ">
-      <CompilerVersion>net8.0</CompilerVersion>
+    <!-- try .net9.0. -->
+    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '9\.0\.\d+')) ">
+      <CompilerVersion>net9.0</CompilerVersion>
     </PropertyGroup>
 
     <PropertyGroup>
