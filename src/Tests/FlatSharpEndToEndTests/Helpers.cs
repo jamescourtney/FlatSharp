@@ -304,15 +304,23 @@ public static class Helpers
         }
     }
 
-    public static T TestProgressiveFieldLoad<P, T>(int index, bool expected, P parent, Func<P, T> getter)
+    public static T TestProgressiveFieldLoad<P, T>(
+        int index, 
+        bool expected,
+        P parent, 
+        Func<P, T> getter)
     {
         IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)parent;
 
         int maskNum = index / 8;
         byte bitMask = (byte)(1 << (index % 8));
 
+        #pragma warning disable IL2075
+
         FieldInfo mask = parent.GetType().GetField($"__mask{maskNum}", BindingFlags.NonPublic | BindingFlags.Instance);
         FieldInfo vtable = parent.GetType().GetField("__vtable", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        #pragma warning restore IL2075
 
         bool IsFieldLoaded()
         {

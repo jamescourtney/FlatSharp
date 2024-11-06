@@ -16,24 +16,30 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-quality: preview
+        dotnet-version: 9.0.x
     
     - name: Setup .NET 8
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
         
     - name: Setup .NET 7
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 7.0.x
         
     - name: Setup .NET 6
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 6.0.x
         
     - name: Setup .NET 5
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 5.0.x
         
@@ -102,19 +108,19 @@ jobs:
       
     - name: E2E Tests
       working-directory: src
-      run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
 
     - name: E2E Tests (Poolable)
       working-directory: src
-      run: dotnet test Tests/FlatSharpPoolableEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/FlatSharpPoolableEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
       
     - name: Compiler Tests
       working-directory: src
-      run: dotnet test Tests/FlatSharpCompilerTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/FlatSharpCompilerTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
       
     - name: Stryker Tests
       working-directory: src
-      run: dotnet test Tests/Stryker/Tests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/Stryker/Tests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
       
     - name: Upload
       run: codecov -f **/*coverage*.xml
