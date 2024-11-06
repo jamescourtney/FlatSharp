@@ -24,18 +24,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-quality: preview
+        dotnet-version: 9.0.x
+    
     - name: Setup .NET 8
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
         
     - name: Setup .NET 7
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 7.0.x
         
     - name: Setup .NET 6
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 6.0.x
        
@@ -56,8 +62,8 @@ jobs:
       env:
         BuildAot: 'true'
       run: |
-        dotnet publish -c Release -f net8.0 -r ${{ matrix.rid }}
-        ./bin/Release/net8.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
+        dotnet publish -c Release -f net9.0 -r ${{ matrix.rid }}
+        ./bin/Release/net9.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
 
     - name: Poolable E2E Test
       working-directory: src/Tests/FlatSharpPoolableEndToEndTests
