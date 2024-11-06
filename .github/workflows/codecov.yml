@@ -108,19 +108,19 @@ jobs:
       
     - name: E2E Tests
       working-directory: src
-      run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
 
     - name: E2E Tests (Poolable)
       working-directory: src
-      run: dotnet test Tests/FlatSharpPoolableEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/FlatSharpPoolableEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
       
     - name: Compiler Tests
       working-directory: src
-      run: dotnet test Tests/FlatSharpCompilerTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/FlatSharpCompilerTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
       
     - name: Stryker Tests
       working-directory: src
-      run: dotnet test Tests/Stryker/Tests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net8.0
+      run: dotnet test Tests/Stryker/Tests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
       
     - name: Upload
       run: codecov -f **/*coverage*.xml
