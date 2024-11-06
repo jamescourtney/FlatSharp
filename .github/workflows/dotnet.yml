@@ -62,8 +62,8 @@ jobs:
       env:
         BuildAot: 'true'
       run: |
-        dotnet publish -c Release -f net8.0 -r ${{ matrix.rid }}
-        ./bin/Release/net8.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
+        dotnet publish -c Release -f net9.0 -r ${{ matrix.rid }}
+        ./bin/Release/net9.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
 
     - name: Poolable E2E Test
       working-directory: src/Tests/FlatSharpPoolableEndToEndTests
