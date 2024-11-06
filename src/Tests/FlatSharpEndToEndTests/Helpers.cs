@@ -304,7 +304,11 @@ public static class Helpers
         }
     }
 
-    public static T TestProgressiveFieldLoad<P, T>(int index, bool expected, P parent, Func<P, T> getter)
+    public static T TestProgressiveFieldLoad<P, T>(
+        int index, 
+        bool expected,
+        [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All)] P parent, 
+        Func<P, T> getter)
     {
         IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)parent;
 
