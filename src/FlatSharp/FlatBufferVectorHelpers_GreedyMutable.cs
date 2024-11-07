@@ -70,7 +70,7 @@ $$""""
             
             this.{{context.TableFieldContextVariableName}} = {{context.TableFieldContextVariableName}};
             
-            List<{{baseTypeName}}> list = new();
+            var list = new List<{{baseTypeName}}>();
             this.list = list;
             
             for (int i = 0; i < count; ++i)

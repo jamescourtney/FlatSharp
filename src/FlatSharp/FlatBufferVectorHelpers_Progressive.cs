@@ -99,7 +99,7 @@ $$""""
         [MethodImpl(MethodImplOptions.NoInlining)]
         private {{derivedTypeName}}{{nullableReference}}[] CreateRow({{derivedTypeName}}{{nullableReference}}[]?[] items, uint rowIndex)
         {
-            var row = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Rent((int)ChunkSize);
+            var row = new {{derivedTypeName}}{{nullableReference}}[(int)ChunkSize];
             items[rowIndex] = row;
 
             {{
