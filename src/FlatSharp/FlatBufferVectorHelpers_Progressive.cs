@@ -44,46 +44,33 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IFlatBufferDeserializedVector
-        , IPoolableObject
         where TInputBuffer : IInputBuffer
     {
         private const uint ChunkSize = {{chunkSize}};
 
-        private int {{context.OffsetVariableName}};
-        private int count;
-        private {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
-        private TableFieldContext {{context.TableFieldContextVariableName}};
-        private short {{context.RemainingDepthVariableName}};
-        private {{derivedTypeName}}{{nullableReference}}[]?[] items;
-        private int inUse = 1;
+        private readonly int {{context.OffsetVariableName}};
+        private readonly int count;
+        private readonly {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
+        private readonly TableFieldContext {{context.TableFieldContextVariableName}};
+        private readonly short {{context.RemainingDepthVariableName}};
+        private readonly {{derivedTypeName}}{{nullableReference}}[]?[] items;
         
-#pragma warning disable CS8618
-        private {{className}}() { }
-#pragma warning restore CS8618
-
-        public static {{className}}<TInputBuffer> GetOrCreate(
+        public {{className}}(
             TInputBuffer memory,
             int offset,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
-            if (!ObjectPool.TryGet<{{className}}<TInputBuffer>>(out var item))
-            {
-                item = new {{className}}<TInputBuffer>();
-            }
-
-            item.count = (int)memory.ReadUInt(offset);
-            item.offset = offset + sizeof(uint);
-            item.{{context.InputBufferVariableName}} = memory;
-            item.{{context.TableFieldContextVariableName}} = fieldContext;
-            item.{{context.RemainingDepthVariableName}} = remainingDepth;
+            int count = (int)memory.ReadUInt(offset);
+            this.count = count;
+            this.offset = offset + sizeof(uint);
+            this.{{context.InputBufferVariableName}} = memory;
+            this.{{context.TableFieldContextVariableName}} = fieldContext;
+            this.{{context.RemainingDepthVariableName}} = remainingDepth;
 
             {{StrykerSuppressor.SuppressNextLine()}}
-            int progressiveMinLength = (int)(item.count / ChunkSize) + 1;
-            item.items = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}[]?>.Shared.Rent(progressiveMinLength);
-            item.inUse = 1;
-
-            return item;
+            int progressiveMinLength = (int)(count / ChunkSize) + 1;
+            this.items = new {{derivedTypeName}}{{nullableReference}}[]?[progressiveMinLength];
         }
 
         public {{baseTypeName}} this[int index]
@@ -95,59 +82,6 @@ $$""""
         public int Count => this.count;
     
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
-
-        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
-        public void ReturnToPool(bool force = false)
-        {
-            if (this.DeserializationOption.ShouldReturnToPool(force))
-            {
-                if (System.Threading.Interlocked.Exchange(ref inUse, 0) == 1)
-                {
-                    this.count = -1;
-                    this.offset = -1;
-
-                    this.{{context.InputBufferVariableName}} = default({{context.InputBufferTypeName}})!;
-                    this.{{context.TableFieldContextVariableName}} = null!;
-                    this.{{context.RemainingDepthVariableName}} = -1;
-
-                    var items = this.items;
-                    this.items = null!;
-
-                    if (items is null)
-                    {
-                        return;
-                    }
-
-                    for (int i = 0; i < items.Length; ++i)
-                    {
-                        var block = items[i];
-
-                        if (block is null)
-                        {
-                            continue;
-                        }
-
-                        {{(
-                            // return poolable reference types at this point.
-                            !itemTypeModel.ClrType.IsValueType && typeof(IPoolableObject).IsAssignableFrom(itemTypeModel.ClrType)
-                            ? $$"""
-                                for (int j = 0; j < block.Length; ++j)
-                                {
-                                    block[j]?.ReturnToPool(true);
-                                }
-                                """
-                            : string.Empty
-                        )}}
-
-                        System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Return(block, true);
-                        items[i] = null;
-                    }
-
-                    System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}[]?>.Shared.Return(items);
-                    ObjectPool.Return(this);
-                }
-            }
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void GetAddress(uint index, out uint rowIndex, out uint colIndex)
@@ -165,7 +99,7 @@ $$""""
         [MethodImpl(MethodImplOptions.NoInlining)]
         private {{derivedTypeName}}{{nullableReference}}[] CreateRow({{derivedTypeName}}{{nullableReference}}[]?[] items, uint rowIndex)
         {
-            var row = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Rent((int)ChunkSize);
+            var row = new {{derivedTypeName}}{{nullableReference}}[(int)ChunkSize];
             items[rowIndex] = row;
 
             {{

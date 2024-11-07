@@ -27,25 +27,13 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
-    private readonly Dictionary<TKey, TValue?> backingDictionary = new();
-    private IList<TValue> backingVector;
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private FlatBufferProgressiveIndexedVector()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private readonly Dictionary<TKey, TValue?> backingDictionary;
+    private readonly IList<TValue> backingVector;
+    
+    public FlatBufferProgressiveIndexedVector(IList<TValue> backingVector)
     {
-    }
-
-    public static FlatBufferProgressiveIndexedVector<TKey, TValue> GetOrCreate(IList<TValue> items)
-    {
-        if (!ObjectPool.TryGet<FlatBufferProgressiveIndexedVector<TKey, TValue>>(out var item))
-        {
-            item = new();
-        }
-
-        item.backingVector = items;
-
-        return item;
+        this.backingVector = backingVector;
+        this.backingDictionary = new(backingVector.Count);
     }
 
     /// <summary>
@@ -148,20 +136,5 @@ public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue>
     public bool Remove(TKey key)
     {
         return FSThrow.NotMutable<bool>();
-    }
-
-    public void ReturnToPool(bool force = false)
-    {
-        if (FlatBufferDeserializationOption.Progressive.ShouldReturnToPool(force))
-        {
-            var backingVector = Interlocked.Exchange(ref this.backingVector!, null);
-            if (backingVector is not null)
-            {
-                (backingVector as IPoolableObject)?.ReturnToPool(true);
-                this.backingDictionary.Clear();
-
-                ObjectPool.Return(this);
-            }
-        }
     }
 }

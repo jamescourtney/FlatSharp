@@ -32,8 +32,7 @@ internal static partial class FlatBufferVectorHelpers
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.Lazy);
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.Options.DeserializationOption, context.InputBufferTypeName);
-        string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
-
+        
         string classDef =
 $$""""
     [System.Diagnostics.DebuggerDisplay("Lazy [ {{itemTypeModel.ClrType.Name}} ], Count = {Count}")]
@@ -42,41 +41,25 @@ $$""""
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
         , IFlatBufferDeserializedVector
-        , IPoolableObject
         where TInputBuffer : IInputBuffer
     {
-        private int {{context.OffsetVariableName}};
-        private int count;
-        private {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
-        private TableFieldContext {{context.TableFieldContextVariableName}};
-        private short {{context.RemainingDepthVariableName}};
-
-        private int inUse = 1;
+        private readonly int {{context.OffsetVariableName}};
+        private readonly int count;
+        private readonly {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
+        private readonly TableFieldContext {{context.TableFieldContextVariableName}};
+        private readonly short {{context.RemainingDepthVariableName}};
         
-#pragma warning disable CS8618
-        private {{className}}() { }
-#pragma warning restore CS8618
-
-        public static {{className}}<TInputBuffer> GetOrCreate(
+        public {{className}}(
             TInputBuffer memory,
             int offset,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
-            if (!ObjectPool.TryGet<{{className}}<TInputBuffer>>(out var item))
-            {
-                item = new {{className}}<TInputBuffer>();
-            }
-
-            item.count = (int)memory.ReadUInt(offset);
-            item.offset = offset + sizeof(uint);
-            item.{{context.InputBufferVariableName}} = memory;
-            item.{{context.TableFieldContextVariableName}} = fieldContext;
-            item.{{context.RemainingDepthVariableName}} = remainingDepth;
-
-            item.inUse = 1;
-
-            return item;
+            this.count = (int)memory.ReadUInt(offset);
+            this.offset = offset + sizeof(uint);
+            this.{{context.InputBufferVariableName}} = memory;
+            this.{{context.TableFieldContextVariableName}} = fieldContext;
+            this.{{context.RemainingDepthVariableName}} = remainingDepth;
         }
 
         public {{baseTypeName}} this[int index]
@@ -92,25 +75,6 @@ $$""""
         public int Count => this.count;
 
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
-
-        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
-        public void ReturnToPool(bool force = false)
-        {
-            if (this.DeserializationOption.ShouldReturnToPool(force))
-            {
-                if (System.Threading.Interlocked.Exchange(ref inUse, 0) == 1)
-                {
-                    this.count = -1;
-                    this.offset = -1;
-
-                    this.{{context.InputBufferVariableName}} = default({{context.InputBufferTypeName}})!;
-                    this.{{context.TableFieldContextVariableName}} = null!;
-                    this.{{context.RemainingDepthVariableName}} = -1;
-
-                    ObjectPool.Return(this);
-                }
-            }
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} SafeParseItem(int index)

@@ -146,10 +146,6 @@
       <CompilerCommand>$(CompilerCommand) --nullable-warnings $(FlatSharpNullable)</CompilerCommand>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
-      <CompilerCommand>$(CompilerCommand) --gen-poolable</CompilerCommand>
-    </PropertyGroup>
-
     <PropertyGroup Condition=" '$(FlatSharpDeserializers)' != '' ">
       <CompilerCommand>$(CompilerCommand) --deserializers &quot;$(FlatSharpDeserializers)&quot;</CompilerCommand>
     </PropertyGroup>

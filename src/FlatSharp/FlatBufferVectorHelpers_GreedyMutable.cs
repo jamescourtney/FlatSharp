@@ -29,7 +29,6 @@ internal static partial class FlatBufferVectorHelpers
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.GreedyMutable);
 
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
-        string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
 
         string IfMutable(string str)
         {
@@ -55,21 +54,12 @@ $$""""
         : object
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
-        , IPoolableObject
         where TInputBuffer : IInputBuffer
     {
-        private TableFieldContext {{context.TableFieldContextVariableName}};
+        private readonly TableFieldContext {{context.TableFieldContextVariableName}};
         private readonly List<{{baseTypeName}}> list;
-        private int inUse = 1;
 
-#pragma warning disable CS8618
-        private {{className}}(int count)
-        {
-            this.list = new List<{{baseTypeName}}>(count);
-        }
-#pragma warning restore CS8618
-
-        public static {{className}}<TInputBuffer> GetOrCreate(
+        public {{className}}(
             TInputBuffer {{context.InputBufferVariableName}},
             int {{context.OffsetVariableName}},
             short {{context.RemainingDepthVariableName}},
@@ -77,54 +67,17 @@ $$""""
         {
             int count = (int){{context.InputBufferVariableName}}.ReadUInt({{context.OffsetVariableName}});
             {{context.OffsetVariableName}} += sizeof(int);
-
-            if (ObjectPool.TryGet(out {{className}}<TInputBuffer>? list))
-            {{StrykerSuppressor.SuppressNextLine("block")}}
-            {
-    #if NET6_0_OR_GREATER
-                {{StrykerSuppressor.SuppressNextLine("statement")}}
-                list.list.EnsureCapacity(count);
-    #endif
-            }
-            else
-            {
-                list = new {{className}}<TInputBuffer>(count);
-            }
-
-            var innerList = list.list;
+            
+            this.{{context.TableFieldContextVariableName}} = {{context.TableFieldContextVariableName}};
+            
+            var list = new List<{{baseTypeName}}>();
+            this.list = list;
+            
             for (int i = 0; i < count; ++i)
             {
                 var item = {{context.GetParseInvocation(itemTypeModel.ClrType)}};
-                innerList.Add(item);
+                list.Add(item);
                 {{context.OffsetVariableName}} += {{inlineSize}};
-            }
-
-            list.{{context.TableFieldContextVariableName}} = {{context.TableFieldContextVariableName}};
-            list.inUse = 1;
-
-            return list;
-        }
-
-        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
-        public void ReturnToPool(bool force)
-        {
-            if (force)
-            {
-                if (System.Threading.Interlocked.Exchange(ref this.inUse, 0) != 0)
-                {
-                    {{If(
-                      !itemTypeModel.ClrType.IsValueType && typeof(IPoolableObject).IsAssignableFrom(itemTypeModel.ClrType),
-                      $$"""
-                        foreach (var item in this.list)
-                        {
-                            item.ReturnToPool(true);
-                        }
-                        """
-                    )}}
-
-                    this.list.Clear();
-                    ObjectPool.Return(this);
-                }
             }
         }
 

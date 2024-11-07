@@ -64,10 +64,6 @@ jobs:
       run: |
         dotnet publish -c Release -f net9.0 -r ${{ matrix.rid }}
         ./bin/Release/net9.0/${{ matrix.rid }}/publish/FlatSharpEndToEndTests
-
-    - name: Poolable E2E Test
-      working-directory: src/Tests/FlatSharpPoolableEndToEndTests
-      run: dotnet test -c Release /p:SignAssembly=true --verbosity normal
       
     - name: Compiler Test
       working-directory: src/Tests/FlatSharpCompilerTests

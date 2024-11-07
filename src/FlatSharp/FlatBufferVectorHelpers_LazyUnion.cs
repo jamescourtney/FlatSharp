@@ -32,42 +32,29 @@ internal static partial class FlatBufferVectorHelpers
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.Lazy);
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.Options.DeserializationOption, context.InputBufferTypeName);
-        string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
 
         string classDef =
-$$""""
-    [System.Diagnostics.DebuggerDisplay("Lazy [ {{itemTypeModel.ClrType.Name}} ], Count = {Count}")]
-    internal sealed class {{className}}<TInputBuffer>
+$$$""""
+    [System.Diagnostics.DebuggerDisplay("Lazy [ {{{itemTypeModel.ClrType.Name}}} ], Count = {Count}")]
+    internal sealed class {{{className}}}<TInputBuffer>
         : object
-        , IList<{{baseTypeName}}>
-        , IReadOnlyList<{{baseTypeName}}>
-        , IPoolableObject
+        , IList<{{{baseTypeName}}}>
+        , IReadOnlyList<{{{baseTypeName}}}>
         where TInputBuffer : IInputBuffer
     {
-        private int discriminatorVectorOffset;
-        private int offsetVectorOffset;
-        private int count;
-        private {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
-        private TableFieldContext {{context.TableFieldContextVariableName}};
-        private short {{context.RemainingDepthVariableName}};
-
-        private int inUse = 1;
+        private readonly int discriminatorVectorOffset;
+        private readonly int offsetVectorOffset;
+        private readonly int count;
+        private readonly {{{context.InputBufferTypeName}}} {{{context.InputBufferVariableName}}};
+        private readonly TableFieldContext {{{context.TableFieldContextVariableName}}};
+        private readonly short {{{context.RemainingDepthVariableName}}};
         
-#pragma warning disable CS8618
-        private {{className}}() { }
-#pragma warning restore CS8618
-
-        public static {{className}}<TInputBuffer> GetOrCreate(
+        public {{{className}}}(
             TInputBuffer memory,
             ref (int offset0, int offset1) offsets,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
-            if (!ObjectPool.TryGet<{{className}}<TInputBuffer>>(out var item))
-            {
-                item = new {{className}}<TInputBuffer>();
-            }
-
             int dvo = offsets.offset0;
             int ovo = offsets.offset1;
 
@@ -76,75 +63,52 @@ $$""""
 
             if (discriminatorCount != offsetCount)
             {
-                {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData_UnionVectorMismatchedLength)}}();
+                {{{typeof(FSThrow).GGCTN()}}}.{{{nameof(FSThrow.InvalidData_UnionVectorMismatchedLength)}}}();
             }
 
-            item.count = (int)offsetCount;
-            item.discriminatorVectorOffset = dvo + sizeof(int);
-            item.offsetVectorOffset = ovo + sizeof(int);
-            item.{{context.InputBufferVariableName}} = memory;
-            item.{{context.TableFieldContextVariableName}} = fieldContext;
-            item.{{context.RemainingDepthVariableName}} = remainingDepth;
-            item.inUse = 1;
-
-            return item;
+            this.count = (int)offsetCount;
+            this.discriminatorVectorOffset = dvo + sizeof(int);
+            this.offsetVectorOffset = ovo + sizeof(int);
+            this.{{{context.InputBufferVariableName}}} = memory;
+            this.{{{context.RemainingDepthVariableName}}} = remainingDepth;
+            this.{{{context.TableFieldContextVariableName}}} = fieldContext;
         }
 
-        public {{baseTypeName}} this[int index]
+        public {{{baseTypeName}}} this[int index]
         {
             get => this.SafeParseItem(index);
             set
             {
-                {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
+                {{{nameof(VectorUtilities)}}}.{{{nameof(VectorUtilities.CheckIndex)}}}(index, this.count);
                 this.WriteThrough(index, value);
             }
         }
 
         public int Count => this.count;
     
-        public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
-
-        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
-        public void ReturnToPool(bool force = false)
-        {
-            if (this.DeserializationOption.ShouldReturnToPool(force))
-            {
-                if (System.Threading.Interlocked.Exchange(ref inUse, 0) == 1)
-                {
-                    this.count = -1;
-                    this.discriminatorVectorOffset = -1;
-                    this.offsetVectorOffset = -1;
-
-                    this.{{context.InputBufferVariableName}} = default({{context.InputBufferTypeName}})!;
-                    this.{{context.TableFieldContextVariableName}} = null!;
-                    this.{{context.RemainingDepthVariableName}} = -1;
-
-                    ObjectPool.Return(this);
-                }
-            }
-        }
+        public FlatBufferDeserializationOption DeserializationOption => {{{nameof(FlatBufferDeserializationOption)}}}.{{{context.Options.DeserializationOption}}};
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private {{derivedTypeName}} SafeParseItem(int index)
+        private {{{derivedTypeName}}} SafeParseItem(int index)
         {
-            {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.count);
+            {{{nameof(VectorUtilities)}}}.{{{nameof(VectorUtilities.CheckIndex)}}}(index, this.count);
             return this.UnsafeParseItem(index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private {{derivedTypeName}} UnsafeParseItem(int index)
+        private {{{derivedTypeName}}} UnsafeParseItem(int index)
         {
-            var {{context.OffsetVariableName}} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + ({{GetEfficientMultiply(sizeof(uint), "index")}}));
-            return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
+            var {{{context.OffsetVariableName}}} = (this.discriminatorVectorOffset + index, this.offsetVectorOffset + ({{{GetEfficientMultiply(sizeof(uint), "index")}}}));
+            return {{{context.GetParseInvocation(itemTypeModel.ClrType)}}};
         }
 
-        private void WriteThrough(int index, {{baseTypeName}} value)
+        private void WriteThrough(int index, {{{baseTypeName}}} value)
         {
-            {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.NotMutable_DeserializedVector)}}();
+            {{{typeof(FSThrow).GGCTN()}}}.{{{nameof(FSThrow.NotMutable_DeserializedVector)}}}();
         }
 
-        {{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}
-        {{CreateImmutableVectorMethods(itemTypeModel)}}
+        {{{CreateCommonReadOnlyVectorMethods(itemTypeModel, derivedTypeName)}}}
+        {{{CreateImmutableVectorMethods(itemTypeModel)}}}
     }
 """";
 

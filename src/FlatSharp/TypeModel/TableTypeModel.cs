@@ -685,7 +685,7 @@ $@"
             classDef.AddProperty(value, tempContext);
         }
 
-        string body = $"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), {context.RemainingDepthVariableName});";
+        string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), {context.RemainingDepthVariableName});";
         return new CodeGeneratedMethod(body)
         {
             ClassDefinition = classDef.ToString(),
