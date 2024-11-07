@@ -49,14 +49,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             return false;
         }
 
-        if (context.GeneratePoolableObjects)
-        {
-            model = new ReferenceUnionSchemaModel(schema, union);
-        }
-        else
-        {
-            model = new ValueUnionSchemaModel(schema, union);
-        }
+        model = new ValueUnionSchemaModel(schema, union);
 
         return true;
     }

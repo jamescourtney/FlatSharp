@@ -23,50 +23,23 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
-    private int alive;
     private readonly Dictionary<TKey, TValue> backingDictionary;
-    private IList<TValue> backingVector; // hang on until we return to pool.
     private bool mutable;
 
-    private GreedyIndexedVector()
+    public GreedyIndexedVector(IList<TValue> backing, bool mutable)
     {
-        this.backingDictionary = new Dictionary<TKey, TValue>();
-        this.backingVector = null!;
-        this.mutable = true;
-    }
-
-    public static GreedyIndexedVector<TKey, TValue> GetOrCreate(IList<TValue> backing, bool mutable)
-    {
-        if (!ObjectPool.TryGet(out GreedyIndexedVector<TKey, TValue>? vector))
-        {
-            vector = new();
-        }
-
-        vector.backingVector = backing;
-        vector.mutable = mutable;
-        vector.alive = 1;
-
-        var dictionary = vector.backingDictionary;
-
-#if !NETSTANDARD2_0
-        dictionary.EnsureCapacity(backing.Count);
-#endif
-
         int count = backing.Count;
-        for (int i = 0; i < count; ++i)
+
+        var dictionary = new Dictionary<TKey, TValue>(count);
+        this.backingDictionary = dictionary;
+        
+        for (int i = 0; i < backing.Count; ++i)
         {
-            TValue value = backing[i];
-            TKey key = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter(value);
-
-            if (dictionary.TryGetValue(key, out var existingValue))
-            {
-                (existingValue as IPoolableObject)?.ReturnToPool();
-            }
-
-            dictionary[key] = value;
+            TValue item = backing[i];
+            dictionary.Add(GetKey(item), item);
         }
-
-        return vector;
+        
+        this.mutable = mutable;
     }
 
     /// <summary>
@@ -180,31 +153,5 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         }
 
         return this.backingDictionary.Remove(key);
-    }
-
-    public void ReturnToPool(bool unsafeForce = false)
-    {
-        if (FlatBufferDeserializationOption.Greedy.ShouldReturnToPool(unsafeForce))
-        {
-            if (Interlocked.Exchange(ref this.alive, 0) != 0)
-            {
-                var dict = this.backingDictionary;
-
-                foreach (var item in dict)
-                {
-                    if (item.Value is IPoolableObject obj)
-                    {
-                        obj.ReturnToPool(true);
-                    }
-                }
-
-                dict.Clear();
-                this.mutable = false;
-                (this.backingVector as IPoolableObject)?.ReturnToPool(true);
-                this.backingVector = null!;
-
-                ObjectPool.Return(this);
-            }
-        }
     }
 }

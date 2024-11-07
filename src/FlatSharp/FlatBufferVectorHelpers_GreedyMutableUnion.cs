@@ -27,10 +27,8 @@ internal static partial class FlatBufferVectorHelpers
         FlatSharpInternal.Assert(context.Options.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable, "Expecting greedymutable");
 
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.GreedyMutable);
-
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
-        string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
-
+        
         string classDef =
 $$""""
     [System.Diagnostics.DebuggerDisplay("GreedyMutable [ {{itemTypeModel.ClrType.Name}} ], Count = {Count}")]
@@ -38,18 +36,11 @@ $$""""
         : object
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
-        , IPoolableObject
         where TInputBuffer : IInputBuffer
     {
         private readonly List<{{baseTypeName}}> list;
-        private int inUse = 1;
 
-        private {{className}}(int count)
-        {
-            this.list = new List<{{baseTypeName}}>(count);
-        }
-
-        public static {{className}}<TInputBuffer> GetOrCreate(
+        public {{className}}(
             TInputBuffer {{context.InputBufferVariableName}},
             ref (int offset0, int offset1) offsets,
             short {{context.RemainingDepthVariableName}},
@@ -68,58 +59,19 @@ $$""""
 
             dvo += sizeof(uint);
             ovo += sizeof(uint);
-
-            if (ObjectPool.TryGet(out {{className}}<TInputBuffer>? list))
-            {{StrykerSuppressor.SuppressNextLine("block")}}
-            {
-    #if NET6_0_OR_GREATER
-                {{StrykerSuppressor.SuppressNextLine("statement")}}
-                list.list.EnsureCapacity(discriminatorCount);
-    #endif
-            }
-            else
-            {
-                list = new {{className}}<TInputBuffer>(discriminatorCount);
-            }
-
-            var innerList = list.list;
+            
+            var list = new List<{{baseTypeName}}>(offsetCount);
+            this.list = list;
+            
             for (int i = 0; i < discriminatorCount; ++i)
             {
                 var {{context.OffsetVariableName}} = (dvo, ovo);
                 var item = {{context.GetParseInvocation(itemTypeModel.ClrType)}};
 
-                innerList.Add(item);
+                list.Add(item);
 
                 dvo += sizeof(byte);
                 ovo += sizeof(uint);
-            }
-
-            list.inUse = 1;
-
-            return list;
-        }
-
-        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
-        public void ReturnToPool(bool force)
-        {
-            if (force)
-            {
-                if (System.Threading.Interlocked.Exchange(ref this.inUse, 0) != 0)
-                {
-                    {{(
-                        !itemTypeModel.ClrType.IsValueType && typeof(IPoolableObject).IsAssignableFrom(itemTypeModel.ClrType)
-                      ? $$"""
-                            foreach (var item in this.list)
-                            {
-                              item.ReturnToPool(true);
-                            }
-                          """
-                      : string.Empty
-                    )}}
-
-                    this.list.Clear();
-                    ObjectPool.Return(this);
-                }
             }
         }
 

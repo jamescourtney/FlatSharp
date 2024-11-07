@@ -51,7 +51,7 @@ public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
                     {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1)
                 );
 
-                return {className}<{context.InputBufferTypeName}>.GetOrCreate(
+                return new {className}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName},
                     ref offsets,
                     {context.RemainingDepthVariableName},

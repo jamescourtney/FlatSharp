@@ -138,12 +138,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 item = FSThrow.InvalidOperation<T>("Unexpected deserialization mode");
                 break;
         }
-
-        if (item is IPoolableObjectDebug deserializedObject)
-        {
-            deserializedObject.IsRoot = true;
-        }
-
+        
         return item;
     }
 

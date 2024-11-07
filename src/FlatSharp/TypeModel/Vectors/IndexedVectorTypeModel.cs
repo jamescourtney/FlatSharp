@@ -107,17 +107,17 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         if (context.Options.GreedyDeserialize)
         {
             // Eager indexed vector.
-            body = $@"return GreedyIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate({inner}, {mutable});";
+            body = $@"return new GreedyIndexedVector<{keyTypeName}, {valueTypeName}>({inner}, {mutable});";
         }
         else if (context.Options.Lazy)
         {
             // Lazy indexed vector.
-            body = $@"return FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate({inner});";
+            body = $@"return new FlatBufferIndexedVector<{keyTypeName}, {valueTypeName}>({inner});";
         }
         else
         {
             FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-            body = $@"return FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}>.GetOrCreate({inner});";
+            body = $@"return new FlatBufferProgressiveIndexedVector<{keyTypeName}, {valueTypeName}>({inner});";
         }
 
         return new CodeGeneratedMethod(body) { IsMethodInline = true };

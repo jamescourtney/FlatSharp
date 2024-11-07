@@ -25,8 +25,6 @@ internal class DeserializeClassDefinition
     protected const string OffsetVariableName = "__offset";
     protected const string VTableVariableName = "__vtable";
     protected const string RemainingDepthVariableName = "__remainingDepth";
-    protected const string IsAliveVariableName = "__alive";
-    protected const string IsRootVariableName = "__isRoot";
     protected const string CtorContextVariableName = "__CtorContext";
 
     protected readonly ITypeModel typeModel;
@@ -57,15 +55,7 @@ internal class DeserializeClassDefinition
         this.options = options;
         this.vtableTypeName = GetVTableTypeName(maxVtableIndex);
         this.onDeserializeMethod = onDeserializeMethod;
-
         this.vtableAccessor = "default";
-        this.instanceFieldDefinitions[IsRootVariableName] = $"private bool {IsRootVariableName};";
-
-        if (typeof(IPoolableObject).IsAssignableFrom(this.typeModel.ClrType))
-        {
-            this.instanceFieldDefinitions[IsAliveVariableName] = $"private int {IsAliveVariableName};";
-            this.initializeStatements.Add($"this.{IsAliveVariableName} = 1;");
-        }
 
         if (this.options.GreedyDeserialize)
         {
@@ -273,7 +263,6 @@ internal class DeserializeClassDefinition
         }
 
         string interfaceGlobalName = typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName();
-        bool isProgressive = this.options.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 
         return
         $@"
@@ -281,8 +270,6 @@ internal class DeserializeClassDefinition
             internal sealed class {this.ClassName}<TInputBuffer> 
                 : {typeModel.GetGlobalCompilableTypeName()}
                 , {interfaceGlobalName}
-                , {typeof(IPoolableObject).GetGlobalCompilableTypeName()}
-                , {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}
                 where TInputBuffer : IInputBuffer
             {{
                 private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {CtorContextVariableName} 
@@ -292,27 +279,13 @@ internal class DeserializeClassDefinition
 
                 {string.Join("\r\n", this.instanceFieldDefinitions.Values)}
 
-                [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
-                public static {this.ClassName}<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset, short remainingDepth)
-                {{
-                    {this.GetGetOrCreateMethodBody()}
-                }}
-
                 {this.GetCtorMethodDefinition(onDeserializedStatement, baseParams)}
-
-                {this.GetDisposeMethodBody()}
 
                 {typeof(Type).GetGlobalCompilableTypeName()} {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
                 {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                 {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
                 bool {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
-
-                bool {typeof(IPoolableObjectDebug).GetGlobalCompilableTypeName()}.IsRoot 
-                {{
-                    get => this.{IsRootVariableName};
-                    set => this.{IsRootVariableName} = value;
-                }}
 
                 {string.Join("\r\n", this.propertyOverrides)}
                 {string.Join("\r\n", this.readMethods)}
@@ -381,32 +354,6 @@ internal class DeserializeClassDefinition
         }
     }
 
-    protected virtual string GetGetOrCreateMethodBody()
-    {
-        if (typeof(IPoolableObject).IsAssignableFrom(this.typeModel.ClrType))
-        {
-            return $@"
-                {this.ClassName}<TInputBuffer>? item;
-
-                if (!{typeof(ObjectPool).GetGlobalCompilableTypeName()}.TryGet<{this.ClassName}<TInputBuffer>>(out item))
-                {{
-                    item = new {this.ClassName}<TInputBuffer>();
-                }}
-
-                item.Initialize(buffer, offset, remainingDepth);
-                return item;
-            ";
-        }
-        else
-        {
-            return $@"
-                {this.ClassName}<TInputBuffer>? item = new {this.ClassName}<TInputBuffer>();
-                item.Initialize(buffer, offset, remainingDepth);
-                return item;
-            ";
-        }
-    }
-
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
@@ -415,113 +362,13 @@ internal class DeserializeClassDefinition
             [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
 #endif
             [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
-            private {this.ClassName}() : base({baseCtorParams}) 
-            {{
-            }}
-#pragma warning restore CS8618
-
-            [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
-            private void Initialize(TInputBuffer buffer, int offset, short remainingDepth)
+            public {this.ClassName}(TInputBuffer buffer, int offset, short remainingDepth) 
+                : base({baseCtorParams}) 
             {{
                 {string.Join("\r\n", this.initializeStatements)}
                 {onDeserializedStatement}
             }}
-        ";
-    }
-
-    private string GetDisposeMethodBody()
-    {
-        if (!typeof(IPoolableObject).IsAssignableFrom(this.typeModel.ClrType))
-        {
-            // not disposable.
-            return $@"public void ReturnToPool(bool unsafeForce = false) {{ }}";
-        }
-
-        // Lazy doesn't have to deal with this stuff.
-        IEnumerable<string> disposeFields = Array.Empty<string>();
-        if (!this.options.Lazy)
-        {
-            disposeFields = this.itemModels
-                .Where(
-                    x => !x.ItemTypeModel.ClrType.IsValueType)
-                .Select(x => (model: x, isPoolable: typeof(IPoolableObject).IsAssignableFrom(x.ItemTypeModel.ClrType), isInterface: x.ItemTypeModel.ClrType.IsInterface))
-                .Where(x => x.isPoolable || x.isInterface)
-                .Select(x =>
-                {
-                    if (x.isPoolable)
-                    {
-                        return $@"
-                        {{
-                            var item = this.{GetFieldName(x.model)};
-                            this.{GetFieldName(x.model)} = null!;
-                            item?.ReturnToPool(true);
-                        }}
-                        ";
-                    }
-                    else
-                    {
-                        return $@"
-                        {{
-                            var item = this.{GetFieldName(x.model)};
-                            this.{GetFieldName(x.model)} = null!;
-                            (item as IPoolableObject)?.ReturnToPool(true);
-                        }}
-                        ";
-                    }
-                });
-
-            // reset all fields to default.
-            disposeFields = disposeFields.Concat(this.itemModels
-                .Select(x => $"this.{GetFieldName(x)} = default({x.ItemTypeModel.GetGlobalCompilableTypeName()})!;"));
-
-            // Reset all masks to default as well.
-            if (!this.options.GreedyDeserialize)
-            {
-                HashSet<string> masks = new HashSet<string>(this.itemModels.Select(GetHasValueFieldName));
-
-                disposeFields = disposeFields.Concat(masks
-                    .Select(x => $"this.{x} = 0;"));
-            }
-        }
-
-        if (!this.options.GreedyDeserialize)
-        {
-            disposeFields = disposeFields.Concat(new[]
-            {
-                $"this.{InputBufferVariableName} = default(TInputBuffer)!;",
-                $"this.{RemainingDepthVariableName} = -1;",
-                $"this.{OffsetVariableName} = -1;",
-            });
-
-            if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
-            {
-                disposeFields = disposeFields.Concat(new[] { $"this.{VTableVariableName} = default({this.vtableTypeName});" });
-            }
-        }
-
-        string fromRootCondition = $"if (unsafeForce || this.{IsRootVariableName})";
-        if (this.options.Lazy)
-        {
-            fromRootCondition = string.Empty;
-        }
-
-        return $@"
-        
-        public override void ReturnToPool(bool unsafeForce = false) 
-        {{
-            {{
-                {fromRootCondition}
-                {{
-                    if (System.Threading.Interlocked.Exchange(ref this.{IsAliveVariableName}, 0) != 0)
-                    {{
-                        {string.Join("\r\n", disposeFields)}
-
-                        this.{IsRootVariableName} = false;
-                        {typeof(ObjectPool).GetGlobalCompilableTypeName()}.Return(this);
-                    }}
-                }}
-            }}
-        }}
+#pragma warning restore CS8618
         ";
     }
 
