@@ -36,7 +36,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         for (int i = 0; i < backing.Count; ++i)
         {
             TValue item = backing[i];
-            dictionary.Add(GetKey(item), item);
+            dictionary[GetKey(item)] = item;
         }
         
         this.mutable = mutable;
