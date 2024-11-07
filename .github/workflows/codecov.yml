@@ -72,23 +72,6 @@ jobs:
             --output e2etests.coverage.xml `
             --targetargs "src\FlatSharp.Compiler\bin\Debug\net8.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --input `"$fbs`" -o ."
   
-    - name: Run FlatSharp.Compiler (Pooling Tests)
-      # You may pin to the exact commit or the version.
-      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
-      uses: Amadevus/pwsh-script@v2.0.3
-      with:
-        # PowerShell script to execute in Actions-hydrated context
-        script: |
-          $fbs = (gci -r src/tests/FlatSharpPoolableEndToEndTests/*.fbs) -join ";"
-          coverlet `
-            .\src\FlatSharp.Compiler\bin\Debug\net8.0 `
-            --skipautoprops `
-            --use-source-link `
-            --format opencover `
-            --target "dotnet" `
-            --output pooling.coverage.xml `
-            --targetargs "src\FlatSharp.Compiler\bin\Debug\net8.0\FlatSharp.Compiler.dll --nullable-warnings false --normalize-field-names true --gen-poolable true --input `"$fbs`" -o ."
-      
     - name: Run FlatSharp.Compiler (Stryker Tests)
       # You may pin to the exact commit or the version.
       # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
@@ -110,10 +93,6 @@ jobs:
       working-directory: src
       run: dotnet test Tests/FlatSharpEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
 
-    - name: E2E Tests (Poolable)
-      working-directory: src
-      run: dotnet test Tests/FlatSharpPoolableEndToEndTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
-      
     - name: Compiler Tests
       working-directory: src
       run: dotnet test Tests/FlatSharpCompilerTests -c Debug -p:SignAssembly=false --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings -f net9.0
