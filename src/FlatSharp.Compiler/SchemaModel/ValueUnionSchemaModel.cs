@@ -153,6 +153,13 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             writer.AppendLine("public byte Discriminator { get; }");
 
             int index = 1;
+
+            if (!generateUnsafeItems && context.Options.GenerateMethods)
+            {
+                string item = this.union.Values.Count == 0 ? " " : $" this.value ";
+                writer.AppendLine($"public override string ToString() => $\"{this.Name} {{{{ {{{item}}} }}}}\";");
+            }
+
             foreach (var item in innerTypes)
             {
                 Type? propertyClrType = null;
@@ -170,6 +177,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
 
                 this.WriteConstructor(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
                 this.WriteImplicitOperator(writer, item.resolvedType);
+
                 this.WriteUncheckedGetItemMethod(writer, index, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
 
                 writer.AppendLine();
