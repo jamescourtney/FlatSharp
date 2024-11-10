@@ -21,13 +21,13 @@ namespace FlatSharp.Internal;
 /// </summary>
 public struct VTableGeneric : IVTable
 {
-    private int offset;
-    private nuint count;
+    private long offset;
+    private ulong count;
 
     public int MaxSupportedIndex => 255;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTableGeneric item)
+    public static void Create<TInputBuffer>(TInputBuffer buffer, long offset, out VTableGeneric item)
         where TInputBuffer : IInputBuffer
     {
         checked

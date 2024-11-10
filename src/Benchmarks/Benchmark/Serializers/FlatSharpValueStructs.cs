@@ -9,21 +9,21 @@ internal class FlatSharpValueStructs
     private static byte[] buffer;
     private static FS.FooBarContainerValue container;
 
-    public static int Prepare(int length)
+    public static long Prepare(int length)
     {
         BenchmarkUtilities.Prepare(length, out container);
         buffer = new byte[GetMaxSize()];
         return Serialize();
     }
 
-    public static int GetMaxSize()
+    public static long GetMaxSize()
     {
         return FS.FooBarContainerValue.Serializer.GetMaxSize(container);
     }
 
-    public static int Serialize()
+    public static long Serialize()
     {
-        return FS.FooBarContainerValue.Serializer.Write(new SpanWriter(), buffer, container);
+        return FS.FooBarContainerValue.Serializer.Write(buffer, container);
     }
 
     public static int ParseAndTraverse(int iterations, FlatBufferDeserializationOption option)

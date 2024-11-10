@@ -27,7 +27,7 @@ public class TableMemberTests
     [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Byte(FlatBufferDeserializationOption option)
     {
-         this.RunTest<byte, ByteTable>(1, option);
+        this.RunTest<byte, ByteTable>(1, option);
 
         ByteTable table = new();
         table.ItemMemory = new byte[] { 1, 2, 3, 4, 5, };
@@ -186,14 +186,46 @@ public interface ITypedTable<T> where T : struct
     IReadOnlyList<T>? ItemReadonlyList { get; set; }
 }
 
-public partial class BoolTable : ITypedTable<bool> { }
-public partial class ByteTable : ITypedTable<byte> { }
-public partial class SByteTable : ITypedTable<sbyte> { }
-public partial class ShortTable : ITypedTable<short> { }
-public partial class UShortTable : ITypedTable<ushort> { }
-public partial class IntTable : ITypedTable<int> { }
-public partial class UIntTable : ITypedTable<uint> { }
-public partial class LongTable : ITypedTable<long> { }
-public partial class ULongTable : ITypedTable<ulong> { }
-public partial class FloatTable : ITypedTable<float> { }
-public partial class DoubleTable : ITypedTable<double> { }
+public partial class BoolTable : ITypedTable<bool>
+{
+}
+
+public partial class ByteTable : ITypedTable<byte>
+{
+}
+
+public partial class SByteTable : ITypedTable<sbyte>
+{
+}
+
+public partial class ShortTable : ITypedTable<short>
+{
+}
+
+public partial class UShortTable : ITypedTable<ushort>
+{
+}
+
+public partial class IntTable : ITypedTable<int>
+{
+}
+
+public partial class UIntTable : ITypedTable<uint>
+{
+}
+
+public partial class LongTable : ITypedTable<long>
+{
+}
+
+public partial class ULongTable : ITypedTable<ulong>
+{
+}
+
+public partial class FloatTable : ITypedTable<float>
+{
+}
+
+public partial class DoubleTable : ITypedTable<double>
+{
+}

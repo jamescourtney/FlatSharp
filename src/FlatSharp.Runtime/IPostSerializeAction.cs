@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2024 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
-/// Raised in serialization when the provided buffer was too small.
+/// Describes an action that can be invoked after a serialize operation.
 /// </summary>
-public sealed class BufferTooSmallException : Exception
+public interface IPostSerializeAction
 {
-    public BufferTooSmallException() : base($"The provided buffer was too small to hold the serialized data.")
-    {
-    }
-
-    /// <summary>
-    /// The maximum amount of size needed for this message.
-    /// </summary>
-    public long SizeNeeded { get; internal set; }
+    void Invoke<TTarget>(TTarget target, SerializationContext context)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+        #if NET9_0_OR_GREATER
+        , allows ref struct
+        #endif
+        ;
 }

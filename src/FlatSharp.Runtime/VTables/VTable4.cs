@@ -39,7 +39,7 @@ public struct VTable4 : IVTable
     public int MaxSupportedIndex => 3;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+    public static void Create<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
         if (BitConverter.IsLittleEndian)
@@ -70,13 +70,13 @@ public struct VTable4 : IVTable
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(
             offset,
             out _,
-            out nuint fieldCount,
+            out ulong fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
         item = new VTable4();
@@ -107,7 +107,7 @@ public struct VTable4 : IVTable
     /// An optimized load mmethod for LE architectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+    internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
 #if NETSTANDARD2_0
@@ -117,7 +117,7 @@ public struct VTable4 : IVTable
         inputBuffer.InitializeVTable(
             offset,
             out _,
-            out nuint fieldCount,
+            out ulong fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
         if (fieldData.Length >= Unsafe.SizeOf<VTable4>())

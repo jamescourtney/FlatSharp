@@ -85,9 +85,7 @@ public class InputBufferTests
         this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
         this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
         this.TestReadByteArray(false, b => new MemoryInputBuffer(b));
-        this.TableSerializationTest(
-            default(SpanWriter),
-            (s, b) => s.Parse(b.AsMemory()));
+        this.TableSerializationTest((s, b) => s.Parse(b.AsMemory()));
     }
 
     [TestMethod]
@@ -102,9 +100,7 @@ public class InputBufferTests
             () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
         Assert.AreEqual("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
 
-        this.TableSerializationTest(
-            default(SpanWriter),
-            (s, b) => s.Parse((ReadOnlyMemory<byte>)b.AsMemory()));
+        this.TableSerializationTest((s, b) => s.Parse((ReadOnlyMemory<byte>)b.AsMemory()));
     }
 
     [TestMethod]
@@ -114,9 +110,7 @@ public class InputBufferTests
         this.StringInputBufferTest(new ArrayInputBuffer(StringInput));
         this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
         this.TestReadByteArray(false, b => new ArrayInputBuffer(b));
-        this.TableSerializationTest(
-            default(SpanWriter),
-            (s, b) => s.Parse(b));
+        this.TableSerializationTest((s, b) => s.Parse(b));
     }
 
     [TestMethod]
@@ -127,12 +121,10 @@ public class InputBufferTests
         this.TestDeserializeBoth(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
         this.TestReadByteArray(false, b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
         this.TableSerializationTest(
-            default(SpanWriter),
             (s, b) => s.Parse(new ArraySegment<byte>(b)));
     }
 
     private void TableSerializationTest(
-        ISpanWriter writer,
         Func<ISerializer<PrimitiveTypesTable>, byte[], PrimitiveTypesTable> parse)
     {
         PrimitiveTypesTable original = new()
@@ -153,7 +145,7 @@ public class InputBufferTests
         };
 
         byte[] data = new byte[1024];
-        PrimitiveTypesTable.Serializer.Write(writer, data, original);
+        PrimitiveTypesTable.Serializer.Write(data, original);
         PrimitiveTypesTable parsed = parse(PrimitiveTypesTable.Serializer, data);
 
         Assert.AreEqual(original.A, parsed.A);
@@ -230,18 +222,18 @@ public class InputBufferTests
         Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
         Assert.AreEqual(isReadOnly, inputBuffer.IsReadOnly);
         
-        Assert.IsTrue(inputBuffer.GetReadOnlySpan().SequenceEqual(buffer));
-        Assert.IsTrue(inputBuffer.GetReadOnlyMemory().Span.SequenceEqual(buffer));
+        Assert.IsTrue(inputBuffer.GetReadOnlySpan(0, (int)inputBuffer.Length).SequenceEqual(buffer));
+        Assert.IsTrue(inputBuffer.GetReadOnlyMemory(0, (int)inputBuffer.Length).Span.SequenceEqual(buffer));
 
         if (isReadOnly)
         {
-            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetSpan());
-            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetMemory());
+            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetSpan(0, 1));
+            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetMemory(0, 1));
         }
         else
         {
-            Assert.IsTrue(inputBuffer.GetMemory().Span.SequenceEqual(buffer));
-            Assert.IsTrue(inputBuffer.GetSpan().SequenceEqual(buffer));
+            Assert.IsTrue(inputBuffer.GetMemory(0, (int)inputBuffer.Length).Span.SequenceEqual(buffer));
+            Assert.IsTrue(inputBuffer.GetSpan(0, (int)inputBuffer.Length).SequenceEqual(buffer));
             Assert.IsTrue(inputBuffer.ReadByteMemoryBlock(0).Span.SequenceEqual(expected));
         }
     }

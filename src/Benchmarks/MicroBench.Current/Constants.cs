@@ -169,7 +169,7 @@ namespace Microbench
         private static byte[] AllocateAndSerialize<T>(T value) where T : class, IFlatBufferSerializable<T>
         {
             byte[] buffer = new byte[value.Serializer.GetMaxSize(value)];
-            int length = value.Serializer.Write(buffer, value);
+            long length = value.Serializer.Write(buffer, value);
 
             return buffer;
         }

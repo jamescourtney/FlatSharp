@@ -48,7 +48,7 @@ $$""""
     {
         private const uint ChunkSize = {{chunkSize}};
 
-        private readonly int {{context.OffsetVariableName}};
+        private readonly long {{context.OffsetVariableName}};
         private readonly int count;
         private readonly {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
         private readonly TableFieldContext {{context.TableFieldContextVariableName}};
@@ -57,7 +57,7 @@ $$""""
         
         public {{className}}(
             TInputBuffer memory,
-            int offset,
+            long offset,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
@@ -124,7 +124,7 @@ $$""""
                             copyCount = remainingItems;
                         }
 
-                        int offset = this.offset + ({{GetEfficientMultiply(inlineSize, "absoluteStartIndex")}});
+                        long offset = this.offset + ({{GetEfficientMultiply(inlineSize, "absoluteStartIndex")}});
                         for (int i = 0; i < copyCount; ++i)
                         {
                             row[i] = this.UnsafeParseFromOffset(offset);
@@ -185,12 +185,12 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} UnsafeParseItem(int index)
         {
-            int offset = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
+            long offset = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
             return UnsafeParseFromOffset(offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private {{derivedTypeName}} UnsafeParseFromOffset(int {{context.OffsetVariableName}})
+        private {{derivedTypeName}} UnsafeParseFromOffset(long {{context.OffsetVariableName}})
         {
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }

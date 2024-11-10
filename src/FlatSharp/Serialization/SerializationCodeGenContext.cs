@@ -26,8 +26,7 @@ public record SerializationCodeGenContext
 {
     public SerializationCodeGenContext(
         string serializationContextVariableName,
-        string spanVariableName,
-        string spanWriterVariableName,
+        string targetVariableName,
         string valueVariableName,
         string offsetVariableName,
         string tableFieldContextVariableName,
@@ -37,8 +36,7 @@ public record SerializationCodeGenContext
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.SerializationContextVariableName = serializationContextVariableName;
-        this.SpanWriterVariableName = spanWriterVariableName;
-        this.SpanVariableName = spanVariableName;
+        this.TargetVariableName = targetVariableName;
         this.ValueVariableName = valueVariableName;
         this.OffsetVariableName = offsetVariableName;
         this.TypeModelContainer = typeModelContainer;
@@ -59,15 +57,10 @@ public record SerializationCodeGenContext
     public string TableFieldContextVariableName { get; init; }
 
     /// <summary>
-    /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
+    /// The variable name of the span. Represents a <see cref="IFlatBufferSerializationTarget{T}"/> reference.
     /// </summary>
-    public string SpanVariableName { get; init; }
-
-    /// <summary>
-    /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
-    /// </summary>
-    public string SpanWriterVariableName { get; init; }
-
+    public string TargetVariableName { get; init; }
+    
     /// <summary>
     /// The variable name of the current value to serialize.
     /// </summary>
@@ -104,6 +97,7 @@ public record SerializationCodeGenContext
     public string GetSerializeInvocation(Type type)
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
+        
         string byRef = string.Empty;
         if (this.IsOffsetByRef)
         {
@@ -113,7 +107,7 @@ public record SerializationCodeGenContext
         StringBuilder sb = new StringBuilder();
 
         var methodParts = DefaultMethodNameResolver.ResolveSerialize(typeModel);
-        sb.Append($"{methodParts.@namespace}.{methodParts.className}.{methodParts.methodName}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
+        sb.Append($"{methodParts.@namespace}.{methodParts.className}.{methodParts.methodName}(ref {this.TargetVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
 
         if (typeModel.SerializeMethodRequiresContext)
         {

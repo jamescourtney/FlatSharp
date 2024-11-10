@@ -101,16 +101,16 @@ public class SerializerConfigurationTests
         // overallocate
         byte[] data = new byte[1024];
 
-        int maxBytes = compiled.GetMaxSize(t);
+        long maxBytes = compiled.GetMaxSize(t);
         Assert.AreEqual(88, maxBytes);
-        int actualBytes = compiled.Write(data, t);
+        long actualBytes = compiled.Write(data, t);
         Assert.AreEqual(58, actualBytes);
 
         // First test: Parse the array but don't trim the buffer. This causes the underlying
         // buffer to be much larger than the actual data.
         var parsed = compiled.Parse(data);
         byte[] data2 = new byte[2048];
-        int bytesWritten = compiled.Write(data2, parsed);
+        long bytesWritten = compiled.Write(data2, parsed);
 
         if (expectMemCopy)
         {
@@ -119,7 +119,7 @@ public class SerializerConfigurationTests
             Assert.ThrowsException<BufferTooSmallException>(() => compiled.Write(new byte[maxBytes], parsed));
 
             // Repeat, but now using the trimmed array.
-            parsed = compiled.Parse(data.AsMemory().Slice(0, actualBytes));
+            parsed = compiled.Parse(data.AsMemory().Slice(0, (int)actualBytes));
             bytesWritten = compiled.Write(data2, parsed);
             Assert.AreEqual(58, bytesWritten);
             Assert.AreEqual(58, compiled.GetMaxSize(parsed));
@@ -174,7 +174,7 @@ public class SerializerConfigurationTests
 
     private class PerfectSharedStringWriter : ISharedStringWriter
     {
-        private readonly Dictionary<string, List<int>> offsets = new();
+        private readonly Dictionary<string, List<long>> offsets = new();
 
         public PerfectSharedStringWriter()
         {
@@ -182,34 +182,16 @@ public class SerializerConfigurationTests
 
         public bool IsDirty => this.offsets.Count > 0;
 
-        public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
-        {
-            foreach (var kvp in this.offsets)
-            {
-                string value = kvp.Key;
-
-                int stringOffset = writer.WriteAndProvisionString(data, value, context);
-
-                for (int i = 0; i < kvp.Value.Count; ++i)
-                {
-                    writer.WriteUOffset(data, kvp.Value[i], stringOffset);
-                }
-            }
-
-            this.offsets.Clear();
-        }
-
         public void Reset()
         {
             this.offsets.Clear();
         }
 
-        public void WriteSharedString<TSpanWriter>(
-            TSpanWriter spanWriter,
-            Span<byte> data,
-            int offset,
-            string value,
-            SerializationContext context) where TSpanWriter : ISpanWriter
+        public void WriteSharedString<TTarget>(TTarget spanWriter, long offset, string value, SerializationContext context)
+            where TTarget : IFlatBufferSerializationTarget<TTarget>
+        #if NET9_0_OR_GREATER
+            , allows ref struct
+        #endif
         {
             if (!this.offsets.TryGetValue(value, out var list))
             {
@@ -218,6 +200,27 @@ public class SerializerConfigurationTests
             }
 
             list.Add(offset);
+        }
+
+        public void FlushWrites<TTarget>(TTarget writer, SerializationContext context) 
+            where TTarget : IFlatBufferSerializationTarget<TTarget>
+        #if NET9_0_OR_GREATER
+            , allows ref struct
+        #endif
+        {
+            foreach (var kvp in this.offsets)
+            {
+                string value = kvp.Key;
+
+                long stringOffset = writer.WriteAndProvisionString(value, context);
+
+                for (int i = 0; i < kvp.Value.Count; ++i)
+                {
+                    writer.WriteUOffset(kvp.Value[i], stringOffset);
+                }
+            }
+
+            this.offsets.Clear();
         }
     }
 }

@@ -38,17 +38,20 @@ public readonly struct GeneratedSerializerParseArguments
 public interface IGeneratedSerializer<T>
 {
     /// <summary>
-    /// Writes the given item to the buffer using the given spanwriter.
+    /// Writes the given item to the given target.
     /// </summary>
-    /// <param name="writer">The span writer.</param>
-    /// <param name="destination">The span to write to.</param>
-    /// <param name="item">The object to serialize.</param>
+    /// <param name="target">The target.</param>
+    /// <param name="item">The item.</param>
     /// <param name="context">The serialization context.</param>
-    void Write<TSpanWriter>(
-        TSpanWriter writer,
-        Span<byte> destination,
+    void Write<TSerializationTarget>(
+        ref TSerializationTarget target,
         T item,
-        SerializationContext context) where TSpanWriter : ISpanWriter;
+        SerializationContext context)
+        where TSerializationTarget : IFlatBufferSerializationTarget<TSerializationTarget>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+        ;
 
     /// <summary>
     /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.

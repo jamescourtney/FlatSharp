@@ -74,10 +74,10 @@ public static class SerializationHelpers
     /// Returns the number of padding bytes to be added to the given offset to acheive the given alignment.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetAlignmentError(int offset, int alignment)
+    public static int GetAlignmentError(long offset, long alignment)
     {
         Debug.Assert(alignment == 1 || alignment % 2 == 0);
-        return (-offset) & (alignment - 1);
+        return (int)((-offset) & (alignment - 1));
     }
 
     /// <summary>

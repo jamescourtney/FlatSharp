@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.Linq;
 using FlatSharp.Attributes;
@@ -471,9 +472,9 @@ public class TableTypeModel : RuntimeTypeModel
         // Start by asking for the worst-case number of bytes from the serializationcontext.
         string methodStart =
 $@"
-            int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
-            {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart);
-            int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
+            long tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
+            {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.OffsetVariableName}, tableStart);
+            long currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
             int vtableLength = {minVtableLength};
             Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
@@ -487,7 +488,7 @@ $@"
         // Unfortunately, this isn't readily testable since dotnet *does* zero out stackalloc memory.
         foreach (var deprecatedIndex in deprecatedIndexes)
         {
-            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, 0, {GetVTablePosition(deprecatedIndex)});");
+            body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice({GetVTablePosition(deprecatedIndex)}), 0);");
         }
 
         body.AddRange(getters);
@@ -495,15 +496,15 @@ $@"
 
         // We probably over-allocated. Figure out by how much and back up the cursor.
         // Then we can write the vtable.
-        body.Add("int tableLength = currentOffset - tableStart;");
+        body.Add("long tableLength = currentOffset - tableStart;");
         body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
 
         // Finish vtable.
-        body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0);");
-        body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort));");
+        body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable, (ushort)vtableLength);");
+        body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice(sizeof(ushort)), (ushort)tableLength);");
 
-        body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
-        body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart);");
+        body.Add($"long vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.TargetVariableName}, vtable.Slice(0, vtableLength));");
+        body.Add($"{context.TargetVariableName}.WriteInt32(tableStart, checked((int)(tableStart - vtablePosition)));");
 
         body.AddRange(writeBlocks);
 
@@ -577,7 +578,7 @@ $@"
         }
 
         string writeVTableBlock =
-            $"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(index, i)} - tableStart), {vTableIndex});";
+            $"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice({vTableIndex}), (ushort)({OffsetVariableName(index, i)} - tableStart));";
 
         string inlineSerialize = string.Empty;
         if (memberModel.ItemTypeModel.SerializesInline)
@@ -611,19 +612,17 @@ $@"
         string sortInvocation = string.Empty;
         if (memberModel.IsSortedVector)
         {
-            var (tableModel, keyMember, spanComparerType) = ValidateSortedVector(memberModel)!.Value;
+            var (_, keyMember, spanComparerType) = ValidateSortedVector(memberModel)!.Value;
 
             string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.PhysicalLayout[0].InlineSize.ToString() : "null";
 
             sortInvocation = @$"
                 {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
-                    (tempSpan, ctx) =>
-                    {nameof(SortedVectorHelpersInternal)}.{nameof(SortedVectorHelpersInternal.SortVector)}(
-                        tempSpan, 
+                    new VectorSortAction<{spanComparerType.GGCTN()}>(
                         {OffsetVariableName(index, 0)}, 
                         {keyMember.Index}, 
                         {inlineSize}, 
-                        new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({keyMember.DefaultValueLiteral})));";
+                        new {spanComparerType.GGCTN()}({keyMember.DefaultValueLiteral})));";
         }
 
         // NULL FORGIVENESS

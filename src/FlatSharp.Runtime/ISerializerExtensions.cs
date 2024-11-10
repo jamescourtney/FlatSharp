@@ -116,9 +116,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, byte[] buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, byte[] buffer, T item) where T : class
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        return serializer.Write(new ArraySerializationTarget(buffer), item);
     }
 
     /// <summary>
@@ -126,9 +126,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, byte[] buffer, object item)
+    public static long Write(this ISerializer serializer, byte[] buffer, object item)
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        return serializer.Write(new ArraySerializationTarget(buffer), item);
     }
 
     /// <summary>
@@ -136,9 +136,17 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer, T item) where T : class
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        byte[]? array = buffer.Array;
+        if (array is null)
+        {
+            return FSThrow.ArgumentNull<int>(nameof(buffer));
+        }
+
+        return serializer.Write(
+            new ArraySerializationTarget(array, buffer.Offset, buffer.Count),
+            item);
     }
 
     /// <summary>
@@ -146,9 +154,17 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, ArraySegment<byte> buffer, object item)
+    public static long Write(this ISerializer serializer, ArraySegment<byte> buffer, object item)
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        byte[]? array = buffer.Array;
+        if (array is null)
+        {
+            return FSThrow.ArgumentNull<int>(nameof(buffer));
+        }
+
+        return serializer.Write(
+            new ArraySerializationTarget(array, buffer.Offset, buffer.Count),
+            item);
     }
 
     /// <summary>
@@ -156,9 +172,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, Memory<byte> buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, Memory<byte> buffer, T item) where T : class
     {
-        return Write(serializer, buffer.Span, item);
+        return serializer.Write(new MemorySerializationTarget(buffer), item);
     }
 
     /// <summary>
@@ -166,9 +182,21 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, Memory<byte> buffer, object item)
+    public static long Write(this ISerializer serializer, Memory<byte> buffer, object item)
     {
-        return Write(serializer, buffer.Span, item);
+        return serializer.Write(new MemorySerializationTarget(buffer), item);
+    }
+
+    #if NET9_0_OR_GREATER
+    
+    /// <summary>
+    /// Writes the given item to the given buffer using the default SpanWriter.
+    /// </summary>
+    /// <returns>The number of bytes written.</returns>
+    [ExcludeFromCodeCoverage] // Just a helper
+    public static long Write<T>(this ISerializer<T> serializer, Span<byte> buffer, T item) where T : class
+    {
+        return serializer.Write(new SpanSerializationTarget(buffer), item);
     }
 
     /// <summary>
@@ -176,32 +204,34 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, Span<byte> buffer, T item) where T : class
+    public static long Write(this ISerializer serializer, Span<byte> buffer, object item)
     {
-        return serializer.Write(default(SpanWriter), buffer, item);
+        return serializer.Write(new SpanSerializationTarget(buffer), item);
     }
-
-    /// <summary>
-    /// Writes the given item to the given buffer using the default SpanWriter.
-    /// </summary>
-    /// <returns>The number of bytes written.</returns>
-    [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, Span<byte> buffer, object item)
-    {
-        return serializer.Write(default(SpanWriter), buffer, item);
-    }
+    
+    #endif
 
     /// <summary>
     /// Writes the given item into the given buffer writer using the default SpanWriter.
     /// </summary>
     /// <returns>The number of bytes written.</returns>
-    public static int Write<T>(this ISerializer<T> serializer, IBufferWriter<byte> bufferWriter, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, IBufferWriter<byte> bufferWriter, T item) where T : class
     {
-        int maxSize = serializer.GetMaxSize(item);
-        Span<byte> buffer = bufferWriter.GetSpan(maxSize);
-        int bytesWritten = serializer.Write(default(SpanWriter), buffer, item);
+        long maxSize = serializer.GetMaxSize(item);
+        if (maxSize > int.MaxValue)
+        {
+            FSThrow.InvalidData("The data is too large. This overload only supports the 32 bit address space.");
+        }
+        
+    #if NET9_0_OR_GREATER
+        Span<byte> buffer = bufferWriter.GetSpan((int)maxSize);
+        int bytesWritten = (int)serializer.Write(new SpanSerializationTarget(buffer), item);
+    #else
+        Memory<byte> buffer = bufferWriter.GetMemory((int)maxSize);
+        int bytesWritten = (int)serializer.Write(new MemorySerializationTarget(buffer), item);
+    #endif
+        
         bufferWriter.Advance(bytesWritten);
-
         return bytesWritten;
     }
 
@@ -211,11 +241,21 @@ public static class ISerializerExtensions
     /// <returns>The number of bytes written.</returns>
     public static int Write(this ISerializer serializer, IBufferWriter<byte> bufferWriter, object item)
     {
-        int maxSize = serializer.GetMaxSize(item);
-        Span<byte> buffer = bufferWriter.GetSpan(maxSize);
-        int bytesWritten = serializer.Write(default(SpanWriter), buffer, item);
+        long maxSize = serializer.GetMaxSize(item);
+        if (maxSize > int.MaxValue)
+        {
+            FSThrow.InvalidData("The data is too large. This overload only supports the 32 bit address space.");
+        }
+        
+#if NET9_0_OR_GREATER
+        Span<byte> buffer = bufferWriter.GetSpan((int)maxSize);
+        int bytesWritten = (int)serializer.Write(new SpanSerializationTarget(buffer), item);
+#else
+        Memory<byte> buffer = bufferWriter.GetMemory((int)maxSize);
+        int bytesWritten = (int)serializer.Write(new MemorySerializationTarget(buffer), item);
+#endif
+        
         bufferWriter.Advance(bytesWritten);
-
         return bytesWritten;
     }
 }

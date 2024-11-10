@@ -49,11 +49,11 @@ namespace NativeAot
                 }
             };
 
-            int maxSize = Root.Serializer.GetMaxSize(root);
+            long maxSize = Root.Serializer.GetMaxSize(root);
             Console.WriteLine("Max size: " + maxSize);
 
             byte[] buffer = new byte[maxSize];
-            int bytesWritten = 0;
+            long bytesWritten = 0;
 
             Stopwatch sw = Stopwatch.StartNew();
             for (int i = 0; i < 200; ++i)
@@ -321,81 +321,26 @@ namespace NativeAot
 
             public bool IsPinned => inner.IsPinned;
 
-            public int Length => inner.Length;
+            public long Length => inner.Length;
 
-            public Memory<byte> GetMemory()
+            public Memory<byte> GetMemory(long start, int length)
             {
-                return inner.GetMemory();
+                return inner.GetMemory(start, length);
             }
 
-            public ReadOnlyMemory<byte> GetReadOnlyMemory()
+            public ReadOnlyMemory<byte> GetReadOnlyMemory(long start, int length)
             {
-                return inner.GetReadOnlyMemory();
+                return inner.GetReadOnlyMemory(start, length);
             }
 
-            public ReadOnlySpan<byte> GetReadOnlySpan()
+            public ReadOnlySpan<byte> GetReadOnlySpan(long start, int length)
             {
-                return inner.GetReadOnlySpan();
+                return inner.GetReadOnlySpan(start, length);
             }
 
-            public Span<byte> GetSpan()
+            public Span<byte> GetSpan(long start, int length)
             {
-                return inner.GetSpan();
-            }
-
-            public byte ReadByte(int offset)
-            {
-                return inner.ReadByte(offset);
-            }
-
-            public double ReadDouble(int offset)
-            {
-                return inner.ReadDouble(offset);
-            }
-
-            public float ReadFloat(int offset)
-            {
-                return inner.ReadFloat(offset);
-            }
-
-            public int ReadInt(int offset)
-            {
-                return inner.ReadInt(offset);
-            }
-
-            public long ReadLong(int offset)
-            {
-                return inner.ReadLong(offset);
-            }
-
-            public sbyte ReadSByte(int offset)
-            {
-                return inner.ReadSByte(offset);
-            }
-
-            public short ReadShort(int offset)
-            {
-                return inner.ReadShort(offset);
-            }
-
-            public string ReadString(int offset, int byteLength, Encoding encoding)
-            {
-                return inner.ReadString(offset, byteLength, encoding);
-            }
-
-            public uint ReadUInt(int offset)
-            {
-                return inner.ReadUInt(offset);
-            }
-
-            public ulong ReadULong(int offset)
-            {
-                return inner.ReadULong(offset);
-            }
-
-            public ushort ReadUShort(int offset)
-            {
-                return inner.ReadUShort(offset);
+                return inner.GetSpan(start, length);
             }
         }
     }

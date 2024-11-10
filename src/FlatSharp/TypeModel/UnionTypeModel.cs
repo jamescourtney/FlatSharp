@@ -150,8 +150,8 @@ $@"
         }
 
         string body = $@"
-            byte discriminator = {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
-            int offsetLocation = {context.OffsetVariableName}.offset1;
+            byte discriminator = {context.InputBufferVariableName}.ReadByte({context.OffsetVariableName}.offset0);
+            long offsetLocation = {context.OffsetVariableName}.offset1;
 
             switch (discriminator)
             {{
@@ -182,7 +182,7 @@ $@"
                 // a pointer to a struct.
                 inlineAdjustment =$@"
                     var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                    {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset);";
+                    {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.OffsetVariableName}.offset1, writeOffset);";
             }
             else
             {
@@ -210,10 +210,9 @@ $@"
 
         string serializeBlock = $@"
             byte discriminatorValue = {context.ValueVariableName}.Discriminator;
-            {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}(
-                {context.SpanVariableName}, 
-                discriminatorValue, 
-                {context.OffsetVariableName}.offset0);
+            {context.TargetVariableName}.WriteUInt8(
+                {context.OffsetVariableName}.offset0,
+                discriminatorValue);
 
             switch (discriminatorValue)
             {{

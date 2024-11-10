@@ -44,12 +44,12 @@ $$""""
 
         public {{className}}(
             TInputBuffer {{context.InputBufferVariableName}},
-            ref (int offset0, int offset1) offsets,
+            ref (long offset0, long offset1) offsets,
             short {{context.RemainingDepthVariableName}},
             TableFieldContext {{context.TableFieldContextVariableName}})
         {
-            int dvo = offsets.offset0;
-            int ovo = offsets.offset1;
+            long dvo = offsets.offset0;
+            long ovo = offsets.offset1;
 
             int discriminatorCount = (int){{context.InputBufferVariableName}}.ReadUInt(dvo);
             int offsetCount = (int){{context.InputBufferVariableName}}.ReadUInt(ovo);

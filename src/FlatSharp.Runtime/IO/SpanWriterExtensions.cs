@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 namespace FlatSharp.Internal;
@@ -23,84 +24,112 @@ namespace FlatSharp.Internal;
 /// </summary>
 public static class SpanWriterExtensions
 {
-    public static void WriteReadOnlyByteMemoryBlock<TSpanWriter>(
-        this TSpanWriter spanWriter,
-        Span<byte> span,
+    public static void WriteReadOnlyByteMemoryBlock<TTarget>(
+        this TTarget target,
         ReadOnlyMemory<byte> memory,
-        int offset,
-        SerializationContext ctx) where TSpanWriter : ISpanWriter
+        long offset,
+        SerializationContext ctx) 
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
         int numberOfItems = memory.Length;
-        int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
+        long vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
 
-        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
-        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+        target.WriteUOffset(offset, vectorStartOffset);
+        target.WriteInt32(vectorStartOffset, numberOfItems);
 
-        memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+        memory.Span.CopyTo(target.AsSpan(vectorStartOffset + sizeof(uint), numberOfItems));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void UnsafeWriteSpan<TSpanWriter, TElement>(
-        this TSpanWriter spanWriter,
-        Span<byte> span,
+    public static void UnsafeWriteSpan<TSerializationTarget, TElement>(
+        this TSerializationTarget target,
         Span<TElement> buffer,
-        int offset,
+        long offset,
         int alignment,
-        SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : unmanaged
+        SerializationContext ctx) 
+        where TSerializationTarget : IFlatBufferSerializationTarget<TSerializationTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct 
+    #endif
+        where TElement : unmanaged
     {
         // Since we are copying bytes here, only LE is supported.
         FlatSharpInternal.AssertLittleEndian();
         FlatSharpInternal.AssertWellAligned<TElement>(alignment);
 
         int numberOfItems = buffer.Length;
-        int vectorStartOffset = ctx.AllocateVector(
+        long vectorStartOffset = ctx.AllocateVector(
             itemAlignment: alignment,
             numberOfItems,
             sizePerItem: Unsafe.SizeOf<TElement>());
 
-        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
-        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+        target.WriteUOffset(offset, vectorStartOffset);
+        target.WriteInt32(vectorStartOffset, numberOfItems);
 
-        var start = span.Slice(vectorStartOffset + sizeof(uint), checked(numberOfItems * Unsafe.SizeOf<TElement>()));
+        Span<byte> destination = target.AsSpan(
+            vectorStartOffset + sizeof(uint),
+            checked(numberOfItems * Unsafe.SizeOf<TElement>()));
 
-        MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
+        MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(destination);
     }
 
     /// <summary>
     /// Writes the given string.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteString<TSpanWriter>(
-        this TSpanWriter spanWriter,
-        Span<byte> span,
+    public static void WriteString<TTarget>(
+        this TTarget target,
         string value,
-        int offset,
-        SerializationContext context) where TSpanWriter : ISpanWriter
+        long offset,
+        SerializationContext context) 
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
-        int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
-        spanWriter.WriteUOffset(span, offset, stringOffset);
+        long stringOffset = target.WriteAndProvisionString(value, context);
+        target.WriteUOffset(offset, stringOffset);
     }
 
     /// <summary>
     /// Writes the string to the buffer, returning the absolute offset of the string.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
-        where TSpanWriter : ISpanWriter
+    public static long WriteAndProvisionString<TTarget>(
+        this TTarget target,
+        string value,
+        SerializationContext context)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
         var encoding = SerializationHelpers.Encoding;
 
         // Allocate more than we need and then give back what we don't use.
         int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
-        int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
+        long stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
 
-        int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
+        Span<byte> destination = target.AsSpan(stringStartOffset + sizeof(uint), maxItems);
+
+#if NETSTANDARD2_0
+        int length = value.Length;
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(encoding.GetMaxByteCount(length));
+        int bytesWritten = encoding.GetBytes(value, 0, length, buffer, 0);
+        buffer.AsSpan().Slice(0, bytesWritten).CopyTo(destination);
+        ArrayPool<byte>.Shared.Return(buffer);
+#else
+        int bytesWritten = encoding.GetBytes(value, destination);
+#endif
 
         // null teriminator
-        span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
+        target[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
 
         // write length
-        spanWriter.WriteInt(span, bytesWritten, stringStartOffset);
+        target.WriteInt32(stringStartOffset, bytesWritten);
 
         // give back unused space. Account for null terminator.
         context.Offset -= maxItems - (bytesWritten + 1);
@@ -109,13 +138,19 @@ public static class SpanWriterExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteUOffset<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, int offset, int secondOffset)
-        where TSpanWriter : ISpanWriter
+    public static void WriteUOffset<TSerializationTarget>(
+        this TSerializationTarget target,
+        long offset,
+        long secondOffset)
+        where TSerializationTarget : IFlatBufferSerializationTarget<TSerializationTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
         checked
         {
             uint uoffset = (uint)(secondOffset - offset);
-            spanWriter.WriteUInt(span, uoffset, offset);
+            target.WriteUInt32(offset, uoffset);
         }
     }
 
@@ -128,7 +163,7 @@ public static class SpanWriterExtensions
 
     [ExcludeFromCodeCoverage]
     [Conditional("DEBUG")]
-    public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, int offset, int size) where TSpanWriter : ISpanWriter
+    public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, long offset, int size) where TSpanWriter : ISpanWriter
     {
 #if DEBUG
         if (offset % size != 0)

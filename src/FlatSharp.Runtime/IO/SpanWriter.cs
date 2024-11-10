@@ -114,6 +114,6 @@ public struct SpanWriter : ISpanWriter
 
     public void FlushSharedStrings(ISharedStringWriter writer, Span<byte> destination, SerializationContext context)
     {
-        writer.FlushWrites(this, destination, context);
+        throw new NotSupportedException();
     }
 }

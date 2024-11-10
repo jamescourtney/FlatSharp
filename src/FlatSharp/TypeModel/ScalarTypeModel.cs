@@ -130,7 +130,7 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         string variableName = context.ValueVariableName;
-        return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName});")
+        return new CodeGeneratedMethod($"{context.TargetVariableName}.{this.SpanWriterWriteMethodName}({context.OffsetVariableName}, {variableName});")
         {
             IsMethodInline = true,
         };

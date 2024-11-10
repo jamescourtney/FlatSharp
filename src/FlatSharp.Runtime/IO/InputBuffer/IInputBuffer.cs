@@ -36,80 +36,87 @@ public interface IInputBuffer
     /// <summary>
     /// Gets the length of this input buffer.
     /// </summary>
-    int Length { get; }
-
-    /// <summary>
-    /// Reads the byte at the given offset.
-    /// </summary>
-    byte ReadByte(int offset);
-
-    /// <summary>
-    /// Reads the sbyte at the given offset.
-    /// </summary>
-    sbyte ReadSByte(int offset);
-
-    /// <summary>
-    /// Reads the ushort at the given offset.
-    /// </summary>
-    ushort ReadUShort(int offset);
-
-    /// <summary>
-    /// Reads the short at the given offset.
-    /// </summary>
-    short ReadShort(int offset);
-
-    /// <summary>
-    /// Reads the uint at the given offset.
-    /// </summary>
-    uint ReadUInt(int offset);
-
-    /// <summary>
-    /// Reads the int at the given offset.
-    /// </summary>
-    int ReadInt(int offset);
-
-    /// <summary>
-    /// Reads the ulong at the given offset.
-    /// </summary>
-    ulong ReadULong(int offset);
-
-    /// <summary>
-    /// Reads the long at the given offset.
-    /// </summary>
-    long ReadLong(int offset);
-
-    /// <summary>
-    /// Reads the float at the given offset.
-    /// </summary>
-    float ReadFloat(int offset);
-
-    /// <summary>
-    /// Reads the double at the given offset.
-    /// </summary>
-    double ReadDouble(int offset);
-
-    /// <summary>
-    /// Reads the string of the given length at the given offset with the given encoding.
-    /// </summary>
-    string ReadString(int offset, int byteLength, Encoding encoding);
-
+    long Length { get; }
+    
     /// <summary>
     /// Gets a read only span covering the entire input buffer.
     /// </summary>
-    ReadOnlySpan<byte> GetReadOnlySpan();
+    ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length);
 
     /// <summary>
     /// Gets a read only memory covering the entire input buffer.
     /// </summary>
-    ReadOnlyMemory<byte> GetReadOnlyMemory();
+    ReadOnlyMemory<byte> GetReadOnlyMemory(long offset, int length);
 
     /// <summary>
     /// Gets a span covering the entire input buffer.
     /// </summary>
-    Span<byte> GetSpan();
+    Span<byte> GetSpan(long offset, int length);
 
     /// <summary>
     /// Gets a memory covering the entire input buffer.
     /// </summary>
-    Memory<byte> GetMemory();
+    Memory<byte> GetMemory(long offset, int length);
+}
+
+/// <summary>
+/// An implementation of IInputBuffer that contains all methods. Useful for
+/// implementations that wish to completely control the behavior.
+/// </summary>
+public interface IInputBufferFull : IInputBuffer
+{
+    /// <summary>
+    /// Reads the byte at the given offset.
+    /// </summary>
+    byte ReadByte(long offset);
+
+    /// <summary>
+    /// Reads the sbyte at the given offset.
+    /// </summary>
+    sbyte ReadSByte(long offset);
+
+    /// <summary>
+    /// Reads the ushort at the given offset.
+    /// </summary>
+    ushort ReadUShort(long offset);
+
+    /// <summary>
+    /// Reads the short at the given offset.
+    /// </summary>
+    short ReadShort(long offset);
+
+    /// <summary>
+    /// Reads the uint at the given offset.
+    /// </summary>
+    uint ReadUInt(long offset);
+
+    /// <summary>
+    /// Reads the int at the given offset.
+    /// </summary>
+    int ReadInt(long offset);
+
+    /// <summary>
+    /// Reads the ulong at the given offset.
+    /// </summary>
+    ulong ReadULong(long offset);
+
+    /// <summary>
+    /// Reads the long at the given offset.
+    /// </summary>
+    long ReadLong(long offset);
+
+    /// <summary>
+    /// Reads the float at the given offset.
+    /// </summary>
+    float ReadFloat(long offset);
+
+    /// <summary>
+    /// Reads the double at the given offset.
+    /// </summary>
+    double ReadDouble(long offset);
+
+    /// <summary>
+    /// Reads the string of the given length at the given offset with the given encoding.
+    /// </summary>
+    string ReadString(long offset, int byteLength, Encoding encoding);
 }

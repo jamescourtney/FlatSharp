@@ -78,7 +78,7 @@ public class MemoryVectorTypeModel : BaseVectorTypeModel
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         string body =
-            $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+            $"{context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
 
         return new CodeGeneratedMethod(body);
     }

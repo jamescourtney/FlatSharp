@@ -36,16 +36,20 @@ public interface ISerializer
     /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
-    /// <param name="writer">The span writer.</param>
-    /// <param name="destination">The span to write to.</param>
+    /// <param name="target">The destination.</param>
     /// <param name="item">The object to serialize.</param>
     /// <returns>The number of bytes written.</returns>
-    int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item) where TSpanWriter : ISpanWriter;
+    long Write<TTarget>(TTarget target, object item)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    ;
 
     /// <summary>
     /// Computes the maximum size necessary to serialize the given instance.
     /// </summary>
-    int GetMaxSize(object item);
+    long GetMaxSize(object item);
 
     /// <summary>
     /// Parses the given buffer as an instance of this ISerializer's type.
@@ -74,16 +78,20 @@ public interface ISerializer<T>
     /// <summary>
     /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
-    /// <param name="writer">The span writer.</param>
-    /// <param name="destination">The span to write to.</param>
+    /// <param name="destination">The destination.</param>
     /// <param name="item">The object to serialize.</param>
     /// <returns>The number of bytes written.</returns>
-    int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item) where TSpanWriter : ISpanWriter;
+    long Write<TTarget>(TTarget destination, T item)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    ;
 
     /// <summary>
     /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
     /// </summary>
-    int GetMaxSize(T item);
+    long GetMaxSize(T item);
 
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/>.

@@ -121,12 +121,11 @@ public record ParserCodeGenContext
         return sb.ToString();
     }
 
-    public SerializationCodeGenContext GetWriteThroughContext(string spanVariableName, string valueVariableName, string offsetVariableName)
+    public SerializationCodeGenContext GetWriteThroughContext(string targetVariableName, string valueVariableName, string offsetVariableName)
     {
         return new SerializationCodeGenContext(
             "null",
-            spanVariableName,
-            "default(SpanWriter)",
+            targetVariableName,
             valueVariableName,
             offsetVariableName,
             this.TableFieldContextVariableName,

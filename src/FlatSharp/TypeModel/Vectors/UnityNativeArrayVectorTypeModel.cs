@@ -94,8 +94,7 @@ public class UnityNativeArrayVectorTypeModel : BaseVectorTypeModel
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         string writeNativeArray = $@"
-            {context.SpanWriterVariableName}.UnsafeWriteSpan(
-                {context.SpanVariableName},
+            {context.TargetVariableName}.UnsafeWriteSpan(
                 {context.ValueVariableName}.AsSpan(),
                 {context.OffsetVariableName},
                 {this.ItemTypeModel.PhysicalLayout[0].Alignment},

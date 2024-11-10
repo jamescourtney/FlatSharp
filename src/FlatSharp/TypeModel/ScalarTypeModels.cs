@@ -35,9 +35,9 @@ public partial class BoolTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(InputBufferExtensions.ReadBool);
+    protected override string InputBufferReadMethodName => "ReadBool";
 
-    protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
+    protected override string SpanWriterWriteMethodName => "WriteBool";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -62,9 +62,9 @@ public partial class ByteTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadByte);
+    protected override string InputBufferReadMethodName => "ReadByte";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteByte);
+    protected override string SpanWriterWriteMethodName => "WriteUInt8";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -89,9 +89,9 @@ public partial class SByteTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadSByte);
+    protected override string InputBufferReadMethodName => "ReadSByte";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteSByte);
+    protected override string SpanWriterWriteMethodName => "WriteInt8";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -116,9 +116,9 @@ public partial class UShortTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUShort);
+    protected override string InputBufferReadMethodName => "ReadUShort";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUShort);
+    protected override string SpanWriterWriteMethodName => "WriteUInt16";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -143,9 +143,9 @@ public partial class ShortTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadShort);
+    protected override string InputBufferReadMethodName => "ReadShort";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteShort);
+    protected override string SpanWriterWriteMethodName => "WriteInt16";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -170,9 +170,9 @@ public partial class IntTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadInt);
+    protected override string InputBufferReadMethodName => "ReadInt";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteInt);
+    protected override string SpanWriterWriteMethodName => "WriteInt32";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -197,9 +197,9 @@ public partial class UIntTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUInt);
+    protected override string InputBufferReadMethodName => "ReadUInt";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUInt);
+    protected override string SpanWriterWriteMethodName => "WriteUInt32";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -224,9 +224,9 @@ public partial class LongTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadLong);
+    protected override string InputBufferReadMethodName => "ReadLong";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteLong);
+    protected override string SpanWriterWriteMethodName => "WriteInt64";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -251,9 +251,9 @@ public partial class ULongTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadULong);
+    protected override string InputBufferReadMethodName => "ReadULong";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteULong);
+    protected override string SpanWriterWriteMethodName => "WriteUInt64";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -278,9 +278,9 @@ public partial class FloatTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadFloat);
+    protected override string InputBufferReadMethodName => "ReadFloat";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteFloat);
+    protected override string SpanWriterWriteMethodName => "WriteFloat32";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -305,9 +305,9 @@ public partial class DoubleTypeModel : ScalarTypeModel
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadDouble);
+    protected override string InputBufferReadMethodName => "ReadDouble";
 
-    protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteDouble);
+    protected override string SpanWriterWriteMethodName => "WriteFloat64";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {

@@ -135,7 +135,7 @@ public static class FSThrow
     #region BufferTooSmall
 
     [DoesNotReturn]
-    public static void BufferTooSmall(int sizeNeeded)
+    public static void BufferTooSmall(long sizeNeeded)
     {
         throw new BufferTooSmallException
         {

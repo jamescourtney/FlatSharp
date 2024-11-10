@@ -79,7 +79,7 @@ public interface ISpanWriter
     int GetStringBytes(Span<byte> destination, string value, Encoding encoding);
 
     /// <summary>
-    /// Invokes the <see cref="ISharedStringWriter.FlushWrites{TSpanWriter}(TSpanWriter, Span{byte}, SerializationContext)"/> method.
+    /// Invokes the <see cref="ISharedStringWriter.FlushWrites{TSpanWriter}(TSpanWriter, SerializationContext)"/> method.
     /// </summary>
     void FlushSharedStrings(
         ISharedStringWriter writer,

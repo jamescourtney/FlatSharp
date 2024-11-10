@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Buffers.Binary;
 using System.Threading;
 
 namespace FlatSharp.Internal;
@@ -24,31 +25,26 @@ namespace FlatSharp.Internal;
 /// </summary>
 public sealed class SerializationContext
 {
-    /// <summary>
-    /// A delegate to invoke after the serialization process has completed. Used for sorting vectors.
-    /// </summary>
-    public delegate void PostSerializeAction(Span<byte> span, SerializationContext context);
-
     internal static readonly ThreadLocal<SerializationContext> ThreadLocalContext = new ThreadLocal<SerializationContext>(() => new SerializationContext());
 
-    private int offset;
-    private int capacity;
-    private readonly List<PostSerializeAction> postSerializeActions;
-    private readonly List<int> vtableOffsets;
+    private long offset;
+    private long capacity;
+    private readonly List<IPostSerializeAction> postSerializeActions;
+    private readonly List<long> vtableOffsets;
 
     /// <summary>
     /// Initializes a new serialization context.
     /// </summary>
     public SerializationContext()
     {
-        this.postSerializeActions = new List<PostSerializeAction>();
-        this.vtableOffsets = new List<int>();
+        this.postSerializeActions = new List<IPostSerializeAction>();
+        this.vtableOffsets = new List<long>();
     }
 
     /// <summary>
     /// The maximum offset within the buffer.
     /// </summary>
-    public int Offset
+    public long Offset
     {
         get => this.offset;
         set => this.offset = value;
@@ -63,7 +59,7 @@ public sealed class SerializationContext
     /// Resets the context.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reset(int capacity)
+    public void Reset(long capacity)
     {
         this.offset = 0;
         this.capacity = capacity;
@@ -76,19 +72,23 @@ public sealed class SerializationContext
     /// Invokes any post-serialize actions.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InvokePostSerializeActions(Span<byte> span)
+    public void InvokePostSerializeActions<TTarget>(TTarget target)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
         var actions = this.postSerializeActions;
         int count = actions.Count;
 
         for (int i = 0; i < count; ++i)
         {
-            actions[i](span, this);
+            actions[i].Invoke(target, this);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddPostSerializeAction(PostSerializeAction action)
+    public void AddPostSerializeAction(IPostSerializeAction action)
     {
         this.postSerializeActions.Add(action);
     }
@@ -96,7 +96,7 @@ public sealed class SerializationContext
     /// <summary>
     /// Allocate a vector and return the index. Does not populate any details of the vector.
     /// </summary>
-    public int AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
+    public long AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
     {
         if (numberOfItems < 0)
         {
@@ -113,7 +113,7 @@ public sealed class SerializationContext
         //
         // Obviously, if N <= 4 this is trivial. If N = 8, it gets a bit more interesting.
         // First, align the offset to 4.
-        int offset = this.offset;
+        long offset = this.offset;
         offset += SerializationHelpers.GetAlignmentError(offset, sizeof(uint));
 
         // Now, align offset + 4 to item alignment.
@@ -131,14 +131,14 @@ public sealed class SerializationContext
     /// <summary>
     /// Allocates a block of memory. Returns the offset.
     /// </summary>
-    public int AllocateSpace(int bytesNeeded, int alignment)
+    public long AllocateSpace(int bytesNeeded, int alignment)
     {
-        int offset = this.offset;
+        long offset = this.offset;
         Debug.Assert(alignment == 1 || alignment % 2 == 0);
 
         offset += SerializationHelpers.GetAlignmentError(offset, alignment);
 
-        int finalOffset = offset + bytesNeeded;
+        long finalOffset = offset + bytesNeeded;
         if (finalOffset >= this.capacity)
         {
             FSThrow.BufferTooSmall(0);
@@ -149,19 +149,25 @@ public sealed class SerializationContext
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)] // Common method; don't inline
-    public int FinishVTable(
-        Span<byte> buffer,
+    public long FinishVTable<TTarget>(
+        TTarget buffer,
         Span<byte> vtable)
+    where TTarget : IFlatBufferSerializationTarget<TTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
         var offsets = this.vtableOffsets;
         int count = offsets.Count;
 
         for (int i = 0; i < count; ++i)
         {
-            int offset = offsets[i];
+            long offset = offsets[i];
 
-            ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
-            existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
+            ReadOnlySpan<byte> existingVTable = buffer.AsSpan(offset, sizeof(ushort));
+            ushort vtableLength = BinaryPrimitives.ReadUInt16LittleEndian(existingVTable);
+            
+            existingVTable = buffer.AsSpan(offset, vtableLength);
 
             if (existingVTable.SequenceEqual(vtable))
             {
@@ -175,8 +181,9 @@ public sealed class SerializationContext
         }
 
         // Oh, well. Write the new table.
-        int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
-        vtable.CopyTo(buffer.Slice(newVTableOffset));
+        long newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
+        
+        vtable.CopyTo(buffer.AsSpan(newVTableOffset, vtable.Length));
         offsets.Add(newVTableOffset);
 
         // "Insert" this item in the middle of the list.
@@ -189,11 +196,11 @@ public sealed class SerializationContext
         // This is done with a swap to avoid shuffling the whole list by inserting
         // at a given index. An alternative might be an unrolled linked list data structure.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Promote(int i, List<int> offsets)
+        static void Promote(int i, List<long> offsets)
         {
             int swapIndex = i / 2;
 
-            int temp = offsets[i];
+            long temp = offsets[i];
             offsets[i] = offsets[swapIndex];
             offsets[swapIndex] = temp;
         }

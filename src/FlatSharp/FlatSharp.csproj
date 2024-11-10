@@ -33,13 +33,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Memory" />
-    <PackageReference Include="NetStandard.Library" VersionOverride="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\netstandard.dll" />
-    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Collections.dll" />
-    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Runtime.dll" />
   </ItemGroup>
 
   <ItemGroup>

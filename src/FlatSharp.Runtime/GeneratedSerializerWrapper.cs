@@ -60,7 +60,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     public FlatBufferDeserializationOption DeserializationOption => this.option;
 
-    public int GetMaxSize(T item)
+    public long GetMaxSize(T item)
     {
         if (item is null)
         {
@@ -83,9 +83,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                                                                  // than to introduce an 'if'.
     }
 
-    int ISerializer.GetMaxSize(object item)
+    long ISerializer.GetMaxSize(object item)
     {
-
         return item switch
         {
             T t => this.GetMaxSize(t),
@@ -144,8 +143,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option) => this.Parse(buffer, option);
 
-    public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item)
-        where TSpanWriter : ISpanWriter
+    public long Write<TTarget>(TTarget destination, T item)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    #if NET9_0_OR_GREATER
+        , allows ref struct
+    #endif
     {
         if (item is null)
         {
@@ -163,14 +165,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         {
             IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
             FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
-
-            if (destination.Length < inputBuffer.Length)
-            {
-                FSThrow.BufferTooSmall(inputBuffer.Length);
-            }
-
-            inputBuffer.GetReadOnlySpan().CopyTo(destination);
-            return inputBuffer.Length;
+            return inputBuffer.CopyTo(destination);
         }
 
         var serializationContext = SerializationContext.ThreadLocalContext.Value!;
@@ -187,11 +182,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 Debug.Assert(!sharedStringWriter.IsDirty);
             }
 
-            this.innerSerializer.Write(writer, destination, item, serializationContext);
+            this.innerSerializer.Write(ref destination, item, serializationContext);
 
             if (sharedStringWriter?.IsDirty == true)
             {
-                writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
+                sharedStringWriter.FlushWrites(destination, serializationContext);
                 Debug.Assert(!sharedStringWriter.IsDirty);
             }
 
@@ -206,11 +201,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         return serializationContext.Offset;
     }
 
-    int ISerializer.Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item)
+    long ISerializer.Write<TTarget>(TTarget target, object item)
     {
         return item switch
         {
-            T t => this.Write(writer, destination, t),
+            T t => this.Write(target, t),
             null => FSThrow.ArgumentNull<int>(nameof(item)),
             _ => FSThrow.Argument<int>($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
         };

@@ -46,9 +46,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.BasicTypes.Serializer.Write(memory, simple);
+        long size = FS.BasicTypes.Serializer.Write(memory, simple);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.BasicTypesVerify.Verify(new(bb), 4));
         var oracle = Flatc.BasicTypes.GetRootAsBasicTypes(bb);
 
@@ -75,9 +75,9 @@ public class OracleSerializeTests
         var simple = new FS.BasicTypes();
 
         Span<byte> memory = new byte[10240];
-        int size = FS.BasicTypes.Serializer.Write(memory, simple);
+        long size = FS.BasicTypes.Serializer.Write(memory, simple);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.BasicTypesVerify.Verify(new(bb), 4));
         var oracle = Flatc.BasicTypes.GetRootAsBasicTypes(bb);
 
@@ -112,9 +112,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.LinkedListNode.Serializer.Write(memory, simple);
+        long size = FS.LinkedListNode.Serializer.Write(memory, simple);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.LinkedListNodeVerify.Verify(new(bb), 4));
         var oracle = Flatc.LinkedListNode.GetRootAsLinkedListNode(bb);
 
@@ -139,9 +139,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.LocationHolder.Serializer.Write(memory, holder);
+        long size = FS.LocationHolder.Serializer.Write(memory, holder);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.LocationHolderVerify.Verify(new(bb), 4));
         var oracle = Flatc.LocationHolder.GetRootAsLocationHolder(bb);
 
@@ -177,9 +177,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.Vectors.Serializer.Write(memory, table);
+        long size = FS.Vectors.Serializer.Write(memory, table);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.VectorsVerify.Verify(new(bb), 4));
         var oracle = Flatc.Vectors.GetRootAsVectors(bb);
 
@@ -225,7 +225,7 @@ public class OracleSerializeTests
 
         Span<byte> buffer = new byte[1024];
         var bytecount = FS.FiveByteStructTable.Serializer.Write(buffer, table);
-        buffer = buffer.Slice(0, bytecount);
+        buffer = buffer.Slice(0, (int)bytecount);
 
         var bb = new ByteBuffer(buffer.ToArray());
         Assert.IsTrue(Flatc.FiveByteStructTableVerify.Verify(new Verifier(bb), 4));
@@ -268,9 +268,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.UnionTable.Serializer.Write(memory, table);
+        long size = FS.UnionTable.Serializer.Write(memory, table);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.UnionTableVerify.Verify(new(bb), 4));
         var oracle = Flatc.UnionTable.GetRootAsUnionTable(bb);
 
@@ -304,9 +304,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.UnionTable.Serializer.Write(memory, table);
+        long size = FS.UnionTable.Serializer.Write(memory, table);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.UnionTableVerify.Verify(new(bb), 4));
         var oracle = Flatc.UnionTable.GetRootAsUnionTable(bb);
 
@@ -323,9 +323,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.UnionTable.Serializer.Write(memory, table);
+        long size = FS.UnionTable.Serializer.Write(memory, table);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.UnionTableVerify.Verify(new(bb), 4));
         var oracle = Flatc.UnionTable.GetRootAsUnionTable(bb);
 
@@ -348,9 +348,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.UnionTable.Serializer.Write(memory, table);
+        long size = FS.UnionTable.Serializer.Write(memory, table);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.UnionTableVerify.Verify(new(bb), 4));
         var oracle = Flatc.UnionTable.GetRootAsUnionTable(bb);
 
@@ -375,9 +375,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.NestedStructs.Serializer.Write(memory, nested);
+        long size = FS.NestedStructs.Serializer.Write(memory, nested);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.NestedStructsVerify.Verify(new(bb), 4));
         var oracle = Flatc.NestedStructs.GetRootAsNestedStructs(bb);
 
@@ -401,9 +401,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.NestedStructs.Serializer.Write(memory, nested);
+        long size = FS.NestedStructs.Serializer.Write(memory, nested);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.NestedStructsVerify.Verify(new(bb), 4));
         var oracle = Flatc.NestedStructs.GetRootAsNestedStructs(bb);
 
@@ -428,9 +428,9 @@ public class OracleSerializeTests
         };
 
         Span<byte> memory = new byte[10240];
-        int size = FS.VectorOfUnionTable.Serializer.Write(memory, table);
+        long size = FS.VectorOfUnionTable.Serializer.Write(memory, table);
 
-        var bb = new ByteBuffer(memory.Slice(0, size).ToArray());
+        var bb = new ByteBuffer(memory.Slice(0, (int)size).ToArray());
         Assert.IsTrue(Flatc.UnionVectorTableVerify.Verify(new(bb), 4));
         var oracle = Flatc.UnionVectorTable.GetRootAsUnionVectorTable(bb);
 
@@ -474,7 +474,7 @@ public class OracleSerializeTests
         }
 
         byte[] data = new byte[1024 * 1024];
-        int bytesWritten = FS.SortedVectorTest.Serializer.Write(data, test);
+        long bytesWritten = FS.SortedVectorTest.Serializer.Write(data, test);
 
         var parsed = FS.SortedVectorTest.Serializer.Parse(data);
 
@@ -510,7 +510,7 @@ public class OracleSerializeTests
 
         test.Int32.Add(myItem);
 
-        int bytesWritten = FS.SortedVectorTest.Serializer.Write(data, test);
+        long bytesWritten = FS.SortedVectorTest.Serializer.Write(data, test);
 
         var parsed = FS.SortedVectorTest.Serializer.Parse(data);
 
