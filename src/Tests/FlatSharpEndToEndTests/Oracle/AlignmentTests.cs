@@ -74,10 +74,10 @@ public class AlignmentTests
             }
         };
 
-        Span<byte> memory = new byte[10240];
+        byte[] memory = new byte[10240];
         long offset = FS.AlignmentTestOuterHoder.Serializer.Write(memory, holder);
 
-        var parsed = Flatc.AlignmentTestOuterHoder.GetRootAsAlignmentTestOuterHoder(new ByteBuffer(memory.Slice(0, (int)offset).ToArray()));
+        var parsed = Flatc.AlignmentTestOuterHoder.GetRootAsAlignmentTestOuterHoder(new ByteBuffer(memory.AsSpan().Slice(0, (int)offset).ToArray()));
 
         var outer = parsed.Value.Value;
         Assert.AreEqual(1, outer.A);

@@ -182,7 +182,7 @@ $@"
                 // a pointer to a struct.
                 inlineAdjustment =$@"
                     var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                    {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.OffsetVariableName}.offset1, writeOffset);";
+                    {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}.offset1, writeOffset);";
             }
             else
             {

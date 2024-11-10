@@ -122,7 +122,7 @@ public class StringTypeModel : RuntimeTypeModel
                     }}
                 }}
                 
-                {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
+                {context.TargetVariableName}.WriteString(
                     {context.ValueVariableName},
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});
@@ -132,7 +132,7 @@ public class StringTypeModel : RuntimeTypeModel
         {
             // otherwise, we can omit that code entirely.
             body = $@"
-                {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
+                {context.TargetVariableName}.WriteString(
                     {context.ValueVariableName},
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});

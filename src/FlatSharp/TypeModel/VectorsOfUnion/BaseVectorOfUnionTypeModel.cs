@@ -123,12 +123,12 @@ public abstract class BaseVectorOfUnionTypeModel : RuntimeTypeModel
         string body = $@"
             int count = {context.ValueVariableName}.{this.LengthPropertyName};
             long discriminatorVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(byte), count, sizeof(byte));
-            {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.OffsetVariableName}.offset0, discriminatorVectorOffset);
+            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}.offset0, discriminatorVectorOffset);
             {context.TargetVariableName}.WriteInt32(discriminatorVectorOffset, count);
             discriminatorVectorOffset += sizeof(int);
 
             long offsetVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(int), count, sizeof(int));
-            {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.OffsetVariableName}.offset1, offsetVectorOffset);
+            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}.offset1, offsetVectorOffset);
             {context.TargetVariableName}.WriteInt32(offsetVectorOffset, count);
             offsetVectorOffset += sizeof(int);
 

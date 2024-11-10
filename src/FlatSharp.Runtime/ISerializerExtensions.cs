@@ -118,7 +118,11 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage] // Just a helper
     public static long Write<T>(this ISerializer<T> serializer, byte[] buffer, T item) where T : class
     {
+#if NET9_0_OR_GREATER
+        return serializer.Write(buffer.AsSpan(), item);
+#else
         return serializer.Write(new ArraySerializationTarget(buffer), item);
+#endif
     }
 
     /// <summary>
@@ -128,7 +132,11 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage] // Just a helper
     public static long Write(this ISerializer serializer, byte[] buffer, object item)
     {
+#if NET9_0_OR_GREATER
+        return serializer.Write(buffer.AsSpan(), item);
+#else
         return serializer.Write(new ArraySerializationTarget(buffer), item);
+#endif
     }
 
     /// <summary>
@@ -138,6 +146,9 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage] // Just a helper
     public static long Write<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer, T item) where T : class
     {
+#if NET9_0_OR_GREATER
+        return serializer.Write(buffer.AsSpan(), item);
+#else
         byte[]? array = buffer.Array;
         if (array is null)
         {
@@ -147,6 +158,7 @@ public static class ISerializerExtensions
         return serializer.Write(
             new ArraySerializationTarget(array, buffer.Offset, buffer.Count),
             item);
+#endif
     }
 
     /// <summary>
@@ -156,6 +168,9 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage] // Just a helper
     public static long Write(this ISerializer serializer, ArraySegment<byte> buffer, object item)
     {
+#if NET9_0_OR_GREATER
+        return serializer.Write(buffer.AsSpan(), item);
+#else
         byte[]? array = buffer.Array;
         if (array is null)
         {
@@ -165,6 +180,7 @@ public static class ISerializerExtensions
         return serializer.Write(
             new ArraySerializationTarget(array, buffer.Offset, buffer.Count),
             item);
+#endif
     }
 
     /// <summary>
@@ -174,7 +190,11 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage] // Just a helper
     public static long Write<T>(this ISerializer<T> serializer, Memory<byte> buffer, T item) where T : class
     {
+#if NET9_0_OR_GREATER
+        return serializer.Write(buffer.Span, item);
+#else
         return serializer.Write(new MemorySerializationTarget(buffer), item);
+#endif
     }
 
     /// <summary>
@@ -184,7 +204,11 @@ public static class ISerializerExtensions
     [ExcludeFromCodeCoverage] // Just a helper
     public static long Write(this ISerializer serializer, Memory<byte> buffer, object item)
     {
+#if NET9_0_OR_GREATER
+        return serializer.Write(buffer.Span, item);
+#else
         return serializer.Write(new MemorySerializationTarget(buffer), item);
+#endif
     }
 
     #if NET9_0_OR_GREATER

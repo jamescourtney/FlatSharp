@@ -1,29 +1,153 @@
-﻿/*
- * Copyright 2024 James Courtney
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-namespace FlatSharp.Internal;
+namespace FlatSharp;
 
 /// <summary>
-/// Extension methods that apply to all <see cref="ISpanWriter"/> implementations.
+/// Extensions for IFlatBufferSerializationTarget
 /// </summary>
-public static class SpanWriterExtensions
+public static class FlatBufferSerializationTargetExtensions
 {
+    public static void WriteBool<T>(this T target, long offset, bool value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        target.WriteUInt8(offset, value ? SerializationHelpers.True : SerializationHelpers.False);
+    }
+    
+    public static void WriteUInt8<T>(this T target, long offset, byte value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        target[offset] = value;
+    }
+    
+    public static void WriteInt8<T>(this T target, long offset, sbyte value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        target[offset] = unchecked((byte)value);
+    }
+    
+    public static void WriteUInt16<T>(this T target, long offset, ushort value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(ushort));
+        BinaryPrimitives.WriteUInt16LittleEndian(
+            target.AsSpan(offset, sizeof(ushort)),
+            value);
+    }
+    
+    public static void WriteInt16<T>(this T target, long offset, short value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(short));
+        BinaryPrimitives.WriteInt16LittleEndian(
+            target.AsSpan(offset, sizeof(short)),
+            value);
+    }
+    
+    public static void WriteUInt32<T>(this T target, long offset, uint value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(uint));
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            target.AsSpan(offset, sizeof(uint)),
+            value);
+    }
+    
+    public static void WriteInt32<T>(this T target, long offset, int value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(int));
+        BinaryPrimitives.WriteInt32LittleEndian(
+            target.AsSpan(offset, sizeof(int)),
+            value);
+    }
+    
+    public static void WriteUInt64<T>(this T target, long offset, ulong value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(ulong));
+        BinaryPrimitives.WriteUInt64LittleEndian(
+            target.AsSpan(offset, sizeof(ulong)),
+            value);
+    }
+    
+    public static void WriteInt64<T>(this T target, long offset, long value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(long));
+        BinaryPrimitives.WriteInt64LittleEndian(
+            target.AsSpan(offset, sizeof(long)),
+            value);
+    }
+    
+    
+    public static void WriteFloat32<T>(this T target, long offset, float value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(float));
+        
+#if NETSTANDARD
+        ScalarSpanReader.FloatLayout floatLayout = new ScalarSpanReader.FloatLayout
+        {
+            value = value
+        };
+        
+        target.WriteUInt32(offset, floatLayout.bytes);
+#else
+        BinaryPrimitives.WriteSingleLittleEndian(
+            target.AsSpan(offset, sizeof(float)),
+            value);
+#endif
+    }
+    
+    public static void WriteFloat64<T>(this T target, long offset, double value)
+        where T : IFlatBufferSerializationTarget<T>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    {
+        CheckAlignment(offset, sizeof(double));
+        
+#if NETSTANDARD
+        target.WriteInt64(offset, BitConverter.DoubleToInt64Bits(value));
+#else
+        BinaryPrimitives.WriteDoubleLittleEndian(
+            target.AsSpan(offset, sizeof(double)),
+            value);  
+#endif   
+    }
+    
     public static void WriteReadOnlyByteMemoryBlock<TTarget>(
         this TTarget target,
         ReadOnlyMemory<byte> memory,
@@ -50,11 +174,11 @@ public static class SpanWriterExtensions
         long offset,
         int alignment,
         SerializationContext ctx) 
+        where TElement : unmanaged
         where TSerializationTarget : IFlatBufferSerializationTarget<TSerializationTarget>
     #if NET9_0_OR_GREATER
         , allows ref struct 
     #endif
-        where TElement : unmanaged
     {
         // Since we are copying bytes here, only LE is supported.
         FlatSharpInternal.AssertLittleEndian();
@@ -154,16 +278,9 @@ public static class SpanWriterExtensions
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteBool<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, bool b, int offset)
-        where TSpanWriter : ISpanWriter
-    {
-        spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset);
-    }
-
     [ExcludeFromCodeCoverage]
     [Conditional("DEBUG")]
-    public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, long offset, int size) where TSpanWriter : ISpanWriter
+    private static void CheckAlignment(long offset, int size) 
     {
 #if DEBUG
         if (offset % size != 0)

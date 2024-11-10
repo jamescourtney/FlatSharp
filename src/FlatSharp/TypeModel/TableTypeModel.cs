@@ -473,7 +473,7 @@ public class TableTypeModel : RuntimeTypeModel
         string methodStart =
 $@"
             long tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
-            {context.TargetVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.OffsetVariableName}, tableStart);
+            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}, tableStart);
             long currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
             int vtableLength = {minVtableLength};
