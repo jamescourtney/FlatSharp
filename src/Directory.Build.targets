@@ -9,7 +9,7 @@
       <Private>false</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <GlobalPropertiesToRemove>RuntimeIdentifier</GlobalPropertiesToRemove>
-      <SeTBufferFramework>TargetFramework=net8.0</SeTBufferFramework>
+      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
     </ProjectReference>
   </ItemGroup>
 

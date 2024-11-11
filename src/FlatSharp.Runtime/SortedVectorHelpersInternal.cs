@@ -74,17 +74,19 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// Furthermore, this method is left without checked multiply operations since this is a post-serialize action, which means the input
     /// has already been sanitized since FlatSharp wrote it.
     /// </remarks>
-    public void Invoke<TBuffer>(TBuffer target, SerializationContext context) 
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+    public void Invoke<TTarget>(TTarget target, SerializationContext context) 
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
     {
         checked
         {
+            var buffer = new SerializationTargetInputBuffer<TTarget>(target);
+
             long vectorStartOffset =
-                vectorUOffset + target.ReadUInt32(vectorUOffset);
-            int vectorLength = (int)target.ReadUInt32(vectorStartOffset);
+                vectorUOffset + buffer.ReadUInt(vectorUOffset);
+            int vectorLength = (int)buffer.ReadUInt(vectorStartOffset);
             long index0Position = vectorStartOffset + sizeof(int);
 
             (long, int, long)[]? pooledArray = null;
@@ -107,7 +109,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
 
             // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
             // partying inappropriately in the rest of the buffer.
-            TBuffer boundedVector = target.Slice(index0Position, sizeof(uint) * vectorLength);
+            Span<byte> boundedVector = target.AsSpan(index0Position, sizeof(uint) * vectorLength);
             long nextPosition = index0Position;
             for (int i = 0; i < keyOffsets.Length; ++i)
             {
@@ -129,13 +131,13 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// Due to the amount of indirection in FlatBuffers, it's not possible to use the built-in sorting algorithms,
     /// so we do the next best thing. Note that this is not a true IntroSort, since we omit the HeapSort component.
     /// </summary>
-    private static void IntroSort<TBuffer>(
-        TBuffer buffer,
+    private static void IntroSort<TTarget>(
+        TTarget buffer,
         TSpanComparer keyComparer,
         int lo,
         int hi,
         Span<(long offset, int length, long tableOffset)> keyLocations)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -182,7 +184,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                 SwapVectorPositions(middle, hi - 1, keyLocations);
                 var (pivotOffset, pivotLength, _) = keyLocations[hi - 1];
                 bool pivotExists = pivotOffset != 0;
-                var pivotBuffer = buffer.Slice(pivotOffset, pivotLength);
+                var pivotSpan = buffer.AsSpan(pivotOffset, pivotLength);
 
                 // Partition
                 int num2 = lo;
@@ -192,8 +194,8 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                     while (true)
                     {
                         var (keyOffset, keyLength, _) = keyLocations[++num2];
-                        var keyBuffer = buffer.Slice(keyOffset, keyLength);
-                        if (keyComparer.Compare(keyOffset != 0, keyBuffer, pivotExists, pivotBuffer) >= 0)
+                        var keySpan = buffer.AsSpan(keyOffset, keyLength);
+                        if (keyComparer.Compare(keyOffset != 0, keySpan, pivotExists, pivotSpan) >= 0)
                         {
                             break;
                         }
@@ -202,8 +204,8 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                     while (true)
                     {
                         var (keyOffset, keyLength, _) = keyLocations[--num3];
-                        var keyBuffer = buffer.Slice(keyOffset, keyLength);
-                        if (keyComparer.Compare(pivotExists, pivotBuffer, keyOffset != 0, keyBuffer) >= 0)
+                        var keySpan = buffer.AsSpan(keyOffset, keyLength);
+                        if (keyComparer.Compare(pivotExists, pivotSpan, keyOffset != 0, keySpan) >= 0)
                         {
                             break;
                         }
@@ -229,13 +231,13 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         }
     }
 
-    private static void InsertionSort<TBuffer>(
-        TBuffer buffer,
+    private static void InsertionSort<TTarget>(
+        TTarget buffer,
         TSpanComparer comparer,
         int lo,
         int hi,
         Span<(long offset, int length, long tableOffset)> keyLocations)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
 #if NET9_0_OR_GREATER
         , allows ref struct
 #endif
@@ -267,13 +269,13 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         }
     }
 
-    private static void SwapIfGreater<TBuffer>(
-        TBuffer target,
+    private static void SwapIfGreater<TTarget>(
+        TTarget target,
         TSpanComparer comparer,
         int leftIndex,
         int rightIndex,
         Span<(long, int, long)> keyOffsets)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -311,20 +313,20 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// <remarks>
     /// Left as unchecked since this is a sort operation (not a search).
     /// </remarks>
-    private static (long offset, int length, long tableOffset) GetKeyOffset<TBuffer>(
-        TBuffer target,
+    private static (long offset, int length, long tableOffset) GetKeyOffset<TTarget>(
+        TTarget target,
         long index0Position,
         int vectorIndex,
         int vtableIndex,
         int? inlineItemSize)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
     {
         checked
         {
-            var buffer = new SerializationTargetInputBuffer<TBuffer>(target);
+            var buffer = new SerializationTargetInputBuffer<TTarget>(target);
         
             // Find offset to the table at the index.
             long tableOffset = index0Position + (sizeof(uint) * vectorIndex);

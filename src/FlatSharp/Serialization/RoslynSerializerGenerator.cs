@@ -432,8 +432,8 @@ $@"
 
             string methodText =
 $@"
-                public void Write<TBuffer>(ref TBuffer target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, SerializationContext context)
-                    where TBuffer : IFlatBufferReaderWriter<TBuffer>
+                public void Write<TTarget>(ref TTarget target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, SerializationContext context)
+                    where TTarget : IFlatBufferSerializationTarget<TTarget>
                     #if {CSharpHelpers.Net9PreprocessorVariable}
                         , allows ref struct
                     #endif
@@ -743,12 +743,12 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}<TBuffer>(
-                ref TBuffer {context.TargetVariableName},
+            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}<TTarget>(
+                ref TTarget {context.TargetVariableName},
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
                 {serializationContextParameter}
-                {tableFieldContextParameter}) where TBuffer : IFlatBufferReaderWriter<TBuffer>
+                {tableFieldContextParameter}) where TTarget : IFlatBufferSerializationTarget<TTarget>
             #if {CSharpHelpers.Net9PreprocessorVariable}
                 , allows ref struct
             #endif

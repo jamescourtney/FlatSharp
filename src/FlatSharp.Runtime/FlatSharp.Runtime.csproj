@@ -25,10 +25,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>UnionTypes.cs</LastGenOutput>
     </None>
-    <None Update="IO\SerializationTarget\SerializationTargetHelpers.tt">
-      <LastGenOutput>SerializationTargetHelpers.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -45,11 +41,6 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>UnionTypes.tt</DependentUpon>
-    </Compile>
-    <Compile Update="IO\SerializationTarget\SerializationTargetHelpers.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SerializationTargetHelpers.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

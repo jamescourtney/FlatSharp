@@ -26,16 +26,16 @@
     (string casedName, string typeName)[] types = 
     {
         ("Bool", "bool"),
-        ("UInt8", "byte"),
-        ("Int8", "sbyte"),
-        ("UInt16", "ushort"),
-        ("Int16", "short"),
-        ("Int32", "int"),
-        ("UInt32", "uint"),
-        ("Int64", "long"),
-        ("UInt64", "ulong"),
-        ("Float32", "float"),
-        ("Float64", "double"),
+        ("Byte", "byte"),
+        ("SByte", "sbyte"),
+        ("UShort", "ushort"),
+        ("Short", "short"),
+        ("Int", "int"),
+        ("UInt", "uint"),
+        ("Long", "long"),
+        ("ULong", "ulong"),
+        ("Float", "float"),
+        ("Double", "double"),
     };
 #>
 
@@ -58,14 +58,10 @@ public struct <#=className#> : ISpanComparer
         this.defaultValue = defaultValue;
     }
 
-    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
+    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
     {
-        <#=typeName#> leftValue = leftExists ? left.Read<#=casedName#>(0) : this.defaultValue;
-        <#=typeName#> rightValue = rightExists ? right.Read<#=casedName#>(0) : this.defaultValue;
+        <#=typeName#> leftValue = leftExists ? ScalarSpanReader.Read<#=casedName#>(left) : this.defaultValue;
+        <#=typeName#> rightValue = rightExists ? ScalarSpanReader.Read<#=casedName#>(right) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
@@ -77,19 +73,15 @@ public struct Nullable<#=className#> : ISpanComparer
     public Nullable<#=className#>(<#=typeName#>? notUsed)
     {
     }
-
-    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
+        
+    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return left.Read<#=casedName#>(0).CompareTo(right.Read<#=casedName#>(0));
+        return ScalarSpanReader.Read<#=casedName#>(left).CompareTo(ScalarSpanReader.Read<#=casedName#>(right));
     }
 }
 

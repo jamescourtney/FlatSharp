@@ -41,8 +41,8 @@ public interface ISharedStringWriter
     /// <param name="offset">The location in the buffer of the uoffset to the string.</param>
     /// <param name="value">The string to write.</param>
     /// <param name="context">The serialization context.</param>
-    void WriteSharedString<TBuffer>(TBuffer spanWriter, long offset, string value, SerializationContext context)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+    void WriteSharedString<TTarget>(TTarget spanWriter, long offset, string value, SerializationContext context)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -51,8 +51,8 @@ public interface ISharedStringWriter
     /// <summary>
     /// Flushes any pending writes. Invoked at the end of a serialization operation.
     /// </summary>
-    void FlushWrites<TBuffer>(TBuffer writer, SerializationContext context)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+    void FlushWrites<TTarget>(TTarget writer, SerializationContext context)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
     #if NET9_0_OR_GREATER
             , allows ref struct
     #endif

@@ -35,11 +35,7 @@ public struct StringSpanComparer : ISpanComparer
     {
     }
 
-    public int Compare<TBuffer>(bool leftExists, TBuffer x, bool rightExists, TBuffer y)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
+    public int Compare(bool leftExists, ReadOnlySpan<byte> x, bool rightExists, ReadOnlySpan<byte> y)
     {
         if (!leftExists || !rightExists)
         {
@@ -47,7 +43,7 @@ public struct StringSpanComparer : ISpanComparer
         }
 
         int i = 0;
-        long minLength = x.Length;
+        int minLength = x.Length;
         if (y.Length < minLength)
         {
             minLength = y.Length;
@@ -56,8 +52,8 @@ public struct StringSpanComparer : ISpanComparer
         while (i + sizeof(ulong) <= minLength)
         {
             // Use BE since we read from left to right.
-            ulong left = x.ReadUInt64(i);
-            ulong right = y.ReadUInt64(i);
+            ulong left = BinaryPrimitives.ReadUInt64BigEndian(x.Slice(i, sizeof(ulong)));
+            ulong right = BinaryPrimitives.ReadUInt64BigEndian(y.Slice(i, sizeof(ulong)));
 
             int cmp = left.CompareTo(right);
             if (cmp != 0)
@@ -70,8 +66,8 @@ public struct StringSpanComparer : ISpanComparer
 
         for (; i < minLength; ++i)
         {
-            byte xByte = x.ReadUInt8(i);
-            byte yByte = y.ReadUInt8(i);
+            byte xByte = x[i];
+            byte yByte = y[i];
 
             if (xByte != yByte)
             {
@@ -79,6 +75,6 @@ public struct StringSpanComparer : ISpanComparer
             }
         }
 
-        return (int)(x.Length - y.Length);
+        return x.Length - y.Length;
     }
 }

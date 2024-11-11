@@ -39,8 +39,8 @@ public interface ISerializer
     /// <param name="target">The destination.</param>
     /// <param name="item">The object to serialize.</param>
     /// <returns>The number of bytes written.</returns>
-    long Write<TBuffer>(TBuffer target, object item)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+    long Write<TTarget>(TTarget target, object item)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
 #if NET9_0_OR_GREATER
         , allows ref struct
 #endif
@@ -81,8 +81,8 @@ public interface ISerializer<T>
     /// <param name="destination">The destination.</param>
     /// <param name="item">The object to serialize.</param>
     /// <returns>The number of bytes written.</returns>
-    long Write<TBuffer>(TBuffer destination, T item)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+    long Write<TTarget>(TTarget destination, T item)
+        where TTarget : IFlatBufferSerializationTarget<TTarget>
 #if NET9_0_OR_GREATER
         , allows ref struct
 #endif

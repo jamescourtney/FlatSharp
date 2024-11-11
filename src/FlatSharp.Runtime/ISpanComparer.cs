@@ -24,10 +24,5 @@ public interface ISpanComparer
     /// <summary>
     /// Compares the two spans.
     /// </summary>
-    int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
-        where TBuffer : IFlatBufferReaderWriter<TBuffer>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    ;
+    int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right);
 }

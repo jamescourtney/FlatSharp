@@ -19,13 +19,19 @@ namespace FlatSharp;
 /// <summary>
 /// A serialization target that wraps a Memory{byte}. Only supports the 32-bit address space.
 /// </summary>
-public readonly partial struct MemorySerializationTarget : IFlatBufferReaderWriter<MemorySerializationTarget>
+public struct MemorySerializationTarget : IFlatBufferSerializationTarget<MemorySerializationTarget>
 {
     private readonly Memory<byte> memory;
     
     public MemorySerializationTarget(Memory<byte> memory)
     {
         this.memory = memory;
+    }
+    
+    public byte this[long index]
+    {
+        get => this.memory.Span[checked((int)index)];
+        set => this.memory.Span[checked((int)index)] = value;
     }
 
     public long Length => this.memory.Length;
@@ -45,12 +51,12 @@ public readonly partial struct MemorySerializationTarget : IFlatBufferReaderWrit
             return new MemorySerializationTarget(this.memory.Slice((int)start));
         }
     }
-    
-    private partial Span<byte> AsSpan(long offset, int length)
+
+    public Span<byte> AsSpan(long start, int length)
     {
         checked
         {
-            return this.memory.Span.Slice((int)offset, length);
+            return this.memory.Span.Slice((int)start, length);
         }
     }
 }
