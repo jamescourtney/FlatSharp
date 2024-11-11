@@ -19,7 +19,7 @@ namespace FlatSharp;
 /// <summary>
 /// A serialization target that wraps an instance of <see cref="IInputBuffer"/>.
 /// </summary>
-public struct InputBufferSerializationTarget<TInputBuffer> : IFlatBufferSerializationTarget<InputBufferSerializationTarget<TInputBuffer>>
+public partial struct InputBufferSerializationTarget<TInputBuffer> : IFlatBufferReaderWriter<InputBufferSerializationTarget<TInputBuffer>>
     where TInputBuffer : IInputBuffer
 {
     private readonly long start;
@@ -38,12 +38,6 @@ public struct InputBufferSerializationTarget<TInputBuffer> : IFlatBufferSerializ
         this.start = start;
         this.Length = length;
     }
-    
-    public byte this[long index]
-    {
-        get => this.buffer.ReadByte(this.start + index);
-        set => this.buffer.GetSpan(this.start + index, sizeof(byte))[0] = value;
-    }
 
     public long Length { get; }
 
@@ -57,11 +51,8 @@ public struct InputBufferSerializationTarget<TInputBuffer> : IFlatBufferSerializ
         return new(this.buffer, this.start + start, this.Length - start);
     }
 
-    public Span<byte> AsSpan(long start, int length)
+    private partial Span<byte> AsSpan(long offset, int length)
     {
-        checked
-        {
-            return this.buffer.GetSpan(this.start + start, length);
-        }
+        return this.buffer.GetSpan(start + offset, length);
     }
 }

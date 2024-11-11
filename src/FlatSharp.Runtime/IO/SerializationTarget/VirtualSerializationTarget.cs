@@ -15,17 +15,16 @@
  */
 
 using System.Buffers.Binary;
+using System.Text;
 
 namespace FlatSharp;
 
-internal struct VirtualSerializationTarget : IFlatBufferSerializationTarget<VirtualSerializationTarget>
+/// <summary>
+/// A virtual serialization target that pretends to write data. Useful for simulating how many bytes
+/// a write operation will consume.
+/// </summary>
+internal readonly struct VirtualSerializationTarget : IFlatBufferReaderWriter<VirtualSerializationTarget>
 {
-    public byte this[long index]
-    {
-        get => 0;
-        set { }
-    }
-
     public long Length => long.MaxValue;
 
     public VirtualSerializationTarget Slice(long start, long length)
@@ -38,8 +37,89 @@ internal struct VirtualSerializationTarget : IFlatBufferSerializationTarget<Virt
         return this;
     }
 
-    public Span<byte> AsSpan(long start, int length)
+    public void WriteUInt8(long offset, byte value)
     {
-        return default;
+    }
+
+    public byte ReadUInt8(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteInt8(long offset, sbyte value)
+    {
+    }
+
+    public sbyte ReadInt8(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteInt16(long offset, short value)
+    {
+    }
+
+    public short ReadInt16(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteUInt16(long offset, ushort value)
+    {
+    }
+
+    public ushort ReadUInt16(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteInt32(long offset, int value)
+    {
+    }
+
+    public int ReadInt32(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteUInt32(long offset, uint value)
+    {
+    }
+
+    public uint ReadUInt32(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteInt64(long offset, long value)
+    {
+    }
+
+    public long ReadInt64(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteUInt64(long offset, ulong value)
+    {
+    }
+
+    public ulong ReadUInt64(long offset)
+    {
+        throw new NotImplementedException();
+    }
+
+    public int WriteStringBytes(long offset, string value, Encoding encoding)
+    {
+        return encoding.GetByteCount(value);
+    }
+
+    public void CopyFrom(long offset, ReadOnlySpan<byte> data)
+    {
+    }
+
+    public void CopyTo(long offset, Span<byte> destination)
+    {
+        throw new NotImplementedException();
     }
 }

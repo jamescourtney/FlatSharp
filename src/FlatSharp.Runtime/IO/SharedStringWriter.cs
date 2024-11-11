@@ -73,12 +73,12 @@ public class SharedStringWriter : ISharedStringWriter
     /// <summary>
     /// Writes a shared string.
     /// </summary>
-    public void WriteSharedString<TTarget>(
-        TTarget target,
+    public void WriteSharedString<TBuffer>(
+        TBuffer target,
         long offset,
         string value,
         SerializationContext context) 
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -110,10 +110,10 @@ public class SharedStringWriter : ISharedStringWriter
     /// <summary>
     /// Flush any pending writes.
     /// </summary>
-    public void FlushWrites<TTarget>(
-        TTarget target,
+    public void FlushWrites<TBuffer>(
+        TBuffer target,
         SerializationContext context) 
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -137,12 +137,12 @@ public class SharedStringWriter : ISharedStringWriter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FlushSharedString<TTarget>(
-        TTarget target,
+    private static void FlushSharedString<TBuffer>(
+        TBuffer target,
         string value,
         List<long> offsets,
         SerializationContext context)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct 
     #endif

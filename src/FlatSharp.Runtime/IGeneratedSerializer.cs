@@ -47,7 +47,7 @@ public interface IGeneratedSerializer<T>
         ref TSerializationTarget target,
         T item,
         SerializationContext context)
-        where TSerializationTarget : IFlatBufferSerializationTarget<TSerializationTarget>
+        where TSerializationTarget : IFlatBufferReaderWriter<TSerializationTarget>
 #if NET9_0_OR_GREATER
         , allows ref struct
 #endif

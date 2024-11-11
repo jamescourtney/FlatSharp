@@ -57,7 +57,7 @@ public record SerializationCodeGenContext
     public string TableFieldContextVariableName { get; init; }
 
     /// <summary>
-    /// The variable name of the span. Represents a <see cref="IFlatBufferSerializationTarget{T}"/> reference.
+    /// The variable name of the span. Represents a <see cref="IFlatBufferReaderWriter{T}"/> reference.
     /// </summary>
     public string TargetVariableName { get; init; }
     

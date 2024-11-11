@@ -187,8 +187,8 @@ public class SerializerConfigurationTests
             this.offsets.Clear();
         }
 
-        public void WriteSharedString<TTarget>(TTarget spanWriter, long offset, string value, SerializationContext context)
-            where TTarget : IFlatBufferSerializationTarget<TTarget>
+        public void WriteSharedString<TBuffer>(TBuffer spanWriter, long offset, string value, SerializationContext context)
+            where TBuffer : IFlatBufferReaderWriter<TBuffer>
         #if NET9_0_OR_GREATER
             , allows ref struct
         #endif
@@ -202,8 +202,8 @@ public class SerializerConfigurationTests
             list.Add(offset);
         }
 
-        public void FlushWrites<TTarget>(TTarget writer, SerializationContext context) 
-            where TTarget : IFlatBufferSerializationTarget<TTarget>
+        public void FlushWrites<TBuffer>(TBuffer writer, SerializationContext context) 
+            where TBuffer : IFlatBufferReaderWriter<TBuffer>
         #if NET9_0_OR_GREATER
             , allows ref struct
         #endif

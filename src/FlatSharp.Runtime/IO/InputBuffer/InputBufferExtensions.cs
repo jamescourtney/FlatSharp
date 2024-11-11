@@ -31,134 +31,12 @@ public static class InputBufferExtensions
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ReadBool<TBuffer>(this TBuffer buffer, long offset)
-        where TBuffer : IInputBuffer
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
 #if NET9_0_OR_GREATER
         , allows ref struct
 #endif
     {
-        return buffer.ReadByte(offset) != SerializationHelpers.False;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static byte ReadByte<TBuffer>(this TBuffer buffer, long offset)
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        return buffer.GetReadOnlySpan(offset, sizeof(byte))[0];
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static sbyte ReadSByte<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        return (sbyte)buffer.ReadByte(offset);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ushort ReadUShort<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(ushort));
-        return BinaryPrimitives.ReadUInt16LittleEndian(buffer.GetReadOnlySpan(offset, sizeof(ushort)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static short ReadShort<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(short));
-        return BinaryPrimitives.ReadInt16LittleEndian(buffer.GetReadOnlySpan(offset, sizeof(short)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint ReadUInt<TBuffer>(this TBuffer buffer, long offset)
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(uint));
-        return BinaryPrimitives.ReadUInt32LittleEndian(buffer.GetReadOnlySpan(offset, sizeof(uint)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ReadInt<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        return BinaryPrimitives.ReadInt32LittleEndian(buffer.GetReadOnlySpan(offset, sizeof(int)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong ReadULong<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(ulong));
-        return BinaryPrimitives.ReadUInt64LittleEndian(buffer.GetReadOnlySpan(offset, sizeof(ulong)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long ReadLong<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(long));
-        return BinaryPrimitives.ReadInt64LittleEndian(buffer.GetReadOnlySpan(offset, sizeof(long)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float ReadFloat<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(float));
-
-#if NETSTANDARD
-        ScalarSpanReader.FloatLayout layout = new()
-        {
-            bytes = buffer.ReadUInt(offset)
-        };
-
-        return layout.value;
-#else
-        return BinaryPrimitives.ReadSingleLittleEndian(buffer.GetReadOnlySpan(offset, sizeof(float)));
-#endif
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double ReadDouble<TBuffer>(this TBuffer buffer, long offset) 
-        where TBuffer : IInputBuffer
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    {
-        buffer.CheckAlignment(offset, sizeof(double));
-        
-#if NETSTANDARD
-        return BitConverter.Int64BitsToDouble(buffer.ReadLong(offset));
-#else
-        return BinaryPrimitives.ReadDoubleLittleEndian(buffer.GetReadOnlySpan(offset, sizeof(double)));
-#endif
+        return buffer.ReadUInt8(offset) != SerializationHelpers.False;
     }
 
     /// <summary>
@@ -179,7 +57,10 @@ public static class InputBufferExtensions
     /// Reads a string from the given uoffset.
     /// </summary>
     public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, long stringStart)
-        where TBuffer : IInputBuffer
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         int numberOfBytes = (int)buffer.ReadUInt(stringStart);
         ReadOnlySpan<byte> stringValue = buffer.GetReadOnlySpan(stringStart + sizeof(int), numberOfBytes);
@@ -198,9 +79,13 @@ public static class InputBufferExtensions
     /// <summary>
     /// Reads the given uoffset.
     /// </summary>
-    public static int ReadUOffset<TBuffer>(this TBuffer buffer, long offset) where TBuffer : IInputBuffer
+    public static int ReadUOffset<TBuffer>(this TBuffer buffer, long offset)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        int uoffset = buffer.ReadInt(offset);
+        int uoffset = buffer.ReadUInt32(offset);
         if (uoffset < sizeof(uint))
         {
             FSThrow.InvalidData_UOffsetTooSmall((uint)uoffset);
@@ -218,7 +103,11 @@ public static class InputBufferExtensions
         long tableOffset,
         out long vtableOffset,
         out ulong vtableFieldCount,
-        out ReadOnlySpan<byte> fieldData) where TBuffer : IInputBuffer
+        out ReadOnlySpan<byte> fieldData)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
         ushort vtableLength = buffer.ReadUShort(vtableOffset);
@@ -235,7 +124,10 @@ public static class InputBufferExtensions
     // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
     // [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, long uoffset)
-        where TBuffer : IInputBuffer
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         // The local value stores a uoffset_t, so follow that now.
         uoffset += buffer.ReadUOffset(uoffset);
@@ -275,9 +167,12 @@ public static class InputBufferExtensions
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static long CopyTo<TBuffer, TTarget>(this TBuffer buffer, TTarget target)
-        where TBuffer : IInputBuffer
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    public static long CopyTo<TBuffer1, TBuffer2>(this TBuffer1 buffer, TBuffer2 target)
+        where TBuffer1 : IFlatBufferReaderWriter<TBuffer1>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+        where TBuffer2 : IFlatBufferReaderWriter<TBuffer2>
 #if NET9_0_OR_GREATER
         , allows ref struct
 #endif
@@ -293,8 +188,7 @@ public static class InputBufferExtensions
         {
             long remaining = buffer.Length - offset;
             var chunk = buffer.GetReadOnlySpan(offset, (int)Math.Min(int.MaxValue, remaining));
-            chunk.CopyTo(target.AsSpan(offset, chunk.Length));
-
+            target.CopyFrom(offset, chunk);
             offset += chunk.Length;
         }
 

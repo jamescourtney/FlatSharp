@@ -21,8 +21,8 @@ namespace FlatSharp.Internal;
 /// </summary>
 public interface IPostSerializeAction
 {
-    void Invoke<TTarget>(TTarget target, SerializationContext context)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    void Invoke<TBuffer>(TBuffer target, SerializationContext context)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
         #if NET9_0_OR_GREATER
         , allows ref struct
         #endif

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-using System.Buffers.Binary;
-
 namespace FlatSharp;
 
 /// <summary>
 /// A serialization target that wraps a Span{byte}. Only supports the 32-bit address space.
 /// </summary>
-public struct ArraySerializationTarget : IFlatBufferSerializationTarget<ArraySerializationTarget>
+public readonly partial struct ArraySerializationTarget : IFlatBufferReaderWriter<ArraySerializationTarget>
 {
     private readonly byte[] array;
     private readonly int start;
@@ -38,12 +36,6 @@ public struct ArraySerializationTarget : IFlatBufferSerializationTarget<ArraySer
         this.start = start;
         this.Length = length;
         this.array = array;
-    }
-    
-    public byte this[long index]
-    {
-        get => this.array[checked(this.start + (int)index)];
-        set => this.array[checked(this.start + (int)index)] = value;
     }
 
     public long Length { get; }
@@ -64,11 +56,14 @@ public struct ArraySerializationTarget : IFlatBufferSerializationTarget<ArraySer
         }
     }
 
-    public Span<byte> AsSpan(long start, int length)
+    private partial Span<byte> AsSpan(long offset, int length)
     {
         checked
         {
-            return this.array.AsSpan().Slice(this.start + (int)start, length);
+            long value = this.start + offset;
+            return this.array.AsSpan((int)value, length);
         }
     }
+
+    private partial ReadOnlySpan<byte> AsReadOnlySpan(long offset, int length) => this.AsSpan(offset, length);
 }

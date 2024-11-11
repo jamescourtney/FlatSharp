@@ -28,10 +28,14 @@ public struct BoolSpanComparer : ISpanComparer
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        bool leftValue = leftExists ? ScalarSpanReader.ReadBool(left) : this.defaultValue;
-        bool rightValue = rightExists ? ScalarSpanReader.ReadBool(right) : this.defaultValue;
+        bool leftValue = leftExists ? left.ReadBool(0) : this.defaultValue;
+        bool rightValue = rightExists ? right.ReadBool(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
@@ -43,385 +47,469 @@ public struct NullableBoolSpanComparer : ISpanComparer
     public NullableBoolSpanComparer(bool? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadBool(left).CompareTo(ScalarSpanReader.ReadBool(right));
+        return left.ReadBool(0).CompareTo(right.ReadBool(0));
     }
 }
 
 
-public struct ByteSpanComparer : ISpanComparer
+public struct UInt8SpanComparer : ISpanComparer
 {
     private readonly byte defaultValue;
 
-    public ByteSpanComparer(byte defaultValue)
+    public UInt8SpanComparer(byte defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        byte leftValue = leftExists ? ScalarSpanReader.ReadByte(left) : this.defaultValue;
-        byte rightValue = rightExists ? ScalarSpanReader.ReadByte(right) : this.defaultValue;
+        byte leftValue = leftExists ? left.ReadUInt8(0) : this.defaultValue;
+        byte rightValue = rightExists ? right.ReadUInt8(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableByteSpanComparer : ISpanComparer
+public struct NullableUInt8SpanComparer : ISpanComparer
 {
-    public NullableByteSpanComparer(byte? notUsed)
+    public NullableUInt8SpanComparer(byte? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadByte(left).CompareTo(ScalarSpanReader.ReadByte(right));
+        return left.ReadUInt8(0).CompareTo(right.ReadUInt8(0));
     }
 }
 
 
-public struct SByteSpanComparer : ISpanComparer
+public struct Int8SpanComparer : ISpanComparer
 {
     private readonly sbyte defaultValue;
 
-    public SByteSpanComparer(sbyte defaultValue)
+    public Int8SpanComparer(sbyte defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        sbyte leftValue = leftExists ? ScalarSpanReader.ReadSByte(left) : this.defaultValue;
-        sbyte rightValue = rightExists ? ScalarSpanReader.ReadSByte(right) : this.defaultValue;
+        sbyte leftValue = leftExists ? left.ReadInt8(0) : this.defaultValue;
+        sbyte rightValue = rightExists ? right.ReadInt8(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableSByteSpanComparer : ISpanComparer
+public struct NullableInt8SpanComparer : ISpanComparer
 {
-    public NullableSByteSpanComparer(sbyte? notUsed)
+    public NullableInt8SpanComparer(sbyte? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadSByte(left).CompareTo(ScalarSpanReader.ReadSByte(right));
+        return left.ReadInt8(0).CompareTo(right.ReadInt8(0));
     }
 }
 
 
-public struct UShortSpanComparer : ISpanComparer
+public struct UInt16SpanComparer : ISpanComparer
 {
     private readonly ushort defaultValue;
 
-    public UShortSpanComparer(ushort defaultValue)
+    public UInt16SpanComparer(ushort defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        ushort leftValue = leftExists ? ScalarSpanReader.ReadUShort(left) : this.defaultValue;
-        ushort rightValue = rightExists ? ScalarSpanReader.ReadUShort(right) : this.defaultValue;
+        ushort leftValue = leftExists ? left.ReadUInt16(0) : this.defaultValue;
+        ushort rightValue = rightExists ? right.ReadUInt16(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableUShortSpanComparer : ISpanComparer
+public struct NullableUInt16SpanComparer : ISpanComparer
 {
-    public NullableUShortSpanComparer(ushort? notUsed)
+    public NullableUInt16SpanComparer(ushort? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadUShort(left).CompareTo(ScalarSpanReader.ReadUShort(right));
+        return left.ReadUInt16(0).CompareTo(right.ReadUInt16(0));
     }
 }
 
 
-public struct ShortSpanComparer : ISpanComparer
+public struct Int16SpanComparer : ISpanComparer
 {
     private readonly short defaultValue;
 
-    public ShortSpanComparer(short defaultValue)
+    public Int16SpanComparer(short defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        short leftValue = leftExists ? ScalarSpanReader.ReadShort(left) : this.defaultValue;
-        short rightValue = rightExists ? ScalarSpanReader.ReadShort(right) : this.defaultValue;
+        short leftValue = leftExists ? left.ReadInt16(0) : this.defaultValue;
+        short rightValue = rightExists ? right.ReadInt16(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableShortSpanComparer : ISpanComparer
+public struct NullableInt16SpanComparer : ISpanComparer
 {
-    public NullableShortSpanComparer(short? notUsed)
+    public NullableInt16SpanComparer(short? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadShort(left).CompareTo(ScalarSpanReader.ReadShort(right));
+        return left.ReadInt16(0).CompareTo(right.ReadInt16(0));
     }
 }
 
 
-public struct IntSpanComparer : ISpanComparer
+public struct Int32SpanComparer : ISpanComparer
 {
     private readonly int defaultValue;
 
-    public IntSpanComparer(int defaultValue)
+    public Int32SpanComparer(int defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        int leftValue = leftExists ? ScalarSpanReader.ReadInt(left) : this.defaultValue;
-        int rightValue = rightExists ? ScalarSpanReader.ReadInt(right) : this.defaultValue;
+        int leftValue = leftExists ? left.ReadInt32(0) : this.defaultValue;
+        int rightValue = rightExists ? right.ReadInt32(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableIntSpanComparer : ISpanComparer
+public struct NullableInt32SpanComparer : ISpanComparer
 {
-    public NullableIntSpanComparer(int? notUsed)
+    public NullableInt32SpanComparer(int? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadInt(left).CompareTo(ScalarSpanReader.ReadInt(right));
+        return left.ReadInt32(0).CompareTo(right.ReadInt32(0));
     }
 }
 
 
-public struct UIntSpanComparer : ISpanComparer
+public struct UInt32SpanComparer : ISpanComparer
 {
     private readonly uint defaultValue;
 
-    public UIntSpanComparer(uint defaultValue)
+    public UInt32SpanComparer(uint defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        uint leftValue = leftExists ? ScalarSpanReader.ReadUInt(left) : this.defaultValue;
-        uint rightValue = rightExists ? ScalarSpanReader.ReadUInt(right) : this.defaultValue;
+        uint leftValue = leftExists ? left.ReadUInt32(0) : this.defaultValue;
+        uint rightValue = rightExists ? right.ReadUInt32(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableUIntSpanComparer : ISpanComparer
+public struct NullableUInt32SpanComparer : ISpanComparer
 {
-    public NullableUIntSpanComparer(uint? notUsed)
+    public NullableUInt32SpanComparer(uint? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadUInt(left).CompareTo(ScalarSpanReader.ReadUInt(right));
+        return left.ReadUInt32(0).CompareTo(right.ReadUInt32(0));
     }
 }
 
 
-public struct LongSpanComparer : ISpanComparer
+public struct Int64SpanComparer : ISpanComparer
 {
     private readonly long defaultValue;
 
-    public LongSpanComparer(long defaultValue)
+    public Int64SpanComparer(long defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        long leftValue = leftExists ? ScalarSpanReader.ReadLong(left) : this.defaultValue;
-        long rightValue = rightExists ? ScalarSpanReader.ReadLong(right) : this.defaultValue;
+        long leftValue = leftExists ? left.ReadInt64(0) : this.defaultValue;
+        long rightValue = rightExists ? right.ReadInt64(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableLongSpanComparer : ISpanComparer
+public struct NullableInt64SpanComparer : ISpanComparer
 {
-    public NullableLongSpanComparer(long? notUsed)
+    public NullableInt64SpanComparer(long? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadLong(left).CompareTo(ScalarSpanReader.ReadLong(right));
+        return left.ReadInt64(0).CompareTo(right.ReadInt64(0));
     }
 }
 
 
-public struct ULongSpanComparer : ISpanComparer
+public struct UInt64SpanComparer : ISpanComparer
 {
     private readonly ulong defaultValue;
 
-    public ULongSpanComparer(ulong defaultValue)
+    public UInt64SpanComparer(ulong defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        ulong leftValue = leftExists ? ScalarSpanReader.ReadULong(left) : this.defaultValue;
-        ulong rightValue = rightExists ? ScalarSpanReader.ReadULong(right) : this.defaultValue;
+        ulong leftValue = leftExists ? left.ReadUInt64(0) : this.defaultValue;
+        ulong rightValue = rightExists ? right.ReadUInt64(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableULongSpanComparer : ISpanComparer
+public struct NullableUInt64SpanComparer : ISpanComparer
 {
-    public NullableULongSpanComparer(ulong? notUsed)
+    public NullableUInt64SpanComparer(ulong? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadULong(left).CompareTo(ScalarSpanReader.ReadULong(right));
+        return left.ReadUInt64(0).CompareTo(right.ReadUInt64(0));
     }
 }
 
 
-public struct FloatSpanComparer : ISpanComparer
+public struct Float32SpanComparer : ISpanComparer
 {
     private readonly float defaultValue;
 
-    public FloatSpanComparer(float defaultValue)
+    public Float32SpanComparer(float defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        float leftValue = leftExists ? ScalarSpanReader.ReadFloat(left) : this.defaultValue;
-        float rightValue = rightExists ? ScalarSpanReader.ReadFloat(right) : this.defaultValue;
+        float leftValue = leftExists ? left.ReadFloat32(0) : this.defaultValue;
+        float rightValue = rightExists ? right.ReadFloat32(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableFloatSpanComparer : ISpanComparer
+public struct NullableFloat32SpanComparer : ISpanComparer
 {
-    public NullableFloatSpanComparer(float? notUsed)
+    public NullableFloat32SpanComparer(float? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadFloat(left).CompareTo(ScalarSpanReader.ReadFloat(right));
+        return left.ReadFloat32(0).CompareTo(right.ReadFloat32(0));
     }
 }
 
 
-public struct DoubleSpanComparer : ISpanComparer
+public struct Float64SpanComparer : ISpanComparer
 {
     private readonly double defaultValue;
 
-    public DoubleSpanComparer(double defaultValue)
+    public Float64SpanComparer(double defaultValue)
     {
         this.defaultValue = defaultValue;
     }
 
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        double leftValue = leftExists ? ScalarSpanReader.ReadDouble(left) : this.defaultValue;
-        double rightValue = rightExists ? ScalarSpanReader.ReadDouble(right) : this.defaultValue;
+        double leftValue = leftExists ? left.ReadFloat64(0) : this.defaultValue;
+        double rightValue = rightExists ? right.ReadFloat64(0) : this.defaultValue;
 
         return leftValue.CompareTo(rightValue);
     }
 }
 
 [ExcludeFromCodeCoverage] // Not currently used.
-public struct NullableDoubleSpanComparer : ISpanComparer
+public struct NullableFloat64SpanComparer : ISpanComparer
 {
-    public NullableDoubleSpanComparer(double? notUsed)
+    public NullableFloat64SpanComparer(double? notUsed)
     {
     }
-        
-    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+
+    public int Compare<TBuffer>(bool leftExists, TBuffer left, bool rightExists, TBuffer right)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         if (!leftExists || !rightExists)
         {
             return leftExists.CompareTo(rightExists);
         }
 
-        return ScalarSpanReader.ReadDouble(left).CompareTo(ScalarSpanReader.ReadDouble(right));
+        return left.ReadFloat64(0).CompareTo(right.ReadFloat64(0));
     }
 }
 

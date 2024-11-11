@@ -19,21 +19,25 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of InputBuffer for writable memory segments.
 /// </summary>
-internal
+internal readonly
 #if NET9_0_OR_GREATER
     ref 
 #endif
-struct SerializationTargetInputBuffer<TTarget> : IInputBuffer
-    where TTarget : IFlatBufferSerializationTarget<TTarget>
+struct SerializationTargetInputBuffer<TBuffer> : IInputBuffer
+    where TBuffer : IFlatBufferReaderWriter<TBuffer>
 #if NET9_0_OR_GREATER
     , allows ref struct
 #endif
 {
-    private readonly TTarget target;
+    private readonly TBuffer target;
+    private readonly Func<TBuffer, long, int, Span<byte>> getSpan;
 
-    public SerializationTargetInputBuffer(TTarget target)
+    public SerializationTargetInputBuffer(
+        TBuffer target, 
+        Func<TBuffer, long, int, Span<byte>> getSpan)
     {
         this.target = target;
+        this.getSpan = getSpan;
     }
 
     public bool IsPinned => false;
@@ -42,16 +46,14 @@ struct SerializationTargetInputBuffer<TTarget> : IInputBuffer
 
     public long Length => this.target.Length;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length)
     {
         return this.GetSpan(offset, length);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> GetSpan(long offset, int length)
     {
-        return this.target.AsSpan(offset, length);
+        return this.getSpan(this.target, offset, length);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,9 +62,9 @@ struct SerializationTargetInputBuffer<TTarget> : IInputBuffer
         return this.GetMemory(offset, length);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<byte> GetMemory(long offset, int length)
     {
-        return FSThrow.InvalidOperation<Memory<byte>>("Unsupported");
+        FSThrow.NotSupported_Generic("SerializationTargetInputBuffer does not support getting a memory");
+        return default;
     }
 }

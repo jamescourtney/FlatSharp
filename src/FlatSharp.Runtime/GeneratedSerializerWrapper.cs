@@ -148,8 +148,8 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option) => this.Parse(buffer, option);
 
-    public long Write<TTarget>(TTarget destination, T item)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    public long Write<TBuffer>(TBuffer destination, T item)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -206,7 +206,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         return serializationContext.Offset;
     }
 
-    long ISerializer.Write<TTarget>(TTarget target, object item)
+    long ISerializer.Write<TBuffer>(TBuffer target, object item)
     {
         return item switch
         {

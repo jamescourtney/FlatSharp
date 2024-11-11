@@ -200,5 +200,9 @@ public static class FSThrow
     public static void NotSupported_NativeArray_NonPinned() 
         => throw new NotSupportedException("Non-greedy parsing of a NativeArray requires a pinned buffer.");
 
+    [DoesNotReturn]
+    public static void NotSupported_Generic(string message)
+        => throw new NotSupportedException(message);
+    
     #endregion
 }

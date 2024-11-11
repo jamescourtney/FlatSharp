@@ -72,8 +72,8 @@ public sealed class SerializationContext
     /// Invokes any post-serialize actions.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InvokePostSerializeActions<TTarget>(TTarget target)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+    public void InvokePostSerializeActions<TBuffer>(TBuffer target)
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
@@ -149,10 +149,10 @@ public sealed class SerializationContext
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)] // Common method; don't inline
-    public long FinishVTable<TTarget>(
-        TTarget buffer,
+    public long FinishVTable<TBuffer>(
+        TBuffer buffer,
         Span<byte> vtable)
-    where TTarget : IFlatBufferSerializationTarget<TTarget>
+    where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif

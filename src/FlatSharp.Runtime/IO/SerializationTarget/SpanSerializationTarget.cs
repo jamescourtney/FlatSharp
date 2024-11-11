@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// A serialization target that wraps a Span{byte}. Only supports the 32-bit address space.
 /// </summary>
-public ref struct SpanSerializationTarget : IFlatBufferSerializationTarget<SpanSerializationTarget>
+public readonly ref partial struct SpanSerializationTarget : IFlatBufferReaderWriter<SpanSerializationTarget>
 {
     private readonly Span<byte> span;
     
@@ -39,12 +39,6 @@ public ref struct SpanSerializationTarget : IFlatBufferSerializationTarget<SpanS
     {
         this.span = memory.Span;
     }
-    
-    public byte this[long index]
-    {
-        get => this.span[checked((int)index)];
-        set => this.span[checked((int)index)] = value;
-    }
 
     public long Length => this.span.Length;
 
@@ -61,11 +55,11 @@ public ref struct SpanSerializationTarget : IFlatBufferSerializationTarget<SpanS
         return new(this.span.Slice((int)start));
     }
 
-    public Span<byte> AsSpan(long start, int length)
+    private partial Span<byte> AsSpan(long offset, int length)
     {
         checked
         {
-            return this.span.Slice((int)start, (int)length);
+            return this.span.Slice((int)offset, length);
         }
     }
 }

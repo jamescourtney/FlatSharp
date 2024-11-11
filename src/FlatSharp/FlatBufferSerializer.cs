@@ -174,9 +174,9 @@ public sealed class FlatBufferSerializer
     /// Writes the given object to the given memory block.
     /// </summary>
     /// <returns>The length of data that was written to the memory block.</returns>
-    public long Serialize<T, TTarget>(T item, TTarget destination)
+    public long Serialize<T, TBuffer>(T item, TBuffer destination)
         where T : class
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
+        where TBuffer : IFlatBufferReaderWriter<TBuffer>
     #if NET9_0_OR_GREATER
         , allows ref struct
     #endif
