@@ -83,6 +83,11 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                                                                  // than to introduce an 'if'.
     }
 
+    public long GetActualSize(T item)
+    {
+        return this.Write(new VirtualSerializationTarget(), item);
+    }
+
     long ISerializer.GetMaxSize(object item)
     {
         return item switch

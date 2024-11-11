@@ -89,6 +89,11 @@ public interface ISerializer<T>
     ;
 
     /// <summary>
+    /// Computes the exact size necessary to serialize the given instance of <typeparamref name="T"/>.
+    /// </summary>
+    long GetActualSize(T item);
+
+    /// <summary>
     /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
     /// </summary>
     long GetMaxSize(T item);

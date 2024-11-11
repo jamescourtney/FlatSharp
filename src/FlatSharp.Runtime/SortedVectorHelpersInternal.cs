@@ -80,41 +80,49 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         , allows ref struct
     #endif
     {
-        long vectorStartOffset = vectorUOffset + ScalarSpanReader.ReadUInt(target.AsSpan(this.vectorUOffset, sizeof(uint)));
-        int vectorLength = (int)ScalarSpanReader.ReadUInt(target.AsSpan(vectorStartOffset, sizeof(uint)));
-        long index0Position = vectorStartOffset + sizeof(int);
-
-        (long, int, long)[]? pooledArray = null;
-
-        // Traverse the vector and figure out the offsets of all the keys.
-        // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
-        Span<(long offset, int length, long tableOffset)> keyOffsets =
-            vectorLength < 512
-                ? stackalloc (long, int, long)[vectorLength]
-                : (pooledArray = ArrayPool<(long, int, long)>.Shared.Rent(vectorLength)).AsSpan().Slice(0, vectorLength);
-
-        for (int i = 0; i < keyOffsets.Length; ++i)
+        checked
         {
-            keyOffsets[i] = GetKeyOffset(target, index0Position, i, this.vTableIndex, keyInlineSize);
-        }
+            var buffer = new SerializationTargetInputBuffer<TTarget>(target);
 
-        // Sort the offsets.
-        IntroSort(target, comparer, 0, vectorLength - 1, keyOffsets);
+            long vectorStartOffset =
+                vectorUOffset + buffer.ReadUInt(vectorUOffset);
+            int vectorLength = (int)buffer.ReadUInt(vectorStartOffset);
+            long index0Position = vectorStartOffset + sizeof(int);
 
-        // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
-        // partying inappropriately in the rest of the buffer.
-        Span<byte> boundedVector = target.AsSpan(index0Position, sizeof(uint) * vectorLength);
-        long nextPosition = index0Position;
-        for (int i = 0; i < keyOffsets.Length; ++i)
-        {
-            (_, _, long tableOffset) = keyOffsets[i];
-            BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
-            nextPosition += sizeof(uint);
-        }
+            (long, int, long)[]? pooledArray = null;
 
-        if (pooledArray is not null)
-        {
-            ArrayPool<(long, int, long)>.Shared.Return(pooledArray);
+            // Traverse the vector and figure out the offsets of all the keys.
+            // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
+            Span<(long offset, int length, long tableOffset)> keyOffsets =
+                vectorLength < 512
+                    ? stackalloc (long, int, long)[vectorLength]
+                    : (pooledArray = ArrayPool<(long, int, long)>.Shared.Rent(vectorLength)).AsSpan()
+                    .Slice(0, vectorLength);
+
+            for (int i = 0; i < keyOffsets.Length; ++i)
+            {
+                keyOffsets[i] = GetKeyOffset(target, index0Position, i, this.vTableIndex, keyInlineSize);
+            }
+
+            // Sort the offsets.
+            IntroSort(target, comparer, 0, vectorLength - 1, keyOffsets);
+
+            // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
+            // partying inappropriately in the rest of the buffer.
+            Span<byte> boundedVector = target.AsSpan(index0Position, sizeof(uint) * vectorLength);
+            long nextPosition = index0Position;
+            for (int i = 0; i < keyOffsets.Length; ++i)
+            {
+                (_, _, long tableOffset) = keyOffsets[i];
+                BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i),
+                    (uint)(tableOffset - nextPosition));
+                nextPosition += sizeof(uint);
+            }
+
+            if (pooledArray is not null)
+            {
+                ArrayPool<(long, int, long)>.Shared.Return(pooledArray);
+            }
         }
     }
 
@@ -306,7 +314,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// Left as unchecked since this is a sort operation (not a search).
     /// </remarks>
     private static (long offset, int length, long tableOffset) GetKeyOffset<TTarget>(
-        TTarget buffer,
+        TTarget target,
         long index0Position,
         int vectorIndex,
         int vtableIndex,
@@ -316,36 +324,41 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         , allows ref struct
     #endif
     {
-        // Find offset to the table at the index.
-        long tableOffset = index0Position + (sizeof(uint) * vectorIndex);
-        tableOffset += (int)ScalarSpanReader.ReadUInt(buffer.AsSpan(tableOffset, sizeof(uint)));
-
-        // Consult the vtable.
-        long vtableOffset = tableOffset - ScalarSpanReader.ReadInt(buffer.AsSpan(tableOffset, sizeof(int)));
-
-        // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
-        int vtableLengthEntries = (ScalarSpanReader.ReadUShort(buffer.AsSpan(vtableOffset, sizeof(ushort))) / 2) - 2;
-
-        if (vtableIndex >= vtableLengthEntries)
+        checked
         {
-            return (0, 0, tableOffset);
-        }
+            var buffer = new SerializationTargetInputBuffer<TTarget>(target);
+        
+            // Find offset to the table at the index.
+            long tableOffset = index0Position + (sizeof(uint) * vectorIndex);
+            tableOffset += (int)buffer.ReadUInt(tableOffset);
 
-        // Absolute offset of the field within the table.
-        long fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer.AsSpan(vtableOffset + 2 * (2 + vtableIndex), sizeof(ushort)));
-        if (inlineItemSize is not null)
-        {
-            return (fieldOffset, inlineItemSize.Value, tableOffset);
-        }
+            // Consult the vtable.
+            long vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
 
-        if (fieldOffset == 0)
-        {
-            return (0, 0, tableOffset);
-        }
+            // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
+            int vtableLengthEntries = (buffer.ReadUShort(vtableOffset) / 2) - 2;
 
-        // Strings are stored as a uoffset reference. Follow the indirection one more time.
-        long uoffsetToString = fieldOffset + (int)ScalarSpanReader.ReadUInt(buffer.AsSpan(fieldOffset, sizeof(uint)));
-        int stringLength = (int)ScalarSpanReader.ReadUInt(buffer.AsSpan(uoffsetToString, sizeof(uint)));
-        return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
+            if (vtableIndex >= vtableLengthEntries)
+            {
+                return (0, 0, tableOffset);
+            }
+
+            // Absolute offset of the field within the table.
+            long fieldOffset = tableOffset + buffer.ReadUShort(vtableOffset + 2 * (2 + vtableIndex));
+            if (inlineItemSize is not null)
+            {
+                return (fieldOffset, inlineItemSize.Value, tableOffset);
+            }
+
+            if (fieldOffset == 0)
+            {
+                return (0, 0, tableOffset);
+            }
+
+            // Strings are stored as a uoffset reference. Follow the indirection one more time.
+            long uoffsetToString = fieldOffset + (int)buffer.ReadUInt(fieldOffset);
+            int stringLength = (int)buffer.ReadUInt(uoffsetToString);
+            return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
+        }
     }
 }

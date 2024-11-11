@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Text;
-
 namespace FlatSharp;
 
 /// <summary>
@@ -57,66 +55,4 @@ public interface IInputBuffer
     /// Gets a memory covering the entire input buffer.
     /// </summary>
     Memory<byte> GetMemory(long offset, int length);
-}
-
-/// <summary>
-/// An implementation of IInputBuffer that contains all methods. Useful for
-/// implementations that wish to completely control the behavior.
-/// </summary>
-public interface IInputBufferFull : IInputBuffer
-{
-    /// <summary>
-    /// Reads the byte at the given offset.
-    /// </summary>
-    byte ReadByte(long offset);
-
-    /// <summary>
-    /// Reads the sbyte at the given offset.
-    /// </summary>
-    sbyte ReadSByte(long offset);
-
-    /// <summary>
-    /// Reads the ushort at the given offset.
-    /// </summary>
-    ushort ReadUShort(long offset);
-
-    /// <summary>
-    /// Reads the short at the given offset.
-    /// </summary>
-    short ReadShort(long offset);
-
-    /// <summary>
-    /// Reads the uint at the given offset.
-    /// </summary>
-    uint ReadUInt(long offset);
-
-    /// <summary>
-    /// Reads the int at the given offset.
-    /// </summary>
-    int ReadInt(long offset);
-
-    /// <summary>
-    /// Reads the ulong at the given offset.
-    /// </summary>
-    ulong ReadULong(long offset);
-
-    /// <summary>
-    /// Reads the long at the given offset.
-    /// </summary>
-    long ReadLong(long offset);
-
-    /// <summary>
-    /// Reads the float at the given offset.
-    /// </summary>
-    float ReadFloat(long offset);
-
-    /// <summary>
-    /// Reads the double at the given offset.
-    /// </summary>
-    double ReadDouble(long offset);
-
-    /// <summary>
-    /// Reads the string of the given length at the given offset with the given encoding.
-    /// </summary>
-    string ReadString(long offset, int byteLength, Encoding encoding);
 }

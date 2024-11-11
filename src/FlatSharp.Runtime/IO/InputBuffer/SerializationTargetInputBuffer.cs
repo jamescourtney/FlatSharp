@@ -19,24 +19,28 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of InputBuffer for writable memory segments.
 /// </summary>
-public readonly struct MemoryInputBuffer : IInputBuffer
+internal
+#if NET9_0_OR_GREATER
+    ref 
+#endif
+struct SerializationTargetInputBuffer<TTarget> : IInputBuffer
+    where TTarget : IFlatBufferSerializationTarget<TTarget>
+#if NET9_0_OR_GREATER
+    , allows ref struct
+#endif
 {
-    private readonly MemoryPointer pointer;
+    private readonly TTarget target;
 
-    public MemoryInputBuffer(Memory<byte> memory, bool isPinned = false)
+    public SerializationTargetInputBuffer(TTarget target)
     {
-        this.pointer = new MemoryPointer { memory = memory, isPinned = isPinned };
+        this.target = target;
     }
 
-    public bool IsPinned => this.pointer.isPinned;
+    public bool IsPinned => false;
 
     public bool IsReadOnly => false;
 
-    public long Length
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => this.pointer.memory.Length;
-    }
+    public long Length => this.target.Length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length)
@@ -47,10 +51,7 @@ public readonly struct MemoryInputBuffer : IInputBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> GetSpan(long offset, int length)
     {
-        checked
-        {
-            return this.pointer.memory.Span.Slice((int)offset, length);
-        }
+        return this.target.AsSpan(offset, length);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,18 +63,6 @@ public readonly struct MemoryInputBuffer : IInputBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<byte> GetMemory(long offset, int length)
     {
-        checked
-        {
-            return this.pointer.memory.Slice((int)offset, length);
-        }
-    }
-
-    // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a
-    // a reference that will be collected ephemerally in Gen0 than it is to
-    // copy it around.
-    private class MemoryPointer
-    {
-        public Memory<byte> memory;
-        public bool isPinned;
+        return FSThrow.InvalidOperation<Memory<byte>>("Unsupported");
     }
 }
