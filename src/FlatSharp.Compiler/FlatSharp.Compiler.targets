@@ -100,7 +100,7 @@
     </Exec>
 
     <PropertyGroup>
-      <CompilerVersion>net8.0</CompilerVersion>
+      <CompilerVersion>net9.0</CompilerVersion>
     </PropertyGroup>
 
     <!-- try .net6.0. -->
@@ -116,6 +116,11 @@
     <!-- try .net8.0. -->
     <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+')) ">
       <CompilerVersion>net8.0</CompilerVersion>
+    </PropertyGroup>
+
+    <!-- try .net9.0. -->
+    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '9\.0\.\d+')) ">
+      <CompilerVersion>net9.0</CompilerVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -139,10 +144,6 @@
     <!-- Append nullability to command line -->
     <PropertyGroup>
       <CompilerCommand>$(CompilerCommand) --nullable-warnings $(FlatSharpNullable)</CompilerCommand>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(FlatSharpPoolable)' == 'true' ">
-      <CompilerCommand>$(CompilerCommand) --gen-poolable</CompilerCommand>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(FlatSharpDeserializers)' != '' ">

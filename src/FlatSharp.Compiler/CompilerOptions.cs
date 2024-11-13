@@ -41,9 +41,6 @@ public record CompilerOptions
     [Option("file-visibility", Default = false, HelpText = "Use file visibility for FlatSharp-generated types. Requires C# 11 or later.")]
     public bool FileVisibility { get; set; }
 
-    [Option("gen-poolable", Hidden = false, Default = false, HelpText = "EXPERIMENTAL: Generate extra code to enable object pooling for allocation reductions.")]
-    public bool GeneratePoolableObjects { get; set; }
-
     [Option("deserializers", Hidden = false, HelpText = "Specifies deserializers for FlatSharp to generate. Can help to reduce size of generated code.", Separator = ';')]
     public IList<FlatBufferDeserializationOption> Deserializers
     {

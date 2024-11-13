@@ -49,14 +49,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             return false;
         }
 
-        if (context.GeneratePoolableObjects)
-        {
-            model = new ReferenceUnionSchemaModel(schema, union);
-        }
-        else
-        {
-            model = new ValueUnionSchemaModel(schema, union);
-        }
+        model = new ValueUnionSchemaModel(schema, union);
 
         return true;
     }
@@ -165,6 +158,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                 writer.AppendLine($"public override string ToString() => $\"{this.Name} {{{{ {{{item}}} }}}}\";");
             }
 
+            int index = 1;
             foreach (var item in innerTypes)
             {
                 Type? propertyClrType = null;
@@ -174,7 +168,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                     FlatSharpInternal.Assert(previousType is not null, "PreviousType was null");
 
                     propertyClrType = previousType
-                        .GetProperty($"Item{item.value.Value}", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)?
+                        .GetProperty($"Item{index}", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)?
                         .PropertyType;
 
                     FlatSharpInternal.Assert(propertyClrType is not null, "Couldn't find property");
@@ -182,13 +176,13 @@ public class ValueUnionSchemaModel : BaseSchemaModel
 
                 this.WriteConstructor(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
                 this.WriteImplicitOperator(writer, item.resolvedType);
-                this.WriteUncheckedGetItemMethod(writer, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
+                this.WriteUncheckedGetItemMethod(writer, index, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
 
                 writer.AppendLine();
-                writer.AppendLine($"public {item.resolvedType} {item.value.Key} => this.Item{item.value.Value};");
+                writer.AppendLine($"public {item.resolvedType} {item.value.Key} => this.Item{index};");
 
                 writer.AppendLine();
-                writer.AppendLine($"public {item.resolvedType} Item{item.value.Value}");
+                writer.AppendLine($"public {item.resolvedType} Item{index}");
                 using (writer.WithBlock())
                 {
                     writer.AppendLine("get");
@@ -200,7 +194,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                             writer.AppendLine($"{typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_UnionIsNotOfType)}();");
                         }
 
-                        writer.AppendLine($"return this.UncheckedGetItem{item.value.Value}();");
+                        writer.AppendLine($"return this.UncheckedGetItem{index}();");
                     }
                 }
 
@@ -231,9 +225,11 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                         writer.AppendLine("return false;");
                     }
 
-                    writer.AppendLine($"value = this.UncheckedGetItem{item.value.Value}();");
+                    writer.AppendLine($"value = this.UncheckedGetItem{index}();");
                     writer.AppendLine("return true;");
                 }
+
+                ++index;
             }
 
             this.WriteAcceptMethod(writer, innerTypes);
@@ -259,10 +255,12 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             writer.AppendLine("switch (disc)");
             using (writer.WithBlock())
             {
+                int index = 1;
                 foreach (var item in components)
                 {
-                    long index = item.value.Value;
-                    writer.AppendLine($"case {index}: return visitor.Visit(this.UncheckedGetItem{item.value.Value}());");
+                    long value = item.value.Value;
+                    writer.AppendLine($"case {value}: return visitor.Visit(this.UncheckedGetItem{index}());");
+                    ++index;
                 }
 
                 writer.AppendLine($"default:");
@@ -292,10 +290,12 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             writer.AppendLine("switch (disc)");
             using (writer.WithBlock())
             {
+                int index = 1;
                 foreach (var item in components)
                 {
-                    long index = item.value.Value;
-                    writer.AppendLine($"case {index}: return case{item.value.Key}(this.UncheckedGetItem{item.value.Value}());");
+                    long value = item.value.Value;
+                    writer.AppendLine($"case {value}: return case{item.value.Key}(this.UncheckedGetItem{index}());");
+                    ++index;
                 }
 
                 writer.AppendLine($"default:");
@@ -308,12 +308,12 @@ public class ValueUnionSchemaModel : BaseSchemaModel
         }
     }
 
-    private void WriteUncheckedGetItemMethod(CodeWriter writer, string resolvedType, EnumVal unionValue, Type? propertyType, bool generateUnsafeItems)
+    private void WriteUncheckedGetItemMethod(CodeWriter writer, int index, string resolvedType, EnumVal unionValue, Type? propertyType, bool generateUnsafeItems)
     {
         if (propertyType?.IsValueType == true && generateUnsafeItems)
         {
             writer.AppendLine();
-            writer.AppendLine($"private {resolvedType} UncheckedGetItem{unionValue.Value}()");
+            writer.AppendLine($"private {resolvedType} UncheckedGetItem{index}()");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"FlatSharpInternal.AssertSizeOf<{resolvedType}>({propertyType.StructLayoutAttribute!.Size});");
@@ -328,7 +328,7 @@ public class ValueUnionSchemaModel : BaseSchemaModel
         else
         {
             writer.AppendLine();
-            writer.AppendLine($"private {resolvedType} UncheckedGetItem{unionValue.Value}()");
+            writer.AppendLine($"private {resolvedType} UncheckedGetItem{index}()");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"return ({resolvedType})this.value;");

@@ -19,7 +19,7 @@ namespace FlatSharp;
 /// <summary>
 /// An indexed vector -- suitable for accessing values by their keys.
 /// </summary>
-public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IPoolableObject
+public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     where TValue : class
     where TKey : notnull
 {

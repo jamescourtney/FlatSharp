@@ -100,7 +100,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
             isEverWriteThrough);
 
         string body =
-           $@"return {className}<{context.InputBufferTypeName}>.GetOrCreate(
+           $@"return new {className}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName},
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}),
                     {context.RemainingDepthVariableName},

@@ -22,4 +22,5 @@
 /src/Tests/CompileTests/NativeAot/FlatSharp.generated.cs
 /src/Tests/CompileTests/CSharp8/FlatSharp.generated.cs
 /src/Tests/Stryker/CodeGen/FlatSharp.cs
+**/.idea/**
 

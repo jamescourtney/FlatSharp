@@ -25,13 +25,12 @@ internal static partial class FlatBufferVectorHelpers
         ParserCodeGenContext context)
     {
         FlatSharpInternal.Assert(context.Options.DeserializationOption == FlatBufferDeserializationOption.Progressive, "Expecting progressive");
-
+        FlatSharpInternal.Assert(itemTypeModel.ClrType.IsValueType, "expecting value type union");
+            
         string className = CreateVectorClassName(itemTypeModel, FlatBufferDeserializationOption.Progressive);
         string baseTypeName = itemTypeModel.GetGlobalCompilableTypeName();
         string derivedTypeName = itemTypeModel.GetDeserializedTypeName(context.Options.DeserializationOption, context.InputBufferTypeName);
-
-        string nullableReference = itemTypeModel.ClrType.IsValueType ? string.Empty : "?";
-        int chunkSize = itemTypeModel.ClrType.IsValueType ? 8 : 32;
+        int chunkSize = 32;
 
         string classDef =
 $$""""
@@ -40,35 +39,24 @@ $$""""
         : object
         , IList<{{baseTypeName}}>
         , IReadOnlyList<{{baseTypeName}}>
-        , IPoolableObject
         where TInputBuffer : IInputBuffer
     {
         private const uint ChunkSize = {{chunkSize}};
 
-        private int discriminatorVectorOffset;
-        private int offsetVectorOffset;
-        private int count;
-        private {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
-        private TableFieldContext {{context.TableFieldContextVariableName}};
-        private short {{context.RemainingDepthVariableName}};
-        private {{derivedTypeName}}{{nullableReference}}[]?[] items;
-        private int inUse = 1;
+        private readonly int discriminatorVectorOffset;
+        private readonly int offsetVectorOffset;
+        private readonly int count;
+        private readonly {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
+        private readonly TableFieldContext {{context.TableFieldContextVariableName}};
+        private readonly short {{context.RemainingDepthVariableName}};
+        private readonly {{derivedTypeName}}?[]?[] items;
         
-#pragma warning disable CS8618
-        private {{className}}() { }
-#pragma warning restore CS8618
-
-        public static {{className}}<TInputBuffer> GetOrCreate(
+        public {{className}}(
             TInputBuffer memory,
             ref (int offset0, int offset1) offsets,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
-            if (!ObjectPool.TryGet<{{className}}<TInputBuffer>>(out var item))
-            {
-                item = new {{className}}<TInputBuffer>();
-            }
-
             int dvo = offsets.offset0;
             int ovo = offsets.offset1;
 
@@ -80,20 +68,17 @@ $$""""
                 {{typeof(FSThrow).GGCTN()}}.{{nameof(FSThrow.InvalidData_UnionVectorMismatchedLength)}}();
             }
 
-            item.count = (int)offsetCount;
-            item.discriminatorVectorOffset = dvo + sizeof(int);
-            item.offsetVectorOffset = ovo + sizeof(int);
+            this.count = (int)offsetCount;
+            this.discriminatorVectorOffset = dvo + sizeof(int);
+            this.offsetVectorOffset = ovo + sizeof(int);
             
-            item.{{context.InputBufferVariableName}} = memory;
-            item.{{context.TableFieldContextVariableName}} = fieldContext;
-            item.{{context.RemainingDepthVariableName}} = remainingDepth;
+            this.{{context.InputBufferVariableName}} = memory;
+            this.{{context.TableFieldContextVariableName}} = fieldContext;
+            this.{{context.RemainingDepthVariableName}} = remainingDepth;
 
             {{StrykerSuppressor.SuppressNextLine()}}
-            int progressiveMinLength = (int)(item.count / ChunkSize) + 1;
-            item.items = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}[]?>.Shared.Rent(progressiveMinLength);
-            item.inUse = 1;
-
-            return item;
+            int progressiveMinLength = (int)(this.count / ChunkSize) + 1;
+            this.items = new {{derivedTypeName}}?[]?[progressiveMinLength];
         }
 
         public {{baseTypeName}} this[int index]
@@ -106,60 +91,6 @@ $$""""
     
         public FlatBufferDeserializationOption DeserializationOption => {{nameof(FlatBufferDeserializationOption)}}.{{context.Options.DeserializationOption}};
 
-        {{StrykerSuppressor.ExcludeFromCodeCoverage()}}
-        public void ReturnToPool(bool force = false)
-        {
-            if (this.DeserializationOption.ShouldReturnToPool(force))
-            {
-                if (System.Threading.Interlocked.Exchange(ref inUse, 0) == 1)
-                {
-                    this.count = -1;
-                    this.discriminatorVectorOffset = -1;
-                    this.offsetVectorOffset = -1;
-
-                    this.{{context.InputBufferVariableName}} = default({{context.InputBufferTypeName}})!;
-                    this.{{context.TableFieldContextVariableName}} = null!;
-                    this.{{context.RemainingDepthVariableName}} = -1;
-
-                    var items = this.items;
-                    this.items = null!;
-
-                    if (items is null)
-                    {
-                        return;
-                    }
-
-                    for (int i = 0; i < items.Length; ++i)
-                    {
-                        var block = items[i];
-
-                        if (block is null)
-                        {
-                            continue;
-                        }
-
-                        {{(
-                            // return poolable reference types at this point.
-                            !itemTypeModel.ClrType.IsValueType && typeof(IPoolableObject).IsAssignableFrom(itemTypeModel.ClrType)
-                            ? $$"""
-                                for (int j = 0; j < block.Length; ++j)
-                                {
-                                    block[j]?.ReturnToPool(true);
-                                }
-                                """
-                            : string.Empty
-                        )}}
-
-                        System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Return(block, true);
-                        items[i] = null;
-                    }
-
-                    System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}[]?>.Shared.Return(items);
-                    ObjectPool.Return(this);
-                }
-            }
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void GetAddress(uint index, out uint rowIndex, out uint colIndex)
         {
@@ -168,46 +99,16 @@ $$""""
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private {{derivedTypeName}}{{nullableReference}}[] GetOrCreateRow({{derivedTypeName}}{{nullableReference}}[]?[] items, uint rowIndex)
+        private {{derivedTypeName}}?[] GetOrCreateRow({{derivedTypeName}}?[]?[] items, uint rowIndex)
         {
             return items[rowIndex] ?? this.CreateRow(items, rowIndex);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private {{derivedTypeName}}{{nullableReference}}[] CreateRow({{derivedTypeName}}{{nullableReference}}[]?[] items, uint rowIndex)
+        private {{derivedTypeName}}?[] CreateRow({{derivedTypeName}}?[]?[] items, uint rowIndex)
         {
-            var row = System.Buffers.ArrayPool<{{derivedTypeName}}{{nullableReference}}>.Shared.Rent((int)ChunkSize);
+            var row = new {{derivedTypeName}}?[(int)ChunkSize];
             items[rowIndex] = row;
-
-             {{ // For value types -- we can't rely on null to tell
-                // us if the value is allocated or not, so just greedily
-                // allocate the whole chunk. Chunks are relatively
-                // small, so the overhead here is not enormous, and there
-                // is no extra allocation since this is a value type.
-                // Unchecked is considered safe here since we have already
-                // validated indexes.
-                If(itemTypeModel.ClrType.IsValueType,
-                  $$"""
-                    unchecked
-                    {
-                        int absoluteStartIndex = (int)({{GetEfficientMultiply(chunkSize, "rowIndex")}});
-                        int copyCount = {{chunkSize}};
-                        int remainingItems = this.count - absoluteStartIndex;
-
-                        {{StrykerSuppressor.SuppressNextLine("equality")}}
-                        if (remainingItems < {{chunkSize}})
-                        {
-                            copyCount = remainingItems;
-                        }
-
-                        for (int i = 0; i < copyCount; ++i)
-                        {
-                            row[i] = this.UnsafeParseItem(i + absoluteStartIndex);
-                        }
-                    }
-                    """
-            )}}
-
             return row;
         }
 
@@ -220,20 +121,15 @@ $$""""
 
             var items = this.items;
             var row = this.GetOrCreateRow(items, rowIndex);
-            var item = row[colIndex];
+            {{derivedTypeName}}? item = row[colIndex];
+            
+            if (item is null)
+            {
+                item = this.UnsafeParseItem(index);
+                row[colIndex] = item;
+            }
 
-            {{  // Initialize the reference type if null.
-                IfNot(itemTypeModel.ClrType.IsValueType,
-                $$"""
-                    if (item is null)
-                    {
-                        item = this.UnsafeParseItem(index);
-                        row[colIndex] = item;
-                    }
-                  """
-            )}}
-
-            return item!;
+            return item.Value;
         }
 
         private void ProgressiveSet(int index, {{baseTypeName}} value)

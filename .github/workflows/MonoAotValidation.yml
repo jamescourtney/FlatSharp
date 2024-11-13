@@ -22,10 +22,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-quality: preview
+        dotnet-version: 9.0.x
 
     - name: Install Mono
       run: sudo apt install mono-complete
@@ -61,7 +62,7 @@ jobs:
       run: mono --full-aot NativeAot.exe
       
     - name: Upload Files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: assembly
         path: src/Tests/CompileTests/NativeAot/bin/**/*.*

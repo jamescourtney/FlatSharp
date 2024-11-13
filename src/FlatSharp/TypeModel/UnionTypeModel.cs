@@ -25,7 +25,7 @@ namespace FlatSharp.TypeModel;
 /// </summary>
 public class UnionTypeModel : RuntimeTypeModel
 {
-    private ITypeModel[] memberTypeModels;
+    private (byte, ITypeModel)[] memberTypeModels;
 
     internal UnionTypeModel(Type unionType, TypeModelContainer provider) : base(unionType, provider)
     {
@@ -70,25 +70,25 @@ public class UnionTypeModel : RuntimeTypeModel
     /// <summary>
     /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
     /// </summary>
-    public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
+    public (byte, ITypeModel)[] UnionElementTypeModel => this.memberTypeModels;
 
     /// <summary>
     /// We need it to pass through.
     /// </summary>
     public override TableFieldContextRequirements TableFieldContextRequirements =>
-        this.memberTypeModels.Select(x => x.TableFieldContextRequirements).Aggregate(TableFieldContextRequirements.None, (a, b) => a | b);
+        this.memberTypeModels.Select(model => model.Item2).Select(x => x.TableFieldContextRequirements).Aggregate(TableFieldContextRequirements.None, (a, b) => a | b);
 
     /// <summary>
     /// Unions have an implicit dependency on <see cref="byte"/> for the discriminator.
     /// </summary>
-    public override IEnumerable<ITypeModel> Children => this.memberTypeModels.Concat(new[] { this.typeModelContainer.CreateTypeModel(typeof(byte)) });
+    public override IEnumerable<ITypeModel> Children => this.memberTypeModels.Select(model => model.Item2).Concat(new[] { this.typeModelContainer.CreateTypeModel(typeof(byte)) });
 
     public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
     {
         List<string> switchCases = new List<string>();
         for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
         {
-            var unionMember = this.UnionElementTypeModel[i];
+            var (enumVal, unionMember) = this.UnionElementTypeModel[i];
             int unionIndex = i + 1;
 
             var itemContext = context with
@@ -98,7 +98,7 @@ public class UnionTypeModel : RuntimeTypeModel
 
             string @case =
 $@"
-                case {unionIndex}:
+                case {enumVal}:
                     return {sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint))} + {itemContext.GetMaxSizeInvocation(unionMember.ClrType)};";
 
             switchCases.Add(@case);
@@ -122,12 +122,10 @@ $@"
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
         List<string> switchCases = new List<string>();
-
-        (string? extraClass, string createNew) = GetUnionHelperClass(context);
-
+        
         for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
         {
-            var unionMember = this.UnionElementTypeModel[i];
+            var (enumVal, unionMember) = this.UnionElementTypeModel[i];
             int unionIndex = i + 1;
 
             string inlineAdjustment = string.Empty;
@@ -144,9 +142,9 @@ $@"
 
             string @case =
 $@"
-                case {unionIndex}:
+                case {enumVal}:
                     {inlineAdjustment}
-                    return {createNew}({itemContext.GetParseInvocation(unionMember.ClrType)});
+                    return new {this.GGCTN()}({itemContext.GetParseInvocation(unionMember.ClrType)});
 ";
             switchCases.Add(@case);
         }
@@ -164,94 +162,7 @@ $@"
             }}
         ";
 
-        return new CodeGeneratedMethod(body) { ClassDefinition = extraClass };
-    }
-
-    private (string? classDef, string createNewUnion) GetUnionHelperClass(ParserCodeGenContext context)
-    {
-        if (this.ClrType.IsValueType || !typeof(IPoolableObject).IsAssignableFrom(this.ClrType))
-        {
-            // Nothing special for value-type or non-poolable unions.
-            return (null, $"new {this.GetGlobalCompilableTypeName()}");
-        }
-
-        string className = "unionReader_" + Guid.NewGuid().ToString("n");
-
-        List<string> getOrCreates = new();
-        List<string> returnToPoolCases = new();
-
-        for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
-        {
-            int unionIndex = i + 1; // unions start at 1.
-            string itemType = this.UnionElementTypeModel[i].GetGlobalCompilableTypeName();
-
-            getOrCreates.Add($@"
-                public static {className} GetOrCreate({itemType} value)
-                {{
-                    if (!{typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.TryGet)}<{className}>(out var union))
-                    {{
-                        union = new {className}();
-                    }}
-
-                    union.discriminator = {unionIndex};
-                    union.Item{unionIndex} = value;
-                    union.isAlive = 1;
-
-                    return union;
-                }}
-            ");
-
-            string recursiveReturn = string.Empty;
-            if (typeof(IPoolableObject).IsAssignableFrom(this.UnionElementTypeModel[i].ClrType))
-            {
-                recursiveReturn = $"this.Item{unionIndex}?.ReturnToPool(true);";
-            }
-
-            returnToPoolCases.Add($@"
-                    case {unionIndex}:
-                    {{
-                        {recursiveReturn}
-                        this.Item{unionIndex} = default({itemType})!;
-                    }}
-                    break;
-                ");
-        }
-
-        string returnCondition = string.Empty;
-        if (!context.Options.Lazy)
-        {
-            returnCondition = "if (unsafeForce)";
-        }
-
-        // Reference type unions are much more special!
-        string extraClass = $@"
-            private sealed class {className} : {this.ClrType.GetGlobalCompilableTypeName()}
-            {{
-                private int isAlive;
-
-                {string.Join("\r\n", getOrCreates)}
-
-                public override void ReturnToPool(bool unsafeForce = false)
-                {{
-                    {returnCondition}
-                    {{
-                        int alive = {typeof(Interlocked).GetGlobalCompilableTypeName()}.Exchange(ref this.isAlive, 0);
-                        if (alive > 0)
-                        {{
-                            switch (base.discriminator)
-                            {{
-                                {string.Join("\r\n", returnToPoolCases)}
-                            }}
-                            
-                            base.discriminator = -1;
-                            {typeof(ObjectPool).GetGlobalCompilableTypeName()}.{nameof(ObjectPool.Return)}(this);
-                        }}
-                    }}
-                }}
-            }}
-        ";
-
-        return (extraClass, $"{className}.GetOrCreate");
+        return new CodeGeneratedMethod(body);
     }
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -259,7 +170,7 @@ $@"
         List<string> switchCases = new List<string>();
         for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
         {
-            var elementModel = this.UnionElementTypeModel[i];
+            var (enumVal, elementModel) = this.UnionElementTypeModel[i];
             var unionIndex = i + 1;
 
             string inlineAdjustment;
@@ -287,7 +198,7 @@ $@"
 
             string @case =
 $@"
-                case {unionIndex}:
+                case {enumVal}:
                 {{
                     {inlineAdjustment}
                     {caseContext.GetSerializeInvocation(elementModel.ClrType)};
@@ -321,11 +232,12 @@ $@"
 
         for (int i = 0; i < this.memberTypeModels.Length; ++i)
         {
-            int discriminator = i + 1;
-            string cloneMethod = context.MethodNameMap[this.memberTypeModels[i].ClrType];
+            int index = i + 1;
+            var (enumVal, unionMember) = this.UnionElementTypeModel[i];
+            var cloneMethod = context.MethodNameMap[unionMember.ClrType];
             switchCases.Add($@"
-                case {discriminator}:
-                    return new {this.GetGlobalCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator}));
+                case {enumVal}:
+                    return new {this.GetGlobalCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{index}));
                 ");
         }
 
@@ -345,11 +257,31 @@ $@"
 
     public override void Initialize()
     {
+        FlatSharpInternal.Assert(this.ClrType.IsValueType, "Expecting value type");
+        
         // Look for the actual FlatBufferUnion.
         Type unionType = this.ClrType.GetInterfaces()
             .Single(x => x != typeof(IFlatBufferUnion) && typeof(IFlatBufferUnion).IsAssignableFrom(x));
 
-        this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelContainer.CreateTypeModel).ToArray();
+        // Get enum value in union type
+        var enumFields = Enum.GetValues(this.ClrType.GetNestedType("ItemKind")!);
+        List<byte> enumVals = new();
+        foreach (var item in enumFields)
+        {
+            byte val = (byte)item;
+
+            // Skip ItemKind::NONE
+            if (val != 0)
+            {
+                enumVals.Add(val);
+            }
+        }
+
+        this.memberTypeModels = enumVals
+            .Zip(
+                unionType.GetGenericArguments(), 
+                (enumVal, typeModel) => (enumVal, this.typeModelContainer.CreateTypeModel(typeModel)))
+            .ToArray();
     }
 
     public override void Validate()
@@ -357,7 +289,7 @@ $@"
         base.Validate();
         HashSet<Type> uniqueTypes = new HashSet<Type>();
 
-        foreach (var item in this.memberTypeModels)
+        foreach (var (_, item) in this.memberTypeModels)
         {
             FlatSharpInternal.Assert(
                 item.IsValidUnionMember,

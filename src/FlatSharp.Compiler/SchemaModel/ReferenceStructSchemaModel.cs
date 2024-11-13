@@ -80,10 +80,5 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         writer.AppendLine($"[System.Diagnostics.DebuggerTypeProxy(\"{this.FullName}\")]");
         writer.AppendLine($"public partial class {this.Name}");
         writer.AppendLine($"    : object");
-
-        if (context.Options.GeneratePoolableObjects)
-        {
-            writer.AppendLine($"    , IPoolableObject");
-        }
     }
 }

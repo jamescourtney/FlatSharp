@@ -28,23 +28,11 @@ public class FlatBufferIndexedVector<TKey, TValue>
     where TValue : class, ISortableTable<TKey>
     where TKey : notnull
 {
-    private IList<TValue> list;
+    private readonly IList<TValue> list;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private FlatBufferIndexedVector()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public FlatBufferIndexedVector(IList<TValue> list)
     {
-    }
-
-    public static FlatBufferIndexedVector<TKey, TValue> GetOrCreate(IList<TValue> list)
-    {
-        if (!ObjectPool.TryGet<FlatBufferIndexedVector<TKey, TValue>>(out var item))
-        {
-            item = new();
-        }
-
-        item.list = list;
-        return item;
+        this.list = list;
     }
 
     public TValue this[TKey key]
@@ -116,18 +104,5 @@ public class FlatBufferIndexedVector<TKey, TValue>
     public bool Remove(TKey key)
     {
         return FSThrow.NotMutable<bool>();
-    }
-
-    public void ReturnToPool(bool force = false)
-    {
-        if (FlatBufferDeserializationOption.Lazy.ShouldReturnToPool(force))
-        {
-            var vec = Interlocked.Exchange(ref this.list!, null);
-            if (vec is not null)
-            {
-                (vec as IPoolableObject)?.ReturnToPool(true);
-                ObjectPool.Return(this);
-            }
-        }
     }
 }
