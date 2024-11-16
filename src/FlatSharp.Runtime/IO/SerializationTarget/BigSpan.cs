@@ -89,7 +89,10 @@ public readonly ref partial struct BigSpan
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigSpan Slice(long start, long length)
     {
-        if ((length | start) < 0 || start + length > this.Length)
+        bool isOutOfRange = (length | start) < 0;
+        isOutOfRange |= (ulong)(start + length) > (ulong)this.Length;
+
+        if (isOutOfRange)
         {
             ThrowOutOfRange();
         }
@@ -104,7 +107,7 @@ public readonly ref partial struct BigSpan
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigSpan Slice(long start)
     {
-        if (start > this.Length)
+        if ((ulong)start > (ulong)this.Length)
         {
             ThrowOutOfRange();
         }
@@ -119,7 +122,8 @@ public readonly ref partial struct BigSpan
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> ToSpan(long start, int length)
     {
-        if (length < 0 || start < 0 || start + length > this.Length)
+        long sum = start + (long)length;
+        if ((ulong)sum > (ulong)this.Length)
         {
             ThrowOutOfRange();
         }
@@ -199,6 +203,7 @@ public readonly ref partial struct BigSpan
     /// <summary>
     /// Writes the string to the buffer, returning the absolute offset of the string.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public long WriteAndProvisionString(
         string value,
         SerializationContext context)
@@ -238,13 +243,10 @@ public readonly ref partial struct BigSpan
         long offset,
         long secondOffset)
     {
-        checked
-        {
-            uint uoffset = (uint)(secondOffset - offset);
-            this.WriteUInt(offset, uoffset);
-        }
+        long difference = secondOffset - offset;
+        uint uoffset = checked((uint)difference);
+        this.WriteUInt(offset, uoffset);
     }
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private T ReadUnaligned<T>(long offset)

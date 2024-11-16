@@ -101,13 +101,13 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
 
         // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
         // partying inappropriately in the rest of the buffer.
-        Span<byte> boundedVector = buffer.ToSpan(index0Position, sizeof(uint) * vectorLength);
+        BigSpan boundedVector = buffer.Slice(index0Position, sizeof(uint) * vectorLength);
         long nextPosition = index0Position;
         for (int i = 0; i < keyOffsets.Length; ++i)
         {
-            (_, _, long tableOffset) = keyOffsets[i];
-            BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i),
-                (uint)(tableOffset - nextPosition));
+            ref (long _, int __, long tableOffset) tuple = ref keyOffsets[i];
+
+            boundedVector.WriteUInt(nextPosition - index0Position, (uint)(tuple.tableOffset - nextPosition));
             nextPosition += sizeof(uint);
         }
 
@@ -180,9 +180,9 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                 {
                     while (true)
                     {
-                        var (keyOffset, keyLength, _) = keyLocations[++num2];
-                        var keySpan = buffer.ToSpan(keyOffset, keyLength);
-                        if (keyComparer.Compare(keyOffset != 0, keySpan, pivotExists, pivotSpan) >= 0)
+                        ref (long keyOffset, int keyLength, long _) tuple = ref keyLocations[++num2];
+                        var keySpan = buffer.ToSpan(tuple.keyOffset, tuple.keyLength);
+                        if (keyComparer.Compare(tuple.keyOffset != 0, keySpan, pivotExists, pivotSpan) >= 0)
                         {
                             break;
                         }
@@ -190,9 +190,9 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
 
                     while (true)
                     {
-                        var (keyOffset, keyLength, _) = keyLocations[--num3];
-                        var keySpan = buffer.ToSpan(keyOffset, keyLength);
-                        if (keyComparer.Compare(pivotExists, pivotSpan, keyOffset != 0, keySpan) >= 0)
+                        ref (long keyOffset, int keyLength, long _) tuple = ref keyLocations[--num3];
+                        var keySpan = buffer.ToSpan(tuple.keyOffset, tuple.keyLength);
+                        if (keyComparer.Compare(pivotExists, pivotSpan, tuple.keyOffset != 0, keySpan) >= 0)
                         {
                             break;
                         }
@@ -234,10 +234,10 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
 
             while (num >= lo)
             {
-                (long keyOffset, int keyLength, _) = keyLocations[num];
-                ReadOnlySpan<byte> keySpan = buffer.ToSpan(keyOffset, keyLength);
+                ref (long keyOffset, int keyLength, long table) tuple = ref keyLocations[num];
+                ReadOnlySpan<byte> keySpan = buffer.ToSpan(tuple.keyOffset, tuple.keyLength);
 
-                if (comparer.Compare(valTuple.offset != 0, valSpan, keyOffset != 0, keySpan) < 0)
+                if (comparer.Compare(valTuple.offset != 0, valSpan, tuple.keyOffset != 0, keySpan) < 0)
                 {
                     keyLocations[num + 1] = keyLocations[num];
                     num--;
@@ -259,14 +259,24 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         int rightIndex,
         Span<(long, int, long)> keyOffsets)
     {
-        (long leftOffset, int leftLength, _) = keyOffsets[leftIndex];
-        (long rightOffset, int rightLength, _) = keyOffsets[rightIndex];
+        ref (long offset, int length, long _) left = ref keyOffsets[leftIndex];
+        ref (long offset, int length, long _) right = ref keyOffsets[rightIndex];
 
-        bool leftExists = leftOffset != 0;
-        bool rightExists = rightOffset != 0;
+        bool leftExists = left.offset != 0;
+        bool rightExists = right.offset != 0;
 
-        var leftSpan = target.ToSpan(leftOffset, leftLength);
-        var rightSpan = target.ToSpan(rightOffset, rightLength);
+        Span<byte> leftSpan = default;
+        Span<byte> rightSpan = default;
+
+        if (leftExists)
+        {
+            leftSpan = target.ToSpan(left.offset, left.length);
+        }
+
+        if (rightExists)
+        {
+            rightSpan = target.ToSpan(right.offset, right.length);
+        }
 
         if (comparer.Compare(leftExists, leftSpan, rightExists, rightSpan) > 0)
         {

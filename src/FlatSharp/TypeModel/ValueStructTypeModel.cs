@@ -181,20 +181,20 @@ public class ValueStructTypeModel : RuntimeTypeModel
         if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
         {
             body = $@"
-                {slice}
-                
                 {StrykerSuppressor.SuppressNextLine("boolean")}
                 if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
                 {{
-                    var sizedSpan = sizedTarget.ToSpan(0, {this.inlineSize});
+                    var sizedSpan = {context.SpanVariableName}.ToSpan({context.OffsetVariableName}, {this.inlineSize});
+
 #if {CSharpHelpers.Net8PreprocessorVariable}
-                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
+                    {typeof(MemoryMarshal).GGCTN()}.Write(sizedSpan, in {context.ValueVariableName});
 #else
-                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
+                    {typeof(MemoryMarshal).GGCTN()}.Write(sizedSpan, ref {context.ValueVariableName});
 #endif
                 }}
                 else
                 {{
+                    {slice}
                     {string.Join("\r\n", propertyStatements)}
                 }}
             ";
@@ -224,7 +224,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
 #endif
         ";
 
-        return new CodeGeneratedMethod(body) { IsMethodInline = true };
+        return new CodeGeneratedMethod(body);
     }
 
     private CodeGeneratedMethod CreateExternalParseMethod(ParserCodeGenContext context)
