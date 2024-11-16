@@ -72,11 +72,7 @@ public sealed class SerializationContext
     /// Invokes any post-serialize actions.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InvokePostSerializeActions<TTarget>(TTarget target)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
+    public void InvokePostSerializeActions(BigSpan target)
     {
         var actions = this.postSerializeActions;
         int count = actions.Count;
@@ -149,13 +145,9 @@ public sealed class SerializationContext
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)] // Common method; don't inline
-    public long FinishVTable<TTarget>(
-        TTarget buffer,
+    public long FinishVTable(
+        BigSpan buffer,
         Span<byte> vtable)
-    where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
     {
         var offsets = this.vtableOffsets;
         int count = offsets.Count;
@@ -164,10 +156,10 @@ public sealed class SerializationContext
         {
             long offset = offsets[i];
 
-            ReadOnlySpan<byte> existingVTable = buffer.AsSpan(offset, sizeof(ushort));
+            ReadOnlySpan<byte> existingVTable = buffer.ToSpan(offset, sizeof(ushort));
             ushort vtableLength = BinaryPrimitives.ReadUInt16LittleEndian(existingVTable);
             
-            existingVTable = buffer.AsSpan(offset, vtableLength);
+            existingVTable = buffer.ToSpan(offset, vtableLength);
 
             if (existingVTable.SequenceEqual(vtable))
             {
@@ -183,7 +175,7 @@ public sealed class SerializationContext
         // Oh, well. Write the new table.
         long newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
         
-        vtable.CopyTo(buffer.AsSpan(newVTableOffset, vtable.Length));
+        vtable.CopyTo(buffer.ToSpan(newVTableOffset, vtable.Length));
         offsets.Add(newVTableOffset);
 
         // "Insert" this item in the middle of the list.

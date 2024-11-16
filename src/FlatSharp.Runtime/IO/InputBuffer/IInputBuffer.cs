@@ -35,11 +35,11 @@ public interface IInputBuffer
     /// Gets the length of this input buffer.
     /// </summary>
     long Length { get; }
-    
+
     /// <summary>
     /// Gets a read only span covering the entire input buffer.
     /// </summary>
-    ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length);
+    BigReadOnlySpan GetReadOnlySpan();
 
     /// <summary>
     /// Gets a read only memory covering the entire input buffer.
@@ -49,7 +49,7 @@ public interface IInputBuffer
     /// <summary>
     /// Gets a span covering the entire input buffer.
     /// </summary>
-    Span<byte> GetSpan(long offset, int length);
+    BigSpan GetSpan();
 
     /// <summary>
     /// Gets a memory covering the entire input buffer.

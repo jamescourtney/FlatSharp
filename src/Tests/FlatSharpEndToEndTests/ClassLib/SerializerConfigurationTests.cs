@@ -187,11 +187,7 @@ public class SerializerConfigurationTests
             this.offsets.Clear();
         }
 
-        public void WriteSharedString<TTarget>(TTarget spanWriter, long offset, string value, SerializationContext context)
-            where TTarget : IFlatBufferSerializationTarget<TTarget>
-        #if NET9_0_OR_GREATER
-            , allows ref struct
-        #endif
+        public void WriteSharedString(BigSpan spanWriter, long offset, string value, SerializationContext context)
         {
             if (!this.offsets.TryGetValue(value, out var list))
             {
@@ -202,11 +198,7 @@ public class SerializerConfigurationTests
             list.Add(offset);
         }
 
-        public void FlushWrites<TTarget>(TTarget writer, SerializationContext context) 
-            where TTarget : IFlatBufferSerializationTarget<TTarget>
-        #if NET9_0_OR_GREATER
-            , allows ref struct
-        #endif
+        public void FlushWrites(BigSpan writer, SerializationContext context) 
         {
             foreach (var kvp in this.offsets)
             {

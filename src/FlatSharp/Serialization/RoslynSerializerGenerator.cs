@@ -423,23 +423,19 @@ $@"
             {
                 writeFileId = $"""
                     context.Offset = 8;
-                    target[7] = {(byte)fileId[3]};
-                    target[6] = {(byte)fileId[2]};
-                    target[5] = {(byte)fileId[1]};
-                    target[4] = {(byte)fileId[0]};
+                    destination[7] = {(byte)fileId[3]};
+                    destination[6] = {(byte)fileId[2]};
+                    destination[5] = {(byte)fileId[1]};
+                    destination[4] = {(byte)fileId[0]};
                 """;
             }
 
             string methodText =
 $@"
-                public void Write<TTarget>(ref TTarget target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, SerializationContext context)
-                    where TTarget : IFlatBufferSerializationTarget<TTarget>
-                    #if {CSharpHelpers.Net9PreprocessorVariable}
-                        , allows ref struct
-                    #endif
+                public void Write({typeof(BigSpan).GGCTN()} destination, {rootType.GGCTN()} root, SerializationContext context)
                 {{
                     {writeFileId}
-                    {parts.@namespace}.{parts.className}.{parts.methodName}(ref target, root, 0, context);
+                    {parts.@namespace}.{parts.className}.{parts.methodName}(destination, root, 0, context);
                 }}
 ";
             bodyParts.Add(methodText);
@@ -566,7 +562,7 @@ $@"
             : string.Empty;
 
         var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.options, this.typeModelContainer, allContextsMap);
-        var serializeContext = new SerializationCodeGenContext("context", "target", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.typeModelContainer, this.options, allContextsMap);
+        var serializeContext = new SerializationCodeGenContext("context", "destination", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.typeModelContainer, this.options, allContextsMap);
         var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, options, this.typeModelContainer, allContextsMap);
 
         CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
@@ -743,15 +739,12 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}<TTarget>(
-                ref TTarget {context.TargetVariableName},
+            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}(
+                BigSpan {context.SpanVariableName},
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
                 {serializationContextParameter}
-                {tableFieldContextParameter}) where TTarget : IFlatBufferSerializationTarget<TTarget>
-            #if {CSharpHelpers.Net9PreprocessorVariable}
-                , allows ref struct
-            #endif
+                {tableFieldContextParameter})
             {{
                 {method.MethodBody}
             }}

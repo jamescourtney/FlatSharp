@@ -37,7 +37,7 @@ public partial class BoolTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadBool";
 
-    protected override string WriteMethodName => "SerializationHelpers.WriteBool";
+    protected override string WriteMethodName => "WriteBool";
 
     protected override string TypeNameAlias => "bool";
     
@@ -66,7 +66,7 @@ public partial class ByteTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadByte";
 
-    protected override string WriteMethodName => "SerializationHelpers.WriteUInt8";
+    protected override string WriteMethodName => "WriteByte";
 
     protected override string TypeNameAlias => "byte";
     
@@ -95,7 +95,7 @@ public partial class SByteTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadSByte";
 
-    protected override string WriteMethodName => "SerializationHelpers.WriteInt8";
+    protected override string WriteMethodName => "WriteSByte";
 
     protected override string TypeNameAlias => "sbyte";
     
@@ -124,7 +124,7 @@ public partial class UShortTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadUShort";
 
-    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian";
+    protected override string WriteMethodName => "WriteUShort";
 
     protected override string TypeNameAlias => "ushort";
     
@@ -153,7 +153,7 @@ public partial class ShortTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadShort";
 
-    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian";
+    protected override string WriteMethodName => "WriteShort";
 
     protected override string TypeNameAlias => "short";
     
@@ -182,7 +182,7 @@ public partial class IntTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadInt";
 
-    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian";
+    protected override string WriteMethodName => "WriteInt";
 
     protected override string TypeNameAlias => "int";
     
@@ -211,7 +211,7 @@ public partial class UIntTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadUInt";
 
-    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian";
+    protected override string WriteMethodName => "WriteUInt";
 
     protected override string TypeNameAlias => "uint";
     
@@ -240,7 +240,7 @@ public partial class LongTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadLong";
 
-    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian";
+    protected override string WriteMethodName => "WriteLong";
 
     protected override string TypeNameAlias => "long";
     
@@ -269,7 +269,7 @@ public partial class ULongTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadULong";
 
-    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian";
+    protected override string WriteMethodName => "WriteULong";
 
     protected override string TypeNameAlias => "ulong";
     
@@ -298,7 +298,7 @@ public partial class FloatTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadFloat";
 
-    protected override string WriteMethodName => "SerializationHelpers.WriteFloat32";
+    protected override string WriteMethodName => "WriteFloat";
 
     protected override string TypeNameAlias => "float";
     
@@ -327,7 +327,7 @@ public partial class DoubleTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadDouble";
 
-    protected override string WriteMethodName => "SerializationHelpers.WriteFloat64";
+    protected override string WriteMethodName => "WriteDouble";
 
     protected override string TypeNameAlias => "double";
     

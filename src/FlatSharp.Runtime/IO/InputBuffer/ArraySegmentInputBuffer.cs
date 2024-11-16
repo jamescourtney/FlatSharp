@@ -37,18 +37,15 @@ public struct ArraySegmentInputBuffer : IInputBuffer
     public long Length => this.pointer.segment.Count;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length)
+    public BigReadOnlySpan GetReadOnlySpan()
     {
-        return this.GetSpan(offset, length);
+        return new(this.GetSpan());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetSpan(long offset, int length)
+    public BigSpan GetSpan()
     {
-        checked
-        {
-            return this.pointer.segment.AsSpan((int)offset, length);
-        }
+        return new(this.pointer.segment.AsSpan());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

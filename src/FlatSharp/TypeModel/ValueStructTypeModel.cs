@@ -143,7 +143,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
             {StrykerSuppressor.SuppressNextLine("boolean")}
             if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
             {{
-                var mem = {context.InputBufferVariableName}.GetReadOnlySpan({context.OffsetVariableName}, {this.inlineSize});
+                var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().ToSpan({context.OffsetVariableName}, {this.inlineSize});
                 return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.{nameof(MemoryMarshal.Read)}<{globalName}>(mem);
             }}
             else
@@ -168,7 +168,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
             var member = this.members[i];
             var fieldContext = context with
             {
-                TargetVariableName = "sizedTarget",
+                SpanVariableName = "sizedTarget",
                 OffsetVariableName = $"{member.offset}",
                 ValueVariableName = $"{context.ValueVariableName}.{member.accessor}",
             };
@@ -177,7 +177,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         }
         
         string body;
-        string slice = $"var sizedTarget = {context.TargetVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
+        string slice = $"var sizedTarget = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
         if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
         {
             body = $@"
@@ -186,7 +186,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
                 {StrykerSuppressor.SuppressNextLine("boolean")}
                 if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
                 {{
-                    var sizedSpan = sizedTarget.AsSpan(0, {this.inlineSize});
+                    var sizedSpan = sizedTarget.ToSpan(0, {this.inlineSize});
 #if {CSharpHelpers.Net8PreprocessorVariable}
                     {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
 #else
@@ -215,7 +215,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         string body = $@"
             FlatSharpInternal.AssertLittleEndian();
             FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
-            Span<byte> sizedSpan = {context.TargetVariableName}.AsSpan({context.OffsetVariableName}, {this.inlineSize});
+            Span<byte> sizedSpan = {context.SpanVariableName}.{nameof(BigSpan.ToSpan)}({context.OffsetVariableName}, {this.inlineSize});
 
 #if NET8_0_OR_GREATER
             {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
@@ -234,7 +234,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         string body = $@"
             FlatSharpInternal.AssertLittleEndian();
             FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
-            var slice = {context.InputBufferVariableName}.GetReadOnlySpan({context.OffsetVariableName}, {this.inlineSize});
+            var slice = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().ToSpan({context.OffsetVariableName}, {this.inlineSize});
             return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Read<{globalName}>(slice);
         ";
 

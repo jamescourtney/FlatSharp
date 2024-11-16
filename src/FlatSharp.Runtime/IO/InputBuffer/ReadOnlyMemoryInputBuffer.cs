@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace FlatSharp;
@@ -47,12 +48,10 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length)
+    public BigReadOnlySpan GetReadOnlySpan()
     {
-        checked
-        {
-            return this.pointer.memory.Span.Slice((int)offset, length);
-        }
+        var rwMemory = MemoryMarshal.AsMemory(this.pointer.memory);
+        return new(new BigSpan(rwMemory.Span));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -64,7 +63,7 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
         }
     }
 
-    public Span<byte> GetSpan(long offset, int length)
+    public BigSpan GetSpan()
     {
         FSThrow.InvalidOperation(ErrorMessage);
         return default;

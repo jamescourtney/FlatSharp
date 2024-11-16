@@ -22,7 +22,7 @@ public class FullTests
 {
 #if NET5_0_OR_GREATER
     /// <summary>
-    /// Tests that we can compile a complex schema.
+    /// Tests that we can compile a complex schema.r
     /// </summary>
     [Fact]
     public void FullTest()

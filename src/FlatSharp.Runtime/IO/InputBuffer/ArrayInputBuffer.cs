@@ -37,18 +37,15 @@ public struct ArrayInputBuffer : IInputBuffer
     public long Length => this.memory.Length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<byte> GetReadOnlySpan(long offset, int length)
+    public BigReadOnlySpan GetReadOnlySpan()
     {
-        return this.GetSpan(offset, length);
+        return new(this.GetSpan());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetSpan(long offset, int length)
+    public BigSpan GetSpan()
     {
-        checked
-        {
-            return this.memory.AsSpan().Slice((int)offset, length);
-        }
+        return new(this.memory.AsSpan());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

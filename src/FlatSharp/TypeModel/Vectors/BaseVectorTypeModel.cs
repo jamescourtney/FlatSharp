@@ -147,8 +147,8 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
         string body = $@"
             int count = {context.ValueVariableName}.{this.LengthPropertyName};
             long vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
-            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}, vectorOffset);
-            {context.TargetVariableName}.WriteInt32(vectorOffset, count);
+            {context.SpanVariableName}.WriteUOffset({context.OffsetVariableName}, vectorOffset);
+            {context.SpanVariableName}.WriteInt(vectorOffset, count);
             vectorOffset += sizeof(int);
 
             {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";

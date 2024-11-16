@@ -473,7 +473,7 @@ public class TableTypeModel : RuntimeTypeModel
         string methodStart =
 $@"
             long tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
-            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}, tableStart);
+            {context.SpanVariableName}.WriteUOffset({context.OffsetVariableName}, tableStart);
             long currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
             int vtableLength = {minVtableLength};
@@ -503,8 +503,8 @@ $@"
         body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable, (ushort)vtableLength);");
         body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice(sizeof(ushort)), (ushort)tableLength);");
 
-        body.Add($"long vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.TargetVariableName}, vtable.Slice(0, vtableLength));");
-        body.Add($"{context.TargetVariableName}.WriteInt32(tableStart, checked((int)(tableStart - vtablePosition)));");
+        body.Add($"long vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
+        body.Add($"{context.SpanVariableName}.WriteInt(tableStart, checked((int)(tableStart - vtablePosition)));");
 
         body.AddRange(writeBlocks);
 

@@ -136,13 +136,13 @@ public class StructTypeModel : RuntimeTypeModel
 
         List<string> body = new List<string>();
 
-        body.Add($"var scopedTarget = {context.TargetVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
+        body.Add($"var scopedTarget = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
         
         body.Add(
             $@"
                 if ({context.ValueVariableName} is null)
                 {{
-                    Span<byte> scopedSpan = scopedTarget.AsSpan(0, {this.PhysicalLayout[0].InlineSize});
+                    Span<byte> scopedSpan = scopedTarget.{nameof(BigSpan.ToSpan)}(0, {this.PhysicalLayout[0].InlineSize});
                     scopedSpan.Clear();
                     return;
                 }}
@@ -160,7 +160,7 @@ public class StructTypeModel : RuntimeTypeModel
 
             var propContext = context with
             {
-                TargetVariableName = "scopedTarget",
+                SpanVariableName = "scopedTarget",
                 OffsetVariableName = $"{memberInfo.Offset}",
                 ValueVariableName = $"{propertyAccessor}"
             };

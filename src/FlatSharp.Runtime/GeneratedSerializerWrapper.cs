@@ -83,11 +83,6 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                                                                  // than to introduce an 'if'.
     }
 
-    public long GetActualSize(T item)
-    {
-        return this.Write(new VirtualSerializationTarget(), item);
-    }
-
     long ISerializer.GetMaxSize(object item)
     {
         return item switch
@@ -148,11 +143,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
 
     object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer, FlatBufferDeserializationOption? option) => this.Parse(buffer, option);
 
-    public long Write<TTarget>(TTarget destination, T item)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
+    public long Write(BigSpan destination, T item)
     {
         if (item is null)
         {
@@ -187,7 +178,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 Debug.Assert(!sharedStringWriter.IsDirty);
             }
 
-            this.innerSerializer.Write(ref destination, item, serializationContext);
+            this.innerSerializer.Write(destination, item, serializationContext);
 
             if (sharedStringWriter?.IsDirty == true)
             {
@@ -206,7 +197,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         return serializationContext.Offset;
     }
 
-    long ISerializer.Write<TTarget>(TTarget target, object item)
+    long ISerializer.Write(BigSpan target, object item)
     {
         return item switch
         {

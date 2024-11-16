@@ -26,17 +26,17 @@
     (
         string casedName, string commonName, string typeName, string literalSpecifier, string[] fbsAliases, string inlineWriteMethod)[] types =
             {
-                ("Bool", "Bool", "bool", "", new[] { "bool" }, "SerializationHelpers.WriteBool"),
-                ("UInt8", "Byte", "byte", "", new[] { "ubyte", "uint8" }, "SerializationHelpers.WriteUInt8"),
-                ("Int8", "SByte", "sbyte", "", new[] { "byte", "int8" }, "SerializationHelpers.WriteInt8"),
-                ("UInt16", "UShort", "ushort", "", new[] { "ushort", "uint16" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian"),
-                ("Int16", "Short", "short", "", new[] { "short", "int16" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian"),
-                ("Int32", "Int", "int", "", new[] { "int", "int32" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian"),
-                ("UInt32", "UInt", "uint", "u", new[] { "uint", "uint32" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian"),
-                ("Int64", "Long", "long", "L", new[] { "long", "int64" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian"),
-                ("UInt64", "ULong", "ulong", "ul", new[] { "ulong", "uint64" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian"),
-                ("Float32", "Float", "float", "f", new[] { "float", "float32" }, "SerializationHelpers.WriteFloat32"),
-                ("Float64", "Double", "double", "d", new[] { "double", "float64" }, "SerializationHelpers.WriteFloat64"),
+                ("Bool", "Bool", "bool", "", new[] { "bool" }, "WriteBool"),
+                ("UInt8", "Byte", "byte", "", new[] { "ubyte", "uint8" }, "WriteByte"),
+                ("Int8", "SByte", "sbyte", "", new[] { "byte", "int8" }, "WriteSByte"),
+                ("UInt16", "UShort", "ushort", "", new[] { "ushort", "uint16" }, "WriteUShort"),
+                ("Int16", "Short", "short", "", new[] { "short", "int16" }, "WriteShort"),
+                ("Int32", "Int", "int", "", new[] { "int", "int32" }, "WriteInt"),
+                ("UInt32", "UInt", "uint", "u", new[] { "uint", "uint32" }, "WriteUInt"),
+                ("Int64", "Long", "long", "L", new[] { "long", "int64" }, "WriteLong"),
+                ("UInt64", "ULong", "ulong", "ul", new[] { "ulong", "uint64" }, "WriteULong"),
+                ("Float32", "Float", "float", "f", new[] { "float", "float32" }, "WriteFloat"),
+                ("Float64", "Double", "double", "d", new[] { "double", "float64" }, "WriteDouble"),
             };
 #>
 

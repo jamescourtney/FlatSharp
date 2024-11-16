@@ -123,13 +123,13 @@ public abstract class BaseVectorOfUnionTypeModel : RuntimeTypeModel
         string body = $@"
             int count = {context.ValueVariableName}.{this.LengthPropertyName};
             long discriminatorVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(byte), count, sizeof(byte));
-            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}.offset0, discriminatorVectorOffset);
-            {context.TargetVariableName}.WriteInt32(discriminatorVectorOffset, count);
+            {context.SpanVariableName}.{nameof(BigSpan.WriteUOffset)}({context.OffsetVariableName}.offset0, discriminatorVectorOffset);
+            {context.SpanVariableName}.{nameof(BigSpan.WriteInt)}(discriminatorVectorOffset, count);
             discriminatorVectorOffset += sizeof(int);
 
             long offsetVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(int), count, sizeof(int));
-            {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}.offset1, offsetVectorOffset);
-            {context.TargetVariableName}.WriteInt32(offsetVectorOffset, count);
+            {context.SpanVariableName}.{nameof(BigSpan.WriteUOffset)}({context.OffsetVariableName}.offset1, offsetVectorOffset);
+            {context.SpanVariableName}.{nameof(BigSpan.WriteInt)}(offsetVectorOffset, count);
             offsetVectorOffset += sizeof(int);
 
             for (int i = 0; i < count; ++i)

@@ -45,7 +45,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     private readonly long vectorUOffset;
     private readonly int vTableIndex;
     private readonly int? keyInlineSize;
-    
+
     public VectorSortAction(
         long vectorUOffset,
         int vtableIndex,
@@ -74,55 +74,46 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// Furthermore, this method is left without checked multiply operations since this is a post-serialize action, which means the input
     /// has already been sanitized since FlatSharp wrote it.
     /// </remarks>
-    public void Invoke<TTarget>(TTarget target, SerializationContext context) 
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
+    public void Invoke(BigSpan buffer, SerializationContext context)
     {
-        checked
+        long vectorStartOffset =
+            vectorUOffset + buffer.ReadUInt(vectorUOffset);
+        int vectorLength = (int)buffer.ReadUInt(vectorStartOffset);
+        long index0Position = vectorStartOffset + sizeof(int);
+
+        (long, int, long)[]? pooledArray = null;
+
+        // Traverse the vector and figure out the offsets of all the keys.
+        // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
+        Span<(long offset, int length, long tableOffset)> keyOffsets =
+            vectorLength < 512
+                ? stackalloc (long, int, long)[vectorLength]
+                : (pooledArray = ArrayPool<(long, int, long)>.Shared.Rent(vectorLength)).AsSpan()
+                .Slice(0, vectorLength);
+
+        for (int i = 0; i < keyOffsets.Length; ++i)
         {
-            var buffer = new SerializationTargetInputBuffer<TTarget>(target);
+            keyOffsets[i] = GetKeyOffset(buffer, index0Position, i, this.vTableIndex, keyInlineSize);
+        }
 
-            long vectorStartOffset =
-                vectorUOffset + buffer.ReadUInt(vectorUOffset);
-            int vectorLength = (int)buffer.ReadUInt(vectorStartOffset);
-            long index0Position = vectorStartOffset + sizeof(int);
+        // Sort the offsets.
+        IntroSort(buffer, comparer, 0, vectorLength - 1, keyOffsets);
 
-            (long, int, long)[]? pooledArray = null;
+        // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
+        // partying inappropriately in the rest of the buffer.
+        Span<byte> boundedVector = buffer.ToSpan(index0Position, sizeof(uint) * vectorLength);
+        long nextPosition = index0Position;
+        for (int i = 0; i < keyOffsets.Length; ++i)
+        {
+            (_, _, long tableOffset) = keyOffsets[i];
+            BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i),
+                (uint)(tableOffset - nextPosition));
+            nextPosition += sizeof(uint);
+        }
 
-            // Traverse the vector and figure out the offsets of all the keys.
-            // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
-            Span<(long offset, int length, long tableOffset)> keyOffsets =
-                vectorLength < 512
-                    ? stackalloc (long, int, long)[vectorLength]
-                    : (pooledArray = ArrayPool<(long, int, long)>.Shared.Rent(vectorLength)).AsSpan()
-                    .Slice(0, vectorLength);
-
-            for (int i = 0; i < keyOffsets.Length; ++i)
-            {
-                keyOffsets[i] = GetKeyOffset(target, index0Position, i, this.vTableIndex, keyInlineSize);
-            }
-
-            // Sort the offsets.
-            IntroSort(target, comparer, 0, vectorLength - 1, keyOffsets);
-
-            // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
-            // partying inappropriately in the rest of the buffer.
-            Span<byte> boundedVector = target.AsSpan(index0Position, sizeof(uint) * vectorLength);
-            long nextPosition = index0Position;
-            for (int i = 0; i < keyOffsets.Length; ++i)
-            {
-                (_, _, long tableOffset) = keyOffsets[i];
-                BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i),
-                    (uint)(tableOffset - nextPosition));
-                nextPosition += sizeof(uint);
-            }
-
-            if (pooledArray is not null)
-            {
-                ArrayPool<(long, int, long)>.Shared.Return(pooledArray);
-            }
+        if (pooledArray is not null)
+        {
+            ArrayPool<(long, int, long)>.Shared.Return(pooledArray);
         }
     }
 
@@ -131,16 +122,12 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// Due to the amount of indirection in FlatBuffers, it's not possible to use the built-in sorting algorithms,
     /// so we do the next best thing. Note that this is not a true IntroSort, since we omit the HeapSort component.
     /// </summary>
-    private static void IntroSort<TTarget>(
-        TTarget buffer,
+    private static void IntroSort(
+        BigSpan buffer,
         TSpanComparer keyComparer,
         int lo,
         int hi,
         Span<(long offset, int length, long tableOffset)> keyLocations)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
     {
         checked
         {
@@ -184,7 +171,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                 SwapVectorPositions(middle, hi - 1, keyLocations);
                 var (pivotOffset, pivotLength, _) = keyLocations[hi - 1];
                 bool pivotExists = pivotOffset != 0;
-                var pivotSpan = buffer.AsSpan(pivotOffset, pivotLength);
+                var pivotSpan = buffer.ToSpan(pivotOffset, pivotLength);
 
                 // Partition
                 int num2 = lo;
@@ -194,7 +181,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                     while (true)
                     {
                         var (keyOffset, keyLength, _) = keyLocations[++num2];
-                        var keySpan = buffer.AsSpan(keyOffset, keyLength);
+                        var keySpan = buffer.ToSpan(keyOffset, keyLength);
                         if (keyComparer.Compare(keyOffset != 0, keySpan, pivotExists, pivotSpan) >= 0)
                         {
                             break;
@@ -204,7 +191,7 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
                     while (true)
                     {
                         var (keyOffset, keyLength, _) = keyLocations[--num3];
-                        var keySpan = buffer.AsSpan(keyOffset, keyLength);
+                        var keySpan = buffer.ToSpan(keyOffset, keyLength);
                         if (keyComparer.Compare(pivotExists, pivotSpan, keyOffset != 0, keySpan) >= 0)
                         {
                             break;
@@ -231,28 +218,24 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         }
     }
 
-    private static void InsertionSort<TTarget>(
-        TTarget buffer,
+    private static void InsertionSort(
+        BigSpan buffer,
         TSpanComparer comparer,
         int lo,
         int hi,
         Span<(long offset, int length, long tableOffset)> keyLocations)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
     {
         for (int i = lo; i < hi; i++)
         {
             int num = i;
 
             var valTuple = keyLocations[i + 1];
-            ReadOnlySpan<byte> valSpan = buffer.AsSpan(valTuple.offset, valTuple.length);
+            ReadOnlySpan<byte> valSpan = buffer.ToSpan(valTuple.offset, valTuple.length);
 
             while (num >= lo)
             {
                 (long keyOffset, int keyLength, _) = keyLocations[num];
-                ReadOnlySpan<byte> keySpan = buffer.AsSpan(keyOffset, keyLength);
+                ReadOnlySpan<byte> keySpan = buffer.ToSpan(keyOffset, keyLength);
 
                 if (comparer.Compare(valTuple.offset != 0, valSpan, keyOffset != 0, keySpan) < 0)
                 {
@@ -269,16 +252,12 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         }
     }
 
-    private static void SwapIfGreater<TTarget>(
-        TTarget target,
+    private static void SwapIfGreater(
+        BigSpan target,
         TSpanComparer comparer,
         int leftIndex,
         int rightIndex,
         Span<(long, int, long)> keyOffsets)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
     {
         (long leftOffset, int leftLength, _) = keyOffsets[leftIndex];
         (long rightOffset, int rightLength, _) = keyOffsets[rightIndex];
@@ -286,8 +265,8 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
         bool leftExists = leftOffset != 0;
         bool rightExists = rightOffset != 0;
 
-        var leftSpan = target.AsSpan(leftOffset, leftLength);
-        var rightSpan = target.AsSpan(rightOffset, rightLength);
+        var leftSpan = target.ToSpan(leftOffset, leftLength);
+        var rightSpan = target.ToSpan(rightOffset, rightLength);
 
         if (comparer.Compare(leftExists, leftSpan, rightExists, rightSpan) > 0)
         {
@@ -313,52 +292,43 @@ public sealed class VectorSortAction<TSpanComparer> : IPostSerializeAction
     /// <remarks>
     /// Left as unchecked since this is a sort operation (not a search).
     /// </remarks>
-    private static (long offset, int length, long tableOffset) GetKeyOffset<TTarget>(
-        TTarget target,
+    private static (long offset, int length, long tableOffset) GetKeyOffset(
+        BigSpan buffer,
         long index0Position,
         int vectorIndex,
         int vtableIndex,
         int? inlineItemSize)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
     {
-        checked
+        // Find offset to the table at the index.
+        long tableOffset = index0Position + (sizeof(uint) * vectorIndex);
+        tableOffset += (int)buffer.ReadUInt(tableOffset);
+
+        // Consult the vtable.
+        long vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+
+        // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
+        int vtableLengthEntries = (buffer.ReadUShort(vtableOffset) / 2) - 2;
+
+        if (vtableIndex >= vtableLengthEntries)
         {
-            var buffer = new SerializationTargetInputBuffer<TTarget>(target);
-        
-            // Find offset to the table at the index.
-            long tableOffset = index0Position + (sizeof(uint) * vectorIndex);
-            tableOffset += (int)buffer.ReadUInt(tableOffset);
-
-            // Consult the vtable.
-            long vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-
-            // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
-            int vtableLengthEntries = (buffer.ReadUShort(vtableOffset) / 2) - 2;
-
-            if (vtableIndex >= vtableLengthEntries)
-            {
-                return (0, 0, tableOffset);
-            }
-
-            // Absolute offset of the field within the table.
-            long fieldOffset = tableOffset + buffer.ReadUShort(vtableOffset + 2 * (2 + vtableIndex));
-            if (inlineItemSize is not null)
-            {
-                return (fieldOffset, inlineItemSize.Value, tableOffset);
-            }
-
-            if (fieldOffset == 0)
-            {
-                return (0, 0, tableOffset);
-            }
-
-            // Strings are stored as a uoffset reference. Follow the indirection one more time.
-            long uoffsetToString = fieldOffset + (int)buffer.ReadUInt(fieldOffset);
-            int stringLength = (int)buffer.ReadUInt(uoffsetToString);
-            return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
+            return (0, 0, tableOffset);
         }
+
+        // Absolute offset of the field within the table.
+        long fieldOffset = tableOffset + buffer.ReadUShort(vtableOffset + 2 * (2 + vtableIndex));
+        if (inlineItemSize is not null)
+        {
+            return (fieldOffset, inlineItemSize.Value, tableOffset);
+        }
+
+        if (fieldOffset == 0)
+        {
+            return (0, 0, tableOffset);
+        }
+
+        // Strings are stored as a uoffset reference. Follow the indirection one more time.
+        long uoffsetToString = fieldOffset + (int)buffer.ReadUInt(fieldOffset);
+        int stringLength = (int)buffer.ReadUInt(uoffsetToString);
+        return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
     }
 }

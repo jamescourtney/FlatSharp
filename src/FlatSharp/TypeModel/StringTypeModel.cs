@@ -114,7 +114,7 @@ public class StringTypeModel : RuntimeTypeModel
                     if (!(sharedStringWriter is null))
                     {{
                         sharedStringWriter.{nameof(ISharedStringWriter.WriteSharedString)}(
-                            {context.TargetVariableName},
+                            {context.SpanVariableName},
                             {context.OffsetVariableName},
                             {context.ValueVariableName},
                             {context.SerializationContextVariableName});
@@ -122,7 +122,7 @@ public class StringTypeModel : RuntimeTypeModel
                     }}
                 }}
                 
-                {context.TargetVariableName}.WriteString(
+                {context.SpanVariableName}.WriteString(
                     {context.ValueVariableName},
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});
@@ -132,7 +132,7 @@ public class StringTypeModel : RuntimeTypeModel
         {
             // otherwise, we can omit that code entirely.
             body = $@"
-                {context.TargetVariableName}.WriteString(
+                {context.SpanVariableName}.WriteString(
                     {context.ValueVariableName},
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});

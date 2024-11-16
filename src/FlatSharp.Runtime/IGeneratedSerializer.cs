@@ -43,15 +43,10 @@ public interface IGeneratedSerializer<T>
     /// <param name="target">The target.</param>
     /// <param name="item">The item.</param>
     /// <param name="context">The serialization context.</param>
-    void Write<TSerializationTarget>(
-        ref TSerializationTarget target,
+    void Write(
+        BigSpan target,
         T item,
-        SerializationContext context)
-        where TSerializationTarget : IFlatBufferSerializationTarget<TSerializationTarget>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-        ;
+        SerializationContext context);
 
     /// <summary>
     /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.

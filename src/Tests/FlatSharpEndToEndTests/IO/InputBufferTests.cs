@@ -222,18 +222,18 @@ public class InputBufferTests
         Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
         Assert.AreEqual(isReadOnly, inputBuffer.IsReadOnly);
         
-        Assert.IsTrue(inputBuffer.GetReadOnlySpan(0, (int)inputBuffer.Length).SequenceEqual(buffer));
+        Assert.IsTrue(inputBuffer.GetReadOnlySpan().ToSpan(0, (int)inputBuffer.Length).SequenceEqual(buffer));
         Assert.IsTrue(inputBuffer.GetReadOnlyMemory(0, (int)inputBuffer.Length).Span.SequenceEqual(buffer));
 
         if (isReadOnly)
         {
-            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetSpan(0, 1));
+            Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetSpan().ToSpan(0, 1));
             Assert.ThrowsException<InvalidOperationException>(() => inputBuffer.GetMemory(0, 1));
         }
         else
         {
             Assert.IsTrue(inputBuffer.GetMemory(0, (int)inputBuffer.Length).Span.SequenceEqual(buffer));
-            Assert.IsTrue(inputBuffer.GetSpan(0, (int)inputBuffer.Length).SequenceEqual(buffer));
+            Assert.IsTrue(inputBuffer.GetSpan().ToSpan(0, (int)inputBuffer.Length).SequenceEqual(buffer));
             Assert.IsTrue(inputBuffer.ReadByteMemoryBlock(0).Span.SequenceEqual(expected));
         }
     }

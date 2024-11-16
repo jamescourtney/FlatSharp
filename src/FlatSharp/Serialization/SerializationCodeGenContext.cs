@@ -26,7 +26,7 @@ public record SerializationCodeGenContext
 {
     public SerializationCodeGenContext(
         string serializationContextVariableName,
-        string targetVariableName,
+        string spanVariableName,
         string valueVariableName,
         string offsetVariableName,
         string tableFieldContextVariableName,
@@ -36,7 +36,7 @@ public record SerializationCodeGenContext
         IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.SerializationContextVariableName = serializationContextVariableName;
-        this.TargetVariableName = targetVariableName;
+        this.SpanVariableName = spanVariableName;
         this.ValueVariableName = valueVariableName;
         this.OffsetVariableName = offsetVariableName;
         this.TypeModelContainer = typeModelContainer;
@@ -57,9 +57,9 @@ public record SerializationCodeGenContext
     public string TableFieldContextVariableName { get; init; }
 
     /// <summary>
-    /// The variable name of the span. Represents a <see cref="IFlatBufferSerializationTarget{T}"/> reference.
+    /// The variable name of the span. Represents a <see cref="BigSpan"/> reference.
     /// </summary>
-    public string TargetVariableName { get; init; }
+    public string SpanVariableName { get; init; }
     
     /// <summary>
     /// The variable name of the current value to serialize.
@@ -107,7 +107,7 @@ public record SerializationCodeGenContext
         StringBuilder sb = new StringBuilder();
 
         var methodParts = DefaultMethodNameResolver.ResolveSerialize(typeModel);
-        sb.Append($"{methodParts.@namespace}.{methodParts.className}.{methodParts.methodName}(ref {this.TargetVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
+        sb.Append($"{methodParts.@namespace}.{methodParts.className}.{methodParts.methodName}({this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
 
         if (typeModel.SerializeMethodRequiresContext)
         {

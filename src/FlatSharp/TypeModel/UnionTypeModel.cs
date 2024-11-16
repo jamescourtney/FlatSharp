@@ -182,7 +182,7 @@ $@"
                 // a pointer to a struct.
                 inlineAdjustment =$@"
                     var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                    {context.TargetVariableName}.WriteUOffset({context.OffsetVariableName}.offset1, writeOffset);";
+                    {context.SpanVariableName}.WriteUOffset({context.OffsetVariableName}.offset1, writeOffset);";
             }
             else
             {
@@ -210,7 +210,7 @@ $@"
 
         string serializeBlock = $@"
             byte discriminatorValue = {context.ValueVariableName}.Discriminator;
-            {context.TargetVariableName}.WriteUInt8(
+            {context.SpanVariableName}.{nameof(BigSpan.WriteByte)}(
                 {context.OffsetVariableName}.offset0,
                 discriminatorValue);
 

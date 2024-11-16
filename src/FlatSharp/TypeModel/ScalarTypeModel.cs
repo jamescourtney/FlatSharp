@@ -74,6 +74,16 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override bool SerializesInline => true;
 
     /// <summary>
+    /// Scalars are of fixed size.
+    /// </summary>
+    public override bool IsFixedSize => true;
+
+    /// <summary>
+    /// Scalars don't need a serialization context.
+    /// </summary>
+    public override bool SerializeMethodRequiresContext => false;
+
+    /// <summary>
     /// Scalars are leaf nodes.
     /// </summary>
     public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
@@ -125,7 +135,7 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         string variableName = context.ValueVariableName;
-        return new CodeGeneratedMethod($"{this.WriteMethodName}({context.TargetVariableName}, {variableName});")
+        return new CodeGeneratedMethod($"{context.SpanVariableName}.{this.WriteMethodName}({context.OffsetVariableName}, {variableName});")
         {
             IsMethodInline = true,
         };

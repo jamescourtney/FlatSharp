@@ -333,14 +333,14 @@ namespace NativeAot
                 return inner.GetReadOnlyMemory(start, length);
             }
 
-            public ReadOnlySpan<byte> GetReadOnlySpan(long start, int length)
+            public BigReadOnlySpan GetReadOnlySpan()
             {
-                return inner.GetReadOnlySpan(start, length);
+                return inner.GetReadOnlySpan();
             }
 
-            public Span<byte> GetSpan(long start, int length)
+            public BigSpan GetSpan()
             {
-                return inner.GetSpan(start, length);
+                return inner.GetSpan();
             }
         }
     }

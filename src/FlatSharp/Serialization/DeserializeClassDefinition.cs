@@ -163,7 +163,7 @@ internal class DeserializeClassDefinition
     private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
     {
         var context = parserContext.GetWriteThroughContext(
-            $"target",
+            $"destination",
             "value",
             "offset");
 
@@ -175,7 +175,7 @@ internal class DeserializeClassDefinition
                 {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
                 {this.vtableTypeName} vtable)
             {{
-                var target = new InputBufferSerializationTarget<{parserContext.InputBufferTypeName}>(buffer);
+                var destination = buffer.{nameof(IInputBuffer.GetSpan)}();
                 {itemModel.CreateWriteThroughBody(context, "vtable")}
             }}");
     }

@@ -158,7 +158,7 @@ internal static partial class FlatBufferVectorHelpers
 
         if (isEverWriteThrough)
         {
-            var serializeContext = context.GetWriteThroughContext("data", "value", "0");
+            var serializeContext = context.GetWriteThroughContext("data", "value", "itemOffset");
 
             writeThroughBody = @$"
                 if (!{context.TableFieldContextVariableName}.WriteThrough)
@@ -166,9 +166,8 @@ internal static partial class FlatBufferVectorHelpers
                     {nameof(FSThrow)}.{nameof(FSThrow.NotMutable)}();
                 }}
 
-                long offset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
-                var data = new InputBufferSerializationTarget<{context.InputBufferTypeName}>({context.InputBufferVariableName}, offset, {inlineSize});
-
+                long itemOffset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
+                var data = {context.InputBufferVariableName}.GetSpan();
                 {serializeContext.GetSerializeInvocation(itemTypeModel.ClrType)};
             ";
         }

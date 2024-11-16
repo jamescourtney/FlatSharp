@@ -39,12 +39,7 @@ public interface ISerializer
     /// <param name="target">The destination.</param>
     /// <param name="item">The object to serialize.</param>
     /// <returns>The number of bytes written.</returns>
-    long Write<TTarget>(TTarget target, object item)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    ;
+    long Write(BigSpan target, object item);
 
     /// <summary>
     /// Computes the maximum size necessary to serialize the given instance.
@@ -81,17 +76,7 @@ public interface ISerializer<T>
     /// <param name="destination">The destination.</param>
     /// <param name="item">The object to serialize.</param>
     /// <returns>The number of bytes written.</returns>
-    long Write<TTarget>(TTarget destination, T item)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
-    ;
-
-    /// <summary>
-    /// Computes the exact size necessary to serialize the given instance of <typeparamref name="T"/>.
-    /// </summary>
-    long GetActualSize(T item);
+    long Write(BigSpan destination, T item);
 
     /// <summary>
     /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.

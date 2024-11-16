@@ -73,15 +73,11 @@ public class SharedStringWriter : ISharedStringWriter
     /// <summary>
     /// Writes a shared string.
     /// </summary>
-    public void WriteSharedString<TTarget>(
-        TTarget target,
+    public void WriteSharedString(
+        BigSpan target,
         long offset,
         string value,
-        SerializationContext context) 
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
+        SerializationContext context)
     {
         // Find the associative set that must contain our key.
         var cache = this.sharedStringOffsetCache;
@@ -110,13 +106,9 @@ public class SharedStringWriter : ISharedStringWriter
     /// <summary>
     /// Flush any pending writes.
     /// </summary>
-    public void FlushWrites<TTarget>(
-        TTarget target,
-        SerializationContext context) 
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct
-    #endif
+    public void FlushWrites(
+        BigSpan target,
+        SerializationContext context)
     {
         var cache = this.sharedStringOffsetCache;
         for (int i = 0; i < cache.Length; ++i)
@@ -137,15 +129,11 @@ public class SharedStringWriter : ISharedStringWriter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FlushSharedString<TTarget>(
-        TTarget target,
+    private static void FlushSharedString(
+        BigSpan target,
         string value,
         List<long> offsets,
         SerializationContext context)
-        where TTarget : IFlatBufferSerializationTarget<TTarget>
-    #if NET9_0_OR_GREATER
-        , allows ref struct 
-    #endif
     {
         long stringOffset = target.WriteAndProvisionString(value, context);
         int count = offsets.Count;
