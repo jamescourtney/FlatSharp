@@ -37,7 +37,9 @@ public partial class BoolTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadBool";
 
-    protected override string SpanWriterWriteMethodName => "WriteBool";
+    protected override string WriteMethodName => "SerializationHelpers.WriteBool";
+
+    protected override string TypeNameAlias => "bool";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -64,7 +66,9 @@ public partial class ByteTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadByte";
 
-    protected override string SpanWriterWriteMethodName => "WriteUInt8";
+    protected override string WriteMethodName => "SerializationHelpers.WriteUInt8";
+
+    protected override string TypeNameAlias => "byte";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -91,7 +95,9 @@ public partial class SByteTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadSByte";
 
-    protected override string SpanWriterWriteMethodName => "WriteInt8";
+    protected override string WriteMethodName => "SerializationHelpers.WriteInt8";
+
+    protected override string TypeNameAlias => "sbyte";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -118,7 +124,9 @@ public partial class UShortTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadUShort";
 
-    protected override string SpanWriterWriteMethodName => "WriteUInt16";
+    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian";
+
+    protected override string TypeNameAlias => "ushort";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -145,7 +153,9 @@ public partial class ShortTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadShort";
 
-    protected override string SpanWriterWriteMethodName => "WriteInt16";
+    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian";
+
+    protected override string TypeNameAlias => "short";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -172,7 +182,9 @@ public partial class IntTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadInt";
 
-    protected override string SpanWriterWriteMethodName => "WriteInt32";
+    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian";
+
+    protected override string TypeNameAlias => "int";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -199,7 +211,9 @@ public partial class UIntTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadUInt";
 
-    protected override string SpanWriterWriteMethodName => "WriteUInt32";
+    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian";
+
+    protected override string TypeNameAlias => "uint";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -226,7 +240,9 @@ public partial class LongTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadLong";
 
-    protected override string SpanWriterWriteMethodName => "WriteInt64";
+    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian";
+
+    protected override string TypeNameAlias => "long";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -253,7 +269,9 @@ public partial class ULongTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadULong";
 
-    protected override string SpanWriterWriteMethodName => "WriteUInt64";
+    protected override string WriteMethodName => "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian";
+
+    protected override string TypeNameAlias => "ulong";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -280,7 +298,9 @@ public partial class FloatTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadFloat";
 
-    protected override string SpanWriterWriteMethodName => "WriteFloat32";
+    protected override string WriteMethodName => "SerializationHelpers.WriteFloat32";
+
+    protected override string TypeNameAlias => "float";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -307,7 +327,9 @@ public partial class DoubleTypeModel : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "ReadDouble";
 
-    protected override string SpanWriterWriteMethodName => "WriteFloat64";
+    protected override string WriteMethodName => "SerializationHelpers.WriteFloat64";
+
+    protected override string TypeNameAlias => "double";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {

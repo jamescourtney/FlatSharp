@@ -49,11 +49,6 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override bool IsParsingInvariant => true;
 
     /// <summary>
-    /// Scalars are fixed size.
-    /// </summary>
-    public override bool IsFixedSize => true;
-
-    /// <summary>
     /// Scalars can be part of Structs.
     /// </summary>
     public override bool IsValidStructMember => true;
@@ -79,11 +74,6 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override bool SerializesInline => true;
 
     /// <summary>
-    /// We don't care about serialization context.
-    /// </summary>
-    public override bool SerializeMethodRequiresContext => false;
-
-    /// <summary>
     /// Scalars are leaf nodes.
     /// </summary>
     public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
@@ -96,7 +86,12 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     /// <summary>
     /// The name of a write method for an input buffer.
     /// </summary>
-    protected abstract string SpanWriterWriteMethodName { get; }
+    protected abstract string WriteMethodName { get; }
+
+    /// <summary>
+    /// Gets the type name alias (int, short, etc).
+    /// </summary>
+    protected abstract string TypeNameAlias { get; }
 
     /// <summary>
     /// Force children to reimplement.
@@ -130,7 +125,7 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         string variableName = context.ValueVariableName;
-        return new CodeGeneratedMethod($"{context.TargetVariableName}.{this.SpanWriterWriteMethodName}({context.OffsetVariableName}, {variableName});")
+        return new CodeGeneratedMethod($"{this.WriteMethodName}({context.TargetVariableName}, {variableName});")
         {
             IsMethodInline = true,
         };

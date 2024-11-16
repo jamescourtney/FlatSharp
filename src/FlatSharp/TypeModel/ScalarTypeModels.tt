@@ -24,20 +24,19 @@
 
 <#
     (
-        string casedName, string commonName, string typeName, string literalSpecifier, string[] fbsAliases,
-            string writeNameClass, string readNameClass)[] types =
+        string casedName, string commonName, string typeName, string literalSpecifier, string[] fbsAliases, string inlineWriteMethod)[] types =
             {
-                ("Bool", "Bool", "bool", "", new[] { "bool" }, "SpanWriterExtensions", "InputBufferExtensions"),
-                ("UInt8", "Byte", "byte", "", new[] { "ubyte", "uint8" }, null, null),
-                ("Int8", "SByte", "sbyte", "", new[] { "byte", "int8" }, null, null),
-                ("UInt16", "UShort", "ushort", "", new[] { "ushort", "uint16" }, null, null),
-                ("Int16", "Short", "short", "", new[] { "short", "int16" }, null, null),
-                ("Int32", "Int", "int", "", new[] { "int", "int32" }, null, null),
-                ("UInt32", "UInt", "uint", "u", new[] { "uint", "uint32" }, null, null),
-                ("Int64", "Long", "long", "L", new[] { "long", "int64" }, null, null),
-                ("UInt64", "ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
-                ("Float32", "Float", "float", "f", new[] { "float", "float32" }, null, null),
-                ("Float64", "Double", "double", "d", new[] { "double", "float64" }, null, null),
+                ("Bool", "Bool", "bool", "", new[] { "bool" }, "SerializationHelpers.WriteBool"),
+                ("UInt8", "Byte", "byte", "", new[] { "ubyte", "uint8" }, "SerializationHelpers.WriteUInt8"),
+                ("Int8", "SByte", "sbyte", "", new[] { "byte", "int8" }, "SerializationHelpers.WriteInt8"),
+                ("UInt16", "UShort", "ushort", "", new[] { "ushort", "uint16" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian"),
+                ("Int16", "Short", "short", "", new[] { "short", "int16" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian"),
+                ("Int32", "Int", "int", "", new[] { "int", "int32" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian"),
+                ("UInt32", "UInt", "uint", "u", new[] { "uint", "uint32" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian"),
+                ("Int64", "Long", "long", "L", new[] { "long", "int64" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian"),
+                ("UInt64", "ULong", "ulong", "ul", new[] { "ulong", "uint64" }, "global::System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian"),
+                ("Float32", "Float", "float", "f", new[] { "float", "float32" }, "SerializationHelpers.WriteFloat32"),
+                ("Float64", "Double", "double", "d", new[] { "double", "float64" }, "SerializationHelpers.WriteFloat64"),
             };
 #>
 
@@ -50,6 +49,7 @@ namespace FlatSharp.TypeModel;
         var typeName = pair.typeName;
         var commonName = pair.commonName;
         var className = $"{commonName}TypeModel";
+        var writeMethod = pair.inlineWriteMethod;
 #>
     
 /// <summary>
@@ -70,7 +70,9 @@ public partial class <#= className #> : ScalarTypeModel
 
     protected override string InputBufferReadMethodName => "Read<#= commonName #>";
 
-    protected override string SpanWriterWriteMethodName => "Write<#= casedName #>";
+    protected override string WriteMethodName => "<#= writeMethod #>";
+
+    protected override string TypeNameAlias => "<#=typeName#>";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
