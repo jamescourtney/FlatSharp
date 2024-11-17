@@ -58,14 +58,14 @@ namespace Benchmark
 #else
                 .WithRuntime(CoreRuntime.Core80)
 #endif
-                ;
+            ;
 
             // job = job.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "0"));
 
             var config = DefaultConfig.Instance
                  .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
                  .AddDiagnoser(MemoryDiagnoser.Default)
-                 .AddJob(job);
+                 .AddJob(job.DontEnforcePowerPlan());
 
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));

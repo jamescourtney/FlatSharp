@@ -214,7 +214,8 @@ public readonly ref partial struct BigSpan
         int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
         long stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
 
-        Span<byte> destination = this.ToSpan(stringStartOffset + sizeof(uint), maxItems);
+        BigSpan scopedThis = this.Slice(stringStartOffset, maxItems + sizeof(uint));
+        Span<byte> destination = scopedThis.ToSpan(sizeof(uint), maxItems);
 
 #if NETSTANDARD2_0
         int length = value.Length;
@@ -227,10 +228,10 @@ public readonly ref partial struct BigSpan
 #endif
 
         // null teriminator
-        this[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
+        scopedThis.WriteUnalignedUnsafe<byte>(sizeof(uint) + bytesWritten, 0);
 
         // write length
-        this.WriteInt(stringStartOffset, bytesWritten);
+        scopedThis.WriteUnalignedUnsafe<int>(0, bytesWritten);
 
         // give back unused space. Account for null terminator.
         context.Offset -= maxItems - (bytesWritten + 1);
@@ -263,7 +264,18 @@ public readonly ref partial struct BigSpan
     {
         CheckAlignment(offset, Unsafe.SizeOf<T>());
         var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
+        this.WriteUnalignedUnsafe(offset, value);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void WriteUnalignedUnsafe<T>(long offset, T value)
+    {
+#if NET7_0_OR_GREATER
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref this.value, (IntPtr)offset), value);
+#else
+        var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
         Unsafe.WriteUnaligned(ref slice[0], value);
+#endif
     }
 
     private static double ReverseEndianness(double value)
