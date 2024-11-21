@@ -54,6 +54,12 @@ namespace Microbench
         }
 
         [Benchmark]
+        public long Serialize_PrimitivesTable_RandomlyPopulated()
+        {
+            return NestedTable.Serializer.Write(Constants.Buffers.PrimitivesTable_RandomEntries, Constants.PrimitiveTables.RandomEntries);
+        }
+
+        [Benchmark]
         public long Serialize_StructTable_SingleRef()
         {
             return StructsTable.Serializer.Write(Constants.Buffers.StructTable_SingleRef, Constants.StructTables.SingleRef);

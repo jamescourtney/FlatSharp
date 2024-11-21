@@ -99,6 +99,11 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     protected abstract string WriteMethodName { get; }
 
     /// <summary>
+    /// The name of the unsafe write method for the input buffer.
+    /// </summary>
+    protected abstract string UnsafeWriteMethodName { get; }
+
+    /// <summary>
     /// Gets the type name alias (int, short, etc).
     /// </summary>
     protected abstract string TypeNameAlias { get; }
@@ -157,5 +162,11 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
         }
 
         return base.FormatDefaultValueAsLiteral(defaultValue);
+    }
+
+    public override bool TryGetUnsafeSerializeInvocation(string spanVariableName, string valueVariableName, string offsetVariableName, [NotNullWhen(true)] out string? invocation)
+    {
+        invocation = $"{spanVariableName}.{this.UnsafeWriteMethodName}({offsetVariableName}, {valueVariableName})";
+        return true;
     }
 }

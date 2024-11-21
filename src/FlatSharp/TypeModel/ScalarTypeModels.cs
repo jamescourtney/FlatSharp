@@ -39,6 +39,8 @@ public partial class BoolTypeModel : ScalarTypeModel
 
     protected override string WriteMethodName => "WriteBool";
 
+    protected override string UnsafeWriteMethodName => "UnsafeWriteBool";
+
     protected override string TypeNameAlias => "bool";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
@@ -67,6 +69,8 @@ public partial class ByteTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => "ReadByte";
 
     protected override string WriteMethodName => "WriteByte";
+
+    protected override string UnsafeWriteMethodName => "UnsafeWriteByte";
 
     protected override string TypeNameAlias => "byte";
     
@@ -97,6 +101,8 @@ public partial class SByteTypeModel : ScalarTypeModel
 
     protected override string WriteMethodName => "WriteSByte";
 
+    protected override string UnsafeWriteMethodName => "UnsafeWriteSByte";
+
     protected override string TypeNameAlias => "sbyte";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
@@ -125,6 +131,8 @@ public partial class UShortTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => "ReadUShort";
 
     protected override string WriteMethodName => "WriteUShort";
+
+    protected override string UnsafeWriteMethodName => "UnsafeWriteUShort";
 
     protected override string TypeNameAlias => "ushort";
     
@@ -155,6 +163,8 @@ public partial class ShortTypeModel : ScalarTypeModel
 
     protected override string WriteMethodName => "WriteShort";
 
+    protected override string UnsafeWriteMethodName => "UnsafeWriteShort";
+
     protected override string TypeNameAlias => "short";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
@@ -183,6 +193,8 @@ public partial class IntTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => "ReadInt";
 
     protected override string WriteMethodName => "WriteInt";
+
+    protected override string UnsafeWriteMethodName => "UnsafeWriteInt";
 
     protected override string TypeNameAlias => "int";
     
@@ -213,6 +225,8 @@ public partial class UIntTypeModel : ScalarTypeModel
 
     protected override string WriteMethodName => "WriteUInt";
 
+    protected override string UnsafeWriteMethodName => "UnsafeWriteUInt";
+
     protected override string TypeNameAlias => "uint";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
@@ -241,6 +255,8 @@ public partial class LongTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => "ReadLong";
 
     protected override string WriteMethodName => "WriteLong";
+
+    protected override string UnsafeWriteMethodName => "UnsafeWriteLong";
 
     protected override string TypeNameAlias => "long";
     
@@ -271,6 +287,8 @@ public partial class ULongTypeModel : ScalarTypeModel
 
     protected override string WriteMethodName => "WriteULong";
 
+    protected override string UnsafeWriteMethodName => "UnsafeWriteULong";
+
     protected override string TypeNameAlias => "ulong";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
@@ -300,6 +318,8 @@ public partial class FloatTypeModel : ScalarTypeModel
 
     protected override string WriteMethodName => "WriteFloat";
 
+    protected override string UnsafeWriteMethodName => "UnsafeWriteFloat";
+
     protected override string TypeNameAlias => "float";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
@@ -328,6 +348,8 @@ public partial class DoubleTypeModel : ScalarTypeModel
     protected override string InputBufferReadMethodName => "ReadDouble";
 
     protected override string WriteMethodName => "WriteDouble";
+
+    protected override string UnsafeWriteMethodName => "UnsafeWriteDouble";
 
     protected override string TypeNameAlias => "double";
     

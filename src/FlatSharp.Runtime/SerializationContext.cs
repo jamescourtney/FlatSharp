@@ -16,6 +16,17 @@
 
 using System.Buffers.Binary;
 using System.Threading;
+using System.Runtime.InteropServices;
+using System.Linq;
+
+
+
+
+#if NETCOREAPP
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+using System.Runtime.Intrinsics.Arm;
+#endif
 
 namespace FlatSharp.Internal;
 
@@ -30,7 +41,13 @@ public sealed class SerializationContext
     private long offset;
     private long capacity;
     private readonly List<IPostSerializeAction> postSerializeActions;
-    private readonly List<long> vtableOffsets;
+    private readonly List<long>[] vtableOffsets;
+
+#if NETCOREAPP
+    private const int ListLength = 19;
+#else
+    private const int ListLength = 1;
+#endif
 
     /// <summary>
     /// Initializes a new serialization context.
@@ -38,7 +55,11 @@ public sealed class SerializationContext
     public SerializationContext()
     {
         this.postSerializeActions = new List<IPostSerializeAction>();
-        this.vtableOffsets = new List<long>();
+        this.vtableOffsets = new List<long>[ListLength];
+        for (int i = 0; i < this.vtableOffsets.Length; ++i)
+        {
+            this.vtableOffsets[i] = new();
+        }
     }
 
     /// <summary>
@@ -65,7 +86,11 @@ public sealed class SerializationContext
         this.capacity = capacity;
         this.SharedStringWriter = null;
         this.postSerializeActions.Clear();
-        this.vtableOffsets.Clear();
+
+        for (int i = 0; i < this.vtableOffsets.Length; ++i)
+        {
+            this.vtableOffsets[i].Clear();
+        }
     }
 
     /// <summary>
@@ -147,28 +172,30 @@ public sealed class SerializationContext
     [MethodImpl(MethodImplOptions.NoInlining)] // Common method; don't inline
     public long FinishVTable(
         BigSpan buffer,
+        uint crc,
         Span<byte> vtable)
     {
-        var offsets = this.vtableOffsets;
+        var offsets = this.vtableOffsets[crc % ListLength];
         int count = offsets.Count;
 
         for (int i = 0; i < count; ++i)
         {
             long offset = offsets[i];
+            ushort vtableLength = buffer.ReadUShort(offset);
 
-            ReadOnlySpan<byte> existingVTable = buffer.ToSpan(offset, sizeof(ushort));
-            ushort vtableLength = BinaryPrimitives.ReadUInt16LittleEndian(existingVTable);
-            
-            existingVTable = buffer.ToSpan(offset, vtableLength);
-
-            if (existingVTable.SequenceEqual(vtable))
+            if (vtableLength == vtable.Length)
             {
-                // Slowly bubble used things towards the front of the list.
-                // This is not exact, but should keep frequently used
-                // items towards the front.
-                Promote(i, offsets);
+                Span<byte> existingVTable = buffer.ToSpan(offset, vtableLength);
 
-                return offset;
+                if (existingVTable.SequenceEqual(vtable))
+                {
+                    // Slowly bubble used things towards the front of the list.
+                    // This is not exact, but should keep frequently used
+                    // items towards the front.
+                    Promote(i, offsets);
+
+                    return offset;
+                }
             }
         }
 

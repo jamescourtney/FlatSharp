@@ -478,6 +478,7 @@ $@"
 
             int vtableLength = {minVtableLength};
             Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
+            uint crc = 0;
 ";
 
         List<string> body = new();
@@ -500,10 +501,12 @@ $@"
         body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
 
         // Finish vtable.
+        body.Add($"{typeof(SerializationHelpers).GGCTN()}.{nameof(SerializationHelpers.ComputeCrc)}(ref crc, (ushort)vtableLength);");
+        body.Add($"{typeof(SerializationHelpers).GGCTN()}.{nameof(SerializationHelpers.ComputeCrc)}(ref crc, (ushort)tableLength);");
         body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable, (ushort)vtableLength);");
         body.Add($"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice(sizeof(ushort)), (ushort)tableLength);");
 
-        body.Add($"long vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
+        body.Add($"long vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, crc, vtable.Slice(0, vtableLength));");
         body.Add($"{context.SpanVariableName}.WriteInt(tableStart, checked((int)(tableStart - vtablePosition)));");
 
         body.AddRange(writeBlocks);
@@ -577,10 +580,15 @@ $@"
             }
         }
 
-        string writeVTableBlock =
-            $"{typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice({vTableIndex}), (ushort)({OffsetVariableName(index, i)} - tableStart));";
+        string writeVTableBlock = @$"
+        {{
+            ushort fieldOffset = (ushort)({OffsetVariableName(index, i)} - tableStart);
+            {typeof(BinaryPrimitives).GGCTN()}.WriteUInt16LittleEndian(vtable.Slice({vTableIndex}), fieldOffset);
+            {typeof(SerializationHelpers).GGCTN()}.{nameof(SerializationHelpers.ComputeCrc)}(ref crc, fieldOffset);
+        }}";
 
         string inlineSerialize = string.Empty;
+
         if (memberModel.ItemTypeModel.SerializesInline)
         {
             inlineSerialize = this.GetSerializeCoreBlock(
@@ -634,20 +642,29 @@ $@"
 
         string serializeInvocation;
         string offsetTuple = string.Empty;
+        valueVariableName = $"{valueVariableName}{nullForgiving}";
+
         if (vtableEntries == 1)
         {
-            serializeInvocation = (context with
+            if (memberModel.ItemTypeModel.TryGetUnsafeSerializeInvocation(context.SpanVariableName, valueVariableName, OffsetVariableName(index, 0), out string? invocation))
             {
-                ValueVariableName = $"{valueVariableName}{nullForgiving}",
-                OffsetVariableName = $"{OffsetVariableName(index, 0)}",
-                TableFieldContextVariableName = $"{this.MetadataClassName}.{memberModel.PropertyInfo.Name}",
-            }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
+                serializeInvocation = invocation + ";";
+            }
+            else
+            {
+                serializeInvocation = (context with
+                {
+                    ValueVariableName = valueVariableName,
+                    OffsetVariableName = $"{OffsetVariableName(index, 0)}",
+                    TableFieldContextVariableName = $"{this.MetadataClassName}.{memberModel.PropertyInfo.Name}",
+                }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
+            }
         }
         else
         {
             serializeInvocation = (context with
             {
-                ValueVariableName = $"{valueVariableName}{nullForgiving}",
+                ValueVariableName = valueVariableName,
                 OffsetVariableName = $"offsetTuple",
                 IsOffsetByRef = true,
                 TableFieldContextVariableName = $"{this.MetadataClassName}.{memberModel.PropertyInfo.Name}",

@@ -106,4 +106,23 @@ public static class SerializationHelpers
             FSThrow.InvalidData_DepthLimit();
         }
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ComputeCrc(ref uint crc, ushort value)
+    {
+#if NETCOREAPP
+        if (System.Runtime.Intrinsics.X86.Sse42.IsSupported)
+        {
+            crc = System.Runtime.Intrinsics.X86.Sse42.Crc32(crc, value);
+            return;
+        }
+        else if (System.Runtime.Intrinsics.Arm.Crc32.IsSupported)
+        {
+            crc = System.Runtime.Intrinsics.Arm.Crc32.ComputeCrc32(crc, value);
+            return;
+        }
+#endif
+
+        crc = (crc << 1) ^ value;
+    }
 }

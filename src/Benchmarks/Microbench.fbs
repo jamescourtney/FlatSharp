@@ -31,6 +31,10 @@ table PrimitivesTable (fs_serializer:"Lazy") {
     Float : float;
 }
 
+table NestedTable (fs_serializer:"Lazy") {
+    Tables : [ PrimitivesTable ];
+}
+
 struct RefStruct (fs_writeThrough) { Value : int; }
 struct ValueStruct (fs_valueStruct) { Value : int; }
 
@@ -50,7 +54,6 @@ table SortedTable (fs_serializer:"Lazy")
     Strings : [StringKey] (fs_vector:"IIndexedVector");
     Ints : [IntKey] (fs_vector:"IIndexedVector");
 }
-
 
 struct ValueStructA (fs_valueStruct) { x : int; }
 struct ValueStructB (fs_valueStruct) { y : long; }

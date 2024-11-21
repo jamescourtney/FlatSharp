@@ -48,7 +48,7 @@ namespace Benchmark
 
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(7)
+                .WithLaunchCount(3)
                 .WithWarmupCount(3)
                 .WithIterationCount(5)
 #if AOT

@@ -22,6 +22,7 @@ namespace Microbench
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Internal;
+    using Microsoft.Diagnostics.Tracing.Parsers.FrameworkEventSource;
 
     public static class Constants
     {
@@ -60,6 +61,22 @@ namespace Microbench
                 ULong = 1,
                 Float = 1,
                 Double = 1,
+            };
+
+            public static NestedTable RandomEntries = new()
+            {
+                Tables = Enumerable.Range(0, 1000).Select(i => new PrimitivesTable
+                {
+                    Bool = Random.Shared.Next() % 2 == 0,
+                    Byte = (byte)(Random.Shared.Next() % 2),
+                    SByte = (sbyte)(Random.Shared.Next() % 2),
+                    Short = (short)(Random.Shared.Next() % 2),
+                    UShort = (ushort)(Random.Shared.Next() % 2),
+                    Int = (int)(Random.Shared.Next() % 2),
+                    UInt = (uint)(Random.Shared.Next() % 2),
+                    Long = (long)(Random.Shared.Next() % 2),
+                    ULong = (ulong)(Random.Shared.Next() % 2),
+                }).ToArray(),
             };
         }
 
@@ -155,6 +172,7 @@ namespace Microbench
 
             public static readonly byte[] PrimitivesTable_Empty = AllocateAndSerialize(PrimitiveTables.Empty);
             public static readonly byte[] PrimitivesTable_Full = AllocateAndSerialize(PrimitiveTables.Full);
+            public static readonly byte[] PrimitivesTable_RandomEntries = AllocateAndSerialize(PrimitiveTables.RandomEntries);
 
             public static readonly byte[] StructTable_SingleRef = AllocateAndSerialize(StructTables.SingleRef);
             public static readonly byte[] StructTable_SingleValue = AllocateAndSerialize(StructTables.SingleValue);

@@ -165,15 +165,16 @@ public static class InputBufferExtensions
         out ulong vtableFieldCount,
         out ReadOnlySpan<byte> fieldData) where TBuffer : IInputBuffer
     {
-        vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-        ushort vtableLength = buffer.ReadUShort(vtableOffset);
+        BigReadOnlySpan span = buffer.GetReadOnlySpan();
+        vtableOffset = tableOffset - span.ReadInt(tableOffset);
 
+        ushort vtableLength = span.ReadUShort(vtableOffset);
         if (vtableLength < 4)
         {
             FSThrow.InvalidData_VTableTooShort();
         }
 
-        fieldData = buffer.GetReadOnlySpan().ToSpan(vtableOffset, vtableLength).Slice(4);
+        fieldData = span.ToSpan(vtableOffset, vtableLength).Slice(4);
         vtableFieldCount = (ulong)(fieldData.Length / 2);
     }
 

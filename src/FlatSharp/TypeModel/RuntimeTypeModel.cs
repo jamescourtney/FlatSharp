@@ -197,4 +197,14 @@ public abstract class RuntimeTypeModel : ITypeModel
     }
 
     public abstract string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName);
+
+    /// <summary>
+    /// Attempts to get an invocation that can serialize this type model into the given span unsafely (ie, without bounds checks).
+    /// This is only appropriate if the target buffer has already been bounds-checked.
+    /// </summary>
+    public virtual bool TryGetUnsafeSerializeInvocation(string spanVariableName, string valueVariableName, string offsetVariableName, [NotNullWhen(true)] out string? invocation)
+    {
+        invocation = null;
+        return false;
+    }
 }

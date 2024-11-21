@@ -31,6 +31,12 @@ public readonly ref partial struct BigReadOnlySpan
         this.span = span;
     }
 
+    internal BigSpan Span
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => this.span;
+    }
+
     public long Length
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,17 +73,5 @@ public readonly ref partial struct BigReadOnlySpan
     private static void ThrowOutOfRange()
     {
         throw new IndexOutOfRangeException();
-    }
-
-    [ExcludeFromCodeCoverage]
-    [Conditional("DEBUG")]
-    private static void CheckAlignment(long offset, int size)
-    {
-#if DEBUG
-        if (offset % size != 0)
-        {
-            FSThrow.InvalidOperation($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
-        }
-#endif
     }
 }

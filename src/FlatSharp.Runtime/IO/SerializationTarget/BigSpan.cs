@@ -20,7 +20,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-
 public readonly ref partial struct BigSpan
 {
 #if NET7_0_OR_GREATER
@@ -122,11 +121,7 @@ public readonly ref partial struct BigSpan
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> ToSpan(long start, int length)
     {
-        long sum = start + (long)length;
-        if ((ulong)sum > (ulong)this.Length)
-        {
-            ThrowOutOfRange();
-        }
+        this.CheckRange(start, length);
 
 #if NET7_0_OR_GREATER
         return MemoryMarshal.CreateSpan(
@@ -228,10 +223,10 @@ public readonly ref partial struct BigSpan
 #endif
 
         // null teriminator
-        scopedThis.WriteUnalignedUnsafe<byte>(sizeof(uint) + bytesWritten, 0);
+        scopedThis.UnsafeWriteByte(sizeof(uint) + bytesWritten, 0);
 
         // write length
-        scopedThis.WriteUnalignedUnsafe<int>(0, bytesWritten);
+        scopedThis.UnsafeWriteInt(0, bytesWritten);
 
         // give back unused space. Account for null terminator.
         context.Offset -= maxItems - (bytesWritten + 1);
@@ -253,23 +248,44 @@ public readonly ref partial struct BigSpan
     private T ReadUnaligned<T>(long offset)
         where T : unmanaged
     {
-        CheckAlignment(offset, Unsafe.SizeOf<T>());
-        var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
-        return Unsafe.ReadUnaligned<T>(ref slice[0]);
+        this.CheckRange(offset, Unsafe.SizeOf<T>());
+        return this.ReadUnalignedUnsafe<T>(offset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WriteUnaligned<T>(long offset, T value)
         where T : unmanaged
     {
-        CheckAlignment(offset, Unsafe.SizeOf<T>());
-        var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
+        this.CheckRange(offset, Unsafe.SizeOf<T>());
         this.WriteUnalignedUnsafe(offset, value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void WriteUnalignedUnsafe<T>(long offset, T value)
+    internal T ReadUnalignedUnsafe<T>(long offset)
+        where T : unmanaged
     {
+#if DEBUG
+        CheckAlignment(offset, Unsafe.SizeOf<T>());
+        CheckRange(offset, Unsafe.SizeOf<T>());
+#endif
+
+#if NET7_0_OR_GREATER
+        return Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref this.value, (IntPtr)offset));
+#else
+        var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
+        return Unsafe.ReadUnaligned<T>(ref slice[0]);
+#endif
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void WriteUnalignedUnsafe<T>(long offset, T value)
+        where T : unmanaged
+    {
+#if DEBUG
+        CheckAlignment(offset, Unsafe.SizeOf<T>());
+        CheckRange(offset, Unsafe.SizeOf<T>());
+#endif
+
 #if NET7_0_OR_GREATER
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref this.value, (IntPtr)offset), value);
 #else
@@ -278,14 +294,14 @@ public readonly ref partial struct BigSpan
 #endif
     }
 
-    private static double ReverseEndianness(double value)
+    internal static double ReverseEndianness(double value)
     {
         long longValue = Unsafe.As<double, long>(ref value);
         longValue = BinaryPrimitives.ReverseEndianness(longValue);
         return BitConverter.Int64BitsToDouble(longValue);
     }
 
-    private static float ReverseEndianness(float value)
+    internal static float ReverseEndianness(float value)
     {
         uint intValue = Unsafe.As<float, uint>(ref value);
         intValue = BinaryPrimitives.ReverseEndianness(intValue);
@@ -301,6 +317,16 @@ public readonly ref partial struct BigSpan
     private static void ThrowOutOfRange()
     {
         throw new IndexOutOfRangeException();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CheckRange(long start, int length)
+    {
+        long sum = start + (long)length;
+        if ((ulong)sum > (ulong)this.Length)
+        {
+            ThrowOutOfRange();
+        }
     }
 
     [ExcludeFromCodeCoverage]
