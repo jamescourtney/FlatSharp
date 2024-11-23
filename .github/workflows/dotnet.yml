@@ -2,9 +2,8 @@ name: .NET
 
 on:
   push:
-    branches: [ main, upstream ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, upstream ]
   workflow_dispatch:
 
 jobs:  
