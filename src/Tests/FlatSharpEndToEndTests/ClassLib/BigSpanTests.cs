@@ -134,26 +134,28 @@ public class BigSpanTests
         (bs, v) => bs.WriteULong(0, v),
         value);
 
+#if !AOT
     [TestMethod]
     [DataRow(float.MinValue)]
-    [DataRow((float)-1)]
-    [DataRow((float)0)]
-    [DataRow((float)1)]
+    [DataRow(-1f)]
+    [DataRow(0f)]
+    [DataRow(1f)]
     [DataRow(float.MaxValue)]
-    public void ReadWrite_Long(float value) => TestReadWrite(
+    public void ReadWrite_Float(float value) => TestReadWrite(
         s => BinaryPrimitives.ReadSingleLittleEndian(s),
         bs => bs.ReadFloat(0),
         (s, v) => BinaryPrimitives.WriteSingleLittleEndian(s, v),
         (bs, v) => bs.WriteFloat(0, v),
         value);
+#endif
 
     [TestMethod]
     [DataRow(double.MinValue)]
-    [DataRow((double)-1)]
-    [DataRow((double)0)]
-    [DataRow((double)1)]
+    [DataRow(-1d)]
+    [DataRow(0d)]
+    [DataRow(1d)]
     [DataRow(double.MaxValue)]
-    public void ReadWrite_Long(double value) => TestReadWrite(
+    public void ReadWrite_Double(double value) => TestReadWrite(
         s => BinaryPrimitives.ReadDoubleLittleEndian(s),
         bs => bs.ReadDouble(0),
         (s, v) => BinaryPrimitives.WriteDoubleLittleEndian(s, v),
