@@ -134,6 +134,7 @@ public class BigSpanTests
         (bs, v) => bs.WriteULong(0, v),
         value);
 
+#if NET8_0_OR_GREATER
 #if !AOT
     [TestMethod]
     [DataRow(float.MinValue)]
@@ -161,6 +162,7 @@ public class BigSpanTests
         (s, v) => BinaryPrimitives.WriteDoubleLittleEndian(s, v),
         (bs, v) => bs.WriteDouble(0, v),
         value);
+#endif
 
     private void TestReadWrite<T>(
         SpanReadValue<T> spanRead,
