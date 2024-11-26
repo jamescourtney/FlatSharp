@@ -57,6 +57,7 @@
   <ItemGroup>
     <FlatSharpSchema Include="**\*.fbs" />
     <FlatSharpSchema Remove="ToStringMethods/ToStringMethods.fbs" />
+    <FlatSharpSchema Remove="StructEquality/StructEquality.fbs" />
   </ItemGroup>
 
   <Target Name="FlatSharpFbsCompileToString" BeforeTargets="ResolveAssemblyReferences">
@@ -67,7 +68,7 @@
     <PropertyGroup>
 	  <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
       <FlatSharpOutput Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">$(MSBuildProjectDirectory)/</FlatSharpOutput>
-      <FlatSharpOutput>$(FlatSharpOutput)ToStringMethods</FlatSharpOutput>
+      <FlatSharpOutput>$(FlatSharpOutput)WithGenerateMethodsOption</FlatSharpOutput>
     </PropertyGroup>
 
 	<MakeDir Directories="$(FlatSharpOutput)" Condition="!Exists('$(FlatSharpOutput)')" />
@@ -76,7 +77,7 @@
     <PropertyGroup>
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\$(CompilerVersion)\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
-      <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;ToStringMethods/ToStringMethods.fbs&quot; --output &quot;$(FlatSharpOutput)&quot; --generate-methods</CompilerCommand>
+      <CompilerCommand>dotnet &quot;$(CompilerPath)&quot; --input &quot;ToStringMethods/ToStringMethods.fbs;StructEquality/StructEquality.fbs&quot; --output &quot;$(FlatSharpOutput)&quot; --generate-methods</CompilerCommand>
     </PropertyGroup>
 
     <Message Text="$(CompilerCommand)" Importance="high" />
