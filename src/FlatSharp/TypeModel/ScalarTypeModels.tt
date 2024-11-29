@@ -23,20 +23,21 @@
 <#@ output extension=".cs" #>
 
 <#
-    (string casedName, string typeName, string literalSpecifier, string[] fbsAliases, string writeNameClass, string readNameClass)[] types = 
-    {
-        ("Bool", "bool", "", new[] { "bool" }, "SpanWriterExtensions", "InputBufferExtensions"),
-        ("Byte", "byte", "", new[] { "ubyte", "uint8" }, null, null),
-        ("SByte", "sbyte", "", new[] { "byte", "int8" }, null, null),
-        ("UShort", "ushort", "", new[] { "ushort", "uint16" }, null, null),
-        ("Short", "short", "", new[] { "short", "int16" }, null, null),
-        ("Int", "int", "", new[] { "int", "int32" }, null, null),
-        ("UInt", "uint", "u", new[] { "uint", "uint32" }, null, null),
-        ("Long", "long", "L", new[] { "long", "int64" }, null, null),
-        ("ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
-        ("Float", "float", "f", new[] { "float", "float32" }, null, null),
-        ("Double", "double", "d", new[] { "double", "float64" }, null, null),
-    }; 
+    (
+        string casedName, string commonName, string typeName, string literalSpecifier, string[] fbsAliases, string inlineWriteMethod)[] types =
+            {
+                ("Bool", "Bool", "bool", "", new[] { "bool" }, "WriteBool"),
+                ("UInt8", "Byte", "byte", "", new[] { "ubyte", "uint8" }, "WriteByte"),
+                ("Int8", "SByte", "sbyte", "", new[] { "byte", "int8" }, "WriteSByte"),
+                ("UInt16", "UShort", "ushort", "", new[] { "ushort", "uint16" }, "WriteUShort"),
+                ("Int16", "Short", "short", "", new[] { "short", "int16" }, "WriteShort"),
+                ("Int32", "Int", "int", "", new[] { "int", "int32" }, "WriteInt"),
+                ("UInt32", "UInt", "uint", "u", new[] { "uint", "uint32" }, "WriteUInt"),
+                ("Int64", "Long", "long", "L", new[] { "long", "int64" }, "WriteLong"),
+                ("UInt64", "ULong", "ulong", "ul", new[] { "ulong", "uint64" }, "WriteULong"),
+                ("Float32", "Float", "float", "f", new[] { "float", "float32" }, "WriteFloat"),
+                ("Float64", "Double", "double", "d", new[] { "double", "float64" }, "WriteDouble"),
+            };
 #>
 
 namespace FlatSharp.TypeModel;
@@ -46,7 +47,9 @@ namespace FlatSharp.TypeModel;
     {
         var casedName = pair.casedName;
         var typeName = pair.typeName;
-        var className = $"{casedName}TypeModel";
+        var commonName = pair.commonName;
+        var className = $"{commonName}TypeModel";
+        var writeMethod = pair.inlineWriteMethod;
 #>
     
 /// <summary>
@@ -61,13 +64,17 @@ public partial class <#= className #> : ScalarTypeModel
 
     public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
     {
-        comparerType = typeof(<#= casedName #>SpanComparer);
+        comparerType = typeof(<#= commonName #>SpanComparer);
         return true;
     }
 
-    protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
+    protected override string InputBufferReadMethodName => "Read<#= commonName #>";
 
-    protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
+    protected override string WriteMethodName => "<#= writeMethod #>";
+
+    protected override string UnsafeWriteMethodName => "Unsafe<#= writeMethod #>";
+
+    protected override string TypeNameAlias => "<#=typeName#>";
     
     public override string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName)
     {
@@ -88,9 +95,9 @@ public class ScalarTypeModelProvider : ITypeModelProvider
     <#
         foreach (var pair in types)
         {
-            var casedName = pair.casedName;
+            var commonName = pair.commonName;
             var typeName = pair.typeName;
-            var className = $"{casedName}TypeModel";
+            var className = $"{commonName}TypeModel";
     #>
 
         if (type == typeof(<#= typeName #>))

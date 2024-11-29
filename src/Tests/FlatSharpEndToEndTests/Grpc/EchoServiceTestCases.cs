@@ -80,7 +80,7 @@ public class EchoServiceTestCases
             Assert.IsInstanceOfType<IFlatBufferDeserializedObject>(response);
 
             IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)response;
-            length = obj.InputBuffer.Length;
+            length = checked((int)obj.InputBuffer.Length);
         });
 
         return length;

@@ -131,10 +131,10 @@ public class ValueStructTestCases
         };
 
         ISerializer<RootTable> serializer = RootTable.Serializer;
-        int maxBytes = serializer.GetMaxSize(table);
+        long maxBytes = serializer.GetMaxSize(table);
         byte[] buffer = new byte[maxBytes];
-        int written = serializer.Write(buffer, table);
-        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written), option);
+        long written = serializer.Write(buffer, table);
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, (int)written), option);
 
         Assert.IsNotNull(parsed.RefStruct);
         Assert.IsNotNull(parsed.ValueStruct);
@@ -466,10 +466,10 @@ public class ValueStructTestCases
         Assert.IsNull(t.ValueStruct);
 
         ISerializer<RootTable> serializer = RootTable.Serializer;
-        int maxBytes = serializer.GetMaxSize(t);
+        long maxBytes = serializer.GetMaxSize(t);
         byte[] buffer = new byte[maxBytes];
-        int written = serializer.Write(buffer, t);
-        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, written));
+        long written = serializer.Write(buffer, t);
+        RootTable parsed = serializer.Parse(buffer.AsMemory().Slice(0, (int)written));
 
         Assert.IsNull(parsed.RefStruct);
         Assert.IsNull(parsed.ValueStruct);

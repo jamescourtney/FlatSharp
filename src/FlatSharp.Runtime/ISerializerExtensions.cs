@@ -116,9 +116,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, byte[] buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, byte[] buffer, T item) where T : class
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        return serializer.Write(new BigSpan(buffer.AsSpan()), item);
     }
 
     /// <summary>
@@ -126,9 +126,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, byte[] buffer, object item)
+    public static long Write(this ISerializer serializer, byte[] buffer, object item)
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        return serializer.Write(new BigSpan(buffer.AsSpan()), item);
     }
 
     /// <summary>
@@ -136,9 +136,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer, T item) where T : class
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        return serializer.Write(new BigSpan(buffer.AsSpan()), item);
     }
 
     /// <summary>
@@ -146,9 +146,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, ArraySegment<byte> buffer, object item)
+    public static long Write(this ISerializer serializer, ArraySegment<byte> buffer, object item)
     {
-        return Write(serializer, buffer.AsSpan(), item);
+        return serializer.Write(new BigSpan(buffer.AsSpan()), item);
     }
 
     /// <summary>
@@ -156,9 +156,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, Memory<byte> buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, Memory<byte> buffer, T item) where T : class
     {
-        return Write(serializer, buffer.Span, item);
+        return serializer.Write(new BigSpan(buffer.Span), item);
     }
 
     /// <summary>
@@ -166,9 +166,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, Memory<byte> buffer, object item)
+    public static long Write(this ISerializer serializer, Memory<byte> buffer, object item)
     {
-        return Write(serializer, buffer.Span, item);
+        return serializer.Write(new BigSpan(buffer.Span), item);
     }
 
     /// <summary>
@@ -176,9 +176,9 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write<T>(this ISerializer<T> serializer, Span<byte> buffer, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, Span<byte> buffer, T item) where T : class
     {
-        return serializer.Write(default(SpanWriter), buffer, item);
+        return serializer.Write(new BigSpan(buffer), item);
     }
 
     /// <summary>
@@ -186,22 +186,27 @@ public static class ISerializerExtensions
     /// </summary>
     /// <returns>The number of bytes written.</returns>
     [ExcludeFromCodeCoverage] // Just a helper
-    public static int Write(this ISerializer serializer, Span<byte> buffer, object item)
+    public static long Write(this ISerializer serializer, Span<byte> buffer, object item)
     {
-        return serializer.Write(default(SpanWriter), buffer, item);
+        return serializer.Write(new BigSpan(buffer), item);
     }
 
     /// <summary>
     /// Writes the given item into the given buffer writer using the default SpanWriter.
     /// </summary>
     /// <returns>The number of bytes written.</returns>
-    public static int Write<T>(this ISerializer<T> serializer, IBufferWriter<byte> bufferWriter, T item) where T : class
+    public static long Write<T>(this ISerializer<T> serializer, IBufferWriter<byte> bufferWriter, T item) where T : class
     {
-        int maxSize = serializer.GetMaxSize(item);
-        Span<byte> buffer = bufferWriter.GetSpan(maxSize);
-        int bytesWritten = serializer.Write(default(SpanWriter), buffer, item);
-        bufferWriter.Advance(bytesWritten);
+        long maxSize = serializer.GetMaxSize(item);
+        if (maxSize > int.MaxValue)
+        {
+            FSThrow.InvalidData("The data is too large. This overload only supports the 32 bit address space.");
+        }
+        
+        Span<byte> buffer = bufferWriter.GetSpan((int)maxSize);
+        int bytesWritten = (int)serializer.Write(new BigSpan(buffer), item);
 
+        bufferWriter.Advance(bytesWritten);
         return bytesWritten;
     }
 
@@ -211,11 +216,16 @@ public static class ISerializerExtensions
     /// <returns>The number of bytes written.</returns>
     public static int Write(this ISerializer serializer, IBufferWriter<byte> bufferWriter, object item)
     {
-        int maxSize = serializer.GetMaxSize(item);
-        Span<byte> buffer = bufferWriter.GetSpan(maxSize);
-        int bytesWritten = serializer.Write(default(SpanWriter), buffer, item);
-        bufferWriter.Advance(bytesWritten);
+        long maxSize = serializer.GetMaxSize(item);
+        if (maxSize > int.MaxValue)
+        {
+            FSThrow.InvalidData("The data is too large. This overload only supports the 32 bit address space.");
+        }
 
+        Span<byte> buffer = bufferWriter.GetSpan((int)maxSize);
+        int bytesWritten = (int)serializer.Write(new BigSpan(buffer), item);
+
+        bufferWriter.Advance(bytesWritten);
         return bytesWritten;
     }
 }

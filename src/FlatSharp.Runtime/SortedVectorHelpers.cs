@@ -317,13 +317,13 @@ public static class SortedVectorHelpers
             IInputBuffer buffer = this.inputBuffer;
 
             // Read uoffset.
-            int offset = vector.OffsetOf(index);
+            long offset = vector.OffsetOf(index);
 
             // Increment uoffset to move to start of table.
             offset += buffer.ReadUOffset(offset);
 
             // Follow soffset to start of vtable.
-            int vtableStart = offset - buffer.ReadInt(offset);
+            long vtableStart = offset - buffer.ReadInt(offset);
 
             ushort vtableLength = buffer.ReadUShort(vtableStart);
             int tableOffset = 0;
@@ -347,7 +347,7 @@ public static class SortedVectorHelpers
             // Length of the string.
             int stringLength = (int)buffer.ReadUInt(offset);
 
-            return buffer.GetReadOnlyMemory().Slice(offset + sizeof(int), stringLength);
+            return buffer.GetReadOnlyMemory(offset + sizeof(int), stringLength);
         }
 
         public int Count => this.vector.Count;
