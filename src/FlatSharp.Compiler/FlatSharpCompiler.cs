@@ -127,7 +127,7 @@ public class FlatSharpCompiler
                     Exception? exception = null;
                     try
                     {
-                        cSharp = CreateCSharp(bfbs, inputHash, options);
+                        CreateCSharp(bfbs, inputHash, options, out cSharp);
                     }
                     catch (Exception ex)
                     {
@@ -356,7 +356,7 @@ public class FlatSharpCompiler
             options.InputFiles = fbsFiles.Select(x => x.FullName);
 
             List<(byte[], string)> bfbs = GetBfbs(options);
-            string cSharp = CreateCSharp(bfbs, "hash", options);
+            CreateCSharp(bfbs, "hash", options, out var cSharp);
 
             var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
             string debugText = formattedText();
@@ -526,10 +526,11 @@ public class FlatSharpCompiler
         return flatcPath;
     }
 
-    private static string CreateCSharp(
+    private static void CreateCSharp(
         List<(byte[] bfbs, string inputPath)> bfbs,
         string inputHash,
-        CompilerOptions options)
+        CompilerOptions options,
+        out string result)
     {
         string csharp = string.Empty;
 
@@ -621,15 +622,20 @@ public class FlatSharpCompiler
                 return csharp;
             });
         }
+        catch (FlatSharpCompilationException e)
+        {
+            csharp = e.CSharp;
+            throw;
+        }
         finally
         {
             if (csharp is not null)
             {
                 csharp = Instrument("PrettyPrint", options, () => RoslynSerializerGenerator.GetFormattedText(csharp));
             }
-        }
 
-        return csharp;
+            result = csharp;
+        }
     }
 
     private static Schema.Schema ParseSchema(
