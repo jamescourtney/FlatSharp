@@ -43,6 +43,10 @@ public class MetadataAttributesTestCases
         var attrs = GetAttributes<MyUnion>();
         Assert.AreEqual(1, attrs.Count);
         Assert.AreEqual("MyUnion", attrs["test"]);
+
+        attrs = GetAttributes(typeof(MyUnion).GetProperty("A"));
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("A", attrs["test"]);
     }
 
     [TestMethod]
