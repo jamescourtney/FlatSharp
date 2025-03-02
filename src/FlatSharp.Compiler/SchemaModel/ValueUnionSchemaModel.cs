@@ -192,9 +192,11 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                 this.WriteUncheckedGetItemMethod(writer, index, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
 
                 writer.AppendLine();
+                new FlatSharpAttributes(item.value.Attributes).EmitAsMetadata(writer);
                 writer.AppendLine($"public {item.resolvedType} {item.value.Key} => this.Item{index};");
 
                 writer.AppendLine();
+                new FlatSharpAttributes(item.value.Attributes).EmitAsMetadata(writer);
                 writer.AppendLine($"public {item.resolvedType} Item{index}");
                 using (writer.WithBlock())
                 {
