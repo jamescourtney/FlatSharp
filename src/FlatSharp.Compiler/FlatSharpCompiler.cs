@@ -85,7 +85,7 @@ public class FlatSharpCompiler
             Console.Error.WriteLine("FlatSharp compiler: No output directory specified.");
             return -1;
         }
-        
+
         // Create the output directory if it doesn't exist.
         if (!Directory.Exists(options.OutputDirectory))
         {
@@ -623,7 +623,7 @@ public class FlatSharpCompiler
         }
         finally
         {
-            if (csharp is not null)
+            if (csharp is not null && options.PrettyPrint)
             {
                 csharp = Instrument("PrettyPrint", options, () => RoslynSerializerGenerator.GetFormattedText(csharp));
             }
