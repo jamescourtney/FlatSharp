@@ -74,7 +74,7 @@ internal class DeserializeClassDefinition
 
             // maintain reference to buffer.
             this.instanceFieldDefinitions[InputBufferVariableName] = $"private TInputBuffer {InputBufferVariableName};";
-            this.instanceFieldDefinitions[OffsetVariableName] = $"private int {OffsetVariableName};";
+            this.instanceFieldDefinitions[OffsetVariableName] = $"private long {OffsetVariableName};";
             this.instanceFieldDefinitions[RemainingDepthVariableName] = $"private short {RemainingDepthVariableName};";
 
             this.initializeStatements.Add($"this.{InputBufferVariableName} = buffer;");
@@ -152,7 +152,7 @@ internal class DeserializeClassDefinition
             {GetAggressiveInliningAttribute()}
             private static {typeName} {GetReadIndexMethodName(itemModel)}(
                 TInputBuffer buffer, 
-                int offset, 
+                long offset, 
                 {this.vtableTypeName} vtable,
                 short remainingDepth)
             {{
@@ -163,7 +163,7 @@ internal class DeserializeClassDefinition
     private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
     {
         var context = parserContext.GetWriteThroughContext(
-            $"buffer.{nameof(IInputBuffer.GetSpan)}()",
+            $"destination",
             "value",
             "offset");
 
@@ -171,10 +171,11 @@ internal class DeserializeClassDefinition
             {GetAggressiveInliningAttribute()}
             private static void {GetWriteMethodName(itemModel)}(
                 TInputBuffer buffer,
-                int offset,
+                long offset,
                 {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
                 {this.vtableTypeName} vtable)
             {{
+                var destination = buffer.{nameof(IInputBuffer.GetSpan)}();
                 {itemModel.CreateWriteThroughBody(context, "vtable")}
             }}");
     }
@@ -362,7 +363,7 @@ internal class DeserializeClassDefinition
             [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
 #endif
             [{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({typeof(MethodImplOptions).GetGlobalCompilableTypeName()}.AggressiveInlining)]
-            public {this.ClassName}(TInputBuffer buffer, int offset, short remainingDepth) 
+            public {this.ClassName}(TInputBuffer buffer, long offset, short remainingDepth) 
                 : base({baseCtorParams}) 
             {{
                 {string.Join("\r\n", this.initializeStatements)}

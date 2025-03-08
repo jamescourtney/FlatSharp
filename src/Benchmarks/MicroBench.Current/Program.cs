@@ -40,7 +40,9 @@ namespace Microbench
                 .WithLaunchCount(1)
                 .WithWarmupCount(3)
                 .WithIterationCount(6)
-                .WithRuntime(CoreRuntime.Core70);
+                .WithRuntime(CoreRuntime.Core80)
+                .DontEnforcePowerPlan();
+
                 //.WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
 
             var config = DefaultConfig.Instance

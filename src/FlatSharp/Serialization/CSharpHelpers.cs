@@ -26,6 +26,7 @@ internal static class CSharpHelpers
 {
     internal const string Net7PreprocessorVariable = "NET7_0_OR_GREATER";
     internal const string Net8PreprocessorVariable = "NET8_0_OR_GREATER";
+    internal const string Net9PreprocessorVariable = "NET9_0_OR_GREATER";
 
     /// <summary>
     /// Shortcut for GetGlobalCompilableTypeName

@@ -174,26 +174,16 @@ public sealed class FlatBufferSerializer
     /// Writes the given object to the given memory block.
     /// </summary>
     /// <returns>The length of data that was written to the memory block.</returns>
-    public int Serialize<T>(T item, Span<byte> destination) where T : class
-    {
-        return this.Serialize(item, destination, default(SpanWriter));
-    }
-
-    /// <summary>
-    /// Writes the given object to the given memory block.
-    /// </summary>
-    /// <returns>The length of data that was written to the memory block.</returns>
-    public int Serialize<T, TSpanWriter>(T item, Span<byte> destination, TSpanWriter writer)
+    public long Serialize<T>(T item, BigSpan destination)
         where T : class
-        where TSpanWriter : ISpanWriter
     {
-        return this.GetOrCreateTypedSerializer<T>().Write(writer, destination, item);
+        return this.GetOrCreateTypedSerializer<T>().Write(destination, item);
     }
 
     /// <summary>
     /// Gets the maximum serialized size of the given item.
     /// </summary>
-    public int GetMaxSize<T>(T item) where T : class
+    public long GetMaxSize<T>(T item) where T : class
     {
         return this.GetOrCreateUntypedSerializer(typeof(T)).GetMaxSize(item);
     }

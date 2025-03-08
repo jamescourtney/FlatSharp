@@ -117,11 +117,11 @@ internal static partial class FlatBufferVectorHelpers
             
             int IFlatBufferDeserializedVector.ItemSize => {{inlineSize}};
 
-            int IFlatBufferDeserializedVector.OffsetBase => this.{{offsetVariableName}};
+            long IFlatBufferDeserializedVector.OffsetBase => this.{{offsetVariableName}};
                 
             object IFlatBufferDeserializedVector.ItemAt(int index) => this.{{checkedParseItemMethodName}}(index)!;
             
-            int IFlatBufferDeserializedVector.OffsetOf(int index)
+            long IFlatBufferDeserializedVector.OffsetOf(int index)
             {
                 {{nameof(VectorUtilities)}}.{{nameof(VectorUtilities.CheckIndex)}}(index, this.Count);
                 return this.{{offsetVariableName}} + ({{GetEfficientMultiply(inlineSize, "index")}});
@@ -158,7 +158,7 @@ internal static partial class FlatBufferVectorHelpers
 
         if (isEverWriteThrough)
         {
-            var serializeContext = context.GetWriteThroughContext("data", "value", "0");
+            var serializeContext = context.GetWriteThroughContext("data", "value", "itemOffset");
 
             writeThroughBody = @$"
                 if (!{context.TableFieldContextVariableName}.WriteThrough)
@@ -166,9 +166,8 @@ internal static partial class FlatBufferVectorHelpers
                     {nameof(FSThrow)}.{nameof(FSThrow.NotMutable)}();
                 }}
 
-                int offset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
-                Span<byte> {serializeContext.SpanVariableName} = {context.InputBufferVariableName}.GetSpan().Slice(offset, {inlineSize});
-
+                long itemOffset = this.offset + ({GetEfficientMultiply(inlineSize, "index")});
+                var data = {context.InputBufferVariableName}.GetSpan();
                 {serializeContext.GetSerializeInvocation(itemTypeModel.ClrType)};
             ";
         }

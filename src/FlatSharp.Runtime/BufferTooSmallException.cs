@@ -28,5 +28,5 @@ public sealed class BufferTooSmallException : Exception
     /// <summary>
     /// The maximum amount of size needed for this message.
     /// </summary>
-    public int SizeNeeded { get; internal set; }
+    public long SizeNeeded { get; internal set; }
 }

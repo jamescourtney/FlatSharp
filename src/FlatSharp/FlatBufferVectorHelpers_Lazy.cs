@@ -43,7 +43,7 @@ $$""""
         , IFlatBufferDeserializedVector
         where TInputBuffer : IInputBuffer
     {
-        private readonly int {{context.OffsetVariableName}};
+        private readonly long {{context.OffsetVariableName}};
         private readonly int count;
         private readonly {{context.InputBufferTypeName}} {{context.InputBufferVariableName}};
         private readonly TableFieldContext {{context.TableFieldContextVariableName}};
@@ -51,7 +51,7 @@ $$""""
         
         public {{className}}(
             TInputBuffer memory,
-            int offset,
+            long offset,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
@@ -86,7 +86,7 @@ $$""""
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private {{derivedTypeName}} UnsafeParseItem(int index)
         {
-            int {{context.OffsetVariableName}} = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
+            long {{context.OffsetVariableName}} = this.offset + ({{GetEfficientMultiply(inlineSize, "index")}});
             return {{context.GetParseInvocation(itemTypeModel.ClrType)}};
         }
 

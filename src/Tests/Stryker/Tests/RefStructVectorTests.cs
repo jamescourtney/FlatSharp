@@ -72,7 +72,7 @@ public class RefStructVectorTests
         Assert.AreEqual("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.", ex.Message);
 
         // no exception here. Reason is that structs are constant size, so we don't traverse the vector to figure out the max size.
-        int maxSize = Root.Serializer.GetMaxSize(root);
+        long maxSize = Root.Serializer.GetMaxSize(root);
     });
 
     private Root CreateRoot(out byte[] expectedData)

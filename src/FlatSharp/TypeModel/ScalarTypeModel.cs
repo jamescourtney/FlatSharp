@@ -49,11 +49,6 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override bool IsParsingInvariant => true;
 
     /// <summary>
-    /// Scalars are fixed size.
-    /// </summary>
-    public override bool IsFixedSize => true;
-
-    /// <summary>
     /// Scalars can be part of Structs.
     /// </summary>
     public override bool IsValidStructMember => true;
@@ -79,7 +74,12 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override bool SerializesInline => true;
 
     /// <summary>
-    /// We don't care about serialization context.
+    /// Scalars are of fixed size.
+    /// </summary>
+    public override bool IsFixedSize => true;
+
+    /// <summary>
+    /// Scalars don't need a serialization context.
     /// </summary>
     public override bool SerializeMethodRequiresContext => false;
 
@@ -96,7 +96,17 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     /// <summary>
     /// The name of a write method for an input buffer.
     /// </summary>
-    protected abstract string SpanWriterWriteMethodName { get; }
+    protected abstract string WriteMethodName { get; }
+
+    /// <summary>
+    /// The name of the unsafe write method for the input buffer.
+    /// </summary>
+    protected abstract string UnsafeWriteMethodName { get; }
+
+    /// <summary>
+    /// Gets the type name alias (int, short, etc).
+    /// </summary>
+    protected abstract string TypeNameAlias { get; }
 
     /// <summary>
     /// Force children to reimplement.
@@ -130,7 +140,7 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
         string variableName = context.ValueVariableName;
-        return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName});")
+        return new CodeGeneratedMethod($"{context.SpanVariableName}.{this.WriteMethodName}({context.OffsetVariableName}, {variableName});")
         {
             IsMethodInline = true,
         };
@@ -152,5 +162,11 @@ public abstract class ScalarTypeModel : RuntimeTypeModel
         }
 
         return base.FormatDefaultValueAsLiteral(defaultValue);
+    }
+
+    public override bool TryGetUnsafeSerializeInvocation(string spanVariableName, string valueVariableName, string offsetVariableName, [NotNullWhen(true)] out string? invocation)
+    {
+        invocation = $"{spanVariableName}.{this.UnsafeWriteMethodName}({offsetVariableName}, {valueVariableName})";
+        return true;
     }
 }

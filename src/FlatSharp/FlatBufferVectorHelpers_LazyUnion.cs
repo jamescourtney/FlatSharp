@@ -42,8 +42,8 @@ $$$""""
         , IReadOnlyList<{{{baseTypeName}}}>
         where TInputBuffer : IInputBuffer
     {
-        private readonly int discriminatorVectorOffset;
-        private readonly int offsetVectorOffset;
+        private readonly long discriminatorVectorOffset;
+        private readonly long offsetVectorOffset;
         private readonly int count;
         private readonly {{{context.InputBufferTypeName}}} {{{context.InputBufferVariableName}}};
         private readonly TableFieldContext {{{context.TableFieldContextVariableName}}};
@@ -51,12 +51,12 @@ $$$""""
         
         public {{{className}}}(
             TInputBuffer memory,
-            ref (int offset0, int offset1) offsets,
+            ref (long offset0, long offset1) offsets,
             short remainingDepth,
             TableFieldContext fieldContext)
         {
-            int dvo = offsets.offset0;
-            int ovo = offsets.offset1;
+            long dvo = offsets.offset0;
+            long ovo = offsets.offset1;
 
             uint discriminatorCount = memory.ReadUInt(dvo);
             uint offsetCount = memory.ReadUInt(ovo);

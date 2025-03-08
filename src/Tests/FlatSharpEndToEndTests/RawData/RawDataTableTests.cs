@@ -151,7 +151,7 @@ public class RawDataTableTests
 
         Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer));
 
-        int maxSize = EmptyTable.Serializer.GetMaxSize(table);
+        long maxSize = EmptyTable.Serializer.GetMaxSize(table);
         Assert.AreEqual(23, maxSize);
     }
 

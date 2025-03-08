@@ -22,7 +22,7 @@ namespace FlatSharpEndToEndTests.ClassLib.VTables;
 [TestClass]
 public class VTableTests
 {
-    public delegate void CreateCallback<TVTable>(ArrayInputBuffer buffer, int offset, out TVTable vt);
+    public delegate void CreateCallback<TVTable>(ArrayInputBuffer buffer, long offset, out TVTable vt);
 
     [TestMethod]
     public void Test_VTable4_Auto() => this.RunTests<VTable4>(3, VTable4.Create);
@@ -61,12 +61,12 @@ public class VTableTests
 
         new ArrayInputBuffer(buffer).InitializeVTable(
             8,
-            out int vtableOffset,
-            out nuint fieldCount,
+            out long vtableOffset,
+            out ulong fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
         Assert.AreEqual(0, vtableOffset);
-        Assert.AreEqual((nuint)2, fieldCount);
+        Assert.AreEqual((ulong)2, fieldCount);
         Assert.AreEqual(4, fieldData.Length);
     }
 
@@ -82,12 +82,12 @@ public class VTableTests
 
         new ArrayInputBuffer(buffer).InitializeVTable(
             4,
-            out int vtableOffset,
-            out nuint fieldCount,
+            out long vtableOffset,
+            out ulong fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
         Assert.AreEqual(0, vtableOffset);
-        Assert.AreEqual((nuint)0, fieldCount);
+        Assert.AreEqual((ulong)0, fieldCount);
         Assert.AreEqual(0, fieldData.Length);
     }
 

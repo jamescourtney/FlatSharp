@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+using System.Buffers.Binary;
+
 namespace FlatSharp.TypeModel;
 
 public partial class DoubleTypeModel

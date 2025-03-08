@@ -40,12 +40,12 @@ public interface IFlatBufferDeserializedVector
     /// <summary>
     /// Gets the base offset of the vector.
     /// </summary>
-    int OffsetBase { get; }
+    long OffsetBase { get; }
 
     /// <summary>
     /// Returns the absolute position in the Input Buffer of the given index in the vector.
     /// </summary>
-    int OffsetOf(int index);
+    long OffsetOf(int index);
 
     /// <summary>
     /// Gets the item at the given index.

@@ -9,6 +9,7 @@
     <DebugType>embedded</DebugType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
@@ -17,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Update="IO\SerializationTarget\BigSpanHelpers.tt">
+      <LastGenOutput>BigSpanHelpers.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
     <None Update="SpanComparers.tt">
       <LastGenOutput>SpanComparers.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -32,6 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="IO\SerializationTarget\BigSpanHelpers.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BigSpanHelpers.tt</DependentUpon>
+    </Compile>
     <Compile Update="SpanComparers.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -42,5 +52,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>UnionTypes.tt</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 </Project>
