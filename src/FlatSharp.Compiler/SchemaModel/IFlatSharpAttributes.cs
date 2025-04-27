@@ -52,6 +52,8 @@ public interface IFlatSharpAttributes
 
     bool? UnsafeUnion { get; }
 
+    bool? PartialProperty { get; }
+
     IIndexedVector<string, Schema.KeyValue> RawAttributes { get; }
 }
 

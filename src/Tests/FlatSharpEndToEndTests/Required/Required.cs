@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace FlatSharpEndToEndTests.Required;
 
@@ -137,6 +138,13 @@ public class RequiredTests
     [DataRow(nameof(RequiredTable_Setters.ProtectedInternal), false)]
     [DataRow(nameof(RequiredTable_Setters.ProtectedInternalInit), false)]
     [DataRow(nameof(RequiredTable_Setters.None), false)]
+    [DataRow(nameof(RequiredTable_Setters.PubPartial), true)]
+    [DataRow(nameof(RequiredTable_Setters.PubInitPartial), true)]
+    [DataRow(nameof(RequiredTable_Setters.ProtPartial), false)]
+    [DataRow(nameof(RequiredTable_Setters.ProtectedInitPartial), false)]
+    [DataRow(nameof(RequiredTable_Setters.ProtectedInternalPartial), false)]
+    [DataRow(nameof(RequiredTable_Setters.ProtectedInternalInitPartial), false)]
+    [DataRow(nameof(RequiredTable_Setters.NonePartial), false)]
     public void Only_Public_Setters_Are_CSharp_Required(string propertyName, bool expectRequired)
     {
         PropertyInfo property = typeof(RequiredTable_Setters).GetProperty(propertyName);
@@ -150,7 +158,7 @@ public class RequiredTests
 
         // Now make sure that FlatSharp still throws the error for required property missing even if the C# property is not required.
         RequiredTable_Setters table;
-        if (propertyName == nameof(RequiredTable_Setters.None))
+        if (propertyName == nameof(RequiredTable_Setters.None) || propertyName == nameof(RequiredTable_Setters.NonePartial))
         {
             table = new(false);
         }
@@ -181,10 +189,32 @@ public partial class RequiredTable_Setters
         this.ProtectedInternal = "e";
         this.ProtectedInternalInit = "f";
 
+        this.PubPartial = "a";
+        this.PubInitPartial = "b";
+        this.ProtPartial = "c";
+        this.ProtectedInitPartial = "d";
+        this.ProtectedInternalPartial = "e";
+        this.ProtectedInternalInit = "f";
+
         if (setNone)
         {
-            this.None = "g";
+            this.__None = "g";
+            this.__NonePartial = "g";
         }
     }
+
+    required public virtual partial string PubPartial { get; set; }
+
+    required public virtual partial string PubInitPartial { get; init; }
+
+    public virtual partial string ProtPartial { get; protected set; }
+
+    public virtual partial string ProtectedInitPartial { get; protected init; }
+
+    public virtual partial string ProtectedInternalPartial { get; protected internal set; }
+
+    public virtual partial string ProtectedInternalInitPartial { get; protected internal init; }
+
+    public virtual partial string NonePartial { get; }
 }
 

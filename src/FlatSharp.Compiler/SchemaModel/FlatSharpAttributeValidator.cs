@@ -109,6 +109,11 @@ public class FlatSharpAttributeValidator
         {
             RegisterError(MetadataKeys.UnsafeUnion, this.UnsafeUnionValidator(attributes.UnsafeUnion.Value), attributes.UnsafeUnion);
         }
+
+        if (attributes.PartialProperty is not null)
+        {
+            RegisterError(MetadataKeys.PartialProperty, this.PartialPropertyValidator(attributes.PartialProperty.Value), attributes.PartialProperty);
+        }
     }
 
     public Func<VectorType, AttributeValidationResult> VectorTypeValidator { get; set; } = (v) => AttributeValidationResult.NeverValid;
@@ -138,4 +143,6 @@ public class FlatSharpAttributeValidator
     public Func<string, AttributeValidationResult> ExternValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
 
     public Func<bool, AttributeValidationResult> UnsafeUnionValidator { get; set; } = b => AttributeValidationResult.NeverValid;
+
+    public Func<bool, AttributeValidationResult> PartialPropertyValidator { get; set; } = b => AttributeValidationResult.NeverValid;
 }

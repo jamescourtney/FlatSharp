@@ -69,6 +69,8 @@ public class FlatSharpAttributes : IFlatSharpAttributes
 
     public bool? UnsafeUnion => this.TryParseBoolean(MetadataKeys.UnsafeUnion);
 
+    public bool? PartialProperty => this.TryParseBoolean(MetadataKeys.PartialProperty);
+
     public IIndexedVector<string, Schema.KeyValue> RawAttributes => this.rawAttributes;
 
     public string? ExternalTypeName

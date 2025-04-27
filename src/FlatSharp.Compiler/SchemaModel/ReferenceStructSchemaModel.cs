@@ -65,7 +65,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         if (model.Field.Type.BaseType == BaseType.Obj)
         {
             // another struct. We should new() this up.
-            writer.AppendLine($"this.{model.Field.Name} = new {model.GetTypeName()}();");
+            writer.AppendLine($"this.{model.BackingFieldName} = new {model.GetTypeName()}();");
         }
     }
 
@@ -79,6 +79,5 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"[System.Diagnostics.DebuggerTypeProxy(\"{this.FullName}\")]");
         writer.AppendLine($"public partial class {this.Name}");
-        writer.AppendLine($"    : object");
     }
 }

@@ -101,25 +101,28 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
         using (writer.IncreaseIndent())
         {
-            writer.AppendLine(": object");
+            string delimiter = ":";
 
             if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
             {
-                writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");
-                writer.AppendLine($", {nameof(IFlatBufferSerializable)}");
+                writer.AppendLine($"{delimiter} {nameof(IFlatBufferSerializable)}<{this.FullName}>");
+                delimiter = ",";
+
+                writer.AppendLine($"{delimiter} {nameof(IFlatBufferSerializable)}");
             }
 
             PropertyFieldModel? keyField = this.properties.Values.SingleOrDefault(x => x.Field.Key);
             if (keyField is not null)
             {
-                writer.AppendLine($", {nameof(ISortableTable<bool>)}<{keyField.GetTypeName()}>");
+                writer.AppendLine($"{delimiter} {nameof(ISortableTable<bool>)}<{keyField.GetTypeName()}>");
+                delimiter = ",";
             }
         }
     }
 
     protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
     {
-        string line = $"this.{model.Field.Name} = {model.GetDefaultValue()};";
+        string line = $"this.{model.BackingFieldName} = {model.GetDefaultValue()};";
 
         if (model.Field.Required)
         {

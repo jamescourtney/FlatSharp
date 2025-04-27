@@ -92,7 +92,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
                 PropertyFieldModel model = property.Value;
 
                 writer.AppendLine();
-                model.WriteCode(writer);
+                model.WriteCode(context, writer);
             }
 
             foreach (var sv in this.structVectors)
@@ -135,8 +135,12 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
             foreach (var property in this.properties)
             {
-                string name = property.Value.Field.Name;
-                writer.AppendLine($"this.{name} = {context.FullyQualifiedCloneMethodName}(source.{name});");
+                if (property.Value.Field.Required && property.Value.Attributes.SetterKind != SetterKind.None)
+                {
+                    writer.AppendLine($"this.{property.Value.FieldName} = default({property.Value.GetTypeName()})!;");
+                }
+
+                writer.AppendLine($"this.{property.Value.BackingFieldName} = {context.FullyQualifiedCloneMethodName}(source.{property.Value.FieldName});");
             }
 
             writer.AppendLine("this.OnInitialized(null);");
