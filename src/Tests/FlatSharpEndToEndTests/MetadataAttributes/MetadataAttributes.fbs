@@ -26,7 +26,11 @@ struct RefStruct (test:"RefStruct")
     i : int (test:"i");
 }
 
-union MyUnion (test:"MyUnion") { ValueStruct }
+union MyUnion (test:"MyUnion")
+{
+    A : ValueStruct (test:"A"),
+    B : RefStruct
+}
 
 table Message (fs_serializer:"Lazy", test:"Message") {
     value : string (required, fs_sharedString, test:"value");

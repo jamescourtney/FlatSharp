@@ -123,6 +123,12 @@ public class ValueUnionSchemaModel : BaseSchemaModel
         this.Attributes.EmitAsMetadata(writer);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public {@unsafe} partial struct {this.Name} : {interfaceName}");
+
+        if (!generateUnsafeItems && context.Options.GenerateMethods)
+        {
+            writer.AppendLine($", System.IEquatable<{this.Name}>");
+        }
+
         using (writer.WithBlock())
         {
             // Generate an internal type enum.
@@ -152,6 +158,19 @@ public class ValueUnionSchemaModel : BaseSchemaModel
             writer.AppendLine();
             writer.AppendLine("public byte Discriminator { get; }");
 
+            if (!generateUnsafeItems && context.Options.GenerateMethods)
+            {
+                writer.AppendLine();
+                writer.AppendLine($"public override bool Equals(object? obj) => obj is {this.Name} other && this.Equals(other);");
+                writer.AppendLine($"public bool Equals({this.Name} other) => (this.Discriminator, this.value).Equals((other.Discriminator, other.value));");
+                writer.AppendLine($"public static bool operator ==({this.Name} left, {this.Name} right) => left.Equals(right);");
+                writer.AppendLine($"public static bool operator !=({this.Name} left, {this.Name} right) => !left.Equals(right);");
+                writer.AppendLine("public override int GetHashCode() => (this.Discriminator, this.value).GetHashCode();");
+                writer.AppendLine();
+                string item = this.union.Values.Count == 0 ? " " : $" this.value ";
+                writer.AppendLine($"public override string ToString() => $\"{this.Name} {{{{ {{{item}}} }}}}\";");
+            }
+
             int index = 1;
             foreach (var item in innerTypes)
             {
@@ -173,9 +192,11 @@ public class ValueUnionSchemaModel : BaseSchemaModel
                 this.WriteUncheckedGetItemMethod(writer, index, item.resolvedType, item.value, propertyClrType, generateUnsafeItems);
 
                 writer.AppendLine();
+                new FlatSharpAttributes(item.value.Attributes).EmitAsMetadata(writer);
                 writer.AppendLine($"public {item.resolvedType} {item.value.Key} => this.Item{index};");
 
                 writer.AppendLine();
+                new FlatSharpAttributes(item.value.Attributes).EmitAsMetadata(writer);
                 writer.AppendLine($"public {item.resolvedType} Item{index}");
                 using (writer.WithBlock())
                 {

@@ -154,6 +154,10 @@
       <CompilerCommand>$(CompilerCommand) --normalize-field-names $(FlatSharpNameNormalization)</CompilerCommand>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(FlatSharpGenerateMethods)' == 'true' ">
+	    <CompilerCommand>$(CompilerCommand) --generate-methods</CompilerCommand>
+    </PropertyGroup>
+
     <PropertyGroup Condition=" '$(FlatSharpClassDefinitionsOnly)' == 'true' ">
       <CompilerCommand>$(CompilerCommand) --class-definitions-only</CompilerCommand>
     </PropertyGroup>
@@ -168,6 +172,10 @@
 
     <PropertyGroup Condition=" '$(FlatSharpFileVisibility)' == 'true' ">
       <CompilerCommand>$(CompilerCommand) --file-visibility</CompilerCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(FlatSharpPrettyPrint)' == 'true' ">
+      <CompilerCommand>$(CompilerCommand) --pretty-print</CompilerCommand>
     </PropertyGroup>
 
     <Message Text="$(CompilerCommand)" Importance="high" />

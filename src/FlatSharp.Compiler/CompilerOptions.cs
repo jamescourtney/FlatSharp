@@ -59,6 +59,9 @@ public record CompilerOptions
         }
     }
 
+    [Option("generate-methods", Hidden = false, Default = false, HelpText = "Enable generation of methods.")]
+    public bool GenerateMethods { get; set; }
+
     [Option("class-definitions-only", Hidden = false, HelpText = "Emits only class and data definitions. No serializers.")]
     public bool ClassDefinitionsOnly { get; set; }
 
@@ -67,6 +70,9 @@ public record CompilerOptions
 
     [Option("unity-assembly-path", HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
     public string? UnityAssemblyPath { get; set; }
+
+    [Option("pretty-print", Hidden = false, Default = false, HelpText = "Enable formatting for generated code.")]
+    public bool PrettyPrint { get; set; }
 
     // Hidden options for tests / debugging
 
