@@ -101,7 +101,7 @@ namespace Unity.Collections
             // Let NativeArray indexer check for out of range.
             public T Current => m_Array[m_Index];
 
-            object IEnumerator.Current => Current;
+            object IEnumerator.Current => Current!;
         }
 
         public IEnumerator<T> GetEnumerator()
