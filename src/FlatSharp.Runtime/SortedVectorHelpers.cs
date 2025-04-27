@@ -406,15 +406,9 @@ public static class SortedVectorHelpers
             byte[]? temp = null;
             int maxLength = enc.GetMaxByteCount(left.Length);
 
-#if NETSTANDARD2_0
-            temp = ArrayPool<byte>.Shared.Rent(maxLength);
-            int tempLength = enc.GetBytes(left, 0, left.Length, temp, 0);
-            Span<byte> leftSpan = temp.AsSpan().Slice(0, tempLength);
-#else
             Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (temp = ArrayPool<byte>.Shared.Rent(maxLength));
             int leftLength = enc.GetBytes(left, leftSpan);
             leftSpan = leftSpan.Slice(0, leftLength);
-#endif
 
             comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, this.pooledArray.AsSpan().Slice(0, this.length));
 

@@ -20,7 +20,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-
 public readonly ref partial struct BigReadOnlySpan
 {
     private readonly BigSpan span;

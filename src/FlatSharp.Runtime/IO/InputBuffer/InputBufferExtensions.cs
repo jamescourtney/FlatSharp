@@ -129,15 +129,7 @@ public static class InputBufferExtensions
         int numberOfBytes = (int)buffer.ReadUInt(stringStart);
         ReadOnlySpan<byte> stringValue = buffer.GetReadOnlySpan().ToSpan(stringStart + sizeof(int), numberOfBytes);
 
-#if NETSTANDARD2_0
-        byte[] temp = ArrayPool<byte>.Shared.Rent(numberOfBytes);
-        stringValue.CopyTo(temp);
-        string result = SerializationHelpers.Encoding.GetString(temp, 0, numberOfBytes);
-        ArrayPool<byte>.Shared.Return(temp);
-        return result;
-#else
         return SerializationHelpers.Encoding.GetString(stringValue);
-#endif
     }
 
     /// <summary>

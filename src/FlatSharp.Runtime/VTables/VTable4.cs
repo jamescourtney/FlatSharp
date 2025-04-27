@@ -110,10 +110,6 @@ public struct VTable4 : IVTable
     internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
-#if NETSTANDARD2_0
-        CreateBigEndian(inputBuffer, offset, out item);
-#else
-
         inputBuffer.InitializeVTable(
             offset,
             out _,
@@ -130,6 +126,5 @@ public struct VTable4 : IVTable
             Span<byte> target = MemoryMarshal.CreateSpan<byte>(ref Unsafe.As<VTable4, byte>(ref item), Unsafe.SizeOf<VTable4>());
             fieldData.CopyTo(target);
         }
-#endif
     }
 }

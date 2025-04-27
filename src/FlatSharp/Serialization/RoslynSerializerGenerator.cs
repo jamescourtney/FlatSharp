@@ -50,13 +50,6 @@ internal class RoslynSerializerGenerator
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
         LanguageVersion.CSharp11,
         preprocessorSymbols: new[] { CSharpHelpers.Net7PreprocessorVariable, CSharpHelpers.Net8PreprocessorVariable });
-#elif NET7_0_OR_GREATER
-    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
-        LanguageVersion.CSharp11,
-        preprocessorSymbols: new[] { CSharpHelpers.Net7PreprocessorVariable });
-#else
-    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
-        LanguageVersion.CSharp11);
 #endif
 
     private static readonly ConcurrentDictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new ConcurrentDictionary<string, (Assembly, byte[])>();

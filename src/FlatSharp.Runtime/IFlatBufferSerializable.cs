@@ -38,7 +38,6 @@ public interface IFlatBufferSerializable<T>
     /// </summary>
     ISerializer<T> Serializer { get; }
 
-#if NET7_0_OR_GREATER
     /// <summary>
     /// Gets a <see cref="FlatBufferDeserializationOption.Lazy"/> <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
     /// </summary>
@@ -58,6 +57,5 @@ public interface IFlatBufferSerializable<T>
     /// Gets a <see cref="FlatBufferDeserializationOption.Progressive"/> <see cref="ISerializer{T}"/> instance that can serialize instances of <typeparamref name="T"/>.
     /// </summary>
     static abstract ISerializer<T> ProgressiveSerializer { get; }
-#endif
 }
 

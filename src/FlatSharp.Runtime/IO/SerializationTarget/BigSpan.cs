@@ -22,49 +22,27 @@ using System.Runtime.InteropServices;
 
 public readonly ref partial struct BigSpan
 {
-#if NET7_0_OR_GREATER
     private readonly long length;
     private readonly ref byte value;
-#else
-    private readonly Span<byte> span;
-#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigSpan(Span<byte> span)
     {
-#if NET7_0_OR_GREATER
         this.length = span.Length;
         this.value = ref span[0];
-#else
-        this.span = span;
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private BigSpan(ref byte value, long length)
+    public BigSpan(ref byte value, long length)
     {
-#if NET7_0_OR_GREATER
         this.value = ref value;
         this.length = length;
-#else
-        unsafe
-        {
-            fixed (byte* pByte = &value)
-            {
-                this.span = new(pByte, checked((int)length));
-            }
-        }
-#endif
     }
 
     public long Length
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NET7_0_OR_GREATER
         get => this.length;
-#else
-        get => this.span.Length;
-#endif
     }
 
     public ref byte this[long index]
@@ -77,11 +55,7 @@ public readonly ref partial struct BigSpan
                 ThrowOutOfRange();
             }
 
-#if NET7_0_OR_GREATER
             return ref Unsafe.Add(ref this.value, (IntPtr)index);
-#else
-            return ref this.span[(int)index];
-#endif
         }
     }
 
@@ -96,11 +70,7 @@ public readonly ref partial struct BigSpan
             ThrowOutOfRange();
         }
 
-#if NET7_0_OR_GREATER
         return new BigSpan(ref Unsafe.Add(ref this.value, (IntPtr)start), length);
-#else
-        return new(this.span.Slice((int)start, (int)length));
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,11 +81,7 @@ public readonly ref partial struct BigSpan
             ThrowOutOfRange();
         }
 
-#if NET7_0_OR_GREATER
         return new BigSpan(ref Unsafe.Add(ref this.value, (IntPtr)start), this.Length - start);
-#else
-        return new(this.span.Slice((int)start));
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -123,13 +89,9 @@ public readonly ref partial struct BigSpan
     {
         this.CheckRange(start, length);
 
-#if NET7_0_OR_GREATER
         return MemoryMarshal.CreateSpan(
             ref Unsafe.Add(ref this.value, (IntPtr)start),
             length);
-#else
-        return this.span.Slice((int)start, length);
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,15 +174,7 @@ public readonly ref partial struct BigSpan
         BigSpan scopedThis = this.Slice(stringStartOffset, maxItems + sizeof(uint));
         Span<byte> destination = scopedThis.ToSpan(sizeof(uint), maxItems);
 
-#if NETSTANDARD2_0
-        int length = value.Length;
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(encoding.GetMaxByteCount(length));
-        int bytesWritten = encoding.GetBytes(value, 0, length, buffer, 0);
-        buffer.AsSpan().Slice(0, bytesWritten).CopyTo(destination);
-        ArrayPool<byte>.Shared.Return(buffer);
-#else
         int bytesWritten = encoding.GetBytes(value, destination);
-#endif
 
         // null teriminator
         scopedThis.UnsafeWriteByte(sizeof(uint) + bytesWritten, 0);
@@ -269,12 +223,7 @@ public readonly ref partial struct BigSpan
         CheckRange(offset, Unsafe.SizeOf<T>());
 #endif
 
-#if NET7_0_OR_GREATER
         return Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref this.value, (IntPtr)offset));
-#else
-        var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
-        return Unsafe.ReadUnaligned<T>(ref slice[0]);
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -286,12 +235,7 @@ public readonly ref partial struct BigSpan
         CheckRange(offset, Unsafe.SizeOf<T>());
 #endif
 
-#if NET7_0_OR_GREATER
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref this.value, (IntPtr)offset), value);
-#else
-        var slice = this.ToSpan(offset, Unsafe.SizeOf<T>());
-        Unsafe.WriteUnaligned(ref slice[0], value);
-#endif
     }
 
     internal static double ReverseEndianness(double value)

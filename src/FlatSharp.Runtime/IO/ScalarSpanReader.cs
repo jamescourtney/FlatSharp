@@ -97,20 +97,6 @@ public static class ScalarSpanReader
         return BitConverter.Int64BitsToDouble(ReadLong(span));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string ReadString(ReadOnlySpan<byte> span, Encoding encoding)
-    {
-#if NETSTANDARD2_0
-        byte[] array = ArrayPool<byte>.Shared.Rent(span.Length);
-        span.CopyTo(array);
-        string s = encoding.GetString(array, 0, span.Length);
-        ArrayPool<byte>.Shared.Return(array);
-        return s;
-#else
-        return encoding.GetString(span);
-#endif
-    }
-
     [StructLayout(LayoutKind.Explicit)]
     internal struct FloatLayout
     {

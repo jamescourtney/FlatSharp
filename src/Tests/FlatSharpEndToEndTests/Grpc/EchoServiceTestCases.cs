@@ -22,7 +22,7 @@ using SChannel = System.Threading.Channels.Channel;
 
 namespace FlatSharpEndToEndTests.GrpcTests;
 
-#if NET7_0_OR_GREATER && !AOT
+#if !AOT
 [TestClass]
 public class EchoServiceTestCases
 {
