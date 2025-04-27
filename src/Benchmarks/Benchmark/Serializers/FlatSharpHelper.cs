@@ -16,11 +16,11 @@ internal class FlatSharpHelper
     private static FS.SortedVectorContainer sortedInts;
     private static FS.SortedVectorContainer unsortedInts;
 
-    public static int Prepare(int length)
+    public static long Prepare(int length)
     {
         BenchmarkUtilities.Prepare(length, out container);
         buffer = new byte[GetMaxSize()];
-        int bytesWritten = Serialize();
+        long bytesWritten = Serialize();
 
         sortedStrings = new() { SortedStrings = new List<SortedVectorStringKey>() };
         unsortedStrings = new() { UnsortedStrings = new List<SortedVectorStringKey>() };
@@ -41,14 +41,14 @@ internal class FlatSharpHelper
         return bytesWritten;
     }
 
-    public static int GetMaxSize()
+    public static long GetMaxSize()
     {
         return FS.FooBarContainer.Serializer.GetMaxSize(container);
     }
 
-    public static int Serialize()
+    public static long Serialize()
     {
-        return FS.FooBarContainer.Serializer.Write(new SpanWriter(), buffer, container);
+        return FS.FooBarContainer.Serializer.Write(buffer, container);
     }
 
     public static int ParseAndTraverse(int iterations, FlatBufferDeserializationOption option)
@@ -63,15 +63,15 @@ internal class FlatSharpHelper
         return BenchmarkUtilities.TraverseFooBarContainerPartial(parsed, iterations);
     }
 
-    public static int SerializeSortedStrings()
-        => FS.SortedVectorContainer.Serializer.Write(new SpanWriter(), buffer, sortedStrings);
+    public static long SerializeSortedStrings()
+        => FS.SortedVectorContainer.Serializer.Write(buffer, sortedStrings);
 
-    public static int SerializeUnsortedStrings()
-        => FS.SortedVectorContainer.Serializer.Write(new SpanWriter(), buffer, unsortedStrings);
+    public static long SerializeUnsortedStrings()
+        => FS.SortedVectorContainer.Serializer.Write(buffer, unsortedStrings);
 
-    public static int SerializeSortedInts()
-        => FS.SortedVectorContainer.Serializer.Write(new SpanWriter(), buffer, sortedInts);
+    public static long SerializeSortedInts()
+        => FS.SortedVectorContainer.Serializer.Write(buffer, sortedInts);
 
-    public static int SerializeUnsortedInts()
-        => FS.SortedVectorContainer.Serializer.Write(new SpanWriter(), buffer, unsortedInts);
+    public static long SerializeUnsortedInts()
+        => FS.SortedVectorContainer.Serializer.Write(buffer, unsortedInts);
 }

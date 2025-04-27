@@ -61,7 +61,7 @@ public class SharedStringWriter : ISharedStringWriter
 
             if (entry.Offsets == null)
             {
-                entry.Offsets = new List<int>();
+                entry.Offsets = new List<long>();
             }
 
             entry.Offsets.Clear();
@@ -73,12 +73,11 @@ public class SharedStringWriter : ISharedStringWriter
     /// <summary>
     /// Writes a shared string.
     /// </summary>
-    public void WriteSharedString<TSpanWriter>(
-        TSpanWriter spanWriter,
-        Span<byte> data,
-        int offset,
+    public void WriteSharedString(
+        BigSpan target,
+        long offset,
         string value,
-        SerializationContext context) where TSpanWriter : ISpanWriter
+        SerializationContext context)
     {
         // Find the associative set that must contain our key.
         var cache = this.sharedStringOffsetCache;
@@ -95,7 +94,7 @@ public class SharedStringWriter : ISharedStringWriter
         string? sharedString = line.String;
         if (sharedString is not null)
         {
-            FlushSharedString(spanWriter, data, sharedString, offsets, context);
+            FlushSharedString(target, sharedString, offsets, context);
         }
 
         line.String = value;
@@ -107,7 +106,9 @@ public class SharedStringWriter : ISharedStringWriter
     /// <summary>
     /// Flush any pending writes.
     /// </summary>
-    public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
+    public void FlushWrites(
+        BigSpan target,
+        SerializationContext context)
     {
         var cache = this.sharedStringOffsetCache;
         for (int i = 0; i < cache.Length; ++i)
@@ -117,7 +118,7 @@ public class SharedStringWriter : ISharedStringWriter
 
             if (str is not null)
             {
-                FlushSharedString(writer, data, str, item.Offsets, context);
+                FlushSharedString(target, str, item.Offsets, context);
                 item.String = null;
             }
 
@@ -128,18 +129,17 @@ public class SharedStringWriter : ISharedStringWriter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FlushSharedString<TSpanWriter>(
-        TSpanWriter spanWriter,
-        Span<byte> span,
+    private static void FlushSharedString(
+        BigSpan target,
         string value,
-        List<int> offsets,
-        SerializationContext context) where TSpanWriter : ISpanWriter
+        List<long> offsets,
+        SerializationContext context)
     {
-        int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
+        long stringOffset = target.WriteAndProvisionString(value, context);
         int count = offsets.Count;
         for (int i = 0; i < count; ++i)
         {
-            spanWriter.WriteUOffset(span, offsets[i], stringOffset);
+            target.WriteUOffset(offsets[i], stringOffset);
         }
 
         offsets.Clear();
@@ -151,6 +151,6 @@ public class SharedStringWriter : ISharedStringWriter
         // The string
         public string? String;
 
-        public List<int> Offsets;
+        public List<long> Offsets;
     }
 }

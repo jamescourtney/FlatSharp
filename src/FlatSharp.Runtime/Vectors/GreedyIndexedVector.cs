@@ -120,19 +120,7 @@ public sealed class GreedyIndexedVector<TKey, TValue> : IIndexedVector<TKey, TVa
         }
 
         TKey key = GetKey(value);
-
-#if NETSTANDARD2_0
-        var dictionary = this.backingDictionary;
-        if (dictionary.ContainsKey(key))
-        {
-            return false;
-        }
-
-        dictionary[key] = value;
-        return true;
-#else
         return this.backingDictionary.TryAdd(key, value);
-#endif
     }
 
     public void Clear()

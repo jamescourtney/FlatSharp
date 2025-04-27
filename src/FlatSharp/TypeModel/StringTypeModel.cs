@@ -95,7 +95,7 @@ public class StringTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
     {
-        return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});")
+        return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.ReadString({context.OffsetVariableName});")
         {
             IsMethodInline = true
         };
@@ -114,7 +114,6 @@ public class StringTypeModel : RuntimeTypeModel
                     if (!(sharedStringWriter is null))
                     {{
                         sharedStringWriter.{nameof(ISharedStringWriter.WriteSharedString)}(
-                            {context.SpanWriterVariableName}, 
                             {context.SpanVariableName},
                             {context.OffsetVariableName},
                             {context.ValueVariableName},
@@ -123,8 +122,7 @@ public class StringTypeModel : RuntimeTypeModel
                     }}
                 }}
                 
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
-                    {context.SpanVariableName},
+                {context.SpanVariableName}.WriteString(
                     {context.ValueVariableName},
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});
@@ -134,8 +132,7 @@ public class StringTypeModel : RuntimeTypeModel
         {
             // otherwise, we can omit that code entirely.
             body = $@"
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
-                    {context.SpanVariableName},
+                {context.SpanVariableName}.WriteString(
                     {context.ValueVariableName},
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});

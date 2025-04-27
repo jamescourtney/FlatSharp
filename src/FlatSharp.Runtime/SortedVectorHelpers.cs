@@ -317,13 +317,13 @@ public static class SortedVectorHelpers
             IInputBuffer buffer = this.inputBuffer;
 
             // Read uoffset.
-            int offset = vector.OffsetOf(index);
+            long offset = vector.OffsetOf(index);
 
             // Increment uoffset to move to start of table.
             offset += buffer.ReadUOffset(offset);
 
             // Follow soffset to start of vtable.
-            int vtableStart = offset - buffer.ReadInt(offset);
+            long vtableStart = offset - buffer.ReadInt(offset);
 
             ushort vtableLength = buffer.ReadUShort(vtableStart);
             int tableOffset = 0;
@@ -347,7 +347,7 @@ public static class SortedVectorHelpers
             // Length of the string.
             int stringLength = (int)buffer.ReadUInt(offset);
 
-            return buffer.GetReadOnlyMemory().Slice(offset + sizeof(int), stringLength);
+            return buffer.GetReadOnlyMemory(offset + sizeof(int), stringLength);
         }
 
         public int Count => this.vector.Count;
@@ -406,15 +406,9 @@ public static class SortedVectorHelpers
             byte[]? temp = null;
             int maxLength = enc.GetMaxByteCount(left.Length);
 
-#if NETSTANDARD2_0
-            temp = ArrayPool<byte>.Shared.Rent(maxLength);
-            int tempLength = enc.GetBytes(left, 0, left.Length, temp, 0);
-            Span<byte> leftSpan = temp.AsSpan().Slice(0, tempLength);
-#else
             Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (temp = ArrayPool<byte>.Shared.Rent(maxLength));
             int leftLength = enc.GetBytes(left, leftSpan);
             leftSpan = leftSpan.Slice(0, leftLength);
-#endif
 
             comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, this.pooledArray.AsSpan().Slice(0, this.length));
 

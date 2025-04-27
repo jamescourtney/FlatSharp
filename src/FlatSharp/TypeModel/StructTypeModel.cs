@@ -132,15 +132,17 @@ public class StructTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
-        List<string> body = new List<string>();
-        body.Add($"Span<byte> scopedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
-
         FlatSharpInternal.Assert(!this.ClrType.IsValueType, "Value-type struct is unexpected");
 
+        List<string> body = new List<string>();
+
+        body.Add($"var scopedTarget = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
+        
         body.Add(
             $@"
                 if ({context.ValueVariableName} is null)
                 {{
+                    Span<byte> scopedSpan = scopedTarget.{nameof(BigSpan.ToSpan)}(0, {this.PhysicalLayout[0].InlineSize});
                     scopedSpan.Clear();
                     return;
                 }}
@@ -158,7 +160,7 @@ public class StructTypeModel : RuntimeTypeModel
 
             var propContext = context with
             {
-                SpanVariableName = "scopedSpan",
+                SpanVariableName = "scopedTarget",
                 OffsetVariableName = $"{memberInfo.Offset}",
                 ValueVariableName = $"{propertyAccessor}"
             };

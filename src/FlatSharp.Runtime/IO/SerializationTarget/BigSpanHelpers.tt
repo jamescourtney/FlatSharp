@@ -1,0 +1,149 @@
+﻿/*
+ * Copyright 2024 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+<#
+    (string casedName, string typeName, bool useBinaryPrimitives)[] types = 
+    {
+        ("Byte", "byte", true),
+        ("SByte", "sbyte", true),
+        ("UShort", "ushort", true),
+        ("Short", "short", true),
+        ("Int", "int", true),
+        ("UInt", "uint", true),
+        ("Long", "long", true),
+        ("ULong", "ulong", true),
+        ("Float", "float", false),
+        ("Double", "double", false),
+    };
+#>
+
+using System.Buffers.Binary;
+
+namespace FlatSharp
+{
+
+    public readonly ref partial struct BigSpan
+    {
+
+    <#
+        foreach (var tuple in types)
+        {
+            string casedName = tuple.casedName;
+            string typeName = tuple.typeName;
+            string bp = tuple.useBinaryPrimitives ? "BinaryPrimitives." : "";
+    #>
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public <#= typeName #> Read<#=casedName#>(long offset)
+            {
+                var value = this.ReadUnaligned<<#=typeName#>>(offset);
+                if (!BitConverter.IsLittleEndian)
+                {
+                    value = <#= bp #>ReverseEndianness(value);
+                }
+
+                return value;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Write<#=casedName#>(long offset, <#= typeName #> value)
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    value = <#=bp#>ReverseEndianness(value);
+                }
+
+                this.WriteUnaligned(offset, value);
+            }
+    <#
+        }
+    #>
+    }
+
+    public readonly ref partial struct BigReadOnlySpan
+    {
+
+    <#
+        foreach (var tuple in types)
+        {
+            string casedName = tuple.casedName;
+            string typeName = tuple.typeName;
+            string bp = tuple.useBinaryPrimitives ? "BinaryPrimitives." : "";
+    #>
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public <#= typeName #> Read<#=casedName#>(long offset) => this.span.Read<#=casedName#>(offset);
+    <#
+        }
+    #>
+    }
+}
+
+namespace FlatSharp.Internal
+{
+    public static partial class BigSpanExtensions
+    {    
+    <#
+        foreach (var tuple in types)
+        {
+            string casedName = tuple.casedName;
+            string typeName = tuple.typeName;
+            string bp = tuple.useBinaryPrimitives ? "BinaryPrimitives." : "BigSpan.";
+    #>
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static <#=typeName#> UnsafeRead<#=casedName#>(this BigSpan span, long offset)
+            {
+                var value = span.ReadUnalignedUnsafe<<#=typeName#>>(offset);
+                if (!BitConverter.IsLittleEndian)
+                {
+                    value = <#=bp#>ReverseEndianness(value);
+                }
+
+                return value;
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void UnsafeWrite<#=casedName#>(this BigSpan span, long offset, <#=typeName#> value)
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    value = <#=bp#>ReverseEndianness(value);
+                }
+
+                span.WriteUnalignedUnsafe<<#=typeName#>>(offset, value);
+            }
+            
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static <#=typeName#> UnsafeRead<#=casedName#>(this BigReadOnlySpan span, long offset)
+            {
+                return span.Span.UnsafeRead<#=casedName#>(offset);
+            }
+
+    <#
+        }
+    #>
+    }
+}

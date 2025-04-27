@@ -59,7 +59,7 @@ public class FlatBufferSerializerNonGenericTests
             Assert.ThrowsException<ArgumentNullException>(() => serializer.Write(bw, null));
             Assert.ThrowsException<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable()));
 
-            int written = serializer.Write(bw, new SomeTable { A = 3 });
+            long written = serializer.Write(bw, new SomeTable { A = 3 });
             Assert.IsTrue(written > 0);
 
             object parsed = serializer.Parse(bw);

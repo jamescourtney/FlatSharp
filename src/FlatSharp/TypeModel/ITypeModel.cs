@@ -211,4 +211,10 @@ public interface ITypeModel
     /// Gets the fully qualified name of the deserialized type.
     /// </summary>
     string GetDeserializedTypeName(FlatBufferDeserializationOption option, string inputBufferTypeName);
+
+    /// <summary>
+    /// Attempts to get an invocation that can serialize this type model into the given span unsafely (ie, without bounds checks).
+    /// This is only appropriate if the target buffer has already been bounds-checked.
+    /// </summary>
+    bool TryGetUnsafeSerializeInvocation(string spanVariableName, string valueVariableName, string offsetVariableName, [NotNullWhen(true)] out string? invocation);
 }

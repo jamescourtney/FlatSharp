@@ -61,7 +61,7 @@ $$""""
 
         public {{className}}(
             TInputBuffer {{context.InputBufferVariableName}},
-            int {{context.OffsetVariableName}},
+            long {{context.OffsetVariableName}},
             short {{context.RemainingDepthVariableName}},
             TableFieldContext {{context.TableFieldContextVariableName}})
         {

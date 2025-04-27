@@ -41,18 +41,15 @@ internal class RoslynSerializerGenerator
             .Cast<FlatBufferDeserializationOption>()
             .Distinct()
             .ToList();
-
-#if NET8_0_OR_GREATER
+    
+#if NET9_0_OR_GREATER
+    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
+        LanguageVersion.CSharp13,
+        preprocessorSymbols: new[] { CSharpHelpers.Net7PreprocessorVariable, CSharpHelpers.Net8PreprocessorVariable, CSharpHelpers.Net9PreprocessorVariable });
+#elif NET8_0_OR_GREATER
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
         LanguageVersion.CSharp11,
         preprocessorSymbols: new[] { CSharpHelpers.Net7PreprocessorVariable, CSharpHelpers.Net8PreprocessorVariable });
-#elif NET7_0_OR_GREATER
-    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
-        LanguageVersion.CSharp11,
-        preprocessorSymbols: new[] { CSharpHelpers.Net7PreprocessorVariable });
-#else
-    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
-        LanguageVersion.CSharp11);
 #endif
 
     private static readonly ConcurrentDictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new ConcurrentDictionary<string, (Assembly, byte[])>();
@@ -419,20 +416,19 @@ $@"
             {
                 writeFileId = $"""
                     context.Offset = 8;
-                    target[7] = {(byte)fileId[3]};
-                    target[6] = {(byte)fileId[2]};
-                    target[5] = {(byte)fileId[1]};
-                    target[4] = {(byte)fileId[0]};
+                    destination[7] = {(byte)fileId[3]};
+                    destination[6] = {(byte)fileId[2]};
+                    destination[5] = {(byte)fileId[1]};
+                    destination[4] = {(byte)fileId[0]};
                 """;
             }
 
             string methodText =
 $@"
-                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, SerializationContext context)
-                    where TSpanWriter : ISpanWriter
+                public void Write({typeof(BigSpan).GGCTN()} destination, {rootType.GGCTN()} root, SerializationContext context)
                 {{
                     {writeFileId}
-                    {parts.@namespace}.{parts.className}.{parts.methodName}(writer, target, root, 0, context);
+                    {parts.@namespace}.{parts.className}.{parts.methodName}(destination, root, 0, context);
                 }}
 ";
             bodyParts.Add(methodText);
@@ -501,41 +497,7 @@ $@"
         namespace {resolvedName.@namespace}
         {{
             {(this.options.EnableFileVisibility ? "file" : "internal")} class {resolvedName.name} : {nameof(IGeneratedSerializer<byte>)}<{rootType.GetGlobalCompilableTypeName()}>
-            {{    
-                // Method generated to help AOT compilers make good decisions about generics.
-                [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-                public void __AotHelper()
-                {{
-                    this.Write<ISpanWriter>(default!, new byte[10], default!, default!);
-                    this.Write<SpanWriter>(default!, new byte[10], default!, default!);
-
-                    this.ParseLazy<IInputBuffer>(default!, default);
-                    this.ParseLazy<MemoryInputBuffer>(default!, default);
-                    this.ParseLazy<ReadOnlyMemoryInputBuffer>(default!, default);
-                    this.ParseLazy<ArrayInputBuffer>(default!, default);
-                    this.ParseLazy<ArraySegmentInputBuffer>(default!, default);
-
-                    this.ParseProgressive<IInputBuffer>(default!, default);
-                    this.ParseProgressive<MemoryInputBuffer>(default!, default);
-                    this.ParseProgressive<ReadOnlyMemoryInputBuffer>(default!, default);
-                    this.ParseProgressive<ArrayInputBuffer>(default!, default);
-                    this.ParseProgressive<ArraySegmentInputBuffer>(default!, default);
-
-                    this.ParseGreedy<IInputBuffer>(default!, default);
-                    this.ParseGreedy<MemoryInputBuffer>(default!, default);
-                    this.ParseGreedy<ReadOnlyMemoryInputBuffer>(default!, default);
-                    this.ParseGreedy<ArrayInputBuffer>(default!, default);
-                    this.ParseGreedy<ArraySegmentInputBuffer>(default!, default);
-
-                    this.ParseGreedyMutable<IInputBuffer>(default!, default);
-                    this.ParseGreedyMutable<MemoryInputBuffer>(default!, default);
-                    this.ParseGreedyMutable<ReadOnlyMemoryInputBuffer>(default!, default);
-                    this.ParseGreedyMutable<ArrayInputBuffer>(default!, default);
-                    this.ParseGreedyMutable<ArraySegmentInputBuffer>(default!, default);
-
-                    {typeof(FSThrow).GGCTN()}.{nameof(FSThrow.InvalidOperation_AotHelper)}();
-                }}
-
+            {{
                 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
                 public {resolvedName.name}()
                 {{
@@ -593,7 +555,7 @@ $@"
             : string.Empty;
 
         var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.options, this.typeModelContainer, allContextsMap);
-        var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.typeModelContainer, this.options, allContextsMap);
+        var serializeContext = new SerializationCodeGenContext("context", "destination", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.typeModelContainer, this.options, allContextsMap);
         var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, options, this.typeModelContainer, allContextsMap);
 
         CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
@@ -770,13 +732,12 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}<TSpanWriter>(
-                TSpanWriter {context.SpanWriterVariableName}, 
-                Span<byte> {context.SpanVariableName}, 
+            internal static void {DefaultMethodNameResolver.ResolveSerialize(typeModel).methodName}(
+                BigSpan {context.SpanVariableName},
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
                 {serializationContextParameter}
-                {tableFieldContextParameter}) where TSpanWriter : ISpanWriter
+                {tableFieldContextParameter})
             {{
                 {method.MethodBody}
             }}
@@ -792,11 +753,11 @@ $@"
     {
         if (vtableLength == 1)
         {
-            return "int";
+            return "long";
         }
         else
         {
-            return $"ref ({string.Join(", ", Enumerable.Range(0, vtableLength).Select(x => $"int offset{x}"))})";
+            return $"ref ({string.Join(", ", Enumerable.Range(0, vtableLength).Select(x => $"long offset{x}"))})";
         }
     }
 }

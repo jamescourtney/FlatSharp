@@ -22,7 +22,7 @@ using SChannel = System.Threading.Channels.Channel;
 
 namespace FlatSharpEndToEndTests.GrpcTests;
 
-#if NET7_0_OR_GREATER && !AOT
+#if !AOT
 [TestClass]
 public class EchoServiceTestCases
 {
@@ -80,7 +80,7 @@ public class EchoServiceTestCases
             Assert.IsInstanceOfType<IFlatBufferDeserializedObject>(response);
 
             IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)response;
-            length = obj.InputBuffer.Length;
+            length = checked((int)obj.InputBuffer.Length);
         });
 
         return length;

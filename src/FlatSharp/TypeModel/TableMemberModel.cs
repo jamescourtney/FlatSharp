@@ -268,7 +268,7 @@ public class TableMemberModel : ItemMemberModel
         string vtableVariableName)
     {
         return $@"
-            int {locationVariableName};
+            long {locationVariableName};
             {{
                 int relativeOffset = {vtableVariableName}.OffsetOf(buffer, {this.Index});
                 if (relativeOffset == 0)

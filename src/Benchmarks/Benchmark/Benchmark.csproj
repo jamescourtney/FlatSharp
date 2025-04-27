@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
-    <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;RUN_COMPARISON_BENCHMARKS;FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineContants);CURRENT_VERSION_ONLY;FLATSHARP_7_0_0_OR_GREATER</DefineConstants>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
     <NeedsFlatSharpCompiler>true</NeedsFlatSharpCompiler>
   </PropertyGroup>

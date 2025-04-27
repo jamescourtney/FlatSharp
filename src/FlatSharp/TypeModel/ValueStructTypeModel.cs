@@ -143,7 +143,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
             {StrykerSuppressor.SuppressNextLine("boolean")}
             if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
             {{
-                var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
+                var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().ToSpan({context.OffsetVariableName}, {this.inlineSize});
                 return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.{nameof(MemoryMarshal.Read)}<{globalName}>(mem);
             }}
             else
@@ -168,7 +168,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
             var member = this.members[i];
             var fieldContext = context with
             {
-                SpanVariableName = "sizedSpan",
+                SpanVariableName = "sizedTarget",
                 OffsetVariableName = $"{member.offset}",
                 ValueVariableName = $"{context.ValueVariableName}.{member.accessor}",
             };
@@ -177,23 +177,24 @@ public class ValueStructTypeModel : RuntimeTypeModel
         }
         
         string body;
-        string slice = $"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
+        string slice = $"var sizedTarget = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
         if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
         {
             body = $@"
-                {slice}
-                
                 {StrykerSuppressor.SuppressNextLine("boolean")}
                 if ({StrykerSuppressor.BitConverterTypeName}.IsLittleEndian)
                 {{
+                    var sizedSpan = {context.SpanVariableName}.ToSpan({context.OffsetVariableName}, {this.inlineSize});
+
 #if {CSharpHelpers.Net8PreprocessorVariable}
-                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
+                    {typeof(MemoryMarshal).GGCTN()}.Write(sizedSpan, in {context.ValueVariableName});
 #else
-                    {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, ref {context.ValueVariableName});
+                    {typeof(MemoryMarshal).GGCTN()}.Write(sizedSpan, ref {context.ValueVariableName});
 #endif
                 }}
                 else
                 {{
+                    {slice}
                     {string.Join("\r\n", propertyStatements)}
                 }}
             ";
@@ -214,7 +215,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         string body = $@"
             FlatSharpInternal.AssertLittleEndian();
             FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
-            Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
+            Span<byte> sizedSpan = {context.SpanVariableName}.{nameof(BigSpan.ToSpan)}({context.OffsetVariableName}, {this.inlineSize});
 
 #if NET8_0_OR_GREATER
             {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Write(sizedSpan, in {context.ValueVariableName});
@@ -223,7 +224,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
 #endif
         ";
 
-        return new CodeGeneratedMethod(body) { IsMethodInline = true };
+        return new CodeGeneratedMethod(body);
     }
 
     private CodeGeneratedMethod CreateExternalParseMethod(ParserCodeGenContext context)
@@ -233,7 +234,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         string body = $@"
             FlatSharpInternal.AssertLittleEndian();
             FlatSharpInternal.AssertSizeOf<{globalName}>({this.inlineSize});
-            var slice = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().Slice({context.OffsetVariableName}, {this.inlineSize});
+            var slice = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlySpan)}().ToSpan({context.OffsetVariableName}, {this.inlineSize});
             return {typeof(MemoryMarshal).GetGlobalCompilableTypeName()}.Read<{globalName}>(slice);
         ";
 

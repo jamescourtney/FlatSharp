@@ -51,7 +51,7 @@ public struct VTable8 : IVTable
     public int MaxSupportedIndex => 7;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
+    public static void Create<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
         if (BitConverter.IsLittleEndian)
@@ -86,13 +86,13 @@ public struct VTable8 : IVTable
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
+    public static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(
             offset,
             out _,
-            out nuint fieldCount,
+            out ulong fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
         item = new VTable8();
@@ -139,16 +139,13 @@ public struct VTable8 : IVTable
     /// An optimized load mmethod for LE architectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable8 item)
+    public static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, long offset, out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
-#if NETSTANDARD2_0
-        CreateBigEndian(inputBuffer, offset, out item);
-#else
         inputBuffer.InitializeVTable(
             offset,
             out _,
-            out nuint fieldCount,
+            out ulong fieldCount,
             out ReadOnlySpan<byte> fieldData);
 
         if (fieldData.Length >= Unsafe.SizeOf<VTable8>())
@@ -161,6 +158,5 @@ public struct VTable8 : IVTable
             Span<byte> target = MemoryMarshal.CreateSpan<byte>(ref Unsafe.As<VTable8, byte>(ref item), Unsafe.SizeOf<VTable8>());
             fieldData.CopyTo(target);
         }
-#endif
     }
 }
