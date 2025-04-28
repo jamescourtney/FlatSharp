@@ -71,7 +71,7 @@ public record CompilerOptions
     [Option("unity-assembly-path", HelpText = "Path to assembly (e.g. UnityEngine.dll) which enables Unity support.")]
     public string? UnityAssemblyPath { get; set; }
 
-    [Option("pretty-print", HelpText = "Beautify the generated C# (will result in slowdowns).")]
+    [Option("pretty-print", Hidden = false, Default = false, HelpText = "Enable formatting for generated code.")]
     public bool PrettyPrint { get; set; }
 
     // Hidden options for tests / debugging
