@@ -2,9 +2,9 @@ name: Fuzz Testing
 
 on:
   push:
-    branches: [  ]
+    branches: [ main ]
   pull_request:
-    branches: [  ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,6 @@ jobs:
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-quality: preview
         dotnet-version: 9.0.x
     
     - name: Install SharpFuzz
