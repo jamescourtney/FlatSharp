@@ -1,14 +1,15 @@
 param (
-    [Parameter(Mandatory = $true)]
-    [string]$project,
-    [Parameter(Mandatory = $true)]
-    [string]$i,
     [string]$x = $null,
     [int]$t = 10000,
     [string]$command = "sharpfuzz"
 )
 
 Set-StrictMode -Version Latest
+
+$project = "FuzzTests.csproj"
+$i = "TestCases"
+
+dotnet run GenerateData
 
 $outputDir = "bin"
 $findingsDir = "findings"
@@ -59,5 +60,6 @@ if ($x) {
     afl-fuzz -i $i -o $findingsDir -t $t -m none -x $x dotnet $project
 }
 else {
+    Write-Host "afl-fuzz -i $i -o $findingsDir -t $t -m none dotnet $project"
     afl-fuzz -i $i -o $findingsDir -t $t -m none dotnet $project
 }
