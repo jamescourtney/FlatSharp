@@ -1,0 +1,44 @@
+name: Fuzz Testing
+
+on:
+  push:
+    branches: [  ]
+  pull_request:
+    branches: [  ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AppVeyorBuild: true
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-quality: preview
+        dotnet-version: 9.0.x
+    
+    - name: Install SharpFuzz
+      run: dotnet tool install --global SharpFuzz.CommandLine
+
+    - name: Install AFL++
+      run: sudo apt install afl++
+      
+    - name: Generate Test Data
+      working-directory: src/Tests/Stryker/FuzzTests
+      run: dotnet run GenerateData
+
+    - name: PowerShell script
+      # You may pin to the exact commit or the version.
+      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
+      uses: Amadevus/pwsh-script@v2.0.3
+      with:
+        # PowerShell script to execute in Actions-hydrated context
+        script: |
+          cd src/Tests/Stryker/FuzzTests
+          ./fuzz.ps1
+  
+      
