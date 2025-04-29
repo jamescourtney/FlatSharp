@@ -1,7 +1,7 @@
 name: Fuzz Testing
 on:
   push:
-    branches: [ main ]
+    branches: [ fuzzing ]
   pull_request:
   workflow_dispatch:
 
