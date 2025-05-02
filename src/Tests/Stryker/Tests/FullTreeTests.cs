@@ -223,53 +223,11 @@ public class FullTreeTests
 
     private Root CreateRoot()
     {
-        static RefStruct CreateRefStruct()
-        {
-            RefStruct rs = new()
-            {
-                A = 1,
-                B = Fruit.Strawberry,
-                E = new ValueStruct
-                {
-                    A = 4,
-                    B = 5,
-                }
-            };
+        return Root.CreateTestRoot<HelpersCreateListFactory>();
+    }
 
-            rs.C.CopyFrom(new sbyte[] { 1, 2 }.AsSpan());
-            rs.D.CopyFrom(new sbyte[] { 1, 2 }.ToList());
-
-            return rs;
-        }
-
-        return new()
-        {
-            Fields = new()
-            {
-                Memory = 1,
-                RefStruct = CreateRefStruct(),
-                ScalarWithDefault = 1234,
-                Str = "hello",
-                Union = new(new Key() { Name = "fred", Value = Fruit.Strawberry }),
-                ValueStruct = CreateRefStruct().E
-            },
-
-            Vectors = new()
-            {
-                Indexed = new IndexedVector<string, Key>
-                {
-                    { new Key { Name = "velma", Value = Fruit.Banana } },
-                    { new Key { Name = "scooby", Value = Fruit.Pear } },
-                    { new Key { Name = "shaggy", Value = Fruit.Apple } },
-                },
-
-                Memory = new byte[] { 1, 2, 3, 4, },
-                RefStruct = Helpers.CreateList(CreateRefStruct(), CreateRefStruct()),
-                Str = Helpers.CreateList("abc", "def"),
-                Union = Helpers.CreateList(new FunUnion("hi"), new FunUnion(new ValueStruct()), new FunUnion(new RefStruct())),
-                ValueStruct = Helpers.CreateList(CreateRefStruct().E, CreateRefStruct().E),
-                Table = Helpers.CreateList(new Key() { Name = "bar" }, new Key() { Name = "foo" }),
-            },
-        };
+    private class HelpersCreateListFactory : ICreateCreateListFactory
+    {
+        public static CreateListCallback<T> GetCallback<T>() => Helpers.CreateList<T>;
     }
 }

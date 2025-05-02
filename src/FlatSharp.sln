@@ -52,6 +52,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeAot", "Tests\CompileT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharp8", "Tests\CompileTests\CSharp8\CSharp8.csproj", "{C746EE46-E69B-406E-A2CA-7498CF8E1919}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuzzTests", "Tests\Stryker\FuzzTests\FuzzTests.csproj", "{F7DDBB7E-C51C-A285-E3E0-0A189D4C5845}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -122,6 +124,10 @@ Global
 		{C746EE46-E69B-406E-A2CA-7498CF8E1919}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C746EE46-E69B-406E-A2CA-7498CF8E1919}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C746EE46-E69B-406E-A2CA-7498CF8E1919}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7DDBB7E-C51C-A285-E3E0-0A189D4C5845}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7DDBB7E-C51C-A285-E3E0-0A189D4C5845}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7DDBB7E-C51C-A285-E3E0-0A189D4C5845}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7DDBB7E-C51C-A285-E3E0-0A189D4C5845}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,6 +147,7 @@ Global
 		{8A1BB11B-3D1D-4528-A487-7A2E94915D1E} = {D1E90BAE-FC51-44DB-8215-1D9BB6059886}
 		{90E3970A-31B9-4E68-BCC3-19E1D71DD077} = {8A1BB11B-3D1D-4528-A487-7A2E94915D1E}
 		{C746EE46-E69B-406E-A2CA-7498CF8E1919} = {8A1BB11B-3D1D-4528-A487-7A2E94915D1E}
+		{F7DDBB7E-C51C-A285-E3E0-0A189D4C5845} = {0D70B829-8E3F-42E7-9C52-515167668C45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {726A4C0E-5760-4B35-8C73-9AC21B2E4C8B}
