@@ -15,7 +15,7 @@ All FlatSharp packages are published on nuget.org:
 - **FlatSharp.Runtime**: The runtime library. You always need this.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
 
-FlatSharp is a mature library and has been shipped to production at Microsoft, Unity3D, and others. Full status can be found at [ProjectStatus.md](ProjectStatus.md). FlatSharp is [extensively tested](https://github.com/jamescourtney/FlatSharp/wiki/Testing), using Mutation Testing, Code Coverage, Oracle Testing, and other techniques to ensure the library doesn't regress.
+FlatSharp is a mature library and has been shipped to production at Microsoft, Unity3D, and others. Full status can be found at [ProjectStatus.md](ProjectStatus.md). FlatSharp is [extensively tested](https://github.com/jamescourtney/FlatSharp/wiki/Testing), using Mutation Testing, Code Coverage, Oracle Testing, Fuzz Testing, and other techniques to ensure the library doesn't regress.
 
 ### Issues, Contributions, and Feedback
 Don't be a stranger! All issues and feedback are welcome here. If you'd like to share how you use FlatSharp, please consider filling out the form [here](https://forms.office.com/r/sHkumrr6sK)!
@@ -68,7 +68,7 @@ struct Location {
 Person person = new Person(...);
 int maxBytesNeeded = Person.Serializer.GetMaxSize(person);
 byte[] buffer = new byte[maxBytesNeeded];
-int bytesWritten = Person.Serializer.Serialize(buffer, person);
+int bytesWritten = Person.Serializer.Write(buffer, person);
 ```
 
 #### 5. Parse Your Data
@@ -106,6 +106,7 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 - No IL generation
 - Use standard .NET libraries for reading and writing from memory
 - Depth tracking enabled for recursive schemas to prevent stack overflows.
+- Periodic, manual fuzz testing using SharpFuzz and AFL++.
 
 FlatSharp *does* use some techniques such as `MemoryMarshal.Read` on certain hot paths, but these usages are narrowly scoped and well tested.
 
