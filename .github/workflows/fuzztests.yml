@@ -1,7 +1,7 @@
 name: Fuzz Testing
 on:
   push:
-    branches: [ main ]
+    branches: [ fuzzing ]
   pull_request:
   workflow_dispatch:
 
@@ -23,19 +23,15 @@ jobs:
 
     - name: Install AFL++
       run: sudo apt install afl++
+
+    - name: Configure Crash Reporting
+      run: sudo echo core > /proc/sys/kernel/core_pattern
       
     - name: Generate Test Data
       working-directory: src/Tests/Stryker/FuzzTests
       run: dotnet run GenerateData
 
-    - name: PowerShell script
-      # You may pin to the exact commit or the version.
-      # uses: Amadevus/pwsh-script@97a8b211a5922816aa8a69ced41fa32f23477186
-      uses: Amadevus/pwsh-script@v2.0.3
-      with:
-        # PowerShell script to execute in Actions-hydrated context
-        script: |
-          cd src/Tests/Stryker/FuzzTests
-          ./fuzz.ps1
-  
+    - name: Generate Test Data
+      working-directory: src/Tests/Stryker/FuzzTests
+      run: pwsh ./fuzz.ps1
       
