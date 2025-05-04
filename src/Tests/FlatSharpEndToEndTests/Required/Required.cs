@@ -15,7 +15,6 @@
  */
 
 using System.IO;
-using System.Runtime.InteropServices.Marshalling;
 
 namespace FlatSharpEndToEndTests.Required;
 
@@ -203,9 +202,15 @@ public partial class RequiredTable_Setters
         }
     }
 
-    required public virtual partial string PubPartial { get; set; }
+#if NET7_0_OR_GREATER
+    required 
+#endif
+    public virtual partial string PubPartial { get; set; }
 
-    required public virtual partial string PubInitPartial { get; init; }
+#if NET7_0_OR_GREATER
+    required 
+#endif
+    public virtual partial string PubInitPartial { get; init; }
 
     public virtual partial string ProtPartial { get; protected set; }
 
