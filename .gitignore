@@ -23,4 +23,5 @@
 /src/Tests/CompileTests/CSharp8/FlatSharp.generated.cs
 /src/Tests/Stryker/CodeGen/FlatSharp.cs
 **/.idea/**
-
+/src/Tests/Stryker/FuzzTests/findings/default
+/src/Tests/Stryker/FuzzTests/TestCases/TestCase.bin

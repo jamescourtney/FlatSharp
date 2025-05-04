@@ -1,0 +1,37 @@
+name: Fuzz Testing
+on:
+  push:
+    branches: [ fuzzing ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AppVeyorBuild: true
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    
+    - name: Install SharpFuzz
+      run: dotnet tool install --global SharpFuzz.CommandLine
+
+    - name: Install AFL++
+      run: sudo apt install afl++
+
+    - name: Configure Crash Reporting
+      run: sudo echo core > /proc/sys/kernel/core_pattern
+      
+    - name: Generate Test Data
+      working-directory: src/Tests/Stryker/FuzzTests
+      run: dotnet run GenerateData
+
+    - name: Generate Test Data
+      working-directory: src/Tests/Stryker/FuzzTests
+      run: pwsh ./fuzz.ps1
+      
