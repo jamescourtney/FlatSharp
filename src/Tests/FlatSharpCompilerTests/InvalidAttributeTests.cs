@@ -312,4 +312,17 @@ public class InvalidAttributeTests
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         Assert.Contains("Table property 'ns.FunTable.X' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.", ex.Message);
     }
+
+    [Fact]
+    public void ValueStruct_PartialProperty_NotAllowed()
+    {
+        string schema = @$"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            struct Item ({MetadataKeys.ValueStruct}) {{ key : int ({MetadataKeys.PartialProperty}); }}
+        ";
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("The attribute 'fs_partialProperty' is never valid on ValueStructField elements.", ex.Message);
+    }
 }
