@@ -96,8 +96,6 @@ public record PropertyFieldModel
 
     public bool HasDefaultValue => this.Field.DefaultDouble != 0 || this.Field.DefaultInteger != 0;
 
-    public bool HasSetter => this.Attributes.SetterKind != SetterKind.None;
-
     public static bool TryCreate(BaseReferenceTypeSchemaModel parent, Field field, int previousIndex, [NotNullWhen(true)] out PropertyFieldModel? model)
     {
         model = null;
