@@ -118,7 +118,7 @@ public static class MetadataKeys
     /// <summary>
     /// Indicates that a property should be generated partially.
     /// </summary>
-    public const string PartialProperty = "fs_partial_property";
+    public const string PartialProperty = "fs_partialProperty";
 
     /// <summary>
     /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.

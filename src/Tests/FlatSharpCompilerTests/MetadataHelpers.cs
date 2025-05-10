@@ -42,6 +42,7 @@ public class MetadataHelpers
             MetadataKeys.UnsafeExternal,
             MetadataKeys.LiteralName,
             MetadataKeys.UnsafeUnion,
+            MetadataKeys.PartialProperty,
             string.Empty
         };
 
