@@ -1,4 +1,3 @@
-﻿
 attribute "fs_serializer";
 attribute "fs_unsafeStructVector";
 attribute "fs_valueStruct";
