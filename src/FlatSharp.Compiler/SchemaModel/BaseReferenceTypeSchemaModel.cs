@@ -135,11 +135,6 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
             foreach (var property in this.properties)
             {
-                if (property.Value.Field.Required)
-                {
-                    writer.AppendLine($"this.{property.Value.FieldName} = default({property.Value.GetTypeName()})!;");
-                }
-
                 writer.AppendLine($"this.{property.Value.FieldName} = {context.FullyQualifiedCloneMethodName}(source.{property.Value.FieldName});");
             }
 
