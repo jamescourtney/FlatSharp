@@ -18,6 +18,7 @@ using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using System.Text;
 using FlatSharp.CodeGen;
+using System.Security.Cryptography.X509Certificates;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -38,6 +39,7 @@ public record PropertyFieldModel
         this.CustomGetter = customGetter;
         this.FieldName = field.Name;
         this.Index = index;
+        this.BackingFieldName = null;
 
         new FlatSharpAttributeValidator(elementType, $"{this.Parent.FullName}.{this.FieldName}")
         {
@@ -60,13 +62,21 @@ public record PropertyFieldModel
             },
             ForceWriteValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             WriteThroughValidator = _ => AttributeValidationResult.Valid,
+            PartialPropertyValidator = _ => AttributeValidationResult.Valid,
         }.Validate(this.Attributes);
+
+        if (this.Attributes.PartialProperty == true)
+        {
+            this.BackingFieldName = $"__flatsharp_backing_field_{this.FieldName}";
+        }
 
         FlatSharpInternal.Assert(this.Field.Type.BaseType.IsKnown(), "Base type was not known");
         FlatSharpInternal.Assert(
             this.Field.Type.ElementType == BaseType.None ||
             this.Field.Type.ElementType.IsKnown(), "Element type was not known");
     }
+
+    private string? BackingFieldName { get; }
 
     public bool ProtectedGetter { get; init; }
 
@@ -125,7 +135,7 @@ public record PropertyFieldModel
         return true;
     }
 
-    public void WriteCode(CodeWriter writer)
+    public void WriteCode(CompileContext context, CodeWriter writer)
     {
         writer.AppendSummaryComment(this.Field.Documentation);
         writer.AppendLine(this.GetAttribute());
@@ -136,16 +146,34 @@ public record PropertyFieldModel
 
         string setter = setterKind switch
         {
-            SetterKind.PublicInit => "init;",
-            SetterKind.Protected => "protected set;",
-            SetterKind.ProtectedInternal => "protected internal set;",
-            SetterKind.ProtectedInit => "protected init;",
-            SetterKind.ProtectedInternalInit => "protected internal init;",
-            SetterKind.None => string.Empty,
-            SetterKind.Public or _ => "set;",
+            SetterKind.PublicInit => "init",
+            SetterKind.Protected => "protected set",
+            SetterKind.ProtectedInternal => "protected internal set",
+            SetterKind.ProtectedInit => "protected init",
+            SetterKind.ProtectedInternalInit => "protected internal init",
+            SetterKind.None => "private set",
+            SetterKind.Public or _ => "set",
         };
 
+        bool hasBackingField = !string.IsNullOrEmpty(this.BackingFieldName);
+
+        if (!string.IsNullOrEmpty(setter))
+        {
+            if (hasBackingField)
+            {
+                setter = $"{setter} => this.{this.BackingFieldName} = value";
+            }
+
+            setter = setter + ";";
+        }
+
         string typeName = this.GetTypeName();
+        string getter = "get;";
+
+        if (hasBackingField)
+        {
+            getter = $"get => this.{this.BackingFieldName};";
+        }
 
         string access = "public";
         if (this.ProtectedGetter)
@@ -153,7 +181,13 @@ public record PropertyFieldModel
             access = "protected";
         }
 
-        string property = $"{access} virtual {typeName} {this.FieldName} {{ get; {setter} }}";
+        string partial = string.Empty;
+        if (context.CompilePass == CodeWritingPass.LastPass && this.Attributes.PartialProperty == true)
+        {
+            partial = "partial";
+        }
+
+        string property = $"{access} virtual {partial} {typeName} {this.FieldName} {{ {getter} {setter} }}";
 
         bool isPublicSetter = setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit;
         if (this.Field.Required == true && isPublicSetter)
@@ -166,6 +200,12 @@ public record PropertyFieldModel
         else
         {
             writer.AppendLine(property);
+        }
+
+        if (hasBackingField)
+        {
+            writer.AppendLine("[System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]");
+            writer.AppendLine($"private {typeName} {this.BackingFieldName};");
         }
     }
 

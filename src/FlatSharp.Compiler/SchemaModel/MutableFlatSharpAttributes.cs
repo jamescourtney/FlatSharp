@@ -89,4 +89,6 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
     public bool? UnsafeUnion { get; set; }
 
     public IIndexedVector<string, KeyValue> RawAttributes { get; set; }
+
+    public bool? PartialProperty { get; set; }
 }

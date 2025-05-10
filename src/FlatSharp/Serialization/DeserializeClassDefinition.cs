@@ -184,7 +184,7 @@ internal class DeserializeClassDefinition
         string setter = string.Empty;
         var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo);
 
-        if (itemModel.PropertyInfo.SetMethod is not null)
+        if (itemModel.PropertyInfo.SetMethod is not null && !itemModel.PropertyInfo.SetMethod.IsPrivate)
         {
             string setterBody = this.GetSetterBody(itemModel);
 

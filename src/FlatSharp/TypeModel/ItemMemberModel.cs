@@ -72,10 +72,6 @@ public abstract class ItemMemberModel
         FlatSharpInternal.Assert(
             ValidateVirtualPropertyMethod(getMethod, false),
             $"Property {this.DeclaringType} did not declare a public/protected virtual getter.");
-
-        FlatSharpInternal.Assert(
-            ValidateVirtualPropertyMethod(this.PropertyInfo.SetMethod, true),
-            $"Property {this.DeclaringType} declared a set method, but it was not public/protected and virtual.");
     }
 
     protected string DeclaringType

@@ -23,7 +23,7 @@ public class SetterTests
     public void NoSetter()
     {
         var method = this.GetSetMethod(nameof(Table.None));
-        Assert.IsNull(method);
+        Assert.IsTrue(method.IsPrivate);
     }
 
     [TestMethod]

@@ -79,6 +79,5 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"[System.Diagnostics.DebuggerTypeProxy(\"{this.FullName}\")]");
         writer.AppendLine($"public partial class {this.Name}");
-        writer.AppendLine($"    : object");
     }
 }

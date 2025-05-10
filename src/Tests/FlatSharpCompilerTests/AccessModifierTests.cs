@@ -95,7 +95,7 @@ public class AccessModifierTests
 
             if (setterKind == SetterKind.None)
             {
-                Assert.Null(defaultProperty.SetMethod);
+                Assert.True(defaultProperty.SetMethod.IsPrivate);
             }
             else if (setterKind == SetterKind.Protected || setterKind == SetterKind.ProtectedInit)
             {
