@@ -197,8 +197,8 @@ public partial class RequiredTable_Setters
 
         if (setNone)
         {
-            this.__None = "g";
-            this.__NonePartial = "g";
+            this.None = "g";
+            this.NonePartial = "g";
         }
     }
 
@@ -220,6 +220,6 @@ public partial class RequiredTable_Setters
 
     public virtual partial string ProtectedInternalInitPartial { get; protected internal init; }
 
-    public virtual partial string NonePartial { get; }
+    public virtual partial string NonePartial { get; private set; }
 }
 

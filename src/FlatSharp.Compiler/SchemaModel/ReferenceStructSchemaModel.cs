@@ -65,7 +65,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         if (model.Field.Type.BaseType == BaseType.Obj)
         {
             // another struct. We should new() this up.
-            writer.AppendLine($"this.{model.BackingFieldName} = new {model.GetTypeName()}();");
+            writer.AppendLine($"this.{model.Field.Name} = new {model.GetTypeName()}();");
         }
     }
 

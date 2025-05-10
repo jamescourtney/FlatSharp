@@ -18,6 +18,7 @@ using FlatSharp.Compiler.Schema;
 using FlatSharp.Attributes;
 using System.Text;
 using FlatSharp.CodeGen;
+using System.Security.Cryptography.X509Certificates;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -38,7 +39,7 @@ public record PropertyFieldModel
         this.CustomGetter = customGetter;
         this.FieldName = field.Name;
         this.Index = index;
-        this.BackingFieldName = $"__{this.FieldName}";
+        this.BackingFieldName = null;
 
         new FlatSharpAttributeValidator(elementType, $"{this.Parent.FullName}.{this.FieldName}")
         {
@@ -64,13 +65,18 @@ public record PropertyFieldModel
             PartialPropertyValidator = _ => AttributeValidationResult.Valid,
         }.Validate(this.Attributes);
 
+        if (this.Attributes.PartialProperty == true)
+        {
+            this.BackingFieldName = $"__flatsharp_backing_field_{this.FieldName}";
+        }
+
         FlatSharpInternal.Assert(this.Field.Type.BaseType.IsKnown(), "Base type was not known");
         FlatSharpInternal.Assert(
             this.Field.Type.ElementType == BaseType.None ||
             this.Field.Type.ElementType.IsKnown(), "Element type was not known");
     }
 
-    public string BackingFieldName { get; }
+    private string? BackingFieldName { get; }
 
     public bool ProtectedGetter { get; init; }
 
@@ -147,16 +153,29 @@ public record PropertyFieldModel
             SetterKind.ProtectedInternal => "protected internal set",
             SetterKind.ProtectedInit => "protected init",
             SetterKind.ProtectedInternalInit => "protected internal init",
-            SetterKind.None => string.Empty,
+            SetterKind.None => "private set",
             SetterKind.Public or _ => "set",
         };
 
+        bool hasBackingField = !string.IsNullOrEmpty(this.BackingFieldName);
+
         if (!string.IsNullOrEmpty(setter))
         {
-            setter = $"{setter} => this.{this.BackingFieldName} = value;";
+            if (hasBackingField)
+            {
+                setter = $"{setter} => this.{this.BackingFieldName} = value";
+            }
+
+            setter = setter + ";";
         }
 
         string typeName = this.GetTypeName();
+        string getter = "get;";
+
+        if (hasBackingField)
+        {
+            getter = $"get => this.{this.BackingFieldName};";
+        }
 
         string access = "public";
         if (this.ProtectedGetter)
@@ -170,7 +189,7 @@ public record PropertyFieldModel
             partial = "partial";
         }
 
-        string property = $"{access} virtual {partial} {typeName} {this.FieldName} {{ get => this.{this.BackingFieldName}; {setter} }}";
+        string property = $"{access} virtual {partial} {typeName} {this.FieldName} {{ {getter} {setter} }}";
 
         bool isPublicSetter = setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit;
         if (this.Field.Required == true && isPublicSetter)
@@ -185,7 +204,11 @@ public record PropertyFieldModel
             writer.AppendLine(property);
         }
 
-        writer.AppendLine($"private {typeName} {this.BackingFieldName};");
+        if (hasBackingField)
+        {
+            writer.AppendLine("[System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]");
+            writer.AppendLine($"private {typeName} {this.BackingFieldName};");
+        }
     }
 
     public string GetDefaultValue()

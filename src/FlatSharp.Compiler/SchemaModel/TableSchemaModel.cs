@@ -122,7 +122,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
     protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
     {
-        string line = $"this.{model.BackingFieldName} = {model.GetDefaultValue()};";
+        string line = $"this.{model.FieldName} = {model.GetDefaultValue()};";
 
         if (model.Field.Required)
         {
