@@ -31,6 +31,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
         this.AttributeValidator.DeserializationOptionValidator = _ => AttributeValidationResult.Valid;
         this.AttributeValidator.DefaultConstructorValidator = _ => AttributeValidationResult.Valid;
         this.AttributeValidator.ForceWriteValidator = _ => AttributeValidationResult.Valid;
+        this.AttributeValidator.PartialPropertyValidator = _ => AttributeValidationResult.Valid;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferObject table, [NotNullWhen(true)] out TableSchemaModel? model)
@@ -51,7 +52,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
     protected override void OnValidate()
     {
-        // TODO   
+        // TODO
     }
 
     protected override void EmitExtraData(CodeWriter writer, CompileContext context)

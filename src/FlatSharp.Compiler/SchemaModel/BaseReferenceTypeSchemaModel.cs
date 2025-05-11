@@ -30,7 +30,8 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
     protected readonly List<StructVectorPropertyFieldModel> structVectors;
     protected readonly FlatBufferObject flatBufferObject;
 
-    protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject flatBufferObject) : base(schema, flatBufferObject.Name, new FlatSharpAttributes(flatBufferObject.Attributes))
+    protected BaseReferenceTypeSchemaModel(Schema.Schema schema, FlatBufferObject flatBufferObject)
+        : base(schema, flatBufferObject.Name, new FlatSharpAttributes(flatBufferObject.Attributes))
     {
         this.properties = new Dictionary<int, PropertyFieldModel>();
         this.DeclaringFile = flatBufferObject.DeclarationFile;

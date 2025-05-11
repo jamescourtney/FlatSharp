@@ -1,0 +1,31 @@
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+attribute "fs_vector";
+attribute "fs_sharedString";
+attribute "fs_partialProperty";
+
+namespace FlatSharpEndToEndTests.PartialProperties;
+
+struct Struct
+{
+   a : int (fs_partialProperty);
+}
+
+table Table
+{
+   s : Struct (fs_partialProperty);
+}
+
+table PartialTableDefaultOn (fs_partialProperty)
+{
+    x : int;
+    y : int (fs_partialProperty: "false");
+}
+
+struct PartialStructDefaultOn (fs_partialProperty)
+{
+    x : int;
+    y : int (fs_partialProperty: "false");
+}

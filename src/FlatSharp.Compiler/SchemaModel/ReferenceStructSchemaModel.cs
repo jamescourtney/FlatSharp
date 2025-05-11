@@ -32,6 +32,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
         };
 
         this.AttributeValidator.WriteThroughValidator = _ => AttributeValidationResult.Valid;
+        this.AttributeValidator.PartialPropertyValidator = _ => AttributeValidationResult.Valid;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ReferenceStructSchemaModel? model)

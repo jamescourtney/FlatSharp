@@ -65,7 +65,7 @@ public record PropertyFieldModel
             PartialPropertyValidator = _ => AttributeValidationResult.Valid,
         }.Validate(this.Attributes);
 
-        if (this.Attributes.PartialProperty == true)
+        if (this.IsPartial)
         {
             this.BackingFieldName = $"__flatsharp_backing_field_{this.FieldName}";
         }
@@ -93,6 +93,8 @@ public record PropertyFieldModel
     public string FieldName { get; init; }
 
     public int Index { get; init; }
+
+    public bool IsPartial => this.Attributes.PartialProperty ?? this.Parent.Attributes.PartialProperty ?? false;
 
     public bool HasDefaultValue => this.Field.DefaultDouble != 0 || this.Field.DefaultInteger != 0;
 
@@ -182,7 +184,7 @@ public record PropertyFieldModel
         }
 
         string partial = string.Empty;
-        if (context.CompilePass == CodeWritingPass.LastPass && this.Attributes.PartialProperty == true)
+        if (context.CompilePass == CodeWritingPass.LastPass && this.IsPartial)
         {
             partial = "partial";
         }
@@ -291,8 +293,8 @@ public record PropertyFieldModel
             customAccessor = $"[{nameof(FlatBufferMetadataAttribute)}({nameof(FlatBufferMetadataKind)}.{nameof(FlatBufferMetadataKind.Accessor)}, \"\", \"{this.CustomGetter}\")]";
         }
 
-        bool emitForcedWrite = this.Attributes.ForceWrite == true
-                            || (this.Attributes.ForceWrite == null && this.Parent.Attributes.ForceWrite == true && this.Field.Type.BaseType.IsScalar());
+        bool emitForcedWrite = this.Attributes.ForceWrite ?? this.Parent.Attributes.ForceWrite ?? false;
+        emitForcedWrite &= this.Field.Type.BaseType.IsScalar();
 
         if (emitForcedWrite)
         {

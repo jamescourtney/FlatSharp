@@ -24,8 +24,10 @@
     <!-- IsExternalInit not compatible with downstream languages. -->
     <FlatSharpSchema Remove="../../FlatSharpEndToEndTests/**/AccessModifiers.fbs" />
 
-    <!-- Required not compatible with C# 8. -->
+    <!-- Required and Partial Properties not compatible with C# 8. -->
+    <!-- Partial properties rely on features introduced in later versions of C#, such as default interface methods. -->
     <FlatSharpSchema Remove="../../FlatSharpEndToEndTests/**/Required.fbs" />
+    <FlatSharpSchema Remove="../../FlatSharpEndToEndTests/**/PartialPropertiesTests.fbs" />
   </ItemGroup>
 
   <ItemGroup>

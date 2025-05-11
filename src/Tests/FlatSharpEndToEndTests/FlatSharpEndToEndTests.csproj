@@ -24,7 +24,7 @@
     <OutputType>exe</OutputType>
     <DefineConstants>$(DefineConstants);AOT</DefineConstants>
   </PropertyGroup>
-    
+
   <ItemGroup Condition=" '$(BuildAot)' == 'true' ">
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
     <PackageReference Include="MSTest.Engine" />
@@ -43,7 +43,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-      
+
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
   </ItemGroup>
@@ -66,14 +66,14 @@
     </PropertyGroup>
 
     <PropertyGroup>
-	  <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
+      <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
       <FlatSharpOutput Condition=" '$(FlatSharpMutationTestingMode)' == 'true' ">$(MSBuildProjectDirectory)/</FlatSharpOutput>
       <FlatSharpOutput>$(FlatSharpOutput)WithGenerateMethodsOption</FlatSharpOutput>
     </PropertyGroup>
 
-	<MakeDir Directories="$(FlatSharpOutput)" Condition="!Exists('$(FlatSharpOutput)')" />
+    <MakeDir Directories="$(FlatSharpOutput)" Condition="!Exists('$(FlatSharpOutput)')" />
 
-	<!-- find compiler and set base command -->
+    <!-- find compiler and set base command -->
     <PropertyGroup>
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\$(CompilerVersion)\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerPath Condition=" '$(FlatSharpCompilerPath)' != '' ">$(FlatSharpCompilerPath)</CompilerPath>
@@ -89,4 +89,4 @@
       <FileWrites Include="@(GeneratedFbsToString)" />
     </ItemGroup>
   </Target>
-</Project>  
+</Project>
