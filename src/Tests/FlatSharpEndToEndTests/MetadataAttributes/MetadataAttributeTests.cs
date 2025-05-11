@@ -111,6 +111,11 @@ public class MetadataAttributesTestCases
         Assert.AreEqual("0", attrs["required"]);
         Assert.AreEqual("0", attrs["fs_writeThrough"]);
         Assert.AreEqual("value_struct", attrs["test"]);
+
+        attrs = GetAttributes(typeof(Message).GetProperty("DeprecatedInt"));
+        Assert.AreEqual(1, attrs.Count);
+        Assert.AreEqual("0", attrs["deprecated"]);
+        Assert.IsNotNull(typeof(Message).GetProperty("DeprecatedInt").GetCustomAttribute<ObsoleteAttribute>());
     }
 
     private static Dictionary<string, string?> GetAttributes<T>() => GetAttributes(typeof(T));
