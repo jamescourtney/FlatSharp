@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 James Courtney
+ * Copyright 2025 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 namespace FlatSharpEndToEndTests.PartialProperties;
 
+/*
+ * These "tests" simply exist to ensure the code compiles.
+ * We cannot use reflection to determine if a property is partial or not.
+ */
+
 public partial class Table
 {
     public virtual partial Struct? S { get; set; }
@@ -24,4 +29,14 @@ public partial class Table
 public partial class Struct
 {
     public virtual partial int A { get; set; }
+}
+
+public partial class PartialTableDefaultOn
+{
+    public virtual partial int X { get; set; }
+}
+
+public partial class PartialStructDefaultOn
+{
+    public virtual partial int X { get; set; }
 }

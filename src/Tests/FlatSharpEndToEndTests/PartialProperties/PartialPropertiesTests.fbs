@@ -18,3 +18,15 @@ table Table
 {
    s : Struct (fs_partialProperty);
 }
+
+table PartialTableDefaultOn (fs_partialProperty)
+{
+    x : int;
+    y : int (fs_partialProperty: "false");
+}
+
+struct PartialStructDefaultOn (fs_partialProperty)
+{
+    x : int;
+    y : int (fs_partialProperty: "false");
+}
