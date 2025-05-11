@@ -37,6 +37,7 @@ table Message (fs_serializer:"Lazy", test:"Message") {
     single_int : int (test:"single_int");
     vector_int : [ int ] (fs_vectorKind:"IList", test:"vector_int");
     value_struct : ValueStruct (required, fs_writeThrough, test:"value_struct");
+    deprecated_int : int (deprecated);
 }
 
 rpc_service EchoService (fs_rpcInterface, test:"EchoService") {

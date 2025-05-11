@@ -142,6 +142,11 @@ public record PropertyFieldModel
         writer.AppendSummaryComment(this.Field.Documentation);
         writer.AppendLine(this.GetAttribute());
 
+        if (this.Field.Deprecated)
+        {
+            writer.AppendLine("[Obsolete]");
+        }
+
         this.Attributes.EmitAsMetadata(writer);
 
         SetterKind setterKind = this.Attributes.SetterKind ?? SetterKind.Public;

@@ -337,6 +337,7 @@ $@"
             var failures = result.Diagnostics
                 .Where(d => d.Id != "CS8019") // unnecessary using directive.
                 .Where(d => d.Id != "CS1701") // DLL version mismatch
+                .Where(d => d.Id != "CS9042") // obsolete warning
                 .ToArray();
 
             if (failures.Length > 0)

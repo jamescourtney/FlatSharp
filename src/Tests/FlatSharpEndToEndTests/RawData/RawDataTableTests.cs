@@ -249,7 +249,9 @@ public class RawDataTableTests
 
         var parsed = DeprecatedItemTable.Serializer.Parse(data, option);
 
+#pragma warning disable CS0612 // Type or member is obsolete
         Assert.AreEqual(0, parsed.Value);
+#pragma warning restore CS0612 // Type or member is obsolete
         Assert.AreEqual(255L, parsed.Other);
 
         var nonDeprecatedParsed = NonDeprecatedItemTable.Serializer.Parse(data, option);
@@ -262,11 +264,13 @@ public class RawDataTableTests
     [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void DeprecatedValue_IgnoreOnWrite(FlatBufferDeserializationOption option)
     {
+#pragma warning disable CS0612 // Type or member is obsolete
         var deprecatedTable = new DeprecatedItemTable
         {
             Value = 123,
             Other = 255,
         };
+#pragma warning restore CS0612 // Type or member is obsolete
 
         byte[] data =
         {

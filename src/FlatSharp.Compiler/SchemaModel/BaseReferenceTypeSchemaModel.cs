@@ -134,7 +134,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
                 return;
             }
 
-            foreach (var property in this.properties)
+            foreach (var property in this.properties.Where(x => !x.Value.Field.Deprecated))
             {
                 writer.AppendLine($"this.{property.Value.FieldName} = {context.FullyQualifiedCloneMethodName}(source.{property.Value.FieldName});");
             }
@@ -162,7 +162,7 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
             writer.AppendLine($"public {this.Name}()");
             using (writer.WithBlock())
             {
-                foreach (var item in this.properties.OrderBy(x => x.Key))
+                foreach (var item in this.properties.OrderBy(x => x.Key).Where(x => !x.Value.Field.Deprecated))
                 {
                     this.EmitDefaultConstructorFieldInitialization(item.Value, writer, context);
                 }
