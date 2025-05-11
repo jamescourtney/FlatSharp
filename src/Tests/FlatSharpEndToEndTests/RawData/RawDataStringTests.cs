@@ -47,6 +47,8 @@ public class RawDataStringTests
         Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(data));
     }
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
     [TestMethod]
     public void DeprecatedString()
     {
@@ -67,6 +69,8 @@ public class RawDataStringTests
 
         Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(data));
     }
+
+#pragma warning restore CS0612 // Type or member is obsolete
 
     [TestMethod]
     public void SimpleString()
@@ -97,11 +101,13 @@ public class RawDataStringTests
     [TestMethod]
     public void StringVector()
     {
+#pragma warning disable CS0612 // Type or member is obsolete
         var root = new StringTable
         {
             ItemDeprecated = "notnull",
             ItemVectorImplicit = new[] { "abc_", "def", "ghi" }
         };
+#pragma warning restore CS0612 // Type or member is obsolete
 
         byte[] data = root.AllocateAndSerialize();
 

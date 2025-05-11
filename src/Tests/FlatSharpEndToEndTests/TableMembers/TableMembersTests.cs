@@ -84,6 +84,8 @@ public class TableMemberTests
     [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void Double(FlatBufferDeserializationOption option) => this.RunTest<double, DoubleTable>(3.14, option);
 
+#pragma warning disable CS0612 // Type or member is obsolete
+
     [TestMethod]
     [DynamicData(nameof(DynamicDataHelper.DeserializationModes), typeof(DynamicDataHelper))]
     public void String(FlatBufferDeserializationOption option)
@@ -124,6 +126,8 @@ public class TableMemberTests
             Assert.AreEqual("e", rolist[2]);
         }
     }
+
+#pragma warning restore CS0612 // Type or member is obsolete
 
     private void RunTest<T, TTable>(T expectedDefault, FlatBufferDeserializationOption option)
         where T : struct
