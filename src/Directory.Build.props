@@ -21,7 +21,7 @@
     <Version>7.9.0</Version>
     <PackageVersion>7.9.0</PackageVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
-    <Authors>James Courtney</Authors>
+    <Authors>The FlatSharp Authors</Authors>
     <Description>FlatSharp is a fast, idiomatic implementation of the FlatBuffer binary format.</Description>
     <Copyright>2025</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
