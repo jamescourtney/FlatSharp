@@ -18,12 +18,12 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <Version>7.8.0</Version>
-    <PackageVersion>7.8.0</PackageVersion>
+    <Version>7.9.0</Version>
+    <PackageVersion>7.9.0</PackageVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
     <Description>FlatSharp is a fast, idiomatic implementation of the FlatBuffer binary format.</Description>
-    <Copyright>2024</Copyright>
+    <Copyright>2025</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
     <PackageReleaseNotes>Release notes at https://github.com/jamescourtney/FlatSharp/releases</PackageReleaseNotes>
