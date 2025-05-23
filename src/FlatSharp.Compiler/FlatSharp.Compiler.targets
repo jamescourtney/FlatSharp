@@ -94,8 +94,8 @@
       <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
     </ProcessFlatSharpSchema>
 
-    <!-- Query the installed SDKs. -->
-    <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="true">
+    <!-- Query the installed runtimes. -->
+    <Exec Command="dotnet --version" ConsoleToMsBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
     </Exec>
 
