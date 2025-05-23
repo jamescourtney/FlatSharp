@@ -94,34 +94,24 @@
       <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
     </ProcessFlatSharpSchema>
 
-    <!-- Query the installed SDKs. -->
-    <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="false">
+    <!-- Query the installed runtimes. -->
+    <Exec Command="dotnet --list-runtimes" ConsoleToMsBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
     </Exec>
 
     <PropertyGroup>
-      <CompilerVersion>net9.0</CompilerVersion>
+        <IsMatching6>$([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+'))</IsMatching6>
+        <IsMatching7>$([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+'))</IsMatching7>
+        <IsMatching8>$([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+'))</IsMatching8>
+        <IsMatching9>$([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '9\.0\.\d+'))</IsMatching9>
+        <CompilerVersion>net9.0</CompilerVersion>
+        <CompilerVersion Condition=" '$(IsMatching6)' == 'True' ">net6.0</CompilerVersion>
+        <CompilerVersion Condition=" '$(IsMatching7)' == 'True' ">net7.0</CompilerVersion>
+        <CompilerVersion Condition=" '$(IsMatching8)' == 'True' ">net8.0</CompilerVersion>
+        <CompilerVersion Condition=" '$(IsMatching9)' == 'True' ">net9.0</CompilerVersion>
     </PropertyGroup>
 
-    <!-- try .net6.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '6\.0\.\d+')) ">
-      <CompilerVersion>net6.0</CompilerVersion>
-    </PropertyGroup>
-
-    <!-- try .net7.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '7\.0\.\d+')) ">
-      <CompilerVersion>net7.0</CompilerVersion>
-    </PropertyGroup>
-
-    <!-- try .net8.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '8\.0\.\d+')) ">
-      <CompilerVersion>net8.0</CompilerVersion>
-    </PropertyGroup>
-
-    <!-- try .net9.0. -->
-    <PropertyGroup Condition=" $([System.Text.RegularExpressions.Regex]::IsMatch($(StdOut), '9\.0\.\d+')) ">
-      <CompilerVersion>net9.0</CompilerVersion>
-    </PropertyGroup>
+    <Message Text=".NET runtime detection: 6: $(IsMatching6), 7: $(IsMatching7), 8: $(IsMatching8), 9: $(IsMatching9). Selected: $(CompilerVersion)" Importance="High"/>
 
     <PropertyGroup>
       <FlatSharpOutput>$(IntermediateOutputPath)</FlatSharpOutput>
