@@ -95,7 +95,7 @@
     </ProcessFlatSharpSchema>
 
     <!-- Query the installed runtimes. -->
-    <Exec Command="dotnet --version" ConsoleToMsBuild="true">
+    <Exec Command="dotnet --list-runtimes" ConsoleToMsBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
     </Exec>
 
