@@ -18,7 +18,6 @@ jobs:
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-quality: preview
         dotnet-version: 9.0.x
         
     - name: Install Stryker
