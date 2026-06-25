@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>FlatSharpCompilerTests</AssemblyName>
@@ -17,7 +17,6 @@
     </PackageReference>
     <PackageReference Include="Grpc.Core" />
     <PackageReference Include="Grpc.Core.Api" />
-    <PackageReference Include="Microsoft.CSharp" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="xunit" />

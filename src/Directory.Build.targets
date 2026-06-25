@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Condition=" '$(NeedsFlatSharpCompiler)' == 'true' ">
-    <FlatSharpCompilerPath>$(MSBuildThisFileDirectory)FlatSharp.Compiler/bin/$(Configuration)/net8.0/FlatSharp.Compiler.dll</FlatSharpCompilerPath>
+    <FlatSharpCompilerPath>$(MSBuildThisFileDirectory)FlatSharp.Compiler/bin/$(Configuration)/net10.0/FlatSharp.Compiler.dll</FlatSharpCompilerPath>
     <FlatSharpNameNormalization>true</FlatSharpNameNormalization>
   </PropertyGroup>
 
@@ -9,7 +9,7 @@
       <Private>false</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <GlobalPropertiesToRemove>RuntimeIdentifier</GlobalPropertiesToRemove>
-      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
     </ProjectReference>
   </ItemGroup>
 
